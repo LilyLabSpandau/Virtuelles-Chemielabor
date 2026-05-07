@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neutralisations-Simulation</title>
+    
+    <script>
+      MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background-color: #0f172a; color: #f8fafc;
+            display: flex; flex-direction: column; align-items: center;
+            padding: 20px; margin: 0;
+        }
+        .sim-container {
+            background-color: #1e293b; padding: 20px;
+            border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;
+            max-width: 900px; width: 100%;
+        }
+        .canvas-wrapper {
+            position: relative; background-color: #ffffff;
+            border-radius: 10px 10px 30px 30px;
+            border: 4px solid #94a3b8; border-top: none;
+            overflow: hidden; transition: background-color 0.5s ease;
+            box-shadow: inset 0 -20px 50px rgba(0,0,0,0.1);
+        }
+        canvas { display: block; width: 350px; height: 400px; }
+        .controls { display: flex; flex-direction: column; gap: 15px; flex-grow: 1; min-width: 280px; }
+        h2 { margin-top: 0; color: #10b981; }
+        
+        .btn-group { display: flex; gap: 10px; }
+        .btn {
+            border: none; padding: 12px; border-radius: 8px;
+            color: white; font-weight: bold; font-size: 14px; cursor: pointer;
+            display: flex; justify-content: center; align-items: center; gap: 5px; transition: all 0.2s;
+            flex: 1;
+        }
+        .btn-full { width: 100%; justify-content: space-between; padding: 12px 20px; font-size: 16px; }
+        
+        .btn:active { transform: scale(0.97); }
+        .btn:hover { filter: brightness(1.2); }
+        
+        .btn-acid-1 { background-color: #ef4444; box-shadow: 0 4px 0 #b91c1c; }
+        .btn-acid-2 { background-color: #b91c1c; box-shadow: 0 4px 0 #7f1d1d; }
+        .btn-base-1 { background-color: #3b82f6; box-shadow: 0 4px 0 #1d4ed8; }
+        .btn-base-2 { background-color: #2563eb; box-shadow: 0 4px 0 #1e40af; }
+        .btn-reset { background-color: #64748b; box-shadow: 0 4px 0 #475569; margin-top: auto; }
+        
+        .dashboard { background-color: #0f172a; padding: 15px; border-radius: 8px; border: 1px solid #334155; }
+        .stat-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 18px; font-weight: bold; }
+        
+        .conc-dashboard { 
+            background-color: rgba(245, 158, 11, 0.1); padding: 15px; border-radius: 8px; 
+            border: 1px dashed #f59e0b; margin-top: 10px; 
+        }
+        .conc-dashboard h3 { margin: 0 0 10px 0; color: #f59e0b; font-size: 16px; }
+        .conc-text { font-size: 15px; margin-bottom: 8px; }
+        .conc-hint { color: #fb923c; font-size: 14px; margin-top: 12px; line-height: 1.5; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 5px; }
+
+        .ph-bar-container {
+            width: 100%; height: 20px; border-radius: 10px; margin-top: 8px;
+            background: linear-gradient(to right, #ef4444, #10b981, #3b82f6);
+            position: relative; border: 2px solid #334155;
+        }
+        .ph-marker {
+            position: absolute; top: -5px; left: 50%; width: 4px; height: 30px;
+            background-color: white; border-radius: 2px; box-shadow: 0 0 5px rgba(0,0,0,0.5);
+            transition: left 0.3s ease; transform: translateX(-50%);
+        }
+        .ph-values-row {
+            display: flex; justify-content: space-between; margin-top: 15px;
+            font-size: 16px; font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sim-container">
+        <div class="canvas-wrapper" id="beaker">
+            <canvas id="simCanvas" width="350" height="400"></canvas>
+        </div>
+
+        <div class="controls">
+            <h2>Die Arrhenius-Simulation</h2>
+            <p>1 Klick entspricht der Zugabe von exakt <b>0.1 mol/L</b> des jeweiligen Stoffes.</p>
+            
+            <div class="btn-group">
+                <button class="btn btn-acid-1" onclick="addHCl()">+ 0.1 mol/L HCl</button>
+                <button class="btn btn-acid-2" onclick="addH2SO4()">+ 0.1 mol/L H₂SO₄</button>
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn btn-base-1" onclick="addNaOH()">+ 0.1 mol/L NaOH</button>
+                <button class="btn btn-base-2" onclick="addCaOH2()">+ 0.1 mol/L Ca(OH)₂</button>
+            </div>
+
+            <div class="conc-dashboard">
+                <h3>📝 Labor-Tagebuch</h3>
+                <div class="conc-text" id="text-conc-acid" style="color: #ef4444;">Zugegebene Säure: 0.0 mol/L</div>
+                <div class="conc-text" id="text-conc-base" style="color: #3b82f6;">Zugegebene Lauge: 0.0 mol/L</div>
+                <div class="conc-hint"><b>Forscher-Auftrag:</b> Berechne die Ionen-Konzentration mit dem Taschenrechner ($c = 10^{-pH}$ oder $10^{-pOH}$) und vergleiche sie mit dem Tagebuch! Was fällt dir bei H₂SO₄ und Ca(OH)₂ auf?</div>
+            </div>
+
+            <div class="dashboard">
+                <div class="stat-row" style="color: #ef4444;"><span>Live H⁺ (Übrig):</span><span id="hCount">0</span></div>
+                <div class="stat-row" style="color: #3b82f6;"><span>Live OH⁻ (Übrig):</span><span id="ohCount">0</span></div>
+                
+                <div class="ph-values-row">
+                    <span style="color: #ef4444;">pH: <span id="phValueText">7.00</span></span>
+                    <span style="color: #10b981;">Indikator</span>
+                    <span style="color: #3b82f6;">pOH: <span id="pohValueText">7.00</span></span>
+                </div>
+                <div class="ph-bar-container"><div class="ph-marker" id="phMarker"></div></div>
+            </div>
+
+            <button class="btn btn-reset btn-full" onclick="resetSim()">Becherglas leeren 🔄</button>
+        </div>
+    </div>
+
+<script>
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+    const beakerWrapper = document.getElementById('beaker');
+    const phMarker = document.getElementById('phMarker');
+    const phValueText = document.getElementById('phValueText');
+    const pohValueText = document.getElementById('pohValueText');
+
+    let particles = [];
+    let addedC = { HCl: 0, H2SO4: 0, NaOH: 0, CaOH2: 0 };
+    
+    const types = {
+        'H':   { radius: 8, color: '#ef4444', label: 'H⁺' },
+        'Cl':  { radius: 10, color: '#fca5a5', label: 'Cl⁻' },
+        'SO4': { radius: 13, color: '#fb923c', label: 'SO₄²⁻' },
+        'OH':  { radius: 10, color: '#3b82f6', label: 'OH⁻' },
+        'Na':  { radius: 8, color: '#93c5fd', label: 'Na⁺' },
+        'Ca':  { radius: 11, color: '#a855f7', label: 'Ca²⁺' }, 
+        'H2O': { radius: 12, color: '#10b981', label: 'H₂O' }
+    };
+
+    class Particle {
+        constructor(type, x, y) {
+            this.type = type; this.x = x; this.y = y;
+            this.vx = (Math.random() - 0.5) * 4;
+            this.vy = Math.random() * 2 + 2; 
+            this.radius = types[type].radius;
+        }
+
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = types[this.type].color; ctx.fill();
+            ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.lineWidth = 1; ctx.stroke();
+            ctx.fillStyle = '#ffffff'; 
+            ctx.font = 'bold 11px Arial';
+            if (this.type === 'SO4' || this.type === 'Ca') ctx.font = 'bold 9px Arial';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(types[this.type].label, this.x, this.y);
+        }
+
+        update() {
+            this.vx += (Math.random() - 0.5) * 0.8;
+            this.vy += (Math.random() - 0.5) * 0.8;
+            this.vx *= 0.95; this.vy *= 0.95;
+
+            let speed = Math.sqrt(this.vx*this.vx + this.vy*this.vy);
+            if (speed > 6) { this.vx = (this.vx/speed)*6; this.vy = (this.vy/speed)*6; }
+
+            this.x += this.vx; this.y += this.vy;
+
+            let padding = 15; 
+            let minX = this.radius + padding;
+            let maxX = canvas.width - this.radius - padding;
+            let minY = 55 + this.radius;
+            let maxY = canvas.height - this.radius - padding;
+
+            if (this.y > canvas.height - 70) { minX += 25; maxX -= 25; }
+
+            if (this.x < minX) { this.x = minX; this.vx *= -0.8; }
+            if (this.x > maxX) { this.x = maxX; this.vx *= -0.8; }
+            if (this.y < minY) { this.y = minY; this.vy *= -0.8; }
+            if (this.y > maxY) { this.y = maxY; this.vy *= -0.8; }
+        }
+    }
+
+    function addHCl() {
+        addedC.HCl += 0.1;
+        let spawnX = Math.random() * (canvas.width - 100) + 50;
+        particles.push(new Particle('H', spawnX - 10, 10));
+        particles.push(new Particle('Cl', spawnX + 10, 10));
+        updateStats();
+    }
+
+    function addH2SO4() {
+        addedC.H2SO4 += 0.1;
+        let spawnX = Math.random() * (canvas.width - 100) + 50;
+        particles.push(new Particle('H', spawnX - 15, 10));
+        particles.push(new Particle('H', spawnX + 15, 10));
+        particles.push(new Particle('SO4', spawnX, 10));
+        updateStats();
+    }
+
+    function addNaOH() {
+        addedC.NaOH += 0.1;
+        let spawnX = Math.random() * (canvas.width - 100) + 50;
+        particles.push(new Particle('OH', spawnX - 10, 10));
+        particles.push(new Particle('Na', spawnX + 10, 10));
+        updateStats();
+    }
+
+    function addCaOH2() {
+        addedC.CaOH2 += 0.1;
+        let spawnX = Math.random() * (canvas.width - 100) + 50;
+        particles.push(new Particle('OH', spawnX - 15, 10));
+        particles.push(new Particle('OH', spawnX + 15, 10));
+        particles.push(new Particle('Ca', spawnX, 10));
+        updateStats();
+    }
+
+    function resetSim() { 
+        particles = []; 
+        addedC = { HCl: 0, H2SO4: 0, NaOH: 0, CaOH2: 0 };
+        updateStats(); 
+    }
+
+    function checkNeutralization() {
+        for (let i = 0; i < particles.length; i++) {
+            for (let j = i + 1; j < particles.length; j++) {
+                let p1 = particles[i]; let p2 = particles[j];
+                if ((p1.type === 'H' && p2.type === 'OH') || (p1.type === 'OH' && p2.type === 'H')) {
+                    let dx = p1.x - p2.x; let dy = p1.y - p2.y;
+                    let dist = Math.sqrt(dx*dx + dy*dy);
+
+                    if (dist < 150) { 
+                        let force = 1.2; 
+                        p1.vx -= (dx/dist) * force; p1.vy -= (dy/dist) * force;
+                        p2.vx += (dx/dist) * force; p2.vy += (dy/dist) * force;
+
+                        if (dist < p1.radius + p2.radius + 4) {
+                            let newX = (p1.x + p2.x) / 2; let newY = (p1.y + p2.y) / 2;
+                            particles.splice(j, 1); particles.splice(i, 1);
+                            particles.push(new Particle('H2O', newX, newY));
+                            updateStats(); return; 
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    function updateStats() {
+        let countH = particles.filter(p => p.type === 'H').length;
+        let countOH = particles.filter(p => p.type === 'OH').length;
+        document.getElementById('hCount').innerText = countH;
+        document.getElementById('ohCount').innerText = countOH;
+
+        // Protokollierung der zugegebenen Mengen für das Tagebuch
+        let acidArr = [];
+        if (addedC.HCl > 0) acidArr.push(`${addedC.HCl.toFixed(1)} mol/L HCl`);
+        if (addedC.H2SO4 > 0) acidArr.push(`${addedC.H2SO4.toFixed(1)} mol/L H₂SO₄`);
+        let acidText = acidArr.length > 0 ? acidArr.join(" + ") : "0.0 mol/L";
+        
+        let baseArr = [];
+        if (addedC.NaOH > 0) baseArr.push(`${addedC.NaOH.toFixed(1)} mol/L NaOH`);
+        if (addedC.CaOH2 > 0) baseArr.push(`${addedC.CaOH2.toFixed(1)} mol/L Ca(OH)₂`);
+        let baseText = baseArr.length > 0 ? baseArr.join(" + ") : "0.0 mol/L";
+
+        document.getElementById('text-conc-acid').innerHTML = `Zugegebene Säure:<br><b>${acidText}</b>`;
+        document.getElementById('text-conc-base').innerHTML = `Zugegebene Lauge:<br><b>${baseText}</b>`;
+
+        // Mathematisch korrekte Berechnung des pH/pOH Wertes (logarithmisch)
+        let total_cH = addedC.HCl + (addedC.H2SO4 * 2);
+        let total_cOH = addedC.NaOH + (addedC.CaOH2 * 2);
+        let net_H = total_cH - total_cOH;
+
+        let currentPH = 7.00;
+        if (net_H > 0.0001) {
+            currentPH = -Math.log10(net_H);
+        } else if (net_H < -0.0001) {
+            let currentPOH = -Math.log10(-net_H);
+            currentPH = 14 - currentPOH;
+        }
+        
+        let currentPOH = 14 - currentPH;
+        
+        // Werte auf 2 Nachkommastellen genau anzeigen für die spätere Rechner-Nutzung
+        phValueText.innerText = currentPH.toFixed(2);
+        pohValueText.innerText = currentPOH.toFixed(2);
+
+        // Skala von 0 bis 14 auf 0% bis 100% umrechnen
+        let phPosition = (currentPH / 14) * 100;
+        phMarker.style.left = phPosition + '%';
+
+        // Hintergrundfärbung
+        if (currentPH < 6.9) beakerWrapper.style.backgroundColor = '#fee2e2'; 
+        else if (currentPH > 7.1) beakerWrapper.style.backgroundColor = '#dbeafe'; 
+        else beakerWrapper.style.backgroundColor = '#d1fae5'; 
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#cbd5e1'; ctx.fillRect(0, 50, canvas.width, 3);
+        checkNeutralization();
+        particles.forEach(p => { p.update(); p.draw(); });
+        requestAnimationFrame(animate);
+    }
+
+    animate();
+</script>
+
+</body>
+</html>
