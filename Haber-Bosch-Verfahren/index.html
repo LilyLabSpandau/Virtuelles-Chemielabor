@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Haber-Bosch Lernmodul: Das Dilemma</title>
+    <style>
+        :root {
+            --bg: #f4f7f6;
+            --panel: #ffffff;
+            --primary: #2c3e50;
+            --thermo: #3498db;
+            --kinetics: #e67e22;
+            --success: #27ae60;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            color: var(--primary);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .dashboard {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background: var(--panel);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h1 { grid-column: 1 / -1; text-align: center; margin-bottom: 30px; }
+
+        .control-group { margin-bottom: 25px; }
+        .control-group label { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 8px; }
+        
+        input[type="range"] { width: 100%; cursor: pointer; }
+
+        .switch-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #eee;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .reaktor-view {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .meter-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .gauge {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+        }
+
+        .bg-thermo { background-color: var(--thermo); }
+        .bg-kinetics { background-color: var(--kinetics); }
+        .display-value { font-size: 2rem; font-weight: bold; display: block; }
+
+        /* Fester Reaktionsraum */
+        .reaktor-core {
+            width: 100%; 
+            height: 220px;
+            box-sizing: border-box;
+            border: 4px solid #7f8c8d;
+            border-radius: 20px;
+            position: relative;
+            background: #ecf0f1;
+            overflow: hidden;
+        }
+
+        .kinetik-badge {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            font-weight: bold;
+            color: #333;
+            background: rgba(255,255,255,0.8);
+            padding: 5px 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            pointer-events: none; 
+        }
+
+        /* Molekül-Design in sauberen Quadraten für fehlerfreie Kollision */
+        .molecule {
+            position: absolute;
+            top: 0;
+            left: 0;
+            margin: 0;
+            padding: 0;
+            filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.2));
+            will-change: transform;
+        }
+
+        .atom-h { width: 12px; height: 12px; background: #ffffff; border-radius: 50%; border: 1px solid #bdc3c7; box-sizing: border-box; }
+        .atom-n { width: 18px; height: 18px; background: #3498db; border-radius: 50%; border: 1px solid #2980b9; box-sizing: border-box; }
+
+        .mol-h2 { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
+        .mol-h2 .atom-h:nth-child(2) { margin-left: -4px; }
+
+        .mol-n2 { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; }
+        .mol-n2 .atom-n:nth-child(2) { margin-left: -6px; }
+
+        .mol-nh3 { width: 30px; height: 30px; position: relative; }
+        .mol-nh3 .atom-n { position: absolute; top: 6px; left: 6px; z-index: 2; }
+        .mol-nh3 .pos-1 { position: absolute; top: 0px; left: 9px; z-index: 1; }
+        .mol-nh3 .pos-2 { position: absolute; top: 16px; left: 2px; z-index: 1; }
+        .mol-nh3 .pos-3 { position: absolute; top: 16px; left: 16px; z-index: 1; }
+
+        .legend {
+            display: flex;
+            justify-content: space-around;
+            background: #e8ecef;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            align-items: center;
+        }
+
+        .legend-item { display: flex; align-items: center; gap: 8px; font-weight: bold; }
+        .legend-item .molecule { position: relative; filter: none; }
+
+        .output-panel {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            min-height: 90px;
+        }
+
+        .efficiency-bar {
+            height: 20px;
+            background: #ddd;
+            border-radius: 10px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        #yield-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--success);
+            transition: width 0.5s ease;
+        }
+
+        .info-box { font-size: 0.9rem; line-height: 1.4; color: #666; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<h1>Haber-Bosch-Verfahren: Das Optimierungs-Dilemma</h1>
+
+<div class="dashboard">
+    <div class="panel">
+        <div class="control-group">
+            <label>Temperatur <span><span id="txt-temp">450</span> °C</span></label>
+            <input type="range" id="range-temp" min="20" max="800" value="450">
+            <div class="info-box">Thermodynamik: Exotherm (&Delta;H < 0). Höhere T verschieben GG nach links.</div>
+        </div>
+
+        <div class="control-group">
+            <label>Druck <span><span id="txt-press">300</span> bar</span></label>
+            <input type="range" id="range-press" min="1" max="500" value="300">
+            <div class="info-box">Le Chatelier: Volumenabnahme (4 mol &rarr; 2 mol). Höherer p verschiebt GG nach rechts.</div>
+        </div>
+
+        <div class="control-group">
+            <label>Katalysator (Eisen)</label>
+            <div class="switch-container" id="kat-switch">
+                <span id="kat-status">DEAKTIVIERT</span>
+                <input type="checkbox" id="check-kat" style="display:none">
+                <div id="kat-led" style="width:15px; height:15px; border-radius:50%; background:red;"></div>
+            </div>
+            <div class="info-box">Kinetik: Senkt die Aktivierungsenergie E<sub>A</sub>, verändert aber nicht die Lage des GG.</div>
+        </div>
+    </div>
+
+    <div class="panel reaktor-view">
+        <div class="meter-box">
+            <div class="gauge bg-thermo">
+                <span class="display-value" id="val-yield">0%</span>
+                Ausbeute (NH<sub>3</sub>)
+            </div>
+            <div class="gauge bg-kinetics">
+                <span class="display-value" id="val-time">unendlich</span>
+                GG-Einstellung
+            </div>
+        </div>
+
+        <h3 style="margin: 0 0 -10px 0;">Reaktionsraum</h3>
+        <div class="reaktor-core" id="particles-container">
+            <div class="kinetik-badge">
+                Aktuelle Kinetik: <span id="kinetik-label">Eingefroren</span>
+            </div>
+        </div>
+
+        <div class="legend">
+            <strong>Legende:</strong>
+            <div class="legend-item">
+                <div class="molecule mol-n2" style="transform: none;"><div class="atom-n"></div><div class="atom-n"></div></div> N<sub>2</sub>
+            </div>
+            <div class="legend-item">
+                <div class="molecule mol-h2" style="transform: none;"><div class="atom-h"></div><div class="atom-h"></div></div> H<sub>2</sub>
+            </div>
+            <div class="legend-item">
+                <div class="molecule mol-nh3" style="transform: none;"><div class="atom-n"></div><div class="atom-h pos-1"></div><div class="atom-h pos-2"></div><div class="atom-h pos-3"></div></div> NH<sub>3</sub>
+            </div>
+        </div>
+
+        <div>
+            <div class="efficiency-bar">
+                <div id="yield-fill"></div>
+            </div>
+        </div>
+
+        <div class="output-panel" id="log">
+            SYSTEMBEREITSCHAFT: OK...<br>
+            Warte auf Parameter-Input...
+        </div>
+    </div>
+</div>
+
+<script>
+    const R = 8.314;
+    const DELTA_H = -92400; 
+    const EA_OHNE = 250000;  
+    const EA_MIT = 110000;   
+
+    const rTemp = document.getElementById('range-temp');
+    const rPress = document.getElementById('range-press');
+    const cKat = document.getElementById('check-kat');
+    const katSwitch = document.getElementById('kat-switch');
+    const containerEl = document.getElementById('particles-container');
+    
+    // Globale Physik-Variablen
+    let particlesData = [];
+    let animationId = null;
+    let globalSimulationSpeed = 0; // Entkoppelt Geschwindigkeit von Richtung
+    
+    katSwitch.addEventListener('click', () => {
+        cKat.checked = !cKat.checked;
+        document.getElementById('kat-status').innerText = cKat.checked ? "AKTIVIERT" : "DEAKTIVIERT";
+        document.getElementById('kat-led').style.background = cKat.checked ? "#27ae60" : "red";
+        updateFullSimulation();
+    });
+
+    // Berechnet die aktuellen thermodynamischen und kinetischen Werte
+    function calculateParams() {
+        const T = parseInt(rTemp.value);
+        const P = parseInt(rPress.value);
+        const TKelvin = T + 273.15;
+        const mitKat = cKat.checked;
+
+        const Kp_450 = 0.0066; 
+        const Kp = Kp_450 * Math.exp((-DELTA_H / R) * (1 / TKelvin - 1 / 723.15));
+        
+        let yield = (Kp * Math.pow(P, 2)) / (1 + Kp * Math.pow(P, 2));
+        yield = Math.min(0.99, yield) * 100;
+
+        const Ea = mitKat ? EA_MIT : EA_OHNE;
+        const k = Math.exp(-Ea / (R * TKelvin)) * 1e12; 
+        const timeFactor = 1 / k;
+
+        let timeText = "", kinetikText = "", vBase = 0;
+
+        if (timeFactor > 1000000) {
+            timeText = "Äonen"; kinetikText = "Eingefroren"; vBase = 0;
+        } else if (timeFactor > 1000) {
+            timeText = "Jahre"; kinetikText = "Extrem langsam"; vBase = 0.3;
+        } else if (timeFactor > 10) {
+            timeText = "Tage"; kinetikText = "Langsam"; vBase = 0.8;
+        } else if (timeFactor > 0.1) {
+            timeText = "Stunden"; kinetikText = "Mäßig"; vBase = 1.8;
+        } else {
+            timeText = "Sekunden"; kinetikText = "Optimal"; vBase = 3.5;
+        }
+
+        return { T, P, Kp, yield, timeText, kinetikText, vBase };
+    }
+
+    // Aktualisiert NUR das Interface und die Geschwindigkeit (feuert beim Ziehen des Sliders)
+    function updateUIOnly() {
+        const p = calculateParams();
+        document.getElementById('txt-temp').innerText = p.T;
+        document.getElementById('txt-press').innerText = p.P;
+        document.getElementById('val-yield').innerText = p.yield.toFixed(1) + "%";
+        document.getElementById('val-time').innerText = p.timeText;
+        document.getElementById('yield-fill').style.width = p.yield + "%";
+        document.getElementById('kinetik-label').innerText = p.kinetikText;
+
+        const log = document.getElementById('log');
+        let statusMsg = "";
+        if (p.yield > 15 && p.timeText === "Sekunden") {
+            statusMsg = "<span style='color: #27ae60'>OPTIMALER INDUSTRIE-BEREICH ERREICHT.</span>";
+        } else if (p.yield < 5) {
+            statusMsg = "<span style='color: #e74c3c'>WARNUNG: Thermodynamisch ungünstig (T zu hoch).</span>";
+        } else if (p.timeText === "Äonen" || p.timeText === "Jahre") {
+            statusMsg = "<span style='color: #f1c40f'>WARNUNG: Kinetisch tot. Reaktion findet nicht statt.</span>";
+        } else {
+            statusMsg = "System berechnet...";
+        }
+        log.innerHTML = `Kp: ${p.Kp.toExponential(2)} | Druckfaktor: ${p.P} bar<br>Nettoreaktion: ${statusMsg}`;
+
+        // Aktualisiert die globale Geschwindigkeit sofort, ohne die Teilchen zu löschen!
+        globalSimulationSpeed = p.vBase;
+    }
+
+    // Ersetzt die Teilchen, um die neue Ausbeute (Mengenverhältnis) darzustellen (feuert beim Loslassen)
+    function updateFullSimulation() {
+        updateUIOnly();
+        const p = calculateParams();
+        spawnParticles(p.yield);
+    }
+
+    function spawnParticles(yield) {
+        containerEl.querySelectorAll('.molecule:not(.legend-item .molecule)').forEach(p => p.remove());
+        particlesData = [];
+        
+        const count = 35;
+        const nh3Count = Math.floor((yield / 100) * count);
+        const remaining = count - nh3Count;
+        
+        const n2Count = Math.floor(remaining / 4);
+        const h2Count = remaining - n2Count;
+
+        let types = [];
+        for(let i=0; i<nh3Count; i++) types.push({type: 'nh3', size: 30});
+        for(let i=0; i<n2Count; i++) types.push({type: 'n2', size: 36});
+        for(let i=0; i<h2Count; i++) types.push({type: 'h2', size: 24});
+        
+        const cWidth = containerEl.clientWidth || 600;
+        const cHeight = containerEl.clientHeight || 200;
+        const padding = 5;
+
+        types.forEach(t => {
+            const p = document.createElement('div');
+            p.className = `molecule mol-${t.type}`;
+            
+            if (t.type === 'h2') {
+                p.innerHTML = '<div class="atom-h"></div><div class="atom-h"></div>';
+            } else if (t.type === 'n2') {
+                p.innerHTML = '<div class="atom-n"></div><div class="atom-n"></div>';
+            } else if (t.type === 'nh3') {
+                p.innerHTML = '<div class="atom-n"></div><div class="atom-h pos-1"></div><div class="atom-h pos-2"></div><div class="atom-h pos-3"></div>';
+            }
+            
+            containerEl.appendChild(p);
+
+            const angle = Math.random() * Math.PI * 2;
+            
+            // Sichere Spawnpunkte innerhalb der Wände berechnen
+            const minX = padding;
+            const maxX = Math.max(minX + 1, cWidth - t.size - padding);
+            const minY = padding;
+            const maxY = Math.max(minY + 1, cHeight - t.size - padding);
+
+            particlesData.push({
+                el: p,
+                x: minX + Math.random() * (maxX - minX),
+                y: minY + Math.random() * (maxY - minY),
+                dirX: Math.cos(angle), // Speichert NUR die Richtung (Vektor)
+                dirY: Math.sin(angle),
+                size: t.size,
+                rot: Math.random() * 360,
+                vRot: (Math.random() - 0.5) * 6
+            });
+        });
+
+        if (!animationId) {
+            animationId = requestAnimationFrame(animateParticles);
+        }
+    }
+
+    function animateParticles() {
+        const cWidth = containerEl.clientWidth || 600;
+        const cHeight = containerEl.clientHeight || 200;
+        const padding = 5;
+
+        particlesData.forEach(p => {
+            // Position = Aktuelle Position + (Richtung * Globale Geschwindigkeit)
+            p.x += p.dirX * globalSimulationSpeed;
+            p.y += p.dirY * globalSimulationSpeed;
+            p.rot += p.vRot * (globalSimulationSpeed * 0.3); // Drehung abhängig von Speed
+
+            const minX = padding;
+            const minY = padding;
+            const maxX = cWidth - p.size - padding;
+            const maxY = cHeight - p.size - padding;
+
+            // BUGFIX: Absolutes Erzwingen der korrekten Flugrichtung bei Wandkontakt
+            if (p.x <= minX) {
+                p.x = minX; 
+                p.dirX = Math.abs(p.dirX); // Fliegt garantiert nach rechts (+)
+            } else if (p.x >= maxX) {
+                p.x = maxX; 
+                p.dirX = -Math.abs(p.dirX); // Fliegt garantiert nach links (-)
+            }
+
+            if (p.y <= minY) {
+                p.y = minY; 
+                p.dirY = Math.abs(p.dirY); // Fliegt garantiert nach unten (+)
+            } else if (p.y >= maxY) {
+                p.y = maxY; 
+                p.dirY = -Math.abs(p.dirY); // Fliegt garantiert nach oben (-)
+            }
+
+            p.el.style.transform = `translate(${p.x}px, ${p.y}px) rotate(${p.rot}deg)`;
+        });
+
+        animationId = requestAnimationFrame(animateParticles);
+    }
+
+    // Bei Eingabe (Ziehen des Sliders) nur UI und Speed updaten (kein Flackern!)
+    rTemp.addEventListener('input', updateUIOnly);
+    rPress.addEventListener('input', updateUIOnly);
+    
+    // Beim Loslassen (Change) die Molekül-Verhältnisse thermodynamisch anpassen
+    rTemp.addEventListener('change', updateFullSimulation);
+    rPress.addEventListener('change', updateFullSimulation);
+    window.addEventListener('resize', updateFullSimulation);
+    
+    // Start initialisieren
+    updateFullSimulation();
+</script>
+
+</body>
+</html>
