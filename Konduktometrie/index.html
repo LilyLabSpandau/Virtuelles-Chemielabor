@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Konduktometrie-Titration</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --bg-color: #f0f4f8; --primary: #2c3e50; --accent: #3498db; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color); color: var(--primary);
+            margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center;
+        }
+        .container {
+            background: white; padding: 20px; border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 1100px;
+        }
+        .hidden { display: none !important; }
+        
+        /* --- Layout --- */
+        .app-layout { display: flex; gap: 20px; margin-top: 20px; align-items: flex-start; }
+        .left-panel { flex: 0 0 420px; border: 1px solid #bdc3c7; background: linear-gradient(to bottom, #d5e5ff 0%, #ffffff 100%); border-radius: 5px; }
+        .right-panel { flex: 1; display: flex; flex-direction: column; gap: 20px; }
+        
+        /* --- Prep Phase --- */
+        #prep-ui { display: flex; flex-direction: column; gap: 15px; padding: 20px; background: #fafafa; border: 1px solid #bdc3c7; border-radius: 5px; flex: 1; }
+        .check-item { display: flex; align-items: center; gap: 10px; font-size: 1.1em; cursor: pointer; padding: 10px; background: #ecf0f1; border-radius: 5px; transition: background 0.3s; }
+        .check-item.done { text-decoration: line-through; color: #7f8c8d; }
+        .check-item input { transform: scale(1.5); cursor: pointer; }
+
+        /* --- Titration Phase --- */
+        .right-top { display: flex; gap: 15px; height: 300px; }
+        .chart-container { flex: 1; border: 1px solid #bdc3c7; border-radius: 5px; padding: 10px; background: white; cursor: pointer; }
+        .meniscus-view { width: 100px; border: 1px solid #bdc3c7; border-radius: 5px; background: white; }
+        
+        /* --- Draufsicht --- */
+        .right-bottom {
+            height: 300px; border: 1px solid #bdc3c7; border-radius: 5px; position: relative; overflow: hidden;
+            background-color: #b71c1c; 
+            background-image: linear-gradient(black 4px, transparent 4px), linear-gradient(90deg, black 4px, transparent 4px);
+            background-size: 120px 120px; background-position: center;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .top-down-base {
+            width: 220px; height: 260px; background: #e0e0e0; border: 2px solid black;
+            position: relative; display: flex; flex-direction: column; align-items: center;
+        }
+        .beaker-top {
+            width: 160px; height: 160px; background-color: rgba(241, 196, 15, 0.8); 
+            border-radius: 50%; border: 6px solid white; box-shadow: 0 0 0 4px #555, inset 0 0 20px rgba(0,0,0,0.3);
+            position: absolute; bottom: 15px; transition: background-color 0.5s;
+        }
+        .stirrer-top { width: 70px; height: 14px; background: #9e9e9e; border: 1px solid #424242; border-radius: 6px; position: absolute; top: 50%; left: 50%; transform-origin: center; }
+        
+        /* Hahn Draufsicht */
+        .stopcock-assembly { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 60px; height: 120px; z-index: 10; }
+        .black-pipe { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 16px; height: 100px; background: black; }
+        .housing-top { position: absolute; top: 25px; left: 50%; transform: translateX(-50%); width: 46px; height: 26px; background: black; border-radius: 23px 23px 0 0; }
+        .stopcock-center { position: absolute; top: 38px; left: 50%; transform: translateX(-50%); width: 32px; height: 32px; background: #e0e0e0; border: 4px solid black; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 2; }
+        .inner-liquid { width: 14px; height: 14px; background: #4fc3f7; border-radius: 50%; border: 1px solid black; }
+        .burette-glass { position: absolute; top: 60px; left: 50%; transform: translateX(-50%); width: 14px; height: 60px; background: rgba(255,255,255,0.7); border-left: 2px solid #555; border-right: 2px solid #555; display: flex; justify-content: center; }
+        .burette-liquid { width: 6px; height: 100%; background: #4fc3f7; }
+        .handle-container { position: absolute; top: 54px; left: 50%; width: 0; height: 0; z-index: 3; }
+        .handle { position: absolute; top: -16px; left: -14px; width: 28px; height: 80px; background: #9e9e9e; border: 2px solid black; transform-origin: 14px 16px; cursor: grab; display: flex; justify-content: center; }
+        .handle-inner { margin-top: 30px; width: 14px; height: 40px; background: #4fc3f7; border: 1px solid black; }
+
+        button { padding: 10px 20px; font-size: 1.1em; color: white; background: var(--accent); border: none; border-radius: 5px; cursor: pointer; transition: background 0.3s; }
+        button:hover { background: #2980b9; }
+        button:disabled { background: #95a5a6; cursor: not-allowed; }
+        
+        .help-btn { background: #f39c12; font-size: 0.9em; padding: 6px 12px; margin-top: 15px; display: inline-block; }
+        .help-btn:hover { background: #d35400; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2 style="text-align: center; margin-top: 0;">Konduktometrie: Ca²⁺ mit Oxalsäure</h2>
+        
+        <div class="app-layout">
+            <div class="left-panel"><canvas id="sim-canvas" width="420" height="768"></canvas></div>
+
+            <div class="right-panel">
+                <div id="prep-ui">
+                    <h3>Vorbereitung</h3>
+                    <label class="check-item" id="lbl-ox"><input type="checkbox" id="chk-ox"> Oxalsäure einfüllen</label>
+                    <label class="check-item" id="lbl-ca"><input type="checkbox" id="chk-ca"> Ca²⁺-Lösung einfüllen</label>
+                    <label class="check-item" id="lbl-stir"><input type="checkbox" id="chk-stir"> Rührfisch zugeben</label>
+                    <label class="check-item" id="lbl-meter"><input type="checkbox" id="chk-meter"> Leitfähigkeitsmessgerät</label>
+                    <button id="btn-start-titration" style="margin-top:20px;" disabled>Weiter zur Messung</button>
+                </div>
+
+                <div id="titration-instruments" class="hidden" style="height: 100%; display: flex; flex-direction: column; gap: 20px;">
+                    <div class="right-top">
+                        <div class="chart-container"><canvas id="chart"></canvas></div>
+                        <div class="meniscus-view"><canvas id="meniscus-canvas" width="100" height="300"></canvas></div>
+                    </div>
+                    
+                    <div class="right-bottom">
+                        <div class="top-down-base">
+                            <div class="beaker-top" id="top-beaker"><div class="stirrer-top" id="stirrer-top"></div></div>
+                            <div class="stopcock-assembly">
+                                <div class="black-pipe"></div>
+                                <div class="burette-glass"><div class="burette-liquid"></div></div>
+                                <div class="housing-top"></div>
+                                <div class="stopcock-center"><div class="inner-liquid"></div></div>
+                                <div class="handle-container" id="stopcock-rotator">
+                                    <div class="handle"><div class="handle-inner"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: #ecf0f1; padding: 10px; border-radius: 5px;">
+                        <span id="live-data" style="font-weight: bold;">Bitte Volumen an der Bürette ablesen!</span>
+                        <button id="btn-finish" class="hidden">Auswerten</button>
+                    </div>
+                </div>
+
+                <div id="eval-phase" class="hidden" style="background: white; padding: 20px; border: 1px solid #bdc3c7; border-radius: 5px;">
+                    <h3>Auswertung</h3>
+                    <p><strong>Gegeben:</strong> c(Oxalsäure) = <span id="eval-cox"></span> mol/L | V(Ca²⁺) = <span id="eval-vca"></span> mL</p>
+                    <p>Abgelesenes Äquivalenzvolumen: <input type="number" id="in-veq" step="0.01" style="width: 80px;"> mL</p>
+                    <p>Berechnete c(Ca²⁺): <input type="number" id="in-cca" step="0.0001" style="width: 80px;"> mol/L</p>
+                    <button id="btn-check">Prüfen</button>
+                    <p id="feedback"></p>
+                    
+                    <div style="border-top: 1px solid #ecf0f1; margin-top: 20px; padding-top: 10px;">
+                        <button id="btn-help" class="help-btn">Hilfe: Exakten Äquivalenzpunkt anzeigen</button>
+                        <span id="help-text" class="hidden" style="margin-left: 15px; color: #d35400; font-weight: bold;"></span>
+                    </div>
+                </div>
+                
+                <div id="error-screen" class="hidden" style="text-align: center; color: #c0392b; background: #fadbd8; padding: 20px; border-radius: 5px;">
+                    <h2>Übertitration!</h2>
+                    <p>Du hast den Äquivalenzpunkt deutlich verpasst. Das Experiment muss wiederholt werden.</p>
+                    <button onclick="location.reload()">Neustart</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('load', () => {
+            ['ox', 'ca', 'stir', 'meter'].forEach(id => {
+                let cb = document.getElementById(`chk-${id}`);
+                cb.checked = false; cb.disabled = false;
+                document.getElementById(`lbl-${id}`).classList.remove('done');
+            });
+            document.getElementById('btn-start-titration').disabled = true;
+        });
+
+        const V_ca_options = [20.0, 25.0, 30.0, 40.0, 50.0];
+        const V_ca = V_ca_options[Math.floor(Math.random() * V_ca_options.length)];
+        
+        const c_ox_options = [0.01, 0.015, 0.02, 0.025, 0.05];
+        const c_ox = c_ox_options[Math.floor(Math.random() * c_ox_options.length)];
+        
+        const V_eq_true = parseFloat(((Math.floor(Math.random() * 301) * 0.05) + 10).toFixed(2));
+        const c_ca_true = (V_eq_true * c_ox) / V_ca;
+        
+        // lastPlottedVolume startet nun bei 0, damit der Rhythmus ab 0.5 mL exakt passt
+        let addedVolume = 0; let isTitrating = false; let chart; let lastPlottedVolume = 0; let pointsAfterMin = 0;
+        let isReviewMode = false; let reviewVolume = 0;
+        
+        const kappa_start = c_ca_true * 1000 * 200; const kappa_min = 50; const slope_after = 40;
+        function getConductivity(v) { return v <= V_eq_true ? kappa_start - ((kappa_start - kappa_min) * (v / V_eq_true)) : kappa_min + slope_after * (v - V_eq_true); }
+
+        const ctxSim = document.getElementById('sim-canvas').getContext('2d');
+        let prepState = { ox: false, ca: false, stir: false, meter: false };
+        let stirPhase = 0; let meterY = 50; let visualDrops = []; let growingDropRadius = 0;
+
+        function drawSim() {
+            ctxSim.clearRect(0, 0, 420, 768);
+            ctxSim.save(); ctxSim.scale(1.2, 1.2); 
+
+            ctxSim.fillStyle = '#555'; ctxSim.fillRect(30, 30, 15, 550); ctxSim.fillRect(20, 580, 150, 20);
+            ctxSim.fillRect(45, 120, 120, 10); ctxSim.fillRect(45, 250, 120, 10);
+            ctxSim.strokeStyle = '#333'; ctxSim.lineWidth = 2; ctxSim.strokeRect(165, 40, 20, 220);
+            
+            if (prepState.ox) {
+                let fillHeight = 210 - (addedVolume * 6);
+                if (fillHeight > 0) { ctxSim.fillStyle = 'rgba(41, 128, 185, 0.7)'; ctxSim.fillRect(166, 45 + (210-fillHeight), 18, fillHeight); }
+            }
+            
+            ctxSim.fillStyle = '#ecf0f1'; ctxSim.fillRect(160, 260, 30, 20); ctxSim.fillStyle = '#2c3e50'; ctxSim.fillRect(170, 265, 10, 10);
+            ctxSim.strokeRect(173, 280, 4, 30);
+
+            ctxSim.beginPath(); ctxSim.moveTo(110, 350); ctxSim.lineTo(110, 520); ctxSim.lineTo(260, 520); ctxSim.lineTo(260, 350); ctxSim.stroke();
+            ctxSim.fillStyle = '#bdc3c7'; ctxSim.fillRect(90, 520, 190, 30); ctxSim.fillStyle = '#3498db'; ctxSim.fillRect(90, 550, 190, 15);
+
+            if (prepState.ca) {
+                let volOffset = addedVolume * 0.5;
+                let r = 241, g = 196, b = 15;
+                if (addedVolume > V_eq_true) { r = 162; g = 217; b = 206; }
+                ctxSim.fillStyle = `rgba(${r}, ${g}, ${b}, 0.5)`;
+                ctxSim.fillRect(111, 440 - volOffset, 148, 79 + volOffset);
+            }
+
+            if (isTitrating && !streamMode && growingDropRadius > 0) {
+                ctxSim.fillStyle = 'rgba(20, 40, 80, 0.9)';
+                ctxSim.beginPath(); ctxSim.arc(175, 310 + growingDropRadius, growingDropRadius, 0, Math.PI*2); ctxSim.fill();
+            }
+
+            ctxSim.fillStyle = 'rgba(20, 40, 80, 0.9)';
+            for (let i = visualDrops.length - 1; i >= 0; i--) {
+                let d = visualDrops[i];
+                ctxSim.beginPath(); ctxSim.arc(175, d.y, 3, 0, Math.PI*2); ctxSim.fill();
+                d.y += 8; if (d.y > 440) visualDrops.splice(i, 1); 
+            }
+            
+            if (isTitrating && streamMode) { ctxSim.fillStyle = 'rgba(41, 128, 185, 0.7)'; ctxSim.fillRect(173, 310, 4, 130); }
+
+            if (prepState.stir) {
+                ctxSim.save(); ctxSim.translate(185, 510);
+                let width = 30 * Math.cos(stirPhase);
+                ctxSim.fillStyle = '#ecf0f1'; ctxSim.strokeStyle = '#7f8c8d'; ctxSim.lineWidth = 1;
+                ctxSim.beginPath(); ctxSim.roundRect(-width/2, -4, Math.abs(width), 8, 4); ctxSim.fill(); ctxSim.stroke();
+                ctxSim.restore();
+                if (prepState.meter || isTitrating) stirPhase += 0.15;
+            }
+
+            if (prepState.meter) {
+                if (meterY < 380) meterY += 8;
+                ctxSim.fillStyle = '#34495e'; ctxSim.fillRect(220, meterY, 15, 120);
+                ctxSim.fillStyle = '#e74c3c'; ctxSim.fillRect(222, meterY+110, 11, 10);
+            }
+
+            ctxSim.restore(); requestAnimationFrame(drawSim);
+        }
+        drawSim();
+
+        ['ox', 'ca', 'stir', 'meter'].forEach(id => {
+            document.getElementById(`chk-${id}`).addEventListener('change', (e) => {
+                prepState[id] = e.target.checked;
+                document.getElementById(`lbl-${id}`).classList.toggle('done', e.target.checked);
+                e.target.disabled = true;
+                if (prepState.ox && prepState.ca && prepState.stir && prepState.meter) document.getElementById('btn-start-titration').disabled = false;
+            });
+        });
+
+        document.getElementById('btn-start-titration').addEventListener('click', () => {
+            document.getElementById('prep-ui').classList.add('hidden');
+            document.getElementById('titration-instruments').classList.remove('hidden');
+            initChart(); isTitrating = true; requestAnimationFrame(titrationLoop);
+        });
+
+        const rotator = document.getElementById('stopcock-rotator');
+        let handleAngle = 90; rotator.style.transform = `rotate(${handleAngle}deg)`;
+        let isDragging = false;
+        
+        rotator.addEventListener('mousedown', () => { isDragging = true; });
+        window.addEventListener('mouseup', () => { isDragging = false; });
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const rect = document.getElementById('stopcock-rotator').getBoundingClientRect();
+            let dx = e.clientX - rect.left; 
+            let dy = e.clientY - rect.top;
+            
+            let angleDeg = Math.atan2(dy, dx) * 180 / Math.PI;
+            let relativeAngle = angleDeg - 90;
+            
+            if (relativeAngle <= -180) relativeAngle += 360;
+            
+            if (relativeAngle > 90) handleAngle = 90;
+            else if (relativeAngle < -90) handleAngle = -90;
+            else handleAngle = relativeAngle;
+            
+            rotator.style.transform = `rotate(${handleAngle}deg)`;
+        });
+
+        let lastDropTime = null; let streamMode = false; let topStirAngle = 0;
+
+        // Wieder reines 0.5er Plotting für saubere Diagramme
+        function addVolume(amount) {
+            addedVolume += amount;
+            if (addedVolume - lastPlottedVolume >= 0.5) {
+                lastPlottedVolume += 0.5;
+                chart.data.labels.push(lastPlottedVolume.toFixed(2));
+                chart.data.datasets[0].data.push(getConductivity(lastPlottedVolume));
+                chart.update();
+                
+                if (lastPlottedVolume > V_eq_true) {
+                    pointsAfterMin++;
+                    // Abbruch nach 4 Punkten (ca. 2 mL)
+                    if (pointsAfterMin > 4) {
+                        isTitrating = false; 
+                        document.getElementById('titration-instruments').classList.add('hidden'); 
+                        document.getElementById('error-screen').classList.remove('hidden'); 
+                    }
+                }
+            }
+        }
+
+        function titrationLoop(timestamp) {
+            if (!isTitrating) return;
+            if (!lastDropTime) lastDropTime = timestamp;
+            
+            let absAngle = Math.abs(handleAngle); 
+            
+            if (absAngle < 75) { 
+                isReviewMode = false; 
+                if (absAngle > 20) {
+                    streamMode = false;
+                    let ratio = (75 - absAngle) / 55; 
+                    let dropInterval = 5000 - (ratio * 4800);
+                    let elapsed = timestamp - lastDropTime;
+                    
+                    growingDropRadius = 3 * Math.min(1, elapsed / dropInterval);
+                    
+                    if (elapsed > dropInterval) { addVolume(0.05); visualDrops.push({y: 310}); lastDropTime = timestamp; growingDropRadius = 0; }
+                } else {
+                    streamMode = true; growingDropRadius = 0;
+                    let volPerFrame = 0.01 + ((20 - absAngle) / 20) * 0.02; 
+                    addVolume(volPerFrame); lastDropTime = timestamp;
+                }
+            } else {
+                streamMode = false; growingDropRadius = 0; lastDropTime = timestamp; 
+            }
+
+            if (addedVolume > 0 && absAngle >= 75) document.getElementById('btn-finish').classList.remove('hidden');
+            else document.getElementById('btn-finish').classList.add('hidden');
+
+            let topR = 241, topG = 196, topB = 15;
+            if (addedVolume > V_eq_true) { topR = 162; topG = 217; topB = 206; }
+            document.getElementById('top-beaker').style.backgroundColor = `rgba(${topR}, ${topG}, ${topB}, 0.8)`;
+
+            let textDisplay = document.getElementById('live-data');
+            if (isReviewMode) {
+                textDisplay.innerText = `Rückblick aktiv - Bitte am Meniskus ablesen!`;
+                textDisplay.style.color = '#e74c3c';
+            } else {
+                textDisplay.innerText = `Bitte Volumen an der Bürette ablesen!`;
+                textDisplay.style.color = 'black';
+            }
+            
+            drawMeniscus();
+            
+            topStirAngle += 10;
+            document.getElementById('stirrer-top').style.transform = `translate(-50%, -50%) rotate(${topStirAngle}deg)`;
+            
+            requestAnimationFrame(titrationLoop);
+        }
+
+        function initChart() {
+            chart = new Chart(document.getElementById('chart').getContext('2d'), {
+                type: 'line', data: { labels: [(0).toFixed(2)], datasets: [{ label: 'Leitfähigkeit (µS/cm)', data: [getConductivity(0)], borderColor: '#e74c3c', fill: false, tension: 0, pointHitRadius: 15 }] },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    animation: { duration: 0 }, 
+                    scales: { x: { min: 0 }, y: { min: 0 } },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                title: () => null, 
+                                label: (context) => `Leitfähigkeit: ${context.parsed.y.toFixed(1)} µS/cm` 
+                            }
+                        }
+                    },
+                    onClick: (e, activeElements) => {
+                        if (activeElements.length > 0) {
+                            const dataIndex = activeElements[0].index;
+                            
+                            // Den tiefsten gemessenen Punkt im Chart finden
+                            const dataArray = chart.data.datasets[0].data;
+                            const minVal = Math.min(...dataArray);
+                            const minIndex = dataArray.indexOf(minVal);
+                            
+                            // Wenn der Klick auf den tiefsten Punkt erfolgt -> wahren Äquivalenzpunkt am Meniskus zeigen
+                            if (dataIndex === minIndex) {
+                                reviewVolume = V_eq_true;
+                            } else {
+                                reviewVolume = parseFloat(chart.data.labels[dataIndex]);
+                            }
+                            
+                            isReviewMode = true;
+                        }
+                    }
+                }
+            });
+        }
+
+        const ctxMeniscus = document.getElementById('meniscus-canvas').getContext('2d');
+        function drawMeniscus() {
+            let volToDraw = isReviewMode ? reviewVolume : addedVolume;
+            
+            ctxMeniscus.clearRect(0, 0, 100, 300); 
+            ctxMeniscus.fillStyle = 'rgba(41, 128, 185, 0.2)'; ctxMeniscus.fillRect(0, 150, 100, 150);
+            ctxMeniscus.beginPath(); ctxMeniscus.moveTo(0, 145); ctxMeniscus.quadraticCurveTo(50, 160, 100, 145); ctxMeniscus.strokeStyle = '#2980b9'; ctxMeniscus.lineWidth = 2; ctxMeniscus.stroke();
+            ctxMeniscus.fillStyle = 'black'; ctxMeniscus.font = '12px Arial';
+            
+            let startV = Math.floor((volToDraw - 2)*20)/20;
+            for (let v = startV; v <= volToDraw + 2; v += 0.05) {
+                let val = Math.round(v * 100);
+                const yPos = 150 + (v - volToDraw) * 100; 
+                let tickW = 10; 
+                
+                if (val % 100 === 0) { 
+                    tickW = 25; 
+                    ctxMeniscus.fillText((val/100).toFixed(1), 55, yPos + 4); 
+                } else if (val % 10 === 0) {
+                    tickW = 15;
+                }
+                ctxMeniscus.beginPath(); ctxMeniscus.moveTo(50, yPos); ctxMeniscus.lineTo(50 - tickW, yPos); ctxMeniscus.stroke();
+            }
+        }
+
+        document.getElementById('btn-finish').addEventListener('click', () => {
+            isTitrating = false; document.getElementById('titration-instruments').classList.add('hidden');
+            document.getElementById('eval-phase').classList.remove('hidden'); 
+            document.getElementById('eval-cox').innerText = c_ox.toFixed(3);
+            document.getElementById('eval-vca').innerText = V_ca.toFixed(1);
+        });
+
+        document.getElementById('btn-check').addEventListener('click', () => {
+            const fb = document.getElementById('feedback');
+            if (Math.abs(parseFloat(document.getElementById('in-veq').value) - V_eq_true) <= 0.5 && Math.abs(parseFloat(document.getElementById('in-cca').value) - c_ca_true)/c_ca_true <= 0.05) {
+                fb.innerHTML = "Perfekt! <br><button onclick='location.reload()' style='margin-top:10px;'>Neues Experiment</button>"; fb.style.color = "green";
+            } else { fb.innerText = "Nicht ganz korrekt. Überprüfe deine Werte nochmal."; fb.style.color = "red"; }
+        });
+        
+        document.getElementById('btn-help').addEventListener('click', () => {
+            let helpText = document.getElementById('help-text');
+            helpText.innerHTML = `Der berechnete Äquivalenzpunkt liegt bei genau <strong>${V_eq_true.toFixed(2)} mL</strong>.`;
+            helpText.classList.remove('hidden');
+        });
+    </script>
+</body>
+</html>
