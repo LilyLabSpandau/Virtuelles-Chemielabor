@@ -249,7 +249,6 @@
         let handleAngle = 90; rotator.style.transform = `rotate(${handleAngle}deg)`;
         let isDragging = false;
         
-        // --- NEU: Kombinierte Rotations-Logik für Maus und Touch ---
         function calculateRotation(clientX, clientY) {
             const rect = rotator.getBoundingClientRect();
             let dx = clientX - rect.left; 
@@ -267,7 +266,6 @@
             rotator.style.transform = `rotate(${handleAngle}deg)`;
         }
 
-        // --- Maus-Events ---
         rotator.addEventListener('mousedown', () => { isDragging = true; });
         window.addEventListener('mouseup', () => { isDragging = false; });
         window.addEventListener('mousemove', (e) => {
@@ -275,37 +273,34 @@
             calculateRotation(e.clientX, e.clientY);
         });
 
-        // --- Touch-Events für iPad/Tablets ---
         rotator.addEventListener('touchstart', (e) => { 
-            isDragging = true; 
-            // Wichtig: Verhindert, dass das iPad den Bildschirm scrollt, wenn man den Hahn anfasst
-            e.preventDefault(); 
+            isDragging = true; e.preventDefault(); 
         }, { passive: false });
-        
         window.addEventListener('touchend', () => { isDragging = false; });
         window.addEventListener('touchcancel', () => { isDragging = false; });
-        
         window.addEventListener('touchmove', (e) => {
-            if (!isDragging) return;
-            // Wichtig: Verhindert Scrollen während der Drehung
-            e.preventDefault(); 
+            if (!isDragging) return; e.preventDefault(); 
             calculateRotation(e.touches[0].clientX, e.touches[0].clientY);
         }, { passive: false });
 
-
         let lastDropTime = null; let streamMode = false; let topStirAngle = 0;
 
+        // --- STRIKTE 0.5er SCHRITTE IM DIAGRAMM ---
         function addVolume(amount) {
             addedVolume += amount;
-            if (addedVolume - lastPlottedVolume >= 0.5) {
-                lastPlottedVolume += 0.5;
+            let nextPlotTarget = lastPlottedVolume + 0.5;
+            
+            // Erst wenn exakt die nächste 0.5er Grenze überschritten ist, wird gezeichnet
+            if (addedVolume >= nextPlotTarget) {
+                lastPlottedVolume = nextPlotTarget;
+                
                 chart.data.labels.push(lastPlottedVolume.toFixed(2));
                 chart.data.datasets[0].data.push(getConductivity(lastPlottedVolume));
                 chart.update();
                 
                 if (lastPlottedVolume > V_eq_true) {
                     pointsAfterMin++;
-                    // Abbruch nach 4 Punkten (ca. 2 mL)
+                    // Abbruch nach ca. 2 mL (4 Messpunkte) nach dem ÄP
                     if (pointsAfterMin > 4) {
                         isTitrating = false; 
                         document.getElementById('titration-instruments').classList.add('hidden'); 
@@ -390,7 +385,7 @@
                             const minVal = Math.min(...dataArray);
                             const minIndex = dataArray.indexOf(minVal);
                             
-                            // Wenn der Klick auf den tiefsten Punkt erfolgt -> wahren Äquivalenzpunkt am Meniskus zeigen
+                            // Wenn auf den tiefsten 0,5er Punkt geklickt wird -> wahren Wert am Meniskus zeigen
                             if (dataIndex === minIndex) {
                                 reviewVolume = V_eq_true;
                             } else {
