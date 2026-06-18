@@ -134,7 +134,7 @@
                 
                 <div id="error-screen" class="hidden" style="text-align: center; color: #c0392b; background: #fadbd8; padding: 20px; border-radius: 5px;">
                     <h2>Übertitration!</h2>
-                    <p>Du hast den Äquivalenzpunkt deutlich verpasst (um mehr als 2 mL). Das Experiment muss wiederholt werden.</p>
+                    <p>Du hast den Äquivalenzpunkt deutlich verpasst. Das Experiment muss wiederholt werden.</p>
                     <button onclick="location.reload()">Neustart</button>
                 </div>
             </div>
@@ -151,26 +151,20 @@
             document.getElementById('btn-start-titration').disabled = true;
         });
 
-        // Werte initialisieren
         const V_ca_options = [20.0, 25.0, 30.0, 40.0, 50.0];
         const V_ca = V_ca_options[Math.floor(Math.random() * V_ca_options.length)];
         
         const c_ox_options = [0.01, 0.015, 0.02, 0.025, 0.05];
         const c_ox = c_ox_options[Math.floor(Math.random() * c_ox_options.length)];
         
-        // Exakte 0.05er Schritte für den Äquivalenzpunkt generieren
         const V_eq_true = parseFloat(((Math.floor(Math.random() * 301) * 0.05) + 10).toFixed(2));
         const c_ca_true = (V_eq_true * c_ox) / V_ca;
         
-        let addedVolume = 0; let isTitrating = false; let chart; 
-        let lastRecordedVolume = 0; 
+        let addedVolume = 0; let isTitrating = false; let chart; let lastPlottedVolume = 0; let pointsAfterMin = 0;
         let isReviewMode = false; let reviewVolume = 0;
         
         const kappa_start = c_ca_true * 1000 * 200; const kappa_min = 50; const slope_after = 40;
-        
-        function getConductivity(v) { 
-            return v <= V_eq_true ? kappa_start - ((kappa_start - kappa_min) * (v / V_eq_true)) : kappa_min + slope_after * (v - V_eq_true); 
-        }
+        function getConductivity(v) { return v <= V_eq_true ? kappa_start - ((kappa_start - kappa_min) * (v / V_eq_true)) : kappa_min + slope_after * (v - V_eq_true); }
 
         const ctxSim = document.getElementById('sim-canvas').getContext('2d');
         let prepState = { ox: false, ca: false, stir: false, meter: false };
@@ -180,12 +174,10 @@
             ctxSim.clearRect(0, 0, 420, 768);
             ctxSim.save(); ctxSim.scale(1.2, 1.2); 
 
-            // Stativ
             ctxSim.fillStyle = '#555'; ctxSim.fillRect(30, 30, 15, 550); ctxSim.fillRect(20, 580, 150, 20);
             ctxSim.fillRect(45, 120, 120, 10); ctxSim.fillRect(45, 250, 120, 10);
             ctxSim.strokeStyle = '#333'; ctxSim.lineWidth = 2; ctxSim.strokeRect(165, 40, 20, 220);
             
-            // Säure in Bürette
             if (prepState.ox) {
                 let fillHeight = 210 - (addedVolume * 6);
                 if (fillHeight > 0) { ctxSim.fillStyle = 'rgba(41, 128, 185, 0.7)'; ctxSim.fillRect(166, 45 + (210-fillHeight), 18, fillHeight); }
@@ -194,7 +186,6 @@
             ctxSim.fillStyle = '#ecf0f1'; ctxSim.fillRect(160, 260, 30, 20); ctxSim.fillStyle = '#2c3e50'; ctxSim.fillRect(170, 265, 10, 10);
             ctxSim.strokeRect(173, 280, 4, 30);
 
-            // Becherglas & Inhalt
             ctxSim.beginPath(); ctxSim.moveTo(110, 350); ctxSim.lineTo(110, 520); ctxSim.lineTo(260, 520); ctxSim.lineTo(260, 350); ctxSim.stroke();
             ctxSim.fillStyle = '#bdc3c7'; ctxSim.fillRect(90, 520, 190, 30); ctxSim.fillStyle = '#3498db'; ctxSim.fillRect(90, 550, 190, 15);
 
@@ -206,7 +197,6 @@
                 ctxSim.fillRect(111, 440 - volOffset, 148, 79 + volOffset);
             }
 
-            // Tropfen und Strahl
             if (isTitrating && !streamMode && growingDropRadius > 0) {
                 ctxSim.fillStyle = 'rgba(20, 40, 80, 0.9)';
                 ctxSim.beginPath(); ctxSim.arc(175, 310 + growingDropRadius, growingDropRadius, 0, Math.PI*2); ctxSim.fill();
@@ -221,7 +211,6 @@
             
             if (isTitrating && streamMode) { ctxSim.fillStyle = 'rgba(41, 128, 185, 0.7)'; ctxSim.fillRect(173, 310, 4, 130); }
 
-            // Instrumente
             if (prepState.stir) {
                 ctxSim.save(); ctxSim.translate(185, 510);
                 let width = 30 * Math.cos(stirPhase);
@@ -241,7 +230,6 @@
         }
         drawSim();
 
-        // Checkbox Events
         ['ox', 'ca', 'stir', 'meter'].forEach(id => {
             document.getElementById(`chk-${id}`).addEventListener('change', (e) => {
                 prepState[id] = e.target.checked;
@@ -257,27 +245,13 @@
             initChart(); isTitrating = true; requestAnimationFrame(titrationLoop);
         });
 
-        // --- Hahn Steuerung (Maus & Touch) ---
         const rotator = document.getElementById('stopcock-rotator');
         let handleAngle = 90; rotator.style.transform = `rotate(${handleAngle}deg)`;
         let isDragging = false;
         
-        function startDrag(e) { isDragging = true; }
-        function stopDrag() { isDragging = false; }
-        
-        function handleDrag(e) {
-            if (!isDragging) return;
-            if (e.type === 'touchmove') e.preventDefault(); 
-
-            let clientX = e.clientX;
-            let clientY = e.clientY;
-            
-            if (e.touches && e.touches.length > 0) {
-                clientX = e.touches[0].clientX;
-                clientY = e.touches[0].clientY;
-            }
-
-            const rect = document.getElementById('stopcock-rotator').getBoundingClientRect();
+        // --- NEU: Kombinierte Rotations-Logik für Maus und Touch ---
+        function calculateRotation(clientX, clientY) {
+            const rect = rotator.getBoundingClientRect();
             let dx = clientX - rect.left; 
             let dy = clientY - rect.top;
             
@@ -285,36 +259,58 @@
             let relativeAngle = angleDeg - 90;
             
             if (relativeAngle <= -180) relativeAngle += 360;
+            
             if (relativeAngle > 90) handleAngle = 90;
             else if (relativeAngle < -90) handleAngle = -90;
             else handleAngle = relativeAngle;
             
             rotator.style.transform = `rotate(${handleAngle}deg)`;
         }
+
+        // --- Maus-Events ---
+        rotator.addEventListener('mousedown', () => { isDragging = true; });
+        window.addEventListener('mouseup', () => { isDragging = false; });
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            calculateRotation(e.clientX, e.clientY);
+        });
+
+        // --- Touch-Events für iPad/Tablets ---
+        rotator.addEventListener('touchstart', (e) => { 
+            isDragging = true; 
+            // Wichtig: Verhindert, dass das iPad den Bildschirm scrollt, wenn man den Hahn anfasst
+            e.preventDefault(); 
+        }, { passive: false });
         
-        rotator.addEventListener('mousedown', startDrag);
-        window.addEventListener('mouseup', stopDrag);
-        window.addEventListener('mousemove', handleDrag);
-        rotator.addEventListener('touchstart', startDrag, { passive: false });
-        window.addEventListener('touchend', stopDrag);
-        window.addEventListener('touchmove', handleDrag, { passive: false });
+        window.addEventListener('touchend', () => { isDragging = false; });
+        window.addEventListener('touchcancel', () => { isDragging = false; });
+        
+        window.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            // Wichtig: Verhindert Scrollen während der Drehung
+            e.preventDefault(); 
+            calculateRotation(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: false });
+
 
         let lastDropTime = null; let streamMode = false; let topStirAngle = 0;
 
         function addVolume(amount) {
             addedVolume += amount;
-            
-            if (addedVolume - lastRecordedVolume >= 0.049) {
-                let plotVol = parseFloat(addedVolume.toFixed(2)); 
-                chart.data.labels.push(plotVol.toFixed(2));
-                chart.data.datasets[0].data.push(getConductivity(plotVol));
+            if (addedVolume - lastPlottedVolume >= 0.5) {
+                lastPlottedVolume += 0.5;
+                chart.data.labels.push(lastPlottedVolume.toFixed(2));
+                chart.data.datasets[0].data.push(getConductivity(lastPlottedVolume));
                 chart.update();
-                lastRecordedVolume = plotVol;
                 
-                if (plotVol > V_eq_true + 2.0) {
-                    isTitrating = false; 
-                    document.getElementById('titration-instruments').classList.add('hidden'); 
-                    document.getElementById('error-screen').classList.remove('hidden'); 
+                if (lastPlottedVolume > V_eq_true) {
+                    pointsAfterMin++;
+                    // Abbruch nach 4 Punkten (ca. 2 mL)
+                    if (pointsAfterMin > 4) {
+                        isTitrating = false; 
+                        document.getElementById('titration-instruments').classList.add('hidden'); 
+                        document.getElementById('error-screen').classList.remove('hidden'); 
+                    }
                 }
             }
         }
@@ -345,11 +341,8 @@
                 streamMode = false; growingDropRadius = 0; lastDropTime = timestamp; 
             }
 
-            if (addedVolume > (V_eq_true + 0.5) && absAngle >= 75) {
-                document.getElementById('btn-finish').classList.remove('hidden');
-            } else {
-                document.getElementById('btn-finish').classList.add('hidden');
-            }
+            if (addedVolume > 0 && absAngle >= 75) document.getElementById('btn-finish').classList.remove('hidden');
+            else document.getElementById('btn-finish').classList.add('hidden');
 
             let topR = 241, topG = 196, topB = 15;
             if (addedVolume > V_eq_true) { topR = 162; topG = 217; topB = 206; }
@@ -374,11 +367,7 @@
 
         function initChart() {
             chart = new Chart(document.getElementById('chart').getContext('2d'), {
-                type: 'line', 
-                data: { 
-                    labels: [(0).toFixed(2)], 
-                    datasets: [{ label: 'Leitfähigkeit (µS/cm)', data: [getConductivity(0)], borderColor: '#e74c3c', fill: false, tension: 0, pointHitRadius: 15 }] 
-                },
+                type: 'line', data: { labels: [(0).toFixed(2)], datasets: [{ label: 'Leitfähigkeit (µS/cm)', data: [getConductivity(0)], borderColor: '#e74c3c', fill: false, tension: 0, pointHitRadius: 15 }] },
                 options: { 
                     responsive: true, 
                     maintainAspectRatio: false, 
@@ -387,7 +376,7 @@
                     plugins: {
                         tooltip: {
                             callbacks: {
-                                title: () => null,
+                                title: () => null, 
                                 label: (context) => `Leitfähigkeit: ${context.parsed.y.toFixed(1)} µS/cm` 
                             }
                         }
@@ -395,7 +384,19 @@
                     onClick: (e, activeElements) => {
                         if (activeElements.length > 0) {
                             const dataIndex = activeElements[0].index;
-                            reviewVolume = parseFloat(chart.data.labels[dataIndex]);
+                            
+                            // Den tiefsten gemessenen Punkt im Chart finden
+                            const dataArray = chart.data.datasets[0].data;
+                            const minVal = Math.min(...dataArray);
+                            const minIndex = dataArray.indexOf(minVal);
+                            
+                            // Wenn der Klick auf den tiefsten Punkt erfolgt -> wahren Äquivalenzpunkt am Meniskus zeigen
+                            if (dataIndex === minIndex) {
+                                reviewVolume = V_eq_true;
+                            } else {
+                                reviewVolume = parseFloat(chart.data.labels[dataIndex]);
+                            }
+                            
                             isReviewMode = true;
                         }
                     }
@@ -416,7 +417,7 @@
             for (let v = startV; v <= volToDraw + 2; v += 0.05) {
                 let val = Math.round(v * 100);
                 const yPos = 150 + (v - volToDraw) * 100; 
-                let tickW = 5; 
+                let tickW = 10; 
                 
                 if (val % 100 === 0) { 
                     tickW = 25; 
@@ -437,9 +438,9 @@
 
         document.getElementById('btn-check').addEventListener('click', () => {
             const fb = document.getElementById('feedback');
-            if (Math.abs(parseFloat(document.getElementById('in-veq').value) - V_eq_true) <= 0.05 && Math.abs(parseFloat(document.getElementById('in-cca').value) - c_ca_true)/c_ca_true <= 0.05) {
+            if (Math.abs(parseFloat(document.getElementById('in-veq').value) - V_eq_true) <= 0.5 && Math.abs(parseFloat(document.getElementById('in-cca').value) - c_ca_true)/c_ca_true <= 0.05) {
                 fb.innerHTML = "Perfekt! <br><button onclick='location.reload()' style='margin-top:10px;'>Neues Experiment</button>"; fb.style.color = "green";
-            } else { fb.innerText = "Nicht ganz korrekt. Überprüfe deine Werte nochmal (Toleranz: +/- 0.05 mL)."; fb.style.color = "red"; }
+            } else { fb.innerText = "Nicht ganz korrekt. Überprüfe deine Werte nochmal."; fb.style.color = "red"; }
         });
         
         document.getElementById('btn-help').addEventListener('click', () => {
