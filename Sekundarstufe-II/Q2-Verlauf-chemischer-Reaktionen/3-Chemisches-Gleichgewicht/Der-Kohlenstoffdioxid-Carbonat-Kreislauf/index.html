@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulation: Der Kohlenstoffdioxid-Carbonat-Kreislauf</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f8;
+            color: #1e293b;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            display: flex;
+            gap: 25px;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            max-width: 1200px;
+            width: 100%;
+        }
+        .canvas-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 500px;
+        }
+        canvas {
+            background-color: #1e293b; 
+            border-radius: 8px;
+            border: 2px solid #cbd5e1;
+            width: 100%;
+            height: 600px;
+        }
+        .controls {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 600px;
+        }
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #e2e8f0;
+            padding: 10px;
+            border-radius: 6px;
+        }
+        button.nav-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+        }
+        button.nav-btn:hover { background: #2563eb; }
+        button.nav-btn:disabled { background: #94a3b8; cursor: not-allowed; }
+        
+        .station-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #0f172a;
+            margin: 0;
+        }
+
+        .control-group {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid #3b82f6;
+            display: none; /* Wird per JS gesteuert */
+        }
+        label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 10px;
+        }
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+        }
+        .btn-reset {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em;
+            margin-top: 10px;
+            width: 100%;
+            display: none; /* Wird per JS gesteuert */
+        }
+        .btn-reset:hover { background: #dc2626; }
+        
+        .info-box {
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            line-height: 1.5;
+            font-size: 0.95em;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        .equation {
+            font-family: "Courier New", Courier, monospace;
+            background: white;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: bold;
+            text-align: center;
+        }
+        .legend {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            font-size: 0.85em;
+            font-weight: bold;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .color-box {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
+        }
+        .color-red { background: rgba(239, 68, 68, 0.9); }
+        .color-blue { background: rgba(59, 130, 246, 0.9); }
+        .color-lightblue { background: rgba(125, 211, 252, 0.9); }
+        .color-grey { background: rgba(156, 163, 175, 0.9); }
+        .color-dark { background: rgba(30, 41, 59, 0.9); }
+        h3 { margin-top: 0; color: #0f172a; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="canvas-area">
+        <canvas id="simCanvas" width="500" height="600"></canvas>
+        <div class="control-group" id="timeControlGroup">
+            <label for="timeSlider">Zeitraffer: <span id="timeLabel">1x (Echtzeit)</span></label>
+            <input type="range" id="timeSlider" min="1" max="50" value="1">
+            <button class="btn-reset" id="resetBtn">Wachstum zurücksetzen</button>
+        </div>
+    </div>
+    
+    <div class="controls">
+        <div class="nav-buttons">
+            <button class="nav-btn" id="btnPrev" onclick="changeStage(-1)">&#9664; Zurück</button>
+            <h2 class="station-title" id="stationTitle">Station 1</h2>
+            <button class="nav-btn" id="btnNext" onclick="changeStage(1)">Weiter &#9654;</button>
+        </div>
+
+        <div class="info-box" id="infoContent">
+            </div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // UI Elements
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const stationTitle = document.getElementById('stationTitle');
+    const infoContent = document.getElementById('infoContent');
+    const timeControlGroup = document.getElementById('timeControlGroup');
+    const timeSlider = document.getElementById('timeSlider');
+    const timeLabel = document.getElementById('timeLabel');
+    const resetBtn = document.getElementById('resetBtn');
+
+    // Global State
+    let currentStage = 0;
+    const maxStages = 2;
+    let timeMultiplier = 1;
+    let textOpacity = 1;
+
+    // --- DATEN DER STATIONEN ---
+    const stagesData = [
+        {
+            title: "Station 1: Lösung von CO₂ in Wasser",
+            content: `
+                <p>Kohlenstoffdioxid aus der Luft löst sich im Flusswasser. Ein Teil davon reagiert mit Wasser zu Kohlensäure. Diese reagiert in einem weiteren Schritt mit einem Wassermolekül und dissoziiert in ein Oxoniumion und ein Hydrogencarbonation.</p>
+                <div class="equation">CO₂(g) ⇌ CO₂(aq)</div>
+                <div class="equation">CO₂(aq) + H₂O(l) ⇌ H₂CO₃(aq)</div>
+                <div class="equation">H₂CO₃(aq) + H₂O(l) ⇌ H₃O⁺(aq) + HCO₃⁻(aq)</div>
+                <p>In der Animation ist der Übergang von gasförmigem CO₂ über die Bildung von Kohlensäure bis hin zur Aufspaltung dargestellt. Die resultierenden Ionen reichern sich im Wasser an.</p>
+                <div class="legend">
+                    <div class="legend-item"><div class="color-box color-dark"></div>CO₂</div>
+                    <div class="legend-item"><div class="color-box color-red"></div>H₃O⁺</div>
+                    <div class="legend-item"><div class="color-box" style="background: rgba(100, 255, 100, 0.9);"></div>HCO₃⁻</div>
+                </div>
+            `,
+            showSlider: false,
+            showReset: false
+        },
+        {
+            title: "Station 2: Lösungsverwitterung",
+            content: `
+                <p>Das kohlensaure Wasser aus dem Fluss sickert durch Risse in das Kalkgestein. Sobald die Oxoniumionen auf den Fels treffen, wird das feste Calciumcarbonat (Kalk) aufgelöst.</p>
+                <div class="equation">CaCO₃(s) ⇌ Ca²⁺(aq) + CO₃²⁻(aq)</div>
+                <div class="equation">CO₃²⁻(aq) + H₃O⁺(aq) ⇌ HCO₃⁻(aq) + H₂O(l)</div>
+                <p>Die Abtragung ist asymmetrisch. Beim Aufprall teilt sich das Reaktionsprodukt visuell in die resultierenden Ionen und ein Wassermolekül auf, welche nach unten weggespült werden.</p>
+                <div class="legend">
+                    <div class="legend-item"><div class="color-box color-red"></div>Oxoniumion (H₃O⁺)</div>
+                    <div class="legend-item"><div class="color-box color-blue"></div>Gelöster Kalk (Ca²⁺, HCO₃⁻)</div>
+                    <div class="legend-item"><div class="color-box color-lightblue"></div>Wasser (H₂O)</div>
+                </div>
+                <p style="font-size: 0.85em; color: #64748b; margin-top: 20px;"><i>Tipp: Ziehe den Regler nach rechts, um Jahrtausende zu überspringen. Text wird bei hoher Geschwindigkeit ausgeblendet.</i></p>
+            `,
+            showSlider: true,
+            showReset: false
+        },
+        {
+            title: "Station 3: Ausfällung (Tropfsteine)",
+            content: `
+                <p>Tritt das mineralstoffreiche Wasser in die Höhle aus, entweicht durch Verdunstung fortlaufend gelöstes Kohlenstoffdioxid in die Höhlenluft.</p>
+                <div class="equation">Ca²⁺(aq) + 2HCO₃⁻(aq) ⇌ CaCO₃(s)↓ + H₂O(l) + CO₂(g)↑</div>
+                <p><b>Prinzip von Le Chatelier:</b> Das ständige Entweichen des gasförmigen CO₂ entzieht dem System ein Produkt. Das Gleichgewicht verschiebt sich nach rechts. Die Ionen reagieren zu festem Kalk, der ausfällt.</p>
+                <p><b>Wachstumsgeschwindigkeit:</b> Unter natürlichen Bedingungen wachsen Tropfsteine durchschnittlich <b>8 bis 10 Millimeter pro 100 Jahre</b>.</p>
+                <div class="legend">
+                    <div class="legend-item"><div class="color-box color-blue"></div>Tropfen (Ca²⁺, HCO₃⁻)</div>
+                    <div class="legend-item"><div class="color-box color-grey"></div>Ausgasendes CO₂</div>
+                </div>
+                <p style="font-size: 0.85em; color: #64748b; margin-top: 20px;"><i>Tipp: Nutze den Zeitraffer, um die langsame Bildung von Stalaktit, Stalagmit und Stalagnat zu beobachten.</i></p>
+            `,
+            showSlider: true,
+            showReset: true
+        }
+    ];
+
+    // --- STATION 1 VARIABLEN ---
+    let s1_particles = [];
+    let s1_lastTime = 0;
+    let s1_co2SpawnCount = 0;
+
+    // --- STATION 2 VARIABLEN ---
+    let s2_particles = [];
+    let s2_lastTime = 0;
+    const s2_wallRes = 5;
+    const s2_numSeg = Math.ceil(600 / s2_wallRes) + 1;
+    let s2_leftWall = [];
+    let s2_rightWall = [];
+    function resetS2Cave() {
+        s2_leftWall = new Array(s2_numSeg).fill(245);
+        s2_rightWall = new Array(s2_numSeg).fill(255);
+        s2_particles = [];
+    }
+
+    // --- STATION 3 VARIABLEN ---
+    let s3_drops = [];
+    let s3_gas = [];
+    let s3_lastTime = 0;
+    let s3_stalactiteLength = 20;
+    let s3_stalagmiteHeight = 15;
+    let s3_stalactiteWidth = 30;
+    let s3_stalagmiteWidth = 40;
+    const s3_caveTop = 80;
+    const s3_caveBottom = 520;
+    function resetS3Cave() {
+        s3_stalactiteLength = 20;
+        s3_stalagmiteHeight = 15;
+        s3_stalactiteWidth = 30;
+        s3_stalagmiteWidth = 40;
+        s3_drops = [];
+        s3_gas = [];
+    }
+
+    // --- KLASSEN STATION 1 ---
+    class S1Particle {
+        constructor(x, y, text, speedX, speedY, color, fontSize = "16px") {
+            this.x = x;
+            this.y = y;
+            this.text = text;
+            this.speedX = speedX;
+            this.speedY = speedY;
+            this.color = color;
+            this.life = 1.0;
+            this.fontSize = fontSize;
+            this.stage = 0; 
+        }
+        update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            if (this.stage === 3) {
+                if (this.y > 580) this.speedY = -Math.abs(this.speedY) * 0.8;
+                if (this.y < 470) this.speedY = Math.abs(this.speedY) * 0.8;
+                if (this.x < 20) this.speedX = Math.abs(this.speedX);
+                if (this.x > canvas.width - 20) this.speedX = -Math.abs(this.speedX);
+                
+                this.speedX += (Math.random() - 0.5) * 0.05;
+                this.speedY += (Math.random() - 0.5) * 0.05;
+                if (this.speedX > 0.6) this.speedX = 0.6;
+                if (this.speedX < -0.6) this.speedX = -0.6;
+                if (this.speedY > 0.4) this.speedY = 0.4;
+                if (this.speedY < -0.4) this.speedY = -0.4;
+            }
+        }
+        draw(ctx) {
+            ctx.fillStyle = this.color.replace('ALPHA', Math.max(0, this.life));
+            ctx.font = `bold ${this.fontSize} Arial`;
+            ctx.textAlign = "center";
+            ctx.fillText(this.text, this.x, this.y);
+        }
+    }
+
+    // --- KLASSEN STATION 2 ---
+    class S2Particle {
+        constructor(x, y, label = "H₃O⁺", state = "acidic", vx = null, vy = null) {
+            this.x = x;
+            this.y = y;
+            this.radius = 5;
+            this.vx = vx !== null ? vx : (Math.random() - 0.5) * 0.8; 
+            this.vy = vy !== null ? vy : Math.random() * 0.2 + 0.3; 
+            this.state = state; 
+            this.label = label;
+            this.hasReacted = false; 
+        }
+        update(multiplier, particlesArray) {
+            let currentVx = this.vx * multiplier * 0.5;
+            let currentVy = this.vy * multiplier * 0.5;
+            this.x += currentVx;
+            this.y += currentVy;
+
+            let yIndex = Math.floor(this.y / s2_wallRes);
+            if (yIndex >= 0 && yIndex < s2_numSeg) {
+                if (this.x <= s2_leftWall[yIndex] + this.radius) {
+                    this.x = s2_leftWall[yIndex] + this.radius;
+                    this.vx = Math.abs(this.vx) * 0.5;
+                    if (!this.hasReacted && this.state === 'acidic') this.triggerErosion(yIndex, 'left', multiplier, particlesArray);
+                }
+                else if (this.x >= s2_rightWall[yIndex] - this.radius) {
+                    this.x = s2_rightWall[yIndex] - this.radius;
+                    this.vx = -Math.abs(this.vx) * 0.5;
+                    if (!this.hasReacted && this.state === 'acidic') this.triggerErosion(yIndex, 'right', multiplier, particlesArray);
+                }
+            }
+
+            if (this.state !== 'acidic' && this.vy < 1.2) { 
+                this.vy += 0.005;
+            }
+        }
+        triggerErosion(yIndex, side, multiplier, particlesArray) {
+            this.hasReacted = true;
+            this.state = 'dissolved';
+            this.label = "Ca²⁺"; 
+            
+            let erosionAmount = 0.05 * multiplier;
+            if (side === 'left') {
+                s2_leftWall[yIndex] -= erosionAmount;
+                if(yIndex > 0) s2_leftWall[yIndex-1] -= erosionAmount * 0.5;
+                if(yIndex < s2_numSeg-1) s2_leftWall[yIndex+1] -= erosionAmount * 0.5;
+            } else {
+                s2_rightWall[yIndex] += erosionAmount;
+                if(yIndex > 0) s2_rightWall[yIndex-1] += erosionAmount * 0.5;
+                if(yIndex < s2_numSeg-1) s2_rightWall[yIndex+1] += erosionAmount * 0.5;
+            }
+
+            let direction = side === 'left' ? 1 : -1;
+            let p1 = new S2Particle(this.x + (direction * 12), this.y - 5, "HCO₃⁻", "dissolved", direction * (Math.random() * 0.4 + 0.2), this.vy * 0.9);
+            p1.hasReacted = true;
+            particlesArray.push(p1);
+
+            let p2 = new S2Particle(this.x + (direction * 24), this.y - 10, "H₂O", "neutral", direction * (Math.random() * 0.5 + 0.3), this.vy * 0.8);
+            p2.hasReacted = true;
+            particlesArray.push(p2);
+        }
+        draw(ctx) {
+            let baseColor = '239, 68, 68'; 
+            if (this.state === 'dissolved') baseColor = '59, 130, 246'; 
+            if (this.state === 'neutral') baseColor = '125, 211, 252'; 
+            
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${baseColor}, 0.9)`;
+            ctx.fill();
+            
+            if (textOpacity > 0.05) {
+                ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
+                ctx.shadowBlur = 4;
+                ctx.fillStyle = `rgba(255, 255, 255, ${textOpacity})`;
+                ctx.font = "bold 13px Arial";
+                ctx.textAlign = "center";
+                ctx.fillText(this.label, this.x, this.y - 8);
+                ctx.shadowBlur = 0;
+            }
+        }
+    }
+
+    // --- KLASSEN STATION 3 ---
+    class S3Gas {
+        constructor(x, y) {
+            this.x = x + (Math.random() * 20 - 10);
+            this.y = y;
+            this.directionX = Math.random() > 0.5 ? 1 : -1;
+            this.vx = this.directionX * (Math.random() * 0.5 + 0.2);
+            this.vy = -Math.random() * 0.2 - 0.1; 
+        }
+        update(multiplier) {
+            this.x += this.vx * (multiplier > 1 ? 2 : 1);
+            this.y += this.vy * (multiplier > 1 ? 2 : 1);
+        }
+        draw(ctx) {
+            ctx.fillStyle = `rgba(156, 163, 175, 0.9)`;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+            ctx.fill();
+            if (textOpacity > 0.1) {
+                ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
+                ctx.shadowBlur = 3;
+                ctx.fillStyle = `rgba(255, 255, 255, ${textOpacity})`;
+                ctx.font = "bold 11px Arial";
+                ctx.textAlign = "center";
+                ctx.fillText("CO₂↑", this.x, this.y - 5);
+                ctx.shadowBlur = 0;
+            }
+        }
+    }
+
+    class S3Drop {
+        constructor() {
+            this.x = canvas.width / 2;
+            this.y = s3_caveTop + s3_stalactiteLength;
+            this.radius = 0; 
+            this.maxRadius = 8;
+            this.state = 'hanging'; 
+            this.vy = 0;
+            this.hangTime = 0;
+            this.maxHangTime = 150; 
+        }
+        update(multiplier) {
+            if (this.state === 'hanging') {
+                this.radius += 0.05 * multiplier;
+                this.hangTime += 1 * multiplier;
+                if (Math.random() < 0.02 * multiplier && s3_gas.length < 20) {
+                    s3_gas.push(new S3Gas(this.x, this.y));
+                }
+                if (this.radius >= this.maxRadius || this.hangTime >= this.maxHangTime) {
+                    this.state = 'falling';
+                    growS3Rock('stalactite', multiplier);
+                }
+            } else if (this.state === 'falling') {
+                this.vy += 0.1 * multiplier; 
+                this.y += this.vy;
+                if (this.y + this.radius >= s3_caveBottom - s3_stalagmiteHeight) {
+                    this.state = 'impact';
+                    growS3Rock('stalagmite', multiplier);
+                    for(let i = 0; i < (multiplier === 1 ? 2 : 1); i++) {
+                        s3_gas.push(new S3Gas(this.x, s3_caveBottom - s3_stalagmiteHeight));
+                    }
+                }
+            }
+        }
+        draw(ctx) {
+            if (this.state === 'impact') return;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.moveTo(this.x - this.radius, this.y);
+            ctx.lineTo(this.x, this.y - this.radius * 1.5);
+            ctx.lineTo(this.x + this.radius, this.y);
+            ctx.fillStyle = "rgba(59, 130, 246, 0.7)";
+            ctx.fill();
+
+            if (textOpacity > 0.05 && this.radius > 5) {
+                ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
+                ctx.shadowBlur = 3;
+                ctx.fillStyle = `rgba(255, 255, 255, ${textOpacity})`;
+                ctx.font = "bold 10px Arial";
+                ctx.textAlign = "center";
+                ctx.fillText("Ca²⁺", this.x, this.y - 2);
+                ctx.fillText("2HCO₃⁻", this.x, this.y + 8);
+                ctx.shadowBlur = 0;
+            }
+        }
+    }
+
+    function growS3Rock(type, multiplier) {
+        if (s3_caveTop + s3_stalactiteLength >= s3_caveBottom - s3_stalagmiteHeight - 2) return;
+        let growth = 0.05 * multiplier;
+        if (type === 'stalactite') {
+            s3_stalactiteLength += growth;
+            s3_stalactiteWidth += growth * 0.1;
+        } else if (type === 'stalagmite') {
+            s3_stalagmiteHeight += growth;
+            s3_stalagmiteWidth += growth * 0.15; 
+        }
+    }
+
+    // --- RENDER FUNKTIONEN ---
+    function drawStage0(timestamp) {
+        ctx.fillStyle = "#87CEEB";
+        ctx.fillRect(0, 0, canvas.width, 250);
+
+        ctx.fillStyle = "#fef08a";
+        ctx.beginPath();
+        ctx.arc(420, 80, 40, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "#4ade80";
+        ctx.beginPath();
+        ctx.ellipse(150, 450, 300, 220, 0, Math.PI, 0);
+        ctx.ellipse(450, 450, 250, 180, 0, Math.PI, 0);
+        ctx.fill();
+
+        ctx.fillStyle = "#3b82f6";
+        ctx.fillRect(0, 450, canvas.width, 150);
+
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+        ctx.lineWidth = 2;
+        let offset = (timestamp * 0.05) % 50;
+        for (let i = 0; i < 4; i++) {
+            ctx.beginPath();
+            ctx.moveTo(0, 470 + i * 25);
+            for(let x = 0; x <= canvas.width; x += 20) {
+                ctx.lineTo(x, 470 + i * 25 + Math.sin((x + offset * 10) * 0.05) * 4);
+            }
+            ctx.stroke();
+        }
+
+        ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+        ctx.font = "14px Arial";
+        ctx.fillText("H₂O", 100, 500);
+        ctx.fillText("H₂O", 250, 550);
+        ctx.fillText("H₂O", 400, 480);
+
+        if (timestamp - s1_lastTime > 2500 && s1_co2SpawnCount < 6) { 
+            s1_particles.push(new S1Particle(Math.random() * (canvas.width - 100) + 50, 20, "CO₂(g)", 0, 0.5, "rgba(30, 41, 59, ALPHA)"));
+            s1_co2SpawnCount++;
+            s1_lastTime = timestamp;
+        }
+
+        for (let i = s1_particles.length - 1; i >= 0; i--) {
+            let p = s1_particles[i];
+            if (p.stage === 0 && p.y > 450) {
+                p.text = "CO₂(aq)";
+                p.color = "rgba(255, 255, 255, ALPHA)";
+                p.speedY = 0.2;
+                p.stage = 1;
+            } else if (p.stage === 1 && p.y > 490) {
+                p.text = "H₂CO₃";
+                p.color = "rgba(255, 215, 0, ALPHA)";
+                p.stage = 2;
+            } else if (p.stage === 2 && p.y > 540) {
+                let ion1 = new S1Particle(p.x - 30, p.y, "H₃O⁺", -0.2, 0.1, "rgba(255, 100, 100, ALPHA)", "16px");
+                ion1.stage = 3; 
+                let ion2 = new S1Particle(p.x + 30, p.y, "HCO₃⁻", 0.2, 0.1, "rgba(100, 255, 100, ALPHA)", "16px");
+                ion2.stage = 3; 
+                s1_particles.push(ion1, ion2);
+                s1_particles.splice(i, 1); 
+                continue; 
+            }
+            p.update(); 
+            p.draw(ctx); 
+        }
+    }
+
+    function drawStage1(timestamp) {
+        ctx.fillStyle = "#5c544d";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
+        ctx.font = "bold 40px Arial";
+        ctx.textAlign = "center";
+        ctx.save();
+        ctx.translate(80, canvas.height / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText("CaCO₃", 0, 0);
+        ctx.restore();
+        ctx.save();
+        ctx.translate(canvas.width - 80, canvas.height / 2);
+        ctx.rotate(Math.PI / 2);
+        ctx.fillText("CaCO₃", 0, 0);
+        ctx.restore();
+
+        ctx.fillStyle = "#1e293b"; 
+        ctx.beginPath();
+        ctx.moveTo(s2_leftWall[0], 0);
+        for (let i = 1; i < s2_numSeg; i++) ctx.lineTo(s2_leftWall[i], i * s2_wallRes);
+        ctx.lineTo(s2_rightWall[s2_numSeg - 1], (s2_numSeg - 1) * s2_wallRes);
+        for (let i = s2_numSeg - 2; i >= 0; i--) ctx.lineTo(s2_rightWall[i], i * s2_wallRes);
+        ctx.closePath();
+        ctx.fill();
+
+        let spawnInterval = 1000 / Math.sqrt(timeMultiplier);
+        if (timestamp - s2_lastTime > spawnInterval) {
+            let randomX = Math.random() * (s2_rightWall[0] - s2_leftWall[0]) + s2_leftWall[0];
+            s2_particles.push(new S2Particle(randomX, 0, "H₃O⁺", "acidic"));
+            if(timeMultiplier > 10) s2_particles.push(new S2Particle(randomX, 0, "H₃O⁺", "acidic"));
+            s2_lastTime = timestamp;
+        }
+
+        for (let i = s2_particles.length - 1; i >= 0; i--) {
+            let p = s2_particles[i];
+            p.update(timeMultiplier, s2_particles);
+            if (p.y > canvas.height + 10) s2_particles.splice(i, 1);
+            else p.draw(ctx);
+        }
+    }
+
+    function drawStage2(timestamp) {
+        ctx.fillStyle = "#1e293b";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = "#334155";
+        ctx.fillRect(0, 0, canvas.width, s3_caveTop);
+        ctx.fillRect(0, s3_caveBottom, canvas.width, canvas.height - s3_caveBottom);
+
+        let isColumn = (s3_caveTop + s3_stalactiteLength >= s3_caveBottom - s3_stalagmiteHeight - 2);
+
+        ctx.fillStyle = "#94a3b8";
+        ctx.beginPath();
+        ctx.moveTo(canvas.width/2 - s3_stalactiteWidth / 2, s3_caveTop);
+        ctx.lineTo(canvas.width/2 + s3_stalactiteWidth / 2, s3_caveTop);
+        ctx.lineTo(canvas.width/2 + 3, s3_caveTop + s3_stalactiteLength);
+        ctx.lineTo(canvas.width/2 - 3, s3_caveTop + s3_stalactiteLength);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(canvas.width/2 - s3_stalagmiteWidth / 2, s3_caveBottom);
+        ctx.lineTo(canvas.width/2 + s3_stalagmiteWidth / 2, s3_caveBottom);
+        ctx.lineTo(canvas.width/2 + 4, s3_caveBottom - s3_stalagmiteHeight);
+        ctx.lineTo(canvas.width/2 - 4, s3_caveBottom - s3_stalagmiteHeight);
+        ctx.fill();
+
+        if (isColumn) ctx.fillRect(canvas.width/2 - 3, s3_caveTop + s3_stalactiteLength - 5, 6, 10);
+
+        if (!isColumn) {
+            let dropInterval = 2000 / Math.sqrt(timeMultiplier);
+            let canSpawn = s3_drops.length === 0 || (timeMultiplier > 5 && s3_drops.length < 3);
+            if (timestamp - s3_lastTime > dropInterval && canSpawn) {
+                s3_drops.push(new S3Drop());
+                s3_lastTime = timestamp;
+            }
+        }
+
+        for (let i = s3_drops.length - 1; i >= 0; i--) {
+            let d = s3_drops[i];
+            d.update(timeMultiplier);
+            if (d.state === 'impact') s3_drops.splice(i, 1);
+            else d.draw(ctx);
+        }
+
+        for (let i = s3_gas.length - 1; i >= 0; i--) {
+            let gp = s3_gas[i];
+            gp.update(timeMultiplier);
+            if (gp.x < -30 || gp.x > canvas.width + 30 || gp.y < -30) s3_gas.splice(i, 1);
+            else gp.draw(ctx);
+        }
+    }
+
+    function animate(timestamp) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        if (currentStage === 0) drawStage0(timestamp);
+        else if (currentStage === 1) drawStage1(timestamp);
+        else if (currentStage === 2) drawStage2(timestamp);
+
+        requestAnimationFrame(animate);
+    }
+
+    // --- STEUERUNG ---
+    function changeStage(delta) {
+        currentStage += delta;
+        if (currentStage < 0) currentStage = 0;
+        if (currentStage >= maxStages) currentStage = maxStages;
+        
+        // Reset Time Slider on Change
+        timeSlider.value = 1;
+        timeMultiplier = 1;
+        textOpacity = 1;
+        timeLabel.innerText = "1x (Echtzeit)";
+        
+        // Clear Arrays and Reset specific variables
+        if (currentStage === 0) {
+            s1_particles = [];
+            s1_co2SpawnCount = 0;
+        } else if (currentStage === 1) {
+            resetS2Cave();
+        } else if (currentStage === 2) {
+            resetS3Cave();
+        }
+        
+        updateUI();
+    }
+
+    function updateUI() {
+        btnPrev.disabled = currentStage === 0;
+        btnNext.disabled = currentStage === maxStages;
+        
+        stationTitle.innerText = stagesData[currentStage].title.split(':')[0];
+        infoContent.innerHTML = `<h3>${stagesData[currentStage].title}</h3>` + stagesData[currentStage].content;
+        
+        // Toggle Slider
+        if (stagesData[currentStage].showSlider) {
+            timeControlGroup.style.display = 'block';
+        } else {
+            timeControlGroup.style.display = 'none';
+        }
+        
+        // Toggle Reset Button
+        if (stagesData[currentStage].showReset) {
+            resetBtn.style.display = 'block';
+        } else {
+            resetBtn.style.display = 'none';
+        }
+    }
+
+    // Event Listener
+    timeSlider.addEventListener('input', (e) => {
+        timeMultiplier = parseInt(e.target.value);
+        timeLabel.innerText = timeMultiplier + "x";
+        
+        if (timeMultiplier <= 2) {
+            textOpacity = 1;
+        } else {
+            textOpacity = Math.max(0, 1 - (timeMultiplier / 15));
+        }
+    });
+
+    resetBtn.addEventListener('click', () => {
+        resetS3Cave();
+    });
+
+    // Initialisierung
+    resetS2Cave();
+    updateUI();
+    requestAnimationFrame(animate);
+
+</script>
+</body>
+</html>
