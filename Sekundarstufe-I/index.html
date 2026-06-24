@@ -2,33 +2,65 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Sekundarstufe I - Chemie</title>
     <style>
-        body { font-family: sans-serif; padding: 40px; background-color: #f8fafc; }
-        .container { max-width: 600px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; border: 1px solid #e2e8f0; }
-        h1 { color: #b91c1c; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
-        .menu { list-style: none; padding: 0; margin-top: 20px; }
-        .menu li { margin: 15px 0; }
-        .menu a { 
-            display: block; 
-            padding: 15px; 
-            background: #f1f5f9; 
-            border-radius: 8px; 
-            text-decoration: none; 
-            color: #0f172a; 
-            font-weight: 600; 
-            border-left: 4px solid #b91c1c;
+        body, html { margin: 0; padding: 0; height: 100%; font-family: sans-serif; }
+
+        .table-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            /* Stelle sicher, dass der Dateiname exakt passt */
+            background: url('lab-table-sek1.jpg') no-repeat center center;
+            background-size: cover;
+        }
+
+        .lab-link {
+            position: absolute;
+            display: block;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .lab-link:hover {
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Positionierung für die neuen Geräte im Bild */
+        .link-7-8 {
+            top: 25%; left: 22%;
+            width: 18%; height: 45%;
+        }
+
+        .link-9-10 {
+            top: 20%; left: 65%;
+            width: 15%; height: 50%;
+        }
+
+        /* Zurück-Link */
+        .back-link {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: white;
+            text-decoration: none;
+            background: rgba(0,0,0,0.3);
+            padding: 10px 20px;
+            border-radius: 8px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Sekundarstufe I</h1>
-        <ul class="menu">
-            <li><a href="./Klasse-7-8/index.html">Klasse 7/8</a></li>
-            <li><a href="./Klasse-9-10/index.html">Klasse 9/10</a></li>
-        </ul>
-        <p><a href="../index.html">← Zurück zur Startseite</a></p>
+
+    <div class="table-container">
+        <a href="./Klasse-7-8/index.html" class="lab-link link-7-8" title="Klasse 7/8"></a>
+        <a href="./Klasse-9-10/index.html" class="lab-link link-9-10" title="Klasse 9/10"></a>
+        
+        <a href="../index.html" class="back-link">← Zurück zur Startseite</a>
     </div>
+
 </body>
 </html>
