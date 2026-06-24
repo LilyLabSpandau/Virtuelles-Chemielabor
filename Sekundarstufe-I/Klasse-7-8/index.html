@@ -1,19 +1,34 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <title>Klasse 7/8 - Chemie</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Klasse 7/8 - Chemie</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background-color: #f8fafc; padding: 20px; color: #0f172a; }
+    .container { max-width: 800px; margin: 0 auto; }
+    .nav-btn { display: inline-block; margin-bottom: 20px; color: #0369a1; text-decoration: none; }
+    h1 { border-bottom: 3px solid #0f766e; padding-bottom: 10px; color: #0f766e; }
+    .grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 20px; }
+    .card { background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; text-decoration: none; color: #0f172a; font-weight: 600; display: block; }
+    .card:hover { border-color: #0f766e; }
+  </style>
 </head>
 <body>
+
+  <div class="container">
+    <a href="../index.html" class="nav-btn">← Zurück zur Übersicht</a>
+    
     <h1>Klasse 7/8</h1>
-    <hr>
-    <ul>
-        <li><a href="./1-Faszination-Chemie-Feuer-Schall-und-Rauch/index.html">Faszination Chemie - Feuer, Schall und Rauch</a></li>
-        <li><a href="./2-Das-Periodensystem-der-Elemente-Übersicht-und-Werkzeug/index.html">Das Periodensystem der Elemente</a></li>
-        <li><a href="./3-Gase-zwischen-lebensnotwendig-und-gefährlich/index.html">Gase</a></li>
-        <li><a href="./4-Metalle-Schätze-der-Erde/index.html">Metalle</a></li>
-        <li><a href="./5-Wasser-eine-Verbindung/index.html">Wasser</a></li>
-    </ul>
-    <p><a href="../index.html">← Zurück zur Sek I Übersicht</a></p>
+    
+    <div class="grid">
+      <a href="./1-Faszination-Chemie-Feuer-Schall-und-Rauch/index.html" class="card">1. Faszination Chemie – Feuer, Schall und Rauch</a>
+      <a href="./2-Das-Periodensystem-der-Elemente-Übersicht-und-Werkzeug/index.html" class="card">2. Das Periodensystem – Übersicht und Werkzeug</a>
+      <a href="./3-Gase-zwischen-lebensnotwendig-und-gefährlich/index.html" class="card">3. Gase – zwischen lebensnotwendig und gefährlich</a>
+      <a href="./4-Metalle-Schätze-der-Erde/index.html" class="card">4. Metalle – Schätze der Erde</a>
+      <a href="./5-Wasser-eine-Verbindung/index.html" class="card">5. Wasser – eine Verbindung</a>
+    </div>
+  </div>
+
 </body>
 </html>
