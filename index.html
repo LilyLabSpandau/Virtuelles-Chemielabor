@@ -7,7 +7,6 @@
   <style>
     body, html { margin: 0; padding: 0; height: 100%; font-family: sans-serif; }
 
-    /* Hintergrundbild-Container */
     .table-container {
       position: relative;
       width: 100%;
@@ -16,11 +15,10 @@
       background-size: cover;
     }
 
-    /* Die unsichtbaren "Schalter" über den Gläsern */
     .lab-link {
       position: absolute;
       display: block;
-      border-radius: 50%; /* Rund, passt zum Gefäß */
+      border-radius: 50%;
       cursor: pointer;
       transition: transform 0.2s, box-shadow 0.2s;
     }
@@ -30,16 +28,23 @@
       transform: scale(1.05);
     }
 
-    /* Positionierung über den Objekten im Bild (muss evtl. leicht angepasst werden) */
-    .link-sek1 {
-      top: 35%; left: 24%;
-      width: 15%; height: 35%;
-    }
+    /* Klickflächen */
+    .link-sek1 { top: 35%; left: 24%; width: 15%; height: 35%; }
+    .link-sek2 { top: 30%; left: 68%; width: 12%; height: 40%; }
 
-    .link-sek2 {
-      top: 30%; left: 68%;
-      width: 12%; height: 40%;
+    /* Impressums-Link */
+    .impressum-link {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      font-size: 0.8rem;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 5px 10px;
+      border-radius: 4px;
     }
+    .impressum-link:hover { color: white; background: rgba(0,0,0,0.4); }
   </style>
 </head>
 <body>
@@ -47,6 +52,8 @@
   <div class="table-container">
     <a href="./Sekundarstufe-I/index.html" class="lab-link link-sek1" title="Sekundarstufe I"></a>
     <a href="./Sekundarstufe-II/index.html" class="lab-link link-sek2" title="Sekundarstufe II"></a>
+    
+    <a href="./impressum.html" class="impressum-link">Impressum</a>
   </div>
 
 </body>
