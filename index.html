@@ -3,19 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Chemie-Simulationen</title>
+  <title>Virtuelles Chemielabor - Startseite</title>
 
   <style>
     :root {
-      --primary-color: #0369a1; /* Analytisches Blau */
-      --sek1-color: #0f766e; /* Mintgrün für Sek I */
-      --sek2-color: #b91c1c; /* Dunkelrot für Sek II */
-      --tool-color: #475569; /* Schiefergrau für Werkzeuge */
+      --primary-color: #0369a1;
+      --sek1-color: #0f766e;
+      --sek2-color: #b91c1c;
       --bg-color: #f8fafc;
-      --card-bg: #ffffff;
       --text-main: #0f172a;
       --text-muted: #475569;
-      --border-color: #e2e8f0;
     }
 
     body {
@@ -31,237 +28,70 @@
     header {
       background-color: var(--primary-color);
       color: white;
-      padding: 40px 20px;
+      padding: 60px 20px;
       text-align: center;
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-      margin-bottom: 40px;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: 2.5rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-    }
-
-    .subtitle {
-      margin-top: 10px;
-      font-size: 1.1rem;
-      opacity: 0.9;
     }
 
     .container {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 0 20px;
-    }
-
-    /* Sektions- und Überschriften-Styling */
-    section {
-      margin-bottom: 56px;
-      background: white;
-      padding: 32px;
-      border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-      border: 1px solid var(--border-color);
-    }
-
-    .section-title {
-      font-size: 1.75rem;
-      font-weight: 700;
-      margin: 0 0 24px 0;
-      padding-bottom: 12px;
-      border-bottom: 3px solid var(--border-color);
-    }
-
-    .sek1 .section-title { border-bottom-color: var(--sek1-color); }
-    .sek2 .section-title { border-bottom-color: var(--sek2-color); }
-    .tools .section-title { border-bottom-color: var(--tool-color); }
-
-    h3 {
-      font-size: 1.3rem;
-      color: var(--text-main);
-      margin: 32px 0 16px 0;
-      padding-left: 12px;
-      border-left: 4px solid var(--border-color);
-    }
-
-    .sek1 h3 { border-left-color: var(--sek1-color); }
-    .sek2 h3 { border-left-color: var(--sek2-color); }
-    
-    h4 {
-      font-size: 1.1rem;
-      color: var(--text-muted);
-      margin: 0 0 16px 0;
-      font-weight: 600;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 20px;
-      margin-bottom: 32px;
-    }
-
-    /* Kachel-Styling */
-    .card {
-      display: flex;
-      flex-direction: column;
+      max-width: 800px;
+      margin: 40px auto;
       padding: 20px;
-      background: var(--card-bg);
-      border-radius: 8px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+
+    a.card {
+      display: block;
+      padding: 40px;
+      background: white;
+      border-radius: 12px;
       text-decoration: none;
       color: var(--text-main);
-      border: 1px solid var(--border-color);
-      transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+      border: 2px solid #e2e8f0;
+      text-align: center;
+      transition: transform 0.2s, border-color 0.2s;
     }
 
     a.card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.1);
-      border-color: #cbd5e1;
+      transform: translateY(-5px);
+      border-color: var(--primary-color);
     }
 
-    /* Platzhalter-Styling */
-    .card.placeholder {
-      background-color: #f8fafc;
-      border: 1px dashed #cbd5e1;
-      color: #94a3b8;
-      align-items: center;
-      justify-content: center;
-      min-height: 100px;
-      font-style: italic;
+    .card-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 10px;
     }
 
-    .title {
-      font-size: 1.15rem;
-      font-weight: 600;
-      margin-bottom: 8px;
-      color: var(--primary-color);
-    }
-
-    .sek1 .title { color: var(--sek1-color); }
-    .sek2 .title { color: var(--sek2-color); }
-    .tools .title { color: var(--text-main); }
-
-    .desc {
-      color: var(--text-muted);
-      font-size: 0.95rem;
-      line-height: 1.5;
-      flex-grow: 1;
-    }
+    .sek1-link { border-bottom: 4px solid var(--sek1-color); }
+    .sek2-link { border-bottom: 4px solid var(--sek2-color); }
 
     footer {
       text-align: center;
-      padding: 40px 20px;
-      font-size: 0.9rem;
+      padding: 40px;
       color: var(--text-muted);
-      margin-top: 20px;
-    }
-
-    footer a {
-      color: var(--text-muted);
-      text-decoration: none;
-    }
-    
-    footer a:hover {
-      text-decoration: underline;
     }
   </style>
 </head>
 <body>
 
   <header>
-    <h1>Chemie-Simulationen</h1>
-    <div class="subtitle">Interaktive Modelle für den naturwissenschaftlichen Unterricht</div>
+    <h1>Virtuelles Chemielabor</h1>
+    <p>Bitte wählen Sie Ihre Stufe</p>
   </header>
 
   <main class="container">
+    <a href="./Sekundarstufe-I/index.html" class="card sek1-link">
+      <div class="card-title">Sekundarstufe I</div>
+      <p>Klassen 7-10</p>
+    </a>
 
-    <section class="sek1">
-      <h2 class="section-title">Sekundarstufe I</h2>
-
-      <h3>Klasse 7/8</h3>
-      <h4>Faszination Chemie – Feuer, Schall und Rauch</h4>
-      <div class="grid">
-        <a class="card" href="./Brenner-entzünden/">
-          <div class="title">Brenner entzünden</div>
-          <div class="desc">Sicherer Umgang mit dem Gasbrenner im Labor.</div>
-        </a>
-      </div>
-
-      <h3>Klasse 9/10</h3>
-      <h4>Salze – Gegensätze ziehen sich an</h4>
-      <div class="grid">
-        <a class="card" href="./Salze-identifizieren/">
-          <div class="title">Salze identifizieren</div>
-          <div class="desc">Nachweisreaktionen und Flammenprobe.</div>
-        </a>
-      </div>
-
-      <h4>Säuren und Laugen – echt ätzend</h4>
-      <div class="grid">
-        <a class="card" href="./pH-Wert-und-Neutralisation/">
-          <div class="title">pH-Wert & Neutralisation</div>
-          <div class="desc">Grundlagen zu Säuren, Basen und Titration.</div>
-        </a>
-      </div>
-    </section>
-
-    <section class="sek2">
-      <h2 class="section-title">Sekundarstufe II (Qualifikationsphase)</h2>
-
-      <h3>Q1: Natürliche und synthetische makromolekulare Stoffe</h3>
-      <div class="grid">
-        <div class="card placeholder">
-          Simulationen in Entwicklung
-        </div>
-      </div>
-
-      <h3>Q2: Verlauf chemischer Reaktionen</h3>
-      <h4>Chemisches Gleichgewicht</h4>
-      <div class="grid">
-        <a class="card" href="./Gleichgewicht/">
-          <div class="title">Chemisches Gleichgewicht</div>
-          <div class="desc">Dynamische Prozesse und das Massenwirkungsgesetz.</div>
-        </a>
-        <a class="card" href="./Haber-Bosch-Verfahren/">
-          <div class="title">Haber-Bosch-Verfahren</div>
-          <div class="desc">Ammoniaksynthese: Kinetik vs. Thermodynamik.</div>
-        </a>
-        <a class="card" href="./Konduktometrie/index.html">
-          <div class="title">Konduktometrie</div>
-          <div class="desc">Leitfähigkeitstitration von Ca²⁺ mit Oxalsäure.</div>
-        </a>
-      </div>
-
-      <h3>Q3: Das Donator-Akzeptor-Prinzip</h3>
-      <div class="grid">
-        <div class="card placeholder">
-          Simulationen in Entwicklung
-        </div>
-      </div>
-
-      <h3>Q4: Elektrische Energie aus chemischen Reaktionen</h3>
-      <div class="grid">
-        <div class="card placeholder">
-          Simulationen in Entwicklung
-        </div>
-      </div>
-    </section>
-
-    <section class="tools">
-      <h2 class="section-title">Fachübergreifende Werkzeuge</h2>
-      
-      <h3>Organisation</h3>
-      <div class="grid">
-        <a class="card" href="./Notentracker/notentracker.html">
-          <div class="title">Notentracker</div>
-          <div class="desc">Fachunabhängiges Werkzeug zur Übersicht der schulischen Leistungen.</div>
-        </a>
-      </div>
-    </section>
-
+    <a href="./Sekundarstufe-II/index.html" class="card sek2-link">
+      <div class="card-title">Sekundarstufe II</div>
+      <p>Qualifikationsphase (Q1-Q4)</p>
+    </a>
   </main>
 
   <footer>
