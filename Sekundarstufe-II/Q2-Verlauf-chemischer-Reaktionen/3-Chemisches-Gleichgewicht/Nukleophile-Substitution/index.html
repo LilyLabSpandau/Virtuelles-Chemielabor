@@ -160,7 +160,7 @@
         if (t > 0.1) drawBond(ctxMol, xNu + 25, cy, cx - 14, cy, 0, 0, t < 0.95);
         if (t < 0.9) drawBond(ctxMol, cx + 14, cy, xLg - 16, cy, 0, 0, t > 0.05);
 
-        ctxMol.fillStyle = '#2e7d32'; ctxMol.fillText('HO⁻', xNu, cy);
+        ctxMol.fillStyle = '#2e7d32'; ctxMol.fillText(t > 0.9 ? 'HO' : 'HO⁻', xNu, cy); // Korrektur der Ladung
         ctxMol.fillStyle = '#000'; ctxMol.fillText('C', cx, cy);
         ctxMol.fillStyle = '#f57c00'; ctxMol.fillText(t > 0.9 ? 'Cl⁻' : 'Cl', xLg, cy);
 

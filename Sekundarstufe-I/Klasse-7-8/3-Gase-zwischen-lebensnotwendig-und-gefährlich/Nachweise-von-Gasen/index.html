@@ -1,0 +1,1135 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Nachweisspiel: H₂ / O₂ / N₂ / CO₂</title>
+  <style>
+    :root{
+      --bg:#0f172a;
+      --text:#e5e7eb;
+      --muted:#9ca3af;
+      --line:rgba(255,255,255,.10);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      background:radial-gradient(1200px 700px at 30% 10%, #1f2a44 0%, var(--bg) 45%, #070a14 100%);
+      color:var(--text);
+      user-select:none;
+      overflow-x:hidden;
+    }
+    header{
+      padding:14px 16px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      background:linear-gradient(to bottom, rgba(0,0,0,.35), rgba(0,0,0,.10));
+      display:flex;
+      gap:14px;
+      align-items:center;
+      justify-content:space-between;
+    }
+    header h1{
+      font-size:16px;
+      margin:0;
+      font-weight:650;
+      letter-spacing:.2px;
+    }
+    .topRight{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+    .pill{
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(0,0,0,.18);
+      padding:8px 10px;
+      border-radius:999px;
+      display:flex;
+      gap:8px;
+      align-items:center;
+      font-size:13px;
+      color:var(--muted);
+    }
+    .pill strong{color:var(--text); font-weight:650}
+    .btn{
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      padding:8px 10px;
+      border-radius:10px;
+      font-size:13px;
+      cursor:pointer;
+    }
+    .btn:hover{background:rgba(255,255,255,.10)}
+    .btn:active{transform:translateY(1px)}
+    .btn.primary{border-color:rgba(34,197,94,.35); background:rgba(34,197,94,.12)}
+    .btn.ghost{background:transparent}
+
+    .layout{
+      display:grid;
+      grid-template-columns: 360px 1fr;
+      gap:14px;
+      padding:14px;
+      max-width:1200px;
+      margin:0 auto;
+    }
+    .panel{
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:16px;
+      padding:12px;
+      box-shadow: 0 14px 40px rgba(0,0,0,.35);
+    }
+    .panel h2{
+      margin:0 0 8px 0;
+      font-size:14px;
+      letter-spacing:.2px;
+      font-weight:650;
+    }
+    .panel p, .panel li{
+      margin:0;
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.35;
+    }
+    .panel ul{margin:8px 0 0 16px; padding:0}
+    .sep{height:1px; background:rgba(255,255,255,.10); margin:10px 0}
+    .small{font-size:12px; color:var(--muted)}
+    .row{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+    .stack{display:flex; flex-direction:column; gap:10px}
+
+    .workspace{
+      position:relative;
+      min-height:660px;
+      overflow:hidden;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.10);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)),
+        radial-gradient(900px 520px at 75% 35%, rgba(34,197,94,.08) 0%, transparent 60%),
+        radial-gradient(900px 520px at 20% 20%, rgba(59,130,246,.10) 0%, transparent 55%);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);
+    }
+    .bench{
+      position:absolute;
+      left:0; right:0;
+      bottom:0;
+      height:250px;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,.05), rgba(0,0,0,.35)),
+        repeating-linear-gradient(90deg, rgba(255,255,255,.06) 0 8px, rgba(255,255,255,.02) 8px 24px);
+      border-top:1px solid rgba(255,255,255,.08);
+    }
+    .hint{
+      position:absolute;
+      left:14px;
+      top:14px;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.22);
+      font-size:12px;
+      color:var(--muted);
+      max-width:580px;
+      z-index:3;
+    }
+
+    /* Tube LEFT */
+    .tubeWrap{
+      position:absolute;
+      left:64px;
+      bottom:34px;
+      width:260px;
+      height:540px;
+      display:flex;
+      align-items:flex-end;
+      justify-content:center;
+      z-index:2;
+    }
+    .tubeStand{
+      position:absolute;
+      left:50%;
+      bottom:0;
+      transform:translateX(-50%);
+      width:220px;
+      height:70px;
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.35));
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:16px;
+      box-shadow:0 12px 30px rgba(0,0,0,.35);
+    }
+    .tube{
+      position:relative;
+      width:110px;
+      height:440px;
+      margin-bottom:24px;
+      border-radius:54px 54px 42px 42px;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.16), rgba(255,255,255,.04) 35%, rgba(255,255,255,.10) 70%, rgba(255,255,255,.04)),
+        rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.05), 0 16px 50px rgba(0,0,0,.40);
+      overflow:hidden;
+      cursor:pointer;
+    }
+    .tube:before{
+      content:"";
+      position:absolute;
+      left:10px;
+      top:18px;
+      width:14px;
+      height:372px;
+      border-radius:12px;
+      background:rgba(255,255,255,.08);
+    }
+    .tubeMouth{
+      position:absolute;
+      left:50%;
+      top:0;
+      transform:translateX(-50%);
+      width:120px;
+      height:56px;
+      border-radius:0 0 60px 60px;
+      background:rgba(0,0,0,.16);
+      border-bottom:1px solid rgba(255,255,255,.08);
+      pointer-events:none;
+    }
+    .gasLabel{
+      position:absolute;
+      top:72px;
+      left:50%;
+      transform:translateX(-50%);
+      width:92%;
+      text-align:center;
+      font-size:12px;
+      color:rgba(255,255,255,.85);
+      background:rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:12px;
+      padding:6px 8px;
+      pointer-events:none;
+    }
+    .tubeInner{
+      position:absolute;
+      left:0; right:0; top:56px; bottom:0;
+      background:linear-gradient(180deg, rgba(0,0,0,.06), rgba(0,0,0,.22));
+      pointer-events:none;
+    }
+    .dropHint{
+      position:absolute;
+      left:50%;
+      top:20px;
+      transform:translateX(-50%);
+      width:120px;
+      height:70px;
+      border-radius:0 0 60px 60px;
+      outline:2px dashed rgba(255,255,255,.22);
+      outline-offset:-8px;
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .15s ease;
+    }
+    .tube.dragOver .dropHint{opacity:1}
+
+    .liquid{
+      position:absolute;
+      left:8px; right:8px;
+      bottom:12px;
+      height:0px;
+      border-radius:0 0 38px 38px;
+      background:linear-gradient(180deg, rgba(147,197,253,.35), rgba(59,130,246,.18));
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow: inset 0 0 18px rgba(255,255,255,.05);
+      opacity:0;
+      transition:height .25s ease, opacity .25s ease;
+      pointer-events:none;
+    }
+    .milk{
+      position:absolute;
+      left:10px; right:10px;
+      bottom:14px;
+      height:0px;
+      border-radius:0 0 36px 36px;
+      background:
+        radial-gradient(circle at 25% 35%, rgba(255,255,255,.65) 0 22%, rgba(255,255,255,.10) 30%),
+        radial-gradient(circle at 60% 55%, rgba(255,255,255,.55) 0 18%, rgba(255,255,255,.08) 26%),
+        linear-gradient(180deg, rgba(255,255,255,.28), rgba(255,255,255,.06));
+      opacity:0;
+      transition:height .25s ease, opacity .25s ease;
+      pointer-events:none;
+    }
+
+    /* Explosion */
+    .explosion{
+      position:absolute;
+      left:50%;
+      top:10px;
+      transform:translateX(-50%) scale(.7);
+      width:120px;
+      height:120px;
+      pointer-events:none;
+      opacity:0;
+      filter: drop-shadow(0 20px 35px rgba(0,0,0,.45));
+      z-index:5;
+    }
+    .explosion.show{ animation: boom .55s ease-out forwards; }
+    @keyframes boom{
+      0%{opacity:0; transform:translateX(-50%) scale(.3)}
+      10%{opacity:1; transform:translateX(-50%) scale(.8)}
+      45%{opacity:1; transform:translateX(-50%) scale(1.05)}
+      100%{opacity:0; transform:translateX(-50%) scale(1.25)}
+    }
+    .burst{
+      position:absolute;
+      inset:0;
+      border-radius:999px;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,.85) 0 14%, rgba(245,158,11,.95) 16% 33%, rgba(239,68,68,.55) 35% 62%, rgba(0,0,0,0) 64%);
+    }
+    .sparks{
+      position:absolute;
+      inset:0;
+      border-radius:999px;
+      background:
+        conic-gradient(from 0deg,
+          rgba(255,255,255,.0) 0 10deg,
+          rgba(245,158,11,.85) 10deg 14deg,
+          rgba(255,255,255,0) 14deg 28deg,
+          rgba(245,158,11,.85) 28deg 32deg,
+          rgba(255,255,255,0) 32deg 55deg,
+          rgba(239,68,68,.7) 55deg 58deg,
+          rgba(255,255,255,0) 58deg 80deg,
+          rgba(245,158,11,.85) 80deg 84deg,
+          rgba(255,255,255,0) 84deg 120deg,
+          rgba(239,68,68,.7) 120deg 124deg,
+          rgba(255,255,255,0) 124deg 360deg
+        );
+      mask: radial-gradient(circle at 50% 50%, rgba(0,0,0,0) 0 26%, rgba(0,0,0,1) 28% 100%);
+      opacity:.9;
+    }
+
+    /* Bubble for "Plopp!" */
+    .bubble{
+      position:absolute;
+      left:310px;
+      bottom:380px;
+      max-width:220px;
+      background:rgba(0,0,0,.35);
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:16px;
+      padding:10px 12px;
+      font-size:14px;
+      font-weight:800;
+      color:rgba(255,255,255,.92);
+      opacity:0;
+      transform:translateY(8px);
+      pointer-events:none;
+      transition:opacity .18s ease, transform .18s ease;
+      box-shadow: 0 16px 50px rgba(0,0,0,.45);
+      z-index:6;
+    }
+    .bubble.show{opacity:1; transform:translateY(0)}
+
+    /* Burner RIGHT */
+    .burner{
+      position:absolute;
+      right:70px;
+      bottom:44px;
+      width:190px;
+      height:240px;
+      cursor:pointer;
+      z-index:2;
+    }
+    .burner .base{
+      position:absolute;
+      left:30px;
+      bottom:0;
+      width:130px;
+      height:28px;
+      background:linear-gradient(180deg, #4b5563, #111827);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:16px;
+      box-shadow:0 10px 24px rgba(0,0,0,.35);
+    }
+    .burner .stem{
+      position:absolute;
+      left:92px;
+      bottom:28px;
+      width:14px;
+      height:125px;
+      background:linear-gradient(180deg, #6b7280, #0b1224);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:10px;
+    }
+    .burner .nozzle{
+      position:absolute;
+      left:80px;
+      bottom:150px;
+      width:38px;
+      height:18px;
+      background:linear-gradient(180deg, #64748b, #0b1224);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:10px;
+    }
+    .burner .knob{
+      position:absolute;
+      left:24px;
+      bottom:42px;
+      width:46px;
+      height:16px;
+      background:linear-gradient(180deg, #374151, #111827);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:10px;
+    }
+    .burner .label{
+      position:absolute;
+      left:0;
+      bottom:214px;
+      width:190px;
+      text-align:center;
+      font-size:12px;
+      color:var(--muted);
+      pointer-events:none;
+    }
+    .flameZone{
+      position:absolute;
+      left:78px;
+      bottom:160px;
+      width:46px;
+      height:86px;
+      pointer-events:none;
+    }
+    .flame{
+      position:absolute;
+      left:50%;
+      bottom:0;
+      transform:translateX(-50%);
+      width:34px;
+      height:68px;
+      border-radius:60%;
+      background: radial-gradient(circle at 50% 40%, rgba(255,255,255,.92) 0 12%, rgba(245,158,11,.92) 14% 38%, rgba(239,68,68,.55) 40% 75%, rgba(0,0,0,0) 76%);
+      filter: drop-shadow(0 0 14px rgba(245,158,11,.45));
+      opacity:0;
+    }
+    .burner.on .flame{opacity:1; animation:flicker .12s infinite alternate;}
+    @keyframes flicker{from{transform:translateX(-50%) scaleY(1)} to{transform:translateX(-50%) scaleY(.93)}}
+
+    /* Splint */
+    .splint{
+      position:absolute;
+      left:420px;
+      bottom:116px;
+      width:320px;
+      height:60px;
+      cursor:grab;
+      touch-action:none;
+      z-index:10;
+      transform:rotate(-6deg);
+    }
+    .splint:active{cursor:grabbing}
+    .stick{
+      position:absolute;
+      left:28px;
+      top:26px;
+      width:250px;
+      height:12px;
+      border-radius:10px;
+      background:linear-gradient(180deg, #b45309, #7c2d12);
+      border:1px solid rgba(0,0,0,.25);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
+    }
+    .tip{
+      position:absolute;
+      left:268px;
+      top:22px;
+      width:44px;
+      height:20px;
+      background:linear-gradient(180deg, #a16207, #3f1d0e);
+      border:1px solid rgba(0,0,0,.30);
+      clip-path: polygon(0% 0%, 72% 0%, 100% 50%, 72% 100%, 0% 100%, 10% 50%);
+      border-radius:8px;
+      pointer-events:none;
+    }
+    .char{
+      position:absolute;
+      left:280px;
+      top:24px;
+      width:28px;
+      height:16px;
+      border-radius:10px;
+      opacity:0;
+      background:linear-gradient(180deg, rgba(17,24,39,.95), rgba(3,7,18,.95));
+      pointer-events:none;
+    }
+    .ember{
+      position:absolute;
+      left:292px;
+      top:26px;
+      width:14px;
+      height:14px;
+      border-radius:999px;
+      opacity:0;
+      pointer-events:none;
+      background:radial-gradient(circle at 35% 40%, rgba(255,255,255,.85) 0 25%, rgba(239,68,68,.95) 35% 72%, rgba(0,0,0,0) 78%);
+      filter: drop-shadow(0 0 10px rgba(239,68,68,.35));
+    }
+    .flameSmall{
+      position:absolute;
+      left:284px;
+      top:-6px;
+      width:28px;
+      height:52px;
+      border-radius:60%;
+      opacity:0;
+      background: radial-gradient(circle at 50% 40%, rgba(255,255,255,.95) 0 12%, rgba(245,158,11,.95) 14% 40%, rgba(239,68,68,.60) 42% 78%, rgba(0,0,0,0) 80%);
+      filter: drop-shadow(0 0 12px rgba(245,158,11,.42));
+      pointer-events:none;
+      z-index:999;
+    }
+    .flameHitbox{
+      position:absolute;
+      left:276px;
+      top:-14px;
+      width:46px;
+      height:72px;
+      border-radius:18px;
+      opacity:0;
+      pointer-events:none;
+      cursor:pointer;
+      z-index:1000;
+    }
+    .splint.burning .flameSmall{opacity:1; pointer-events:auto}
+    .splint.burning .flameHitbox{pointer-events:auto}
+    .splint.glowing .ember{opacity:1}
+    .splint.glowing .char{opacity:1}
+    .splint.burning .ember{opacity:0}
+    .splint.unlit .ember, .splint.unlit .flameSmall{opacity:0}
+    .splint.unlit .char{opacity:0}
+
+    /* Limewater */
+    .limeGlass{
+      position:absolute;
+      left:330px;
+      bottom:56px;
+      width:82px;
+      height:90px;
+      cursor:grab;
+      touch-action:none;
+      z-index:9;
+    }
+    .limeGlass:active{cursor:grabbing}
+    .glassCup{
+      position:absolute;
+      left:12px; right:12px;
+      bottom:0;
+      height:78px;
+      border-radius:14px 14px 12px 12px;
+      border:1px solid rgba(255,255,255,.16);
+      background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.03));
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.05), 0 12px 28px rgba(0,0,0,.35);
+      overflow:hidden;
+    }
+    .limeLiquid{
+      position:absolute;
+      left:0; right:0; bottom:0;
+      height:44px;
+      background:linear-gradient(180deg, rgba(229,231,235,.28), rgba(229,231,235,.10));
+      border-top:1px solid rgba(255,255,255,.10);
+    }
+    .limeLabel{
+      position:absolute;
+      top:-2px;
+      left:50%;
+      transform:translateX(-50%);
+      font-size:11px;
+      color:rgba(255,255,255,.85);
+      background:rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:10px;
+      padding:4px 6px;
+      pointer-events:none;
+      white-space:nowrap;
+    }
+
+    /* Gas bottles */
+    .gasList{display:grid; grid-template-columns:1fr; gap:8px;}
+    .gasBottle{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 10px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.05);
+      cursor:pointer;
+    }
+    .gasBottle:hover{background:rgba(255,255,255,.09)}
+    .gasBottle.selected{
+      border-color: rgba(59,130,246,.55);
+      background: rgba(59,130,246,.14);
+    }
+    .gasBottle .left{display:flex; gap:10px; align-items:center; min-width:0;}
+    .gasBottle .name{font-weight:750; color:rgba(255,255,255,.92); font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+    .gasBottle .formula{font-size:12px; color:var(--muted)}
+    .bottleIcon{
+      width:34px; height:44px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.14);
+      background:linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.04));
+      position:relative;
+      flex:0 0 auto;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.05);
+    }
+    .bottleTag{
+      font-size:12px;
+      padding:4px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(0,0,0,.16);
+      color:var(--muted);
+      white-space:nowrap;
+    }
+
+    /* Expert */
+    .answerBox{display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+    input[type="text"]{
+      flex:1;
+      min-width:210px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(0,0,0,.25);
+      color:var(--text);
+      outline:none;
+      font-size:13px;
+    }
+    input[type="text"]::placeholder{color:rgba(156,163,175,.75)}
+    .toast{
+      margin-top:8px;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.22);
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.35;
+    }
+    .toast.ok{border-color:rgba(34,197,94,.35); background:rgba(34,197,94,.10); color:#ecfdf5}
+    .toast.bad{border-color:rgba(239,68,68,.35); background:rgba(239,68,68,.08); color:#fff1f2}
+  </style>
+</head>
+<body>
+<header>
+  <h1>Nachweisspiel: Wasserstoff, Sauerstoff, Stickstoff, Kohlenstoffdioxid</h1>
+  <div class="topRight">
+    <div class="pill"><strong>Modus:</strong> <span id="modeLabel">Lernmodus</span></div>
+    <button class="btn" id="toggleModeBtn">Zu Expertenmodus wechseln</button>
+    <button class="btn ghost" id="resetBtn">Alles zurücksetzen</button>
+  </div>
+</header>
+
+<div class="layout">
+  <section class="panel stack">
+    <div id="learnControls">
+      <h2>Lernmodus: Gasflaschen</h2>
+      <p>Gasflasche anklicken (markiert), dann Reagenzglas anklicken (einfüllen). Kalkwasser per Drag & Drop ins Reagenzglas.</p>
+      <div class="sep"></div>
+
+      <div class="gasList">
+        <div class="gasBottle" data-gas="H2">
+          <div class="left"><div class="bottleIcon"></div><div><div class="name">Wasserstoff</div><div class="formula">H₂</div></div></div>
+          <div class="bottleTag">Gas</div>
+        </div>
+        <div class="gasBottle" data-gas="O2">
+          <div class="left"><div class="bottleIcon"></div><div><div class="name">Sauerstoff</div><div class="formula">O₂</div></div></div>
+          <div class="bottleTag">Gas</div>
+        </div>
+        <div class="gasBottle" data-gas="N2">
+          <div class="left"><div class="bottleIcon"></div><div><div class="name">Stickstoff</div><div class="formula">N₂</div></div></div>
+          <div class="bottleTag">Gas</div>
+        </div>
+        <div class="gasBottle" data-gas="CO2">
+          <div class="left"><div class="bottleIcon"></div><div><div class="name">Kohlenstoffdioxid</div><div class="formula">CO₂</div></div></div>
+          <div class="bottleTag">Gas</div>
+        </div>
+      </div>
+
+      <div class="sep"></div>
+      <div class="row">
+        <button class="btn" id="emptyTubeBtn">Reagenzglas leeren</button>
+      </div>
+    </div>
+
+    <div id="expertControls" style="display:none;">
+      <h2>Expertenmodus: Unbekanntes Gas bestimmen</h2>
+      <p>Keine Blindproben. Nutzen Sie Glimmspanprobe und Kalkwasser (CO₂ → trüb).</p>
+      <div class="sep"></div>
+      <div class="row">
+        <button class="btn primary" id="expertNewSampleBtn">Neue unbekannte Probe</button>
+        <button class="btn" id="emptyTubeBtn2">Reagenzglas leeren</button>
+      </div>
+      <div class="sep"></div>
+      <div class="answerBox">
+        <input id="answerInput" type="text" placeholder="Wasserstoff / Sauerstoff / Stickstoff / Kohlenstoffdioxid" />
+        <button class="btn primary" id="checkAnswerBtn">Lösung prüfen</button>
+      </div>
+      <div id="expertToast" class="toast" style="display:none;"></div>
+    </div>
+  </section>
+
+  <section class="workspace panel" id="workspace">
+    <div class="hint">
+      Brenner anklicken → an. Spießspitze in Flamme ziehen → Flamme an Spitze. Flamme anklicken → ausblasen (glühend).
+      Spitze in Reagenzglas ziehen → Probe. Kalkwasser-Glas ins Reagenzglas ziehen.
+    </div>
+
+    <div class="tubeWrap">
+      <div class="tubeStand"></div>
+      <div class="bubble" id="bubble">Plopp!</div>
+      <div class="explosion" id="explosion" aria-hidden="true"><div class="burst"></div><div class="sparks"></div></div>
+
+      <div class="tube" id="tube" title="Klick (Lernmodus): ausgewähltes Gas einfüllen">
+        <div class="tubeMouth"></div>
+        <div class="gasLabel" id="gasLabel">Reagenzglas: leer</div>
+        <div class="tubeInner"></div>
+        <div class="dropHint"></div>
+        <div class="liquid" id="liquid"></div>
+        <div class="milk" id="milk"></div>
+      </div>
+    </div>
+
+    <div class="burner" id="burner">
+      <div class="label">Brenner (Klick: an/aus)</div>
+      <div class="base"></div><div class="stem"></div><div class="nozzle"></div><div class="knob"></div>
+      <div class="flameZone"><div class="flame"></div></div>
+    </div>
+
+    <div class="limeGlass" id="limeGlass">
+      <div class="limeLabel">Kalkwasser</div>
+      <div class="glassCup"><div class="limeLiquid"></div></div>
+    </div>
+
+    <div class="splint unlit" id="splint" draggable="false">
+      <div class="stick"></div>
+      <div class="tip"></div>
+      <div class="char"></div>
+      <div class="ember"></div>
+      <div class="flameSmall"></div>
+      <div class="flameHitbox" id="splintFlameHitbox"></div>
+    </div>
+
+    <div class="bench"></div>
+  </section>
+</div>
+
+<script>
+(() => {
+  const state = {
+    mode: "learn",
+    burnerOn: false,
+    splintState: "unlit", // unlit | burning | glowing
+    tubeGas: null,        // H2 | O2 | N2 | CO2 | null
+    tubeHasLime: false,
+    expertUnknown: null,
+    selectedGas: null,
+    draggingEl: null,
+    dragOffsetX: 0,
+    dragOffsetY: 0
+  };
+
+  const burner = document.getElementById("burner");
+  const tube = document.getElementById("tube");
+  const gasLabel = document.getElementById("gasLabel");
+  const bubble = document.getElementById("bubble");
+  const explosion = document.getElementById("explosion");
+
+  const splint = document.getElementById("splint");
+  const flameHitbox = document.getElementById("splintFlameHitbox");
+
+  const limeGlass = document.getElementById("limeGlass");
+  const liquid = document.getElementById("liquid");
+  const milk = document.getElementById("milk");
+
+  const modeLabel = document.getElementById("modeLabel");
+  const toggleModeBtn = document.getElementById("toggleModeBtn");
+  const resetBtn = document.getElementById("resetBtn");
+
+  const learnControls = document.getElementById("learnControls");
+  const expertControls = document.getElementById("expertControls");
+  const emptyTubeBtn = document.getElementById("emptyTubeBtn");
+  const emptyTubeBtn2 = document.getElementById("emptyTubeBtn2");
+  const expertNewSampleBtn = document.getElementById("expertNewSampleBtn");
+  const answerInput = document.getElementById("answerInput");
+  const checkAnswerBtn = document.getElementById("checkAnswerBtn");
+  const expertToast = document.getElementById("expertToast");
+
+  const getRect = (el) => el.getBoundingClientRect();
+
+  const gasNameDE = (g) => {
+    switch(g){
+      case "H2": return "Wasserstoff (H₂)";
+      case "O2": return "Sauerstoff (O₂)";
+      case "N2": return "Stickstoff (N₂)";
+      case "CO2": return "Kohlenstoffdioxid (CO₂)";
+      default: return "leer";
+    }
+  };
+
+  const normalize = (s) => (s || "")
+    .toLowerCase()
+    .replaceAll("ä","ae").replaceAll("ö","oe").replaceAll("ü","ue").replaceAll("ß","ss")
+    .replaceAll("₂","2")
+    .replaceAll(/\s+/g," ")
+    .trim();
+
+  const acceptedAnswerToGas = (sNorm) => {
+    if (!sNorm) return null;
+    if (sNorm === "wasserstoff" || sNorm === "h2") return "H2";
+    if (sNorm === "sauerstoff" || sNorm === "o2") return "O2";
+    if (sNorm === "stickstoff" || sNorm === "n2") return "N2";
+    if (sNorm === "kohlenstoffdioxid" || sNorm === "kohlendioxid" || sNorm === "co2") return "CO2";
+    return null;
+  };
+
+  function pickRandomGas(){
+    const gases = ["H2","O2","N2","CO2"];
+    return gases[Math.floor(Math.random()*gases.length)];
+  }
+
+  function setSplintState(newState){
+    state.splintState = newState;
+    splint.classList.remove("unlit","burning","glowing");
+    splint.classList.add(newState);
+  }
+
+  function toggleBurner(){
+    state.burnerOn = !state.burnerOn;
+    burner.classList.toggle("on", state.burnerOn);
+  }
+
+  function showBubble(text){
+    bubble.textContent = text;
+    bubble.classList.add("show");
+    setTimeout(()=>bubble.classList.remove("show"), 800);
+  }
+
+  function showExplosion(){
+    explosion.classList.remove("show");
+    void explosion.offsetWidth;
+    explosion.classList.add("show");
+  }
+
+  function hideExplosionAndBubble(){
+    bubble.classList.remove("show");
+    explosion.classList.remove("show");
+  }
+
+  function updateTubeLabel(){
+    if(state.mode === "expert"){
+      gasLabel.textContent = state.tubeGas ? "Reagenzglas: unbekanntes Gas" : "Reagenzglas: leer";
+    }else{
+      gasLabel.textContent = state.tubeGas ? `Reagenzglas: ${gasNameDE(state.tubeGas)}` : "Reagenzglas: leer";
+    }
+  }
+
+  // Limewater effect always depends on current gas (order-independent)
+  function applyLimewaterEffect(){
+    if(!state.tubeHasLime) return;
+    liquid.style.height = "120px";
+    liquid.style.opacity = "1";
+
+    if(state.tubeGas === "CO2"){
+      milk.style.height = "115px";
+      milk.style.opacity = "1";
+    }else{
+      milk.style.height = "0px";
+      milk.style.opacity = "0";
+    }
+  }
+
+  function setTubeGas(g){
+    state.tubeGas = g;
+    updateTubeLabel();
+    applyLimewaterEffect();
+    hideExplosionAndBubble(); // prevent leftovers
+  }
+
+  function resetTube(){
+    state.tubeGas = null;
+    state.tubeHasLime = false;
+    liquid.style.height = "0px";
+    liquid.style.opacity = "0";
+    milk.style.height = "0px";
+    milk.style.opacity = "0";
+    updateTubeLabel();
+    tube.classList.remove("dragOver");
+    hideExplosionAndBubble();
+  }
+
+  function addLimewater(){
+    state.tubeHasLime = true;
+    applyLimewaterEffect();
+  }
+
+  function setMode(newMode){
+    state.mode = newMode;
+    modeLabel.textContent = (newMode === "learn") ? "Lernmodus" : "Expertenmodus";
+    toggleModeBtn.textContent = (newMode === "learn") ? "Zu Expertenmodus wechseln" : "Zu Lernmodus wechseln";
+
+    learnControls.style.display = (newMode === "learn") ? "" : "none";
+    expertControls.style.display = (newMode === "expert") ? "" : "none";
+
+    state.selectedGas = null;
+    document.querySelectorAll(".gasBottle").forEach(x => x.classList.remove("selected"));
+
+    expertToast.style.display = "none";
+    answerInput.value = "";
+
+    resetTube();
+
+    if(newMode === "expert"){
+      state.expertUnknown = pickRandomGas();
+      setTubeGas(state.expertUnknown);
+    }
+    updateTubeLabel();
+  }
+
+  // ---------------- CORE TEST LOGIC (FIXED) ----------------
+  function runSplintTest(){
+    if(!state.tubeGas) return;
+
+    // Always clear visuals first; they are ONLY allowed for H2
+    hideExplosionAndBubble();
+
+    const gas = state.tubeGas;
+    const spl = state.splintState;
+
+    // 1) H2: unchanged (plopp + explosion) when splint is burning or glowing
+    if(gas === "H2"){
+      if(spl === "burning" || spl === "glowing"){
+        showBubble("Plopp!");
+        showExplosion();
+        setSplintState("unlit");
+      }
+      return;
+    }
+
+    // 2) O2: NO plopp/explosion. Glowing splint reignites.
+    if(gas === "O2"){
+      if(spl === "glowing"){
+        setSplintState("burning");
+      }
+      // if already burning: stays burning; if unlit: nothing
+      return;
+    }
+
+    // 3) N2 / CO2: splint goes completely out; NO plopp/explosion
+    if(gas === "N2" || gas === "CO2"){
+      if(spl === "burning" || spl === "glowing"){
+        setSplintState("unlit");
+      }
+      return;
+    }
+  }
+
+  // Burner toggle
+  burner.addEventListener("click", () => toggleBurner());
+
+  // Blow out flame (pointerdown more reliable)
+  flameHitbox.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if(state.splintState === "burning"){
+      setSplintState("glowing");
+    }
+  });
+
+  // Gas bottle selection
+  document.querySelectorAll(".gasBottle").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if(state.mode !== "learn") return;
+      const g = btn.getAttribute("data-gas");
+      state.selectedGas = g;
+      document.querySelectorAll(".gasBottle").forEach(x => x.classList.remove("selected"));
+      btn.classList.add("selected");
+    });
+  });
+
+  // Fill tube by clicking tube (learn only)
+  tube.addEventListener("click", () => {
+    if(state.mode !== "learn") return;
+    if(!state.selectedGas) return;
+    setTubeGas(state.selectedGas);
+  });
+
+  // Buttons
+  emptyTubeBtn.addEventListener("click", () => resetTube());
+  emptyTubeBtn2.addEventListener("click", () => resetTube());
+
+  expertNewSampleBtn.addEventListener("click", () => {
+    state.expertUnknown = pickRandomGas();
+    resetTube();
+    setTubeGas(state.expertUnknown);
+    expertToast.style.display = "none";
+    answerInput.value = "";
+  });
+
+  checkAnswerBtn.addEventListener("click", () => {
+    const guessed = acceptedAnswerToGas(normalize(answerInput.value));
+    if(!guessed){
+      expertToast.className = "toast bad";
+      expertToast.style.display = "";
+      expertToast.textContent = "Eingabe nicht erkannt. Nutzen Sie: Wasserstoff / Sauerstoff / Stickstoff / Kohlenstoffdioxid (auch CO2/CO₂).";
+      return;
+    }
+    if(guessed === state.expertUnknown){
+      expertToast.className = "toast ok";
+      expertToast.style.display = "";
+      expertToast.textContent = "Richtig. Neue Probe wird geladen.";
+      state.expertUnknown = pickRandomGas();
+      resetTube();
+      setTubeGas(state.expertUnknown);
+      answerInput.value = "";
+    }else{
+      expertToast.className = "toast bad";
+      expertToast.style.display = "";
+      expertToast.textContent = "Falsch. Nutzen Sie Glimmspanprobe und Kalkwasser (CO₂ → trüb).";
+    }
+  });
+  answerInput.addEventListener("keydown", (e) => { if(e.key === "Enter") checkAnswerBtn.click(); });
+
+  toggleModeBtn.addEventListener("click", () => setMode(state.mode === "learn" ? "expert" : "learn"));
+
+  resetBtn.addEventListener("click", () => {
+    state.burnerOn = false;
+    burner.classList.remove("on");
+
+    setSplintState("unlit");
+    splint.style.left = "420px";
+    splint.style.bottom = "116px";
+    splint.style.top = "";
+
+    limeGlass.style.left = "330px";
+    limeGlass.style.bottom = "56px";
+    limeGlass.style.top = "";
+
+    resetTube();
+
+    expertToast.style.display = "none";
+    answerInput.value = "";
+    if(state.mode === "expert"){
+      state.expertUnknown = pickRandomGas();
+      setTubeGas(state.expertUnknown);
+    }
+
+    state.selectedGas = null;
+    document.querySelectorAll(".gasBottle").forEach(x => x.classList.remove("selected"));
+    updateTubeLabel();
+  });
+
+  // Drag helpers
+  function setElPos(el, x, y){
+    el.style.left = `${x}px`;
+    el.style.top = `${y}px`;
+    el.style.bottom = "auto";
+  }
+  function startDrag(elKey, el, e){
+    state.draggingEl = elKey;
+    const r = getRect(el);
+    state.dragOffsetX = e.clientX - r.left;
+    state.dragOffsetY = e.clientY - r.top;
+    el.setPointerCapture(e.pointerId);
+  }
+  function moveDrag(el, e){
+    const ws = document.getElementById("workspace").getBoundingClientRect();
+    let x = e.clientX - ws.left - state.dragOffsetX;
+    let y = e.clientY - ws.top - state.dragOffsetY;
+
+    const maxX = ws.width - getRect(el).width - 10;
+    const maxY = ws.height - getRect(el).height - 10;
+    x = Math.max(10, Math.min(x, maxX));
+    y = Math.max(10, Math.min(y, maxY));
+
+    setElPos(el, x, y);
+  }
+  function tubeMouthProximity(elRect){
+    const tubeRect = getRect(tube);
+    return (
+      (elRect.right > tubeRect.left + 18) &&
+      (elRect.left < tubeRect.right - 18) &&
+      (elRect.top < tubeRect.top + 120) &&
+      (elRect.bottom > tubeRect.top + 6)
+    );
+  }
+  function tryIgniteFromBurner(){
+    if(!state.burnerOn) return;
+    if(state.splintState !== "unlit") return;
+
+    const splRect = getRect(splint);
+    const burnerRect = getRect(burner);
+    const flameBox = {
+      left: burnerRect.left + 78,
+      right: burnerRect.left + 78 + 46,
+      top: burnerRect.top + 6,
+      bottom: burnerRect.top + 6 + 96
+    };
+    const tipPoint = { x: splRect.right - 10, y: splRect.top + 30 };
+    const inFlame =
+      tipPoint.x >= flameBox.left && tipPoint.x <= flameBox.right &&
+      tipPoint.y >= flameBox.top && tipPoint.y <= flameBox.bottom;
+
+    if(inFlame){
+      setSplintState("burning");
+    }
+  }
+
+  // Splint drag
+  splint.addEventListener("pointerdown", (e) => {
+    if(e.target === flameHitbox) return;
+    startDrag("splint", splint, e);
+  });
+  splint.addEventListener("pointermove", (e) => {
+    if(state.draggingEl !== "splint") return;
+    moveDrag(splint, e);
+
+    tube.classList.toggle("dragOver", tubeMouthProximity(getRect(splint)));
+    tryIgniteFromBurner();
+  });
+  splint.addEventListener("pointerup", (e) => {
+    if(state.draggingEl !== "splint") return;
+    state.draggingEl = null;
+
+    const droppedInMouth = tubeMouthProximity(getRect(splint));
+    tube.classList.remove("dragOver");
+
+    if(droppedInMouth){
+      runSplintTest();
+    }
+  });
+
+  // Lime drag
+  limeGlass.addEventListener("pointerdown", (e) => startDrag("lime", limeGlass, e));
+  limeGlass.addEventListener("pointermove", (e) => {
+    if(state.draggingEl !== "lime") return;
+    moveDrag(limeGlass, e);
+    tube.classList.toggle("dragOver", tubeMouthProximity(getRect(limeGlass)));
+  });
+  limeGlass.addEventListener("pointerup", (e) => {
+    if(state.draggingEl !== "lime") return;
+    state.draggingEl = null;
+
+    const droppedInMouth = tubeMouthProximity(getRect(limeGlass));
+    tube.classList.remove("dragOver");
+
+    if(droppedInMouth){
+      addLimewater();
+    }
+  });
+
+  // Init
+  setSplintState("unlit");
+  setMode("learn");
+  updateTubeLabel();
+})();
+</script>
+</body>
+</html>
+
