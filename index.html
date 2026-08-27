@@ -25,12 +25,22 @@
 
     .lab-link:hover {
       box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.1);
       transform: scale(1.05);
     }
 
     /* Klickflächen */
     .link-sek1 { top: 35%; left: 24%; width: 15%; height: 35%; }
     .link-sek2 { top: 30%; left: 68%; width: 12%; height: 40%; }
+    
+    /* Neue Klickfläche für Schultools (Lineal) */
+    .link-schultools { 
+      top: 15%; 
+      left: 31%; 
+      width: 38%; 
+      height: 12%; 
+      border-radius: 8px; /* Macht die Fläche rechteckig statt rund */
+    }
 
     /* Impressums-Link */
     .impressum-link {
@@ -52,6 +62,9 @@
   <div class="table-container">
     <a href="./Sekundarstufe-I/index.html" class="lab-link link-sek1" title="Sekundarstufe I"></a>
     <a href="./Sekundarstufe-II/index.html" class="lab-link link-sek2" title="Sekundarstufe II"></a>
+    
+    <!-- Hier ist der neue HTML-Link für das Lineal -->
+    <a href="./Schultools/index.html" class="lab-link link-schultools" title="Schultools"></a>
     
     <a href="./impressum.html" class="impressum-link">Impressum</a>
   </div>
