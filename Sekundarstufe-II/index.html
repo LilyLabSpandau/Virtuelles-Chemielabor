@@ -1,95 +1,91 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Sekundarstufe II - Chemie</title>
-  <style>
-    /* Reset: Entfernt alle Abstände und Scrollbalken komplett */
-    body, html { 
-      margin: 0; 
-      padding: 0; 
-      width: 100%; 
-      height: 100%; 
-      overflow: hidden; 
-      font-family: system-ui, sans-serif; 
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sekundarstufe II - Chemie</title>
+    <style>
+        body, html { 
+            margin: 0; 
+            padding: 0; 
+            height: 100%; 
+            font-family: sans-serif; 
+            background-color: #000; /* Falls das Bild lädt, bleibt der Hintergrund dunkel */
+        }
 
-    /* Schwebende Info-Box oben links */
-    .info-box {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      z-index: 10;
-      background: rgba(255, 255, 255, 0.85);
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-      backdrop-filter: blur(5px);
-      max-width: 320px;
-    }
+        .table-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            /* Hier wird dein Sek II Bild geladen */
+            background: url('Sek II.jpg') no-repeat center center;
+            background-size: cover;
+        }
 
-    .nav-btn { display: inline-block; margin-bottom: 12px; color: #b91c1c; text-decoration: none; font-weight: 600; }
-    .nav-btn:hover { text-decoration: underline; }
-    h1 { margin: 0 0 10px 0; font-size: 1.4rem; border-bottom: 3px solid #b91c1c; padding-bottom: 10px; color: #b91c1c; }
-    p { margin: 0; color: #333; font-size: 0.95rem; line-height: 1.4; }
+        .lab-link {
+            position: absolute;
+            display: block;
+            border-radius: 50%; /* Runde Klick-Bereiche, passend zu deinem Beispiel */
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
 
-    /* Zwingt den Container an alle 4 Ränder des Bildschirms */
-    .fullscreen-wrapper {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 1;
-    }
+        .lab-link:hover {
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.1);
+        }
 
-    /* Zwingt das Bild, den kompletten Container auszufüllen */
-    .fullscreen-wrapper img {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
+        /* Positionierung für die Gegenstände aus Sek II */
+        .link-q1 { /* Modell */
+            top: 22%; left: 35%;
+            width: 14%; height: 26%;
+        }
 
-    /* Klickbare Zonen */
-    .click-area {
-      position: absolute;
-      display: block;
-      border-radius: 12px;
-      transition: background-color 0.2s ease;
-      z-index: 5;
-    }
-    
-    .click-area:hover {
-      background-color: rgba(255, 255, 255, 0.4); 
-      cursor: pointer;
-    }
+        .link-q2 { /* Brenner */
+            top: 16%; left: 56%;
+            width: 12%; height: 32%;
+        }
 
-    /* Die Positionen */
-    .area-q1 { top: 22%; left: 35%; width: 14%; height: 26%; } 
-    .area-q2 { top: 16%; left: 56%; width: 12%; height: 32%; } 
-    .area-q3 { top: 52%; left: 35%; width: 14%; height: 22%; } 
-    .area-q4 { top: 54%; left: 55%; width: 14%; height: 20%; } 
+        .link-q3 { /* Zitrone */
+            top: 52%; left: 35%;
+            width: 14%; height: 22%;
+        }
 
-  </style>
+        .link-q4 { /* Batterie */
+            top: 54%; left: 55%;
+            width: 14%; height: 20%;
+        }
+
+        /* Zurück-Link */
+        .back-link {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: white;
+            text-decoration: none;
+            background: rgba(0,0,0,0.5);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        
+        .back-link:hover {
+            background: rgba(0,0,0,0.8);
+        }
+    </style>
 </head>
 <body>
 
-  <div class="info-box">
-    <a href="../index.html" class="nav-btn">← Zurück zur Übersicht</a>
-    <h1>Sekundarstufe II</h1>
-    <p>Wähle ein Semester aus, indem du auf den entsprechenden Gegenstand klickst.</p>
-  </div>
-
-  <!-- Der fixed Vollbild-Container -->
-  <div class="fullscreen-wrapper">
-    <img src="Sek II.jpg" alt="Chemie Labor Tisch mit Gegenständen für Q1 bis Q4">
-    
-    <a href="./Q1-Naturliche-und-synthetische-makromolekulare-Stoffe/index.html" class="click-area area-q1" title="Q1: Makromolekulare Stoffe"></a>
-    <a href="./Q2-Verlauf-chemischer-Reaktionen/index.html" class="click-area area-q2" title="Q2: Verlauf chemischer Reaktionen"></a>
-    <a href="./Q3-Das-Donator-Akzeptor-Prinzip/index.html" class="click-area area-q3" title="Q3: Donator-Akzeptor-Prinzip"></a>
-    <a href="./Q4-Elektrische-Energie-aus-chemischen-Reaktionen/index.html" class="click-area area-q4" title="Q4: Elektrische Energie"></a>
-  </div>
+    <div class="table-container">
+        <!-- Klickbare Gegenstände -->
+        <a href="./Q1-Naturliche-und-synthetische-makromolekulare-Stoffe/index.html" class="lab-link link-q1" title="Q1: Makromolekulare Stoffe"></a>
+        <a href="./Q2-Verlauf-chemischer-Reaktionen/index.html" class="lab-link link-q2" title="Q2: Verlauf chemischer Reaktionen"></a>
+        <a href="./Q3-Das-Donator-Akzeptor-Prinzip/index.html" class="lab-link link-q3" title="Q3: Donator-Akzeptor-Prinzip"></a>
+        <a href="./Q4-Elektrische-Energie-aus-chemischen-Reaktionen/index.html" class="lab-link link-q4" title="Q4: Elektrische Energie"></a>
+        
+        <!-- Navigation -->
+        <a href="../index.html" class="back-link">← Zurück zur Übersicht</a>
+    </div>
 
 </body>
 </html>
