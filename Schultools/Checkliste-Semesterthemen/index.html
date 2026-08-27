@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lern-Checkliste: Chemie Leistungskurs (Q1-Q4)</title>
+    
+    <!-- MathJax for rendering chemical and mathematical formulas -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --border-color: #e0e6ed;
+            --text-color: #333333;
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .overall-progress-container {
+            background-color: var(--border-color);
+            border-radius: 10px;
+            height: 20px;
+            width: 100%;
+            margin: 20px 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .overall-progress-bar {
+            background-color: var(--success-color);
+            height: 100%;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.8em;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .semester-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            padding: 25px;
+            border-left: 6px solid var(--accent-color);
+        }
+
+        .semester-card h2 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .topic-group {
+            margin-top: 20px;
+        }
+
+        .topic-group h3 {
+            color: var(--accent-color);
+            font-size: 1.2em;
+            margin-bottom: 15px;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            padding: 8px;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+        }
+
+        .checklist-item:hover {
+            background-color: #f1f4f8;
+        }
+
+        .checklist-item input[type="checkbox"] {
+            margin-top: 6px;
+            margin-right: 15px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--accent-color);
+        }
+
+        .checklist-item label {
+            cursor: pointer;
+            flex: 1;
+            font-size: 1.05em;
+        }
+
+        .completed label {
+            color: #7f8c8d;
+            text-decoration: line-through;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+
+        button.btn-success {
+            background-color: var(--success-color);
+        }
+        button.btn-success:hover {
+            background-color: #27ae60;
+        }
+
+        button.btn-danger {
+            background-color: var(--danger-color);
+        }
+        button.btn-danger:hover {
+            background-color: #c0392b;
+        }
+
+        .info-text {
+            width: 100%;
+            font-size: 0.85em;
+            color: #7f8c8d;
+            text-align: right;
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .semester-card {
+                padding: 15px;
+            }
+            .controls {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Qualifikationsphase Chemie (LK)</h1>
+            <p>Interaktive Lern-Checkliste basierend auf dem Rahmenlehrplan für die gymnasiale Oberstufe</p>
+            
+            <div class="overall-progress-container">
+                <div class="overall-progress-bar" id="progress-bar"></div>
+                <div class="progress-text" id="progress-text">0% abgeschlossen</div>
+            </div>
+        </header>
+
+        <!-- Neue Steuerungsleiste für Speichern/Laden -->
+        <div class="controls">
+            <div class="info-text">
+                💡 Dein Fortschritt wird automatisch im Browser gespeichert. Du kannst ihn aber auch als Datei exportieren, um ihn z.B. auf dem Handy weiter zu nutzen.
+            </div>
+            <button onclick="document.getElementById('import-file').click()">📂 Laden (.json)</button>
+            <input type="file" id="import-file" style="display: none;" accept=".json" onchange="importProgress(event)">
+            
+            <button class="btn-success" onclick="exportProgress()">💾 Speichern (.json)</button>
+            
+            <button class="btn-danger" onclick="resetProgress()">🗑️ Zurücksetzen</button>
+        </div>
+
+        <!-- Q1 -->
+        <div class="semester-card">
+            <h2>Q1: Natürliche und synthetische makromolekulare Stoffe</h2>
+            
+            <div class="topic-group">
+                <h3>3.2.1 Proteine</h3>
+                <div class="checklist-item"><input type="checkbox" id="q1-1"><label for="q1-1">Aminosäuren als chirale Verbindungen erkennen (asymmetrisch substituiertes C-Atom, Enantiomere)</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q1-2"><label for="q1-2">\(\alpha\)-L- und \(\alpha\)-D-Aminosäuren in der Fischer-Projektion darstellen</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q1-3"><label for="q1-3">Zwitterionen-Struktur und resultierende Eigenschaften (Schmelzpunkt, Löslichkeit, Säure-Base-Verhalten) erklären</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q1-4"><label for="q1-4">Peptidbildung und -spaltung als Kondensation und Hydrolyse formulieren</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q1-5"><label for="q1-5">Strukturebenen (Primär- bis Quartärstruktur) unter Einbeziehung inter- und intramolekularer Wechselwirkungen beschreiben</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q1-6"><label for="q1-6">Ursachen und Folgen der Denaturierung von Proteinen auf Teilchenebene erklären</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q1-7"><label for="q1-7">Proteinnachweise (Ninhydrin- und Biuret-Reaktion) anwenden</label></div>
+            </div>
+
+            <div class="topic-group">
+                <h3>3.2.2 Kunststoffe – problematische Alleskönner</h3>
+                <div class="checklist-item"><input type="checkbox" id="q1-8"><label for="q1-8">Kunststoffe nach Struktur und Verhalten (Thermoplaste, Duroplaste, Elastomere) klassifizieren</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q1-9"><label for="q1-9">Mechanismus der radikalischen Polymerisation (Start, Wachstum, Abbruch) formulieren</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q1-10"><label for="q1-10">Mechanismus der elektrophilen Addition (z. B. Bildung von Vinylchlorid) erklären</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q1-11"><label for="q1-11">Mechanismus der nucleophilen Substitution (S_N) am Beispiel der Synthese von Alkoholen aus Halogenalkanen beschreiben</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q1-12"><label for="q1-12">Polykondensation (Polyester, Polyamide) darstellen und Repetiereinheiten ermitteln</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q1-13"><label for="q1-13">Beispiele für Copolymerisation erläutern</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q1-14"><label for="q1-14">Recyclingverfahren (werkstofflich, rohstofflich, thermisch) und Umweltproblematik bewerten</label></div>
+            </div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="semester-card">
+            <h2>Q2: Verlauf chemischer Reaktionen</h2>
+            
+            <div class="topic-group">
+                <h3>3.2.3 Chemische Thermodynamik</h3>
+                <div class="checklist-item"><input type="checkbox" id="q2-1"><label for="q2-1">Kalorimetrische Berechnungen anwenden: \(Q = m \cdot c \cdot \Delta T\)</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q2-2"><label for="q2-2">Satz von Hess nutzen und molare Standardreaktionsenthalpien \(\Delta_r H_m^0\) berechnen</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q2-3"><label for="q2-3">Gitterenthalpie, Hydratationsenthalpie und Solvatation beim Lösevorgang erklären</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q2-4"><label for="q2-4">Entropiebegriff verstehen und Entropieänderung \(\Delta_r S_m^0\) berechnen</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q2-5"><label for="q2-5">Gibbs-Helmholtz-Gleichung (\(\Delta_r G_m^0 = \Delta_r H_m^0 - T \cdot \Delta_r S_m^0\)) zur Beurteilung der Spontaneität (exergonisch/endergonisch) anwenden</label></div>
+            </div>
+
+            <div class="topic-group">
+                <h3>3.2.4 Reaktionsgeschwindigkeit und Katalyse</h3>
+                <div class="checklist-item"><input type="checkbox" id="q2-6"><label for="q2-6">Einfluss von Temperatur, Konzentration und Zerteilungsgrad (Stoßtheorie, RGT-Regel) erläutern</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q2-7"><label for="q2-7">Quantitative Auswertung: \(v = \frac{\Delta c}{\Delta t}\) und Geschwindigkeitsgesetz \(v = k \cdot c\)</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q2-8"><label for="q2-8">Mechanismus der radikalischen Substitution (z. B. Halogenierung von Alkanen) formulieren</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q2-9"><label for="q2-9">Wirkungsweise von Katalysatoren (Aktivierungsenergie) im Energiediagramm darstellen</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q2-10"><label for="q2-10">Katalyse-Arten (homogen, heterogen, Oberflächenkatalyse, Autokatalyse, Enzyme) differenzieren</label></div>
+            </div>
+
+            <div class="topic-group">
+                <h3>3.2.5 Chemisches Gleichgewicht</h3>
+                <div class="checklist-item"><input type="checkbox" id="q2-11"><label for="q2-11">Massenwirkungsgesetz (MWG) aus den Reaktionsgeschwindigkeiten der Hin- und Rückreaktion herleiten</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q2-12"><label for="q2-12">MWG anwenden (Berechnung von Gleichgewichtskonstanten und -konzentrationen)</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q2-13"><label for="q2-13">Prinzip von Le Chatelier (Temperatur-, Druck-, Konzentrationsänderung) anwenden</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q2-14"><label for="q2-14">Löslichkeitsgleichgewicht, Löslichkeitsprodukt \(K_L\) interpretieren und konduktometrische Fällungstitration auswerten</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q2-15"><label for="q2-15">Mechanistische Betrachtung der säurekatalysierten Estersynthese durchführen</label></div>
+            </div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="semester-card">
+            <h2>Q3: Das Donator-Akzeptor-Prinzip</h2>
+            
+            <div class="topic-group">
+                <h3>3.2.6 Säure-Base-Reaktionen</h3>
+                <div class="checklist-item"><input type="checkbox" id="q3-1"><label for="q3-1">Säure-Base-Theorie nach Brønsted und Strukturmerkmale von Ampholyten erklären</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q3-2"><label for="q3-2">Autoprotolyse des Wassers, Ionenprodukt \(K_W\), pH und pOH-Wert berechnen (\(pK_W = pH + pOH\))</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q3-3"><label for="q3-3">Säure-Base-Konstanten \(K_S, K_B\) und \(pK_S, pK_B\) interpretieren und induktiven Effekt bewerten</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q3-4"><label for="q3-4">pH-Werte für starke und mittelstarke/schwache Säuren (Näherungsformel) berechnen</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q3-5"><label for="q3-5">Koordinative Bindung am Beispiel von Aquakomplexen (hydratisierte Metall-Ionen) und deren pH-Werte erläutern</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q3-6"><label for="q3-6">Titrationskurven (ein-/mehrprotonig, stark/schwach) charakterisieren (Äquivalenz-, Halbäquivalenz-, Neutralpunkt)</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q3-7"><label for="q3-7">Puffersysteme in Natur und Technik sowie deren Wirkungsweise auf Teilchenebene erklären</label></div>
+            </div>
+
+            <div class="topic-group">
+                <h3>3.2.7 Indikatorfarbstoffe</h3>
+                <div class="checklist-item"><input type="checkbox" id="q3-8"><label for="q3-8">Zusammenhang zwischen Licht, Absorption, Reflexion und Farbigkeit (Energiestufenmodell) beschreiben</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q3-9"><label for="q3-9">Mesomeriemodell, aromatisches System und delokalisierte \(\pi\)-Elektronen verstehen</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q3-10"><label for="q3-10">Mechanismus der elektrophilen Erstsubstitution am Aromaten formulieren</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q3-11"><label for="q3-11">Chromophore, auxochrome und antiauxochrome Gruppen (bathochromer/hypsochromer Effekt) identifizieren</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q3-12"><label for="q3-12">Molekülstrukturen (Azofarbstoffe, Triphenylmethanfarbstoffe) und deren Farbwechsel nach Brønsted erklären</label></div>
+            </div>
+
+            <div class="topic-group">
+                <h3>3.2.8 Redoxreaktionen</h3>
+                <div class="checklist-item"><input type="checkbox" id="q3-13"><label for="q3-13">Regeln zur Bestimmung der Oxidationszahlen (anorganisch und organisch) anwenden</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q3-14"><label for="q3-14">Elektronenkonfiguration nach dem Bohr-Sommerfeld-Atommodell ableiten und mit Oxidationsstufen verknüpfen</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q3-15"><label for="q3-15">Redoxreaktionen aufstellen und Redoxreihe der Metalle nutzen</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q3-16"><label for="q3-16">Disproportionierung und Synproportionierung als spezielle Redoxreaktionen erklären</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q3-17"><label for="q3-17">Oxidationsreihe organischer Stoffe (Alkanol \(\rightarrow\) Alkanal \(\rightarrow\) Alkansäure) formulieren und Fehling-/Tollens-Probe beschreiben</label></div>
+            </div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="semester-card">
+            <h2>Q4: Elektrische Energie aus chemischen Reaktionen</h2>
+            
+            <div class="topic-group">
+                <h3>3.2.9 Elektrochemie</h3>
+                <div class="checklist-item"><input type="checkbox" id="q4-1"><label for="q4-1">Bau und Arbeitsweise galvanischer Zellen (z. B. Daniell-Element) beschreiben</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q4-2"><label for="q4-2">Zellspannungen unter Standardbedingungen mit Standardelektrodenpotenzialen berechnen</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q4-3"><label for="q4-3">Konzentrationsabhängigkeit des Potenzials erfassen und Nernst-Gleichung berechnen: \(E = E^0 + \frac{R\cdot T}{z\cdot F} \cdot \ln\frac{c(Ox)}{c(Red)}\)</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q4-4"><label for="q4-4">Konzentrationszellen aufbauen und Zellspannungen auswerten</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q4-5"><label for="q4-5">Vorgänge bei der Elektrolyse (inkl. Zersetzungsspannung, Überspannung) und Faraday-Gesetze zur quantitativen Bestimmung nutzen</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q4-6"><label for="q4-6">Elektrochemische Korrosion (Lokalelement, Sauerstoff-/Säurekorrosion) erläutern</label></div>
+                <div class="checklist-item"><input type="checkbox" id="q4-7"><label for="q4-7">Korrosionsschutz (Opferanode) und die Anwendung superhydrophober Nanomaterialien bewerten</label></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            
+            // Lade gespeicherten Stand (LocalStorage = automatisches Speichern auf demselben Gerät)
+            checkboxes.forEach(box => {
+                const isChecked = localStorage.getItem(box.id) === 'true';
+                box.checked = isChecked;
+                updateStyle(box);
+                
+                // Füge Event-Listener hinzu
+                box.addEventListener('change', (e) => {
+                    localStorage.setItem(e.target.id, e.target.checked);
+                    updateStyle(e.target);
+                    updateProgress();
+                });
+            });
+            
+            updateProgress();
+        });
+
+        function updateStyle(checkbox) {
+            if (checkbox.checked) {
+                checkbox.parentElement.classList.add('completed');
+            } else {
+                checkbox.parentElement.classList.remove('completed');
+            }
+        }
+
+        function updateProgress() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            const total = checkboxes.length;
+            const checked = document.querySelectorAll('input[type="checkbox"]:checked').length;
+            
+            const percentage = total === 0 ? 0 : Math.round((checked / total) * 100);
+            
+            document.getElementById('progress-bar').style.width = percentage + '%';
+            document.getElementById('progress-text').innerText = percentage + '% abgeschlossen';
+        }
+
+        // --- NEUE EXPORT/IMPORT FUNKTIONEN ---
+
+        function exportProgress() {
+            const data = {};
+            document.querySelectorAll('input[type="checkbox"]').forEach(box => {
+                data[box.id] = box.checked;
+            });
+            
+            const jsonStr = JSON.stringify(data);
+            const blob = new Blob([jsonStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "chemie_lk_fortschritt.json";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function importProgress(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    for (const id in data) {
+                        const box = document.getElementById(id);
+                        if (box) {
+                            box.checked = data[id];
+                            localStorage.setItem(id, data[id]); // Update lokalen Speicher direkt mit
+                            updateStyle(box);
+                        }
+                    }
+                    
+                    updateProgress();
+                    alert("Fortschritt erfolgreich geladen! 🚀");
+                } catch (err) {
+                    alert("Fehler beim Laden der Datei. Ist es die richtige Datei?");
+                }
+                
+                // Input zurücksetzen, damit die gleiche Datei bei Bedarf erneut geladen werden kann
+                event.target.value = "";
+            };
+            
+            reader.readAsText(file);
+        }
+
+        function resetProgress() {
+            if (confirm('Möchten Sie Ihren gesamten Fortschritt wirklich löschen?')) {
+                const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+                checkboxes.forEach(box => {
+                    box.checked = false;
+                    localStorage.removeItem(box.id);
+                    updateStyle(box);
+                });
+                updateProgress();
+            }
+        }
+    </script>
+</body>
+</html>
