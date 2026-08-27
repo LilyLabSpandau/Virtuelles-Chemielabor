@@ -5,13 +5,69 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Sekundarstufe II - Chemie</title>
   <style>
-    body { font-family: system-ui, sans-serif; background-color: #f8fafc; padding: 20px; color: #0f172a; }
-    .container { max-width: 800px; margin: 0 auto; }
-    .nav-btn { display: inline-block; margin-bottom: 20px; color: #b91c1c; text-decoration: none; }
-    h1 { border-bottom: 3px solid #b91c1c; padding-bottom: 10px; color: #b91c1c; }
-    .grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 20px; }
-    .card { background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; text-decoration: none; color: #0f172a; font-weight: 600; display: block; }
-    .card:hover { border-color: #b91c1c; }
+    body { 
+      font-family: system-ui, sans-serif; 
+      background-color: #f8fafc; 
+      padding: 20px; 
+      color: #0f172a; 
+    }
+    .container { 
+      max-width: 800px; 
+      margin: 0 auto; 
+    }
+    .nav-btn { 
+      display: inline-block; 
+      margin-bottom: 20px; 
+      color: #b91c1c; 
+      text-decoration: none; 
+      font-weight: 600;
+    }
+    .nav-btn:hover {
+      text-decoration: underline;
+    }
+    h1 { 
+      border-bottom: 3px solid #b91c1c; 
+      padding-bottom: 10px; 
+      color: #b91c1c; 
+    }
+    
+    /* Container für das Bild, damit wir die Links absolut darin positionieren können */
+    .image-container {
+      position: relative;
+      width: 100%;
+      margin-top: 20px;
+    }
+    
+    /* Das eigentliche Bild */
+    .image-container img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    /* Basis-Klasse für die unsichtbaren klickbaren Bereiche */
+    .click-area {
+      position: absolute;
+      display: block;
+      border-radius: 12px; /* Leicht abgerundete Ecken für den Hover-Effekt */
+      transition: background-color 0.2s ease;
+    }
+    
+    /* Leichter weißer Schleier, wenn man mit der Maus über das Objekt fährt */
+    .click-area:hover {
+      background-color: rgba(255, 255, 255, 0.35); 
+      cursor: pointer;
+    }
+
+    /* Prozentuale Positionierung der einzelnen Gegenstände */
+    /* Die Werte (top, left, width, height) sind auf das vorliegende Bild abgestimmt */
+    .area-q1 { top: 22%; left: 35%; width: 14%; height: 26%; } /* Modell */
+    .area-q2 { top: 16%; left: 56%; width: 12%; height: 32%; } /* Brenner */
+    .area-q3 { top: 52%; left: 35%; width: 14%; height: 22%; } /* Zitrone */
+    .area-q4 { top: 54%; left: 55%; width: 14%; height: 20%; } /* Batterie */
+
   </style>
 </head>
 <body>
@@ -20,12 +76,17 @@
     <a href="../index.html" class="nav-btn">← Zurück zur Übersicht</a>
     
     <h1>Sekundarstufe II (Qualifikationsphase)</h1>
+    <p>Wähle ein Semester aus, indem du auf den entsprechenden Gegenstand klickst:</p>
     
-    <div class="grid">
-      <a href="./Q1-Naturliche-und-synthetische-makromolekulare-Stoffe/index.html" class="card">Q1: Makromolekulare Stoffe</a>
-      <a href="./Q2-Verlauf-chemischer-Reaktionen/index.html" class="card">Q2: Verlauf chemischer Reaktionen</a>
-      <a href="./Q3-Das-Donator-Akzeptor-Prinzip/index.html" class="card">Q3: Donator-Akzeptor-Prinzip</a>
-      <a href="./Q4-Elektrische-Energie-aus-chemischen-Reaktionen/index.html" class="card">Q4: Elektrische Energie</a>
+    <div class="image-container">
+      <!-- Das Bild wird hier geladen -->
+      <img src="Sek II.jpg" alt="Chemie Labor Tisch mit Gegenständen für Q1 bis Q4">
+      
+      <!-- Klickbare Zonen, die über dem Bild liegen -->
+      <a href="./Q1-Naturliche-und-synthetische-makromolekulare-Stoffe/index.html" class="click-area area-q1" title="Q1: Makromolekulare Stoffe"></a>
+      <a href="./Q2-Verlauf-chemischer-Reaktionen/index.html" class="click-area area-q2" title="Q2: Verlauf chemischer Reaktionen"></a>
+      <a href="./Q3-Das-Donator-Akzeptor-Prinzip/index.html" class="click-area area-q3" title="Q3: Donator-Akzeptor-Prinzip"></a>
+      <a href="./Q4-Elektrische-Energie-aus-chemischen-Reaktionen/index.html" class="click-area area-q4" title="Q4: Elektrische Energie"></a>
     </div>
   </div>
 
