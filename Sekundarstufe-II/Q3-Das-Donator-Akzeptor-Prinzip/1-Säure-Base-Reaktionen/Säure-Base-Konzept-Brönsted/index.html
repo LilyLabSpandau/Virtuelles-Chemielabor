@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="de">
+<head><script type='text/javascript' nonce='aVW33ut/Njtx4qoEpEKQjA==' src='https://contribution.usercontent.google.com/Zu8g3lJiUOAsyWmKPLkMRVCv1_8r0157viHq-ZP41jGyX80TsZwaXTjj95q3xgo9yPQPM9rdhDAm4ZgF2ypyzooEBXRSRCiv1uAbyNlDp9xii15NvJg8NOi2j-AFQR4V93ZPQ7Oyrb-gXQBi0s1X5kNZLKxGVT5jwXRxouUH6S94EVGwVjUXgsCJowtKxBqGn6RlpImNHqW-xU8KW_uAtnFYs0nVqvF4Nh-3UGDIOZOAAUmfCXA2dF_RQH6l5mFMhp439DCnmRtZJDMIo2fkWDD657z-aPQLUzPMKwlREMsoIgMQl-xxiogdQaBoHXUUJvczkS4zzb-berLs0J_HAhe9G9V69FgtcCTg3TeAauNyT0n76Ek1M9_B-I6FvOC2HnyyZBjlxhkBRQv6Cmccaulf8zoCgs-CWaWJN_jC5jbXV1JKdcNc2LrQiseWZW06jLcKUDqw6T_I5ksQbCeIB-qXV8gZU0VB3NRGDDuZm0WYZhGLWHLhSq2KbwtPMCUnJE5uxzTrIizYa_-Askgv_invBkasKp1cVQNiUwNBJSJimmAQsQ-nAcQ29MGcfnc3vSYsnHQ_nu014x3e2dG22VaGyzCYoEERglAvxB4ziz6CiClgOK9Lq_ssOmMKlKpcsxIhbPmBDbvRL8IWgwaQrfpn332lg3tT8WheVlvIpUE4lPmLO_ZB2KyuUXjzbQcwkY1DoExRgO-P1U95kA5LgG7HOnsZ9bA0nUGSvereFRx72w'></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lernmodul: Das Brønsted-Säure-Base-Konzept</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2, h3, h4 { color: #2c3e50; }
+        h1 { text-align: center; margin-bottom: 30px; }
+        
+        /* Tab-Navigation */
+        .tab-nav {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            background-color: #bdc3c7;
+            color: #2c3e50;
+            border: none;
+            border-radius: 5px 5px 0 0;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .tab-btn.active {
+            background-color: #3498db;
+            color: white;
+        }
+        .tab-btn:hover:not(.active) { background-color: #95a5a6; }
+
+        /* Modul-Container */
+        .module {
+            display: none;
+            background: #fff;
+            padding: 40px;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .module.active { display: block; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* UI Elemente */
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            flex-wrap: wrap;
+        }
+        button.action-btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button.action-btn:hover { background-color: #2980b9; }
+        input[type="range"] { width: 250px; cursor: pointer; }
+        
+        .simulation-box {
+            background: #fafafa;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            padding: 20px;
+        }
+        svg { width: 100%; height: auto; }
+
+        /* SVG Styling */
+        .bond { stroke: #7f8c8d; stroke-width: 6; stroke-linecap: round; }
+        .lewis-text { font-family: 'Courier New', Courier, monospace; font-size: 32px; font-weight: bold; text-anchor: middle; dominant-baseline: central; }
+        .lewis-bond { stroke: #2c3e50; stroke-width: 3; stroke-linecap: round; }
+        .charge { font-size: 20px; font-weight: bold; font-family: sans-serif; }
+        .proton-charge { font-size: 16px; font-weight: bold; font-family: sans-serif; fill: #e67e22; }
+        .partial { font-size: 18px; font-style: italic; fill: #7f8c8d; }
+
+        /* Quiz Styling Modul 3 */
+        .quiz-container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            padding: 15px;
+            background: #ecf0f1;
+            border-radius: 8px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .quiz-item {
+            text-align: center;
+            flex: 1;
+            min-width: 250px;
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #bdc3c7;
+            margin-top: 10px;
+        }
+        #quiz-feedback {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 20px;
+            min-height: 27px;
+        }
+        .success { color: #27ae60; }
+        .error { color: #c0392b; }
+
+        /* Theorie Modul Styling */
+        .fachtext-box {
+            text-align: justify;
+            margin-top: 20px;
+        }
+        .fachtext-box p {
+            margin-bottom: 15px;
+        }
+        .highlight-box {
+            background-color: #e8f4f8;
+            border-left: 5px solid #3498db;
+            padding: 15px 20px;
+            margin: 25px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .equation {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.2em;
+            text-align: center;
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border: 1px dashed #ccc;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Lernmodul: Säure-Base-Reaktionen</h1>
+
+    <!-- Navigation -->
+    <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab(1)">Modul 1: Beobachtung</button>
+        <button class="tab-btn" onclick="switchTab(2)">Modul 2: Fachtext - Das Konzept</button>
+        <button class="tab-btn" onclick="switchTab(3)">Modul 3: Anwendung</button>
+    </div>
+
+    <!-- MODUL 1: Beobachtung -->
+    <div id="modul-1" class="module active">
+        <h2>Modul 1: Der Protonenübergang auf Teilchenebene</h2>
+        <p>Beobachte genau, wie die Moleküle von Ammoniak und Wasser miteinander reagieren. Nutze den Schieberegler, um den Mechanismus im Detail zu analysieren.</p>
+        
+        <div class="controls">
+            <button id="m1-playBtn" class="action-btn">▶ Animation starten</button>
+            <button id="m1-resetBtn" class="action-btn">↺ Zurücksetzen</button>
+            <label for="m1-timeline">Manueller Verlauf:</label>
+            <input type="range" id="m1-timeline" min="0" max="100" value="0">
+        </div>
+
+        <div class="simulation-box">
+            <h3>Kugel-Stäbchen-Modell</h3>
+            <svg id="m1-svg-ball-stick" viewbox="0 0 800 250">
+                <defs>
+                    <radialgradient id="gradN" cx="30%" cy="30%" r="70%"><stop offset="0%" stop-color="#5dade2"/><stop offset="100%" stop-color="#2980b9"/></radialGradient>
+                    <radialgradient id="gradO" cx="30%" cy="30%" r="70%"><stop offset="0%" stop-color="#ec7063"/><stop offset="100%" stop-color="#c0392b"/></radialGradient>
+                    <radialgradient id="gradH" cx="30%" cy="30%" r="70%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#bdc3c7"/></radialGradient>
+                    <radialgradient id="gradProton" cx="30%" cy="30%" r="70%"><stop offset="0%" stop-color="#f4d03f"/><stop offset="100%" stop-color="#f39c12"/></radialGradient>
+                    <marker id="arrow" viewbox="0 0 10 10" refx="8" refy="5" markerwidth="6" markerheight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#8e44ad"/></marker>
+                </defs>
+
+                <!-- Bindungen & Atome M1 -->
+                <line x1="200" y1="125" x2="140" y2="60" class="bond"/>
+                <line x1="200" y1="125" x2="120" y2="125" class="bond"/>
+                <line x1="200" y1="125" x2="140" y2="190" class="bond"/>
+                <line id="m1-bs-new-bond" x1="200" y1="125" x2="330" y2="125" class="bond" opacity="0"/>
+                <line id="m1-bs-breaking-bond" x1="600" y1="125" x2="470" y2="125" class="bond"/>
+                <line x1="600" y1="125" x2="660" y2="190" class="bond"/>
+
+                <circle cx="140" cy="60" r="20" fill="url(#gradH)"/>
+                <circle cx="120" cy="125" r="20" fill="url(#gradH)"/>
+                <circle cx="140" cy="190" r="20" fill="url(#gradH)"/>
+                <circle cx="200" cy="125" r="35" fill="url(#gradN)"/>
+
+                <circle cx="660" cy="190" r="20" fill="url(#gradH)"/>
+                <circle cx="600" cy="125" r="35" fill="url(#gradO)"/>
+
+                <g id="m1-bs-proton-group">
+                    <circle id="m1-bs-proton" cx="470" cy="125" r="20" fill="url(#gradProton)"/>
+                    <text id="m1-bs-flight-charge" x="470" y="125" class="charge" fill="#fff" opacity="0" text-anchor="middle" dominant-baseline="central">+</text>
+                </g>
+                <text id="m1-bs-charge-n" x="220" y="95" class="charge" fill="#2980b9" opacity="0">+</text>
+                <text id="m1-bs-charge-o" x="620" y="95" class="charge" fill="#c0392b" opacity="0">-</text>
+            </svg>
+        </div>
+
+        <div class="simulation-box">
+            <h3>Lewis-Formel (Elektronenstrichformel)</h3>
+            <svg id="m1-svg-lewis" viewbox="0 0 800 250">
+                <path id="m1-mech-arrow" d="M 235 110 Q 350 40 455 105" fill="none" stroke="#8e44ad" stroke-width="3" marker-end="url(#arrow)"/>
+                <text x="200" y="125" class="lewis-text">N</text><text x="140" y="60" class="lewis-text">H</text><text x="120" y="125" class="lewis-text">H</text><text x="140" y="190" class="lewis-text">H</text>
+                <line x1="180" y1="110" x2="155" y2="80" class="lewis-bond"/><line x1="175" y1="125" x2="140" y2="125" class="lewis-bond"/><line x1="180" y1="140" x2="155" y2="170" class="lewis-bond"/>
+                <line id="m1-lewis-n-lonepair" x1="225" y1="115" x2="225" y2="135" class="lewis-bond"/>
+                <line id="m1-lewis-new-bond" x1="220" y1="125" x2="315" y2="125" class="lewis-bond" opacity="0"/>
+
+                <text x="600" y="125" class="lewis-text">O</text><text x="660" y="190" class="lewis-text">H</text>
+                <line x1="615" y1="145" x2="645" y2="175" class="lewis-bond"/>
+                <line x1="585" y1="95" x2="615" y2="95" class="lewis-bond"/><line x1="625" y1="105" x2="640" y2="130" class="lewis-bond"/>
+                <line id="m1-lewis-o-new-lonepair" x1="565" y1="115" x2="565" y2="135" class="lewis-bond" opacity="0"/>
+                <line id="m1-lewis-breaking-bond" x1="575" y1="125" x2="505" y2="125" class="lewis-bond"/>
+
+                <g id="m1-lewis-proton-group">
+                    <text id="m1-lewis-proton" x="470" y="125" class="lewis-text" fill="#f39c12">H</text>
+                    <text id="m1-lewis-flight-charge" x="485" y="110" class="proton-charge" opacity="0">+</text>
+                </g>
+                <text id="m1-partial-h" x="470" y="90" class="partial">δ+</text><text id="m1-partial-o" x="600" y="70" class="partial">δ-</text>
+
+                <circle id="m1-charge-circle-n" cx="230" cy="90" r="12" fill="none" stroke="#2980b9" stroke-width="2" opacity="0"/>
+                <text id="m1-lewis-charge-n" x="230" y="92" class="charge" fill="#2980b9" opacity="0" text-anchor="middle" dominant-baseline="central">+</text>
+                
+                <circle id="m1-charge-circle-o" cx="570" cy="90" r="12" fill="none" stroke="#c0392b" stroke-width="2" opacity="0"/>
+                <text id="m1-lewis-charge-o" x="570" y="90" class="charge" fill="#c0392b" opacity="0" text-anchor="middle" dominant-baseline="central">-</text>
+            </svg>
+        </div>
+    </div>
+
+    <!-- MODUL 2: Fachtext -->
+    <div id="modul-2" class="module">
+        <h2>Modul 2: Die Theorie nach Brønsted und Lowry</h2>
+        
+        <div class="fachtext-box">
+            <h3>1. Die Grenzen des Arrhenius-Konzepts</h3>
+            <p>Ende des 19. Jahrhunderts definierte der schwedische Chemiker Svante Arrhenius Säuren und Basen über das Prinzip der elektrolytischen Dissoziation. Nach seiner Theorie ist eine Säure ein Stoff, der in wässriger Lösung in positiv geladene Wasserstoff-Ionen (H<sup>+</sup>) und negativ geladene Säurerest-Ionen zerfällt. Eine Base hingegen dissoziiert in Metall-Kationen und Hydroxid-Ionen (OH<sup>&minus;</sup>). Obwohl dieses Konzept viele Beobachtungen erklären konnte, stieß es im frühen 20. Jahrhundert auf unüberwindbare Widersprüche:</p>
+            
+            <ul>
+                <li><strong>Abhängigkeit vom Lösungsmittel:</strong> Das Arrhenius-Konzept setzt zwingend Wasser als Lösungsmittel voraus. Es konnte Säure-Base-Reaktionen, die in anderen Lösungsmitteln oder gar im gasförmigen Zustand stattfinden (wie etwa die Reaktion von gasförmigem Chlorwasserstoff mit gasförmigem Ammoniak zu festem Ammoniumchlorid), nicht erklären.</li>
+                <li><strong>Strukturelle Widersprüche:</strong> Leitet man das Gas Ammoniak (NH<sub>3</sub>) in Wasser ein, reagiert die Lösung eindeutig basisch (der pH-Wert steigt). Nach Arrhenius müsste eine Base jedoch zwingend eine Hydroxid-Gruppe (OH) in ihrer chemischen Formel enthalten, um OH<sup>&minus;</sup>-Ionen abspalten zu können. Das Molekül NH<sub>3</sub> besitzt jedoch überhaupt keine Sauerstoffatome.</li>
+                <li><strong>Die Natur des Protons:</strong> Arrhenius ging davon aus, dass H<sup>+</sup>-Ionen frei in der Lösung schwimmen. Ein H<sup>+</sup>-Ion ist jedoch physikalisch betrachtet ein bloßes, "nacktes" Proton. Aufgrund seiner extrem geringen Größe und der damit verbundenen immens hohen Ladungsdichte kann es in wässriger Umgebung nicht isoliert existieren. Es lagert sich sofort an ein freies Elektronenpaar eines Wassermoleküls an und bildet ein Oxonium-Ion (H<sub>3</sub>O<sup>+</sup>).</li>
+            </ul>
+
+            <h3>2. Der Paradigmenwechsel (1923)</h3>
+            <p>Um diese eklatanten Lücken zu schließen, veröffentlichten der dänische Physikochemiker <strong>Johannes Nicolaus Brønsted</strong> und der englische Chemiker <strong>Thomas Martin Lowry</strong> im Jahr 1923 unabhängig voneinander eine revolutionäre neue Säure-Base-Theorie. Ihr Ansatz löste sich vollständig von der Idee, dass Säuren und Basen passiv in Ionen "zerfallen" müssen. Stattdessen stellten sie die Wechselwirkung zwischen Molekülen in den Mittelpunkt und definierten Säure-Base-Vorgänge als aktive <strong>Teilchenübertragungen</strong>.</p>
+
+            <div class="highlight-box">
+                <h4>Das Donator-Akzeptor-Konzept nach Brønsted</h4>
+                <p>Eine Säure-Base-Reaktion ist ein chemischer Vorgang, bei dem ein Proton (H<sup>+</sup>) von einem Reaktionspartner auf einen anderen übertragen wird. Dieser Vorgang wird als <strong>Protolyse</strong> bezeichnet.</p>
+                <ul>
+                    <li><strong>Säure (Protonendonator):</strong> Ein Teilchen (Molekül oder Ion), das ein Proton (H<sup>+</sup>) abgibt. <em>(Vom lateinischen "donare" = geben/schenken)</em></li>
+                    <li><strong>Base (Protonenakzeptor):</strong> Ein Teilchen (Molekül oder Ion), das ein Proton (H<sup>+</sup>) aufnimmt. Dafür muss das Teilchen zwingend über mindestens ein freies Elektronenpaar verfügen, an welches das H<sup>+</sup>-Ion koordinativ binden kann. <em>(Vom lateinischen "accipere" = annehmen)</em></li>
+                </ul>
+            </div>
+
+            <h3>3. Die Lösung des Ammoniak-Problems</h3>
+            <p>Mit der Brønsted-Theorie ließ sich das Rätsel um die basische Reaktion von Ammoniak (NH<sub>3</sub>) elegant lösen. Ammoniak fungiert nicht deshalb als Base, weil es selbst OH<sup>&minus;</sup>-Ionen freisetzt, sondern weil das Stickstoffatom ein freies Elektronenpaar besitzt. Es wirkt somit als <strong>Protonenakzeptor</strong>.</p>
+            <p>Wenn Ammoniak in Wasser gelöst wird, entzieht es dem Wassermolekül (H<sub>2</sub>O) ein Proton. Das Wasser wird bei diesem Vorgang gezwungen, als Protonendonator (Säure) zu reagieren. Die Atombindung im Wassermolekül bricht heterolytisch, und das Sauerstoffatom behält das bindende Elektronenpaar für sich.</p>
+            
+            <div class="equation">
+                NH<sub>3</sub> + H<sub>2</sub>O &rightleftharpoons; NH<sub>4</sub><sup>+</sup> + OH<sup>&minus;</sup>
+            </div>
+
+            <p>Durch diesen Protonenübergang entstehen aus den beiden elektrisch neutralen Molekülen ein positiv geladenes Ammonium-Ion (NH<sub>4</sub><sup>+</sup>) und ein negativ geladenes Hydroxid-Ion (OH<sup>&minus;</sup>). Das Hydroxid-Ion stammt also originär aus dem Lösungsmittel Wasser und nicht aus dem Ammoniakmolekül. Damit war die basische Reaktion strukturell erklärt, ohne dass die Grenzen der alten Dissoziationstheorie verletzt wurden.</p>
+
+            <h3>4. Korrespondierende Säure-Base-Paare</h3>
+            <p>Ein zentrales Merkmal der Brønsted-Theorie ist, dass Protolysen prinzipiell umkehrbare Gleichgewichtsreaktionen sind (gekennzeichnet durch den Gleichgewichtspfeil &rightleftharpoons;). Betrachtet man die Rückreaktion der obigen Gleichung, gibt das Ammonium-Ion (NH<sub>4</sub><sup>+</sup>) ein Proton an das Hydroxid-Ion ab. Folglich ist das Ammonium-Ion in der Rückreaktion die Säure und das Hydroxid-Ion die Base. Jede Säure wird durch die Abgabe eines Protons zu einer Base, und jede Base wird durch die Aufnahme eines Protons zu einer Säure. Man spricht hierbei von <strong>korrespondierenden Säure-Base-Paaren</strong> (z.B. NH<sub>3</sub> / NH<sub>4</sub><sup>+</sup> sowie H<sub>2</sub>O / OH<sup>&minus;</sup>).</p>
+        </div>
+    </div>
+
+    <!-- MODUL 3: Anwendung -->
+    <div id="modul-3" class="module">
+        <h2>Modul 3: Wissen anwenden</h2>
+        <p>Lass die Animation ablaufen. Identifiziere anhand der Vorgänge, welches Molekül nach der Brønsted-Theorie als Säure und welches als Base fungiert. Ordne die Begriffe unten korrekt zu.</p>
+        
+        <div class="controls">
+            <button id="m3-playBtn" class="action-btn">▶ Animation starten</button>
+            <button id="m3-resetBtn" class="action-btn">↺ Zurücksetzen</button>
+            <input type="range" id="m3-timeline" min="0" max="100" value="0" style="display:none;">
+        </div>
+
+        <div class="simulation-box">
+            <!-- EXAKT das gleiche SVG wie in M1 (nur IDs auf m3- angepasst) -->
+            <svg id="m3-svg-ball-stick" viewbox="0 0 800 250">
+                <defs>
+                    <radialgradient id="gradN_m3" cx="30%" cy="30%" r="70%"><stop offset="0%" stop-color="#5dade2"/><stop offset="100%" stop-color="#2980b9"/></radialGradient>
+                    <radialgradient id="gradO_m3" cx="30%" cy="30%" r="70%"><stop offset="0%" stop-color="#ec7063"/><stop offset="100%" stop-color="#c0392b"/></radialGradient>
+                    <radialgradient id="gradH_m3" cx="30%" cy="30%" r="70%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#bdc3c7"/></radialGradient>
+                    <radialgradient id="gradProton_m3" cx="30%" cy="30%" r="70%"><stop offset="0%" stop-color="#f4d03f"/><stop offset="100%" stop-color="#f39c12"/></radialGradient>
+                </defs>
+
+                <!-- Bindungen & Atome M3 -->
+                <line x1="200" y1="125" x2="140" y2="60" class="bond"/>
+                <line x1="200" y1="125" x2="120" y2="125" class="bond"/>
+                <line x1="200" y1="125" x2="140" y2="190" class="bond"/>
+                <line id="m3-bs-new-bond" x1="200" y1="125" x2="330" y2="125" class="bond" opacity="0"/>
+                <line id="m3-bs-breaking-bond" x1="600" y1="125" x2="470" y2="125" class="bond"/>
+                <line x1="600" y1="125" x2="660" y2="190" class="bond"/>
+
+                <circle cx="140" cy="60" r="20" fill="url(#gradH_m3)"/>
+                <circle cx="120" cy="125" r="20" fill="url(#gradH_m3)"/>
+                <circle cx="140" cy="190" r="20" fill="url(#gradH_m3)"/>
+                <circle cx="200" cy="125" r="35" fill="url(#gradN_m3)"/>
+
+                <circle cx="660" cy="190" r="20" fill="url(#gradH_m3)"/>
+                <circle cx="600" cy="125" r="35" fill="url(#gradO_m3)"/>
+
+                <g id="m3-bs-proton-group">
+                    <circle id="m3-bs-proton" cx="470" cy="125" r="20" fill="url(#gradProton_m3)"/>
+                    <text id="m3-bs-flight-charge" x="470" y="125" class="charge" fill="#fff" opacity="0" text-anchor="middle" dominant-baseline="central">+</text>
+                </g>
+                <text id="m3-bs-charge-n" x="220" y="95" class="charge" fill="#2980b9" opacity="0">+</text>
+                <text id="m3-bs-charge-o" x="620" y="95" class="charge" fill="#c0392b" opacity="0">-</text>
+            </svg>
+        </div>
+
+        <div class="quiz-container">
+            <div class="quiz-item">
+                <label for="quiz-nh3"><strong>Das linke Molekül (NH<sub>3</sub>) reagiert als:</strong></label>
+                <select id="quiz-nh3">
+                    <option value="none">-- Bitte wählen --</option>
+                    <option value="acid">Säure (Protonendonator)</option>
+                    <option value="base">Base (Protonenakzeptor)</option>
+                </select>
+            </div>
+            <div class="quiz-item">
+                <label for="quiz-h2o"><strong>Das rechte Molekül (H<sub>2</sub>O) reagiert als:</strong></label>
+                <select id="quiz-h2o">
+                    <option value="none">-- Bitte wählen --</option>
+                    <option value="acid">Säure (Protonendonator)</option>
+                    <option value="base">Base (Protonenakzeptor)</option>
+                </select>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 15px;">
+            <button id="checkQuizBtn" class="action-btn">Eingabe prüfen</button>
+        </div>
+        <div id="quiz-feedback"></div>
+    </div>
+
+    <script>
+        // --- TAB LOGIK ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('modul-' + tabId).classList.add('active');
+            document.querySelectorAll('.tab-btn')[tabId - 1].classList.add('active');
+        }
+
+        // --- ANIMATIONSLOGIK ---
+        function updateSimulation(progress, prefix) {
+            const startX = 470;
+            const targetX = 280;
+            const currentX = startX - (startX - targetX) * progress;
+            
+            // Kugel-Stäbchen
+            document.getElementById(prefix + '-bs-proton').setAttribute('cx', currentX);
+            document.getElementById(prefix + '-bs-flight-charge').setAttribute('x', currentX);
+            
+            let bondBreakProgress = Math.min(Math.max(progress * 3.33, 0), 1);
+            document.getElementById(prefix + '-bs-breaking-bond').setAttribute('x2', startX - (startX - 600) * bondBreakProgress);
+            document.getElementById(prefix + '-bs-breaking-bond').setAttribute('opacity', 1 - bondBreakProgress);
+            
+            let protonFlightOp = 0;
+            if (progress > 0.15 && progress < 0.3) protonFlightOp = (progress - 0.15) * 6.66;
+            else if (progress >= 0.3 && progress <= 0.7) protonFlightOp = 1;
+            else if (progress > 0.7 && progress < 0.85) protonFlightOp = 1 - ((progress - 0.7) * 6.66);
+            
+            document.getElementById(prefix + '-bs-flight-charge').setAttribute('opacity', protonFlightOp);
+            
+            let bondFormProgress = Math.min(Math.max((progress - 0.7) * 3.33, 0), 1);
+            document.getElementById(prefix + '-bs-new-bond').setAttribute('x2', 200 + (currentX - 200) * bondFormProgress);
+            document.getElementById(prefix + '-bs-new-bond').setAttribute('opacity', bondFormProgress);
+            
+            document.getElementById(prefix + '-bs-charge-o').setAttribute('opacity', bondBreakProgress);
+            document.getElementById(prefix + '-bs-charge-n').setAttribute('opacity', bondFormProgress);
+
+            // Lewis Spezifisch (nur in M1 vorhanden)
+            if(prefix === 'm1') {
+                document.getElementById('m1-lewis-proton').setAttribute('x', currentX);
+                document.getElementById('m1-lewis-flight-charge').setAttribute('x', currentX + 15);
+                document.getElementById('m1-partial-h').setAttribute('x', currentX);
+                
+                let arrowOp = Math.max(1 - (progress * 5), 0);
+                document.getElementById('m1-mech-arrow').setAttribute('opacity', arrowOp);
+
+                document.getElementById('m1-lewis-breaking-bond').setAttribute('x2', 505 + (575 - 505) * bondBreakProgress);
+                document.getElementById('m1-lewis-breaking-bond').setAttribute('opacity', 1 - bondBreakProgress);
+                document.getElementById('m1-lewis-o-new-lonepair').setAttribute('opacity', bondBreakProgress);
+                document.getElementById('m1-partial-h').setAttribute('opacity', 1 - bondBreakProgress);
+                document.getElementById('m1-partial-o').setAttribute('opacity', 1 - bondBreakProgress);
+                document.getElementById('m1-charge-circle-o').setAttribute('opacity', bondBreakProgress);
+                document.getElementById('m1-lewis-charge-o').setAttribute('opacity', bondBreakProgress);
+
+                document.getElementById('m1-lewis-flight-charge').setAttribute('opacity', protonFlightOp);
+
+                document.getElementById('m1-lewis-n-lonepair').setAttribute('opacity', 1 - bondFormProgress);
+                document.getElementById('m1-lewis-new-bond').setAttribute('x2', 220 + (currentX - 20 - 220) * bondFormProgress);
+                document.getElementById('m1-lewis-new-bond').setAttribute('opacity', bondFormProgress);
+                document.getElementById('m1-charge-circle-n').setAttribute('opacity', bondFormProgress);
+                document.getElementById('m1-lewis-charge-n').setAttribute('opacity', bondFormProgress);
+            }
+        }
+
+        // --- CONTROLLER M1 ---
+        let m1AnimFrame;
+        let m1IsPlaying = false;
+        const m1Timeline = document.getElementById('m1-timeline');
+        
+        m1Timeline.addEventListener('input', () => { if(m1IsPlaying) stopM1(); updateSimulation(m1Timeline.value / 100, 'm1'); });
+        
+        function animateM1() {
+            let val = parseFloat(m1Timeline.value);
+            if (val < 100) {
+                val += 0.5; m1Timeline.value = val; updateSimulation(val / 100, 'm1'); m1AnimFrame = requestAnimationFrame(animateM1);
+            } else { stopM1(); }
+        }
+        function playM1() { if (parseFloat(m1Timeline.value) >= 100) m1Timeline.value = 0; m1IsPlaying = true; document.getElementById('m1-playBtn').textContent = "⏸ Pause"; animateM1(); }
+        function stopM1() { m1IsPlaying = false; document.getElementById('m1-playBtn').textContent = "▶ Animation starten"; cancelAnimationFrame(m1AnimFrame); }
+        
+        document.getElementById('m1-playBtn').addEventListener('click', () => { m1IsPlaying ? stopM1() : playM1(); });
+        document.getElementById('m1-resetBtn').addEventListener('click', () => { stopM1(); m1Timeline.value = 0; updateSimulation(0, 'm1'); });
+
+        // --- CONTROLLER M3 ---
+        let m3AnimFrame;
+        let m3IsPlaying = false;
+        const m3Timeline = document.getElementById('m3-timeline');
+        
+        function animateM3() {
+            let val = parseFloat(m3Timeline.value);
+            if (val < 100) {
+                val += 0.5; m3Timeline.value = val; updateSimulation(val / 100, 'm3'); m3AnimFrame = requestAnimationFrame(animateM3);
+            } else { stopM3(); }
+        }
+        function playM3() { if (parseFloat(m3Timeline.value) >= 100) m3Timeline.value = 0; m3IsPlaying = true; document.getElementById('m3-playBtn').textContent = "⏸ Pause"; animateM3(); }
+        function stopM3() { m3IsPlaying = false; document.getElementById('m3-playBtn').textContent = "▶ Animation starten"; cancelAnimationFrame(m3AnimFrame); }
+        
+        document.getElementById('m3-playBtn').addEventListener('click', () => { m3IsPlaying ? stopM3() : playM3(); });
+        document.getElementById('m3-resetBtn').addEventListener('click', () => { stopM3(); m3Timeline.value = 0; updateSimulation(0, 'm3'); });
+
+        // --- QUIZ LOGIK ---
+        document.getElementById('checkQuizBtn').addEventListener('click', () => {
+            const nh3Val = document.getElementById('quiz-nh3').value;
+            const h2oVal = document.getElementById('quiz-h2o').value;
+            const feedback = document.getElementById('quiz-feedback');
+            
+            if(nh3Val === 'none' || h2oVal === 'none') {
+                feedback.className = 'error';
+                feedback.textContent = "Bitte wähle für beide Moleküle eine Rolle aus.";
+                return;
+            }
+            
+            if(nh3Val === 'base' && h2oVal === 'acid') {
+                feedback.className = 'success';
+                feedback.innerHTML = "Richtig! ✅<br>Wasser gibt ein Proton ab (Säure / Donator). Ammoniak nimmt das Proton auf (Base / Akzeptor).";
+            } else {
+                feedback.className = 'error';
+                feedback.textContent = "Leider nicht ganz richtig. Überlege nochmal: Wer nimmt das gelbe Proton (H⁺) auf und wer gibt es ab?";
+            }
+        });
+
+        // Init
+        updateSimulation(0, 'm1');
+        updateSimulation(0, 'm3');
+    </script>
+</body>
+</html>
