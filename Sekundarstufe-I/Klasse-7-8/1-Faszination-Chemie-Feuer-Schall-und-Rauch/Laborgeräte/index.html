@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laborgeräte Lernen & Quiz</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #34495e;
+            --accent: #2980b9;
+            --correct: #27ae60;
+            --wrong: #c0392b;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #333;
+        }
+
+        h1 { color: var(--primary); text-align: center; margin-bottom: 5px; }
+        .subtitle { color: #666; margin-bottom: 30px; text-align: center; }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        button {
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--primary);
+            color: white;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        button:hover { background-color: var(--secondary); transform: translateY(-2px); }
+        button:active { transform: translateY(1px); }
+        button.active-mode { background-color: var(--accent); }
+
+        /* --- 2D LERNMODUS (4x4 Kacheltisch) --- */
+        #lernmodus {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            /* Damit der Tisch auf kleinen Bildschirmen seitlich scrollbar bleibt, ohne das 4x4 Format zu zerstören */
+            overflow-x: auto; 
+            padding-bottom: 20px;
+        }
+
+        .lab-table {
+            /* Die rote Kachel-Optik */
+            background-color: #b03a2e; /* Basis-Rot */
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.4) 2px, transparent 2px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.4) 2px, transparent 2px);
+            background-size: 60px 60px; /* Größe der einzelnen Kacheln */
+            
+            /* Tisch-Rahmen und Schatten */
+            padding: 40px;
+            border-radius: 12px;
+            border: 10px solid #7f8c8d; /* Dunkelgraue Tischkante */
+            box-shadow: 
+                inset 0 0 30px rgba(0,0,0,0.3), /* Schatten auf dem Tisch */
+                0 15px 25px rgba(0,0,0,0.2); /* Schatten unter dem Tisch */
+            
+            /* Stellt sicher, dass das 4x4 Grid nicht zu klein gequetscht wird */
+            min-width: 800px; 
+            max-width: 1100px;
+        }
+
+        .grid-container {
+            display: grid;
+            /* Erzwingt exakt 4 Spalten -> ergibt bei 16 Items 4x4 */
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            width: 100%;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 2px solid #eaeaea;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 25px rgba(0,0,0,0.3);
+            border-color: var(--accent);
+        }
+
+        .card img {
+            width: 100%;
+            height: 140px;
+            object-fit: contain;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            background-color: #fff; 
+        }
+
+        .card-title {
+            font-weight: bold;
+            text-align: center;
+            font-size: 15px;
+            color: var(--primary);
+        }
+
+        /* --- MODAL (Info-Popup) --- */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            position: relative;
+            animation: popIn 0.2s ease-out;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .close-btn {
+            position: absolute; top: 15px; right: 20px;
+            font-size: 28px; cursor: pointer; color: #999;
+        }
+        .close-btn:hover { color: #333; }
+
+        .modal-img {
+            width: 100%;
+            max-height: 250px;
+            object-fit: contain;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        /* --- QUIZMODUS --- */
+        #quizmodus {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 600px;
+            border: 1px solid #eaeaea;
+        }
+
+        .quiz-img {
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            margin-bottom: 25px;
+            border-radius: 10px;
+        }
+
+        input[type="text"] {
+            padding: 15px; font-size: 18px; width: 80%;
+            border: 2px solid #ddd; border-radius: 8px;
+            margin-bottom: 20px; text-align: center;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus { border-color: var(--accent); outline: none; }
+
+        .feedback {
+            margin-top: 20px; font-size: 18px; font-weight: bold; min-height: 30px;
+        }
+        .correct { color: var(--correct); }
+        .wrong { color: var(--wrong); }
+
+    </style>
+</head>
+<body>
+
+    <h1>Chemie Laborgeräte</h1>
+    <p class="subtitle">Lerne die Werkzeuge aus dem Labor kennen</p>
+    
+    <div class="controls">
+        <button id="btn-learn" class="active-mode" onclick="switchMode('learn')">Lernmodus</button>
+        <button id="btn-quiz" onclick="switchMode('quiz')">Quizmodus</button>
+    </div>
+
+    <!-- Modus 1: Lernmodus (mit Tisch-Rahmen) -->
+    <div id="lernmodus">
+        <div class="lab-table">
+            <div class="grid-container" id="grid-container">
+                <!-- Karten werden via JavaScript eingefügt -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Popup -->
+    <div class="modal" id="info-modal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="close-btn" onclick="closeModal(true)">&times;</span>
+            <img id="modal-img" class="modal-img" src="" alt="Gerät">
+            <h2 id="modal-title">Name</h2>
+            <p id="modal-desc">Beschreibung...</p>
+        </div>
+    </div>
+
+    <!-- Modus 2: Quizmodus -->
+    <div id="quizmodus">
+        <h2>Wie heißt dieses Gerät?</h2>
+        <img id="quiz-img" class="quiz-img" src="" alt="Quiz Bild">
+        <input type="text" id="quiz-input" placeholder="Name eingeben..." onkeypress="handleEnter(event)" autocomplete="off">
+        <div style="display: flex; gap: 10px;">
+            <button onclick="checkAnswer()">Prüfen</button>
+            <button onclick="nextQuestion()" style="background-color: #95a5a6;">Überspringen</button>
+        </div>
+        <div class="feedback" id="quiz-feedback"></div>
+    </div>
+
+    <script>
+        // DATENBANK DER LABORGERÄTE MIT FERTIGEN DATEINAMEN
+        const equipment = [
+            { name: "Gasbrenner", imgSrc: "brenner.jpg", desc: "Dient als Hitzequelle zum Erhitzen von Stoffen (z.B. Bunsenbrenner oder Teclu-Brenner)." },
+            { name: "Dreifuß", imgSrc: "dreifuß.jpg", desc: "Wird über den Brenner gestellt, um Gefäße darauf abzustellen." },
+            { name: "Drahtnetz", imgSrc: "drahtnetz.jpg", desc: "Verteilt die Hitze der Flamme gleichmäßig und schützt Glasgeräte vor dem Zerspringen." },
+            { name: "Reagenzglasständer", imgSrc: "reagenzglasstaender.jpg", desc: "Gestell zum sicheren, aufrechten Abstellen von Reagenzgläsern." },
+            { name: "Reagenzglasklammer", imgSrc: "reagenzglasklammer.jpg", desc: "Zangenartiges Werkzeug (meist aus Holz), um heiße Reagenzgläser sicher zu halten." },
+            { name: "Reagenzglas", imgSrc: "reagenzglas.jpg", desc: "Längliches Glasgefäß für chemische Reaktionen im kleinen Maßstab." },
+            { name: "Becherglas", imgSrc: "becherglas.jpg", desc: "Zylindrisches Gefäß mit Ausguss zum Mischen und Erhitzen von Flüssigkeiten." },
+            { name: "Erlenmeyerkolben", imgSrc: "erlenmeyerkolben.jpg", desc: "Gefäß mit engem Hals. Ideal zum Schwenken von Flüssigkeiten, ohne dass es spritzt." },
+            { name: "Trichter", imgSrc: "trichter.jpg", desc: "Zum sauberen Umfüllen in enge Gefäße oder zum Filtrieren mit Filterpapier." },
+            { name: "Pipette", imgSrc: "pipette.jpg", desc: "Zur exakten Dosierung und Entnahme kleiner Flüssigkeitsmengen." },
+            { name: "Tiegelzange", imgSrc: "tiegelzange.jpg", desc: "Zum Greifen und Transportieren von heißen Tiegeln oder Feststoffen." },
+            { name: "Spatel", imgSrc: "spatel.jpg", desc: "Werkzeug zur Entnahme kleiner Mengen an Feststoffen." },
+            { name: "Mörser und Pistill", imgSrc: "moerser.jpg", desc: "Dient zum Zerkleinern und Pulverisieren von Feststoffen." },
+            { name: "Spritzflasche", imgSrc: "spritzflasche.jpg", desc: "Kunststoffflasche mit Spritzrohr. Meist mit destilliertem Wasser gefüllt." },
+            { name: "Uhrglas", imgSrc: "uhrglas.jpg", desc: "Gewölbte Glasschale. Dient als Deckel oder zum Abwiegen von Feststoffen." },
+            { name: "Messzylinder", imgSrc: "messzylinder.jpg", desc: "Hohes, zylindrisches Gefäß mit Skala zum relativ genauen Abmessen von Flüssigkeiten." }
+        ];
+
+        let currentQuizItem = null;
+
+        // --- Setup Lernmodus ---
+        function initLearnMode() {
+            const container = document.getElementById('grid-container');
+            container.innerHTML = '';
+            
+            equipment.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => openModal(item);
+                
+                card.innerHTML = `
+                    <img src="${item.imgSrc}" alt="${item.name}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'100\\' height=\\'100\\'><rect width=\\'100\\' height=\\'100\\' fill=\\'%23ecf0f1\\'/><text x=\\'50%\\' y=\\'50%\\' dominant-baseline=\\'middle\\' text-anchor=\\'middle\\' font-family=\\'sans-serif\\' fill=\\'%2395a5a6\\'>Bild fehlt</text></svg>'">
+                    <div class="card-title">${item.name}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // --- Modal Logik ---
+        function openModal(item) {
+            document.getElementById('modal-title').innerText = item.name;
+            document.getElementById('modal-img').src = item.imgSrc;
+            document.getElementById('modal-img').alt = item.name;
+            document.getElementById('modal-desc').innerText = item.desc;
+            document.getElementById('info-modal').style.display = 'flex';
+        }
+
+        function closeModal(force = false) {
+            if(force || event.target.className === 'modal') {
+                document.getElementById('info-modal').style.display = 'none';
+            }
+        }
+
+        // --- Navigation ---
+        function switchMode(mode) {
+            const learnDiv = document.getElementById('lernmodus');
+            const quizDiv = document.getElementById('quizmodus');
+            const btnLearn = document.getElementById('btn-learn');
+            const btnQuiz = document.getElementById('btn-quiz');
+
+            if (mode === 'learn') {
+                learnDiv.style.display = 'flex';
+                quizDiv.style.display = 'none';
+                btnLearn.classList.add('active-mode');
+                btnQuiz.classList.remove('active-mode');
+            } else {
+                learnDiv.style.display = 'none';
+                quizDiv.style.display = 'flex';
+                btnQuiz.classList.add('active-mode');
+                btnLearn.classList.remove('active-mode');
+                nextQuestion();
+            }
+        }
+
+        // --- Quiz Logik ---
+        function nextQuestion() {
+            document.getElementById('quiz-input').value = '';
+            document.getElementById('quiz-feedback').innerText = '';
+            
+            const randomIndex = Math.floor(Math.random() * equipment.length);
+            currentQuizItem = equipment[randomIndex];
+            
+            const quizImg = document.getElementById('quiz-img');
+            quizImg.src = currentQuizItem.imgSrc;
+            quizImg.alt = "Quiz Bild";
+            
+            document.getElementById('quiz-input').focus();
+        }
+
+        function normalizeText(text) {
+            return text.toLowerCase()
+                       .replace(/ü/g, 'ue').replace(/ö/g, 'oe').replace(/ä/g, 'ae').replace(/ß/g, 'ss')
+                       .replace(/[^a-z0-9]/g, '');
+        }
+
+        function checkAnswer() {
+            if (!currentQuizItem) return;
+
+            const rawInput = document.getElementById('quiz-input').value;
+            const input = normalizeText(rawInput);
+            const correctName = normalizeText(currentQuizItem.name);
+            const feedbackEl = document.getElementById('quiz-feedback');
+
+            if(input === '') return;
+
+            const aliases = {
+                "gasbrenner": ["brenner", "bunsenbrenner", "teclubrenner"],
+                "reagenzglasstaender": ["reagenzglashalter", "staender"],
+                "reagenzglasklammer": ["klemme", "holzklammer", "reagenzglasklammern", "klammer"],
+                "erlenmeyerkolben": ["erlenmeyer", "kolben"],
+                "tiegelzange": ["zange"],
+                "spatel": ["spatelloeffel", "doppelspatel"],
+                "moerserundpistill": ["moerser", "pistill", "moersermitpistill", "reibe"],
+                "spritzflasche": ["spuelflasche", "waschflasche", "spritzflaschen"],
+                "messzylinder": ["zylinder"],
+                "pipette": ["pipetten"]
+            };
+
+            let isCorrect = (input === correctName);
+            
+            if (!isCorrect && aliases[correctName] && aliases[correctName].includes(input)) {
+                isCorrect = true;
+            }
+
+            if (!isCorrect && input.length >= 5 && correctName.includes(input)) {
+                isCorrect = true;
+            }
+
+            if (isCorrect) {
+                feedbackEl.innerText = "Richtig! Gut gemacht! 🎉";
+                feedbackEl.className = "feedback correct";
+                setTimeout(nextQuestion, 1500);
+            } else {
+                feedbackEl.innerText = `Leider falsch. Richtig wäre: ${currentQuizItem.name}`;
+                feedbackEl.className = "feedback wrong";
+            }
+        }
+
+        function handleEnter(event) {
+            if (event.key === 'Enter') checkAnswer();
+        }
+
+        window.onload = initLearnMode;
+    </script>
+</body>
+</html>
