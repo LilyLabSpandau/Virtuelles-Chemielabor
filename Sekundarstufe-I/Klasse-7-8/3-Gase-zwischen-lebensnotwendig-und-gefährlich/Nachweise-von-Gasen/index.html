@@ -127,8 +127,41 @@
       background:rgba(0,0,0,.22);
       font-size:12px;
       color:var(--muted);
-      max-width:580px;
+      max-width:550px;
       z-index:3;
+    }
+
+    /* Neu: Mund zum Auspusten */
+    .blowMouth {
+      position: absolute;
+      right: 24px;
+      top: 24px;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: 2px dashed rgba(255,255,255,.2);
+      background: rgba(255,255,255,.04);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 38px;
+      z-index: 3;
+      transition: all .2s ease;
+    }
+    .blowMouth::after {
+      content: "Auspusten";
+      position: absolute;
+      bottom: -22px;
+      font-size: 11px;
+      color: rgba(255,255,255,.7);
+      letter-spacing: .5px;
+      text-transform: uppercase;
+      font-weight: bold;
+    }
+    .blowMouth.active {
+      background: rgba(59,130,246,.25);
+      border-color: rgba(59,130,246,.7);
+      transform: scale(1.08);
     }
 
     /* Tube LEFT */
@@ -483,20 +516,7 @@
       pointer-events:none;
       z-index:999;
     }
-    .flameHitbox{
-      position:absolute;
-      left:276px;
-      top:-14px;
-      width:46px;
-      height:72px;
-      border-radius:18px;
-      opacity:0;
-      pointer-events:none;
-      cursor:pointer;
-      z-index:1000;
-    }
     .splint.burning .flameSmall{opacity:1; pointer-events:auto}
-    .splint.burning .flameHitbox{pointer-events:auto}
     .splint.glowing .ember{opacity:1}
     .splint.glowing .char{opacity:1}
     .splint.burning .ember{opacity:0}
@@ -677,8 +697,12 @@
 
   <section class="workspace panel" id="workspace">
     <div class="hint">
-      Brenner anklicken → an. Spießspitze in Flamme ziehen → Flamme an Spitze. Flamme anklicken → ausblasen (glühend).
-      Spitze in Reagenzglas ziehen → Probe. Kalkwasser-Glas ins Reagenzglas ziehen.
+      Brenner anklicken → an. Spießspitze in Flamme ziehen → Flamme an Spitze. Brennenden Glimmspan zum Puste-Symbol (oben rechts) ziehen → ausblasen (glühend).
+      Spitze in Reagenzglas ziehen → Probe.
+    </div>
+    
+    <div class="blowMouth" id="blowMouth" title="Brennenden Glimmspan hierhin ziehen, um ihn auszupusten">
+      🌬️
     </div>
 
     <div class="tubeWrap">
@@ -713,7 +737,6 @@
       <div class="char"></div>
       <div class="ember"></div>
       <div class="flameSmall"></div>
-      <div class="flameHitbox" id="splintFlameHitbox"></div>
     </div>
 
     <div class="bench"></div>
@@ -740,9 +763,9 @@
   const gasLabel = document.getElementById("gasLabel");
   const bubble = document.getElementById("bubble");
   const explosion = document.getElementById("explosion");
+  const blowMouth = document.getElementById("blowMouth");
 
   const splint = document.getElementById("splint");
-  const flameHitbox = document.getElementById("splintFlameHitbox");
 
   const limeGlass = document.getElementById("limeGlass");
   const liquid = document.getElementById("liquid");
@@ -830,7 +853,6 @@
     }
   }
 
-  // Limewater effect always depends on current gas (order-independent)
   function applyLimewaterEffect(){
     if(!state.tubeHasLime) return;
     liquid.style.height = "120px";
@@ -849,7 +871,7 @@
     state.tubeGas = g;
     updateTubeLabel();
     applyLimewaterEffect();
-    hideExplosionAndBubble(); // prevent leftovers
+    hideExplosionAndBubble(); 
   }
 
   function resetTube(){
@@ -892,17 +914,13 @@
     updateTubeLabel();
   }
 
-  // ---------------- CORE TEST LOGIC (FIXED) ----------------
   function runSplintTest(){
     if(!state.tubeGas) return;
-
-    // Always clear visuals first; they are ONLY allowed for H2
     hideExplosionAndBubble();
 
     const gas = state.tubeGas;
     const spl = state.splintState;
 
-    // 1) H2: unchanged (plopp + explosion) when splint is burning or glowing
     if(gas === "H2"){
       if(spl === "burning" || spl === "glowing"){
         showBubble("Plopp!");
@@ -912,16 +930,13 @@
       return;
     }
 
-    // 2) O2: NO plopp/explosion. Glowing splint reignites.
     if(gas === "O2"){
       if(spl === "glowing"){
         setSplintState("burning");
       }
-      // if already burning: stays burning; if unlit: nothing
       return;
     }
 
-    // 3) N2 / CO2: splint goes completely out; NO plopp/explosion
     if(gas === "N2" || gas === "CO2"){
       if(spl === "burning" || spl === "glowing"){
         setSplintState("unlit");
@@ -932,15 +947,6 @@
 
   // Burner toggle
   burner.addEventListener("click", () => toggleBurner());
-
-  // Blow out flame (pointerdown more reliable)
-  flameHitbox.addEventListener("pointerdown", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if(state.splintState === "burning"){
-      setSplintState("glowing");
-    }
-  });
 
   // Gas bottle selection
   document.querySelectorAll(".gasBottle").forEach(btn => {
@@ -953,14 +959,12 @@
     });
   });
 
-  // Fill tube by clicking tube (learn only)
   tube.addEventListener("click", () => {
     if(state.mode !== "learn") return;
     if(!state.selectedGas) return;
     setTubeGas(state.selectedGas);
   });
 
-  // Buttons
   emptyTubeBtn.addEventListener("click", () => resetTube());
   emptyTubeBtn2.addEventListener("click", () => resetTube());
 
@@ -1025,7 +1029,6 @@
     updateTubeLabel();
   });
 
-  // Drag helpers
   function setElPos(el, x, y){
     el.style.left = `${x}px`;
     el.style.top = `${y}px`;
@@ -1081,16 +1084,37 @@
     }
   }
 
+  // Mund / Pusten Kollision
+  function mouthProximity(elRect){
+    const mRect = getRect(blowMouth);
+    return (
+      (elRect.right > mRect.left) &&
+      (elRect.left < mRect.right) &&
+      (elRect.top < mRect.bottom) &&
+      (elRect.bottom > mRect.top)
+    );
+  }
+
   // Splint drag
   splint.addEventListener("pointerdown", (e) => {
-    if(e.target === flameHitbox) return;
     startDrag("splint", splint, e);
   });
   splint.addEventListener("pointermove", (e) => {
     if(state.draggingEl !== "splint") return;
     moveDrag(splint, e);
 
-    tube.classList.toggle("dragOver", tubeMouthProximity(getRect(splint)));
+    const sRect = getRect(splint);
+    tube.classList.toggle("dragOver", tubeMouthProximity(sRect));
+
+    // Überprüfen, ob Glimmspan über den Mund gezogen wird
+    const overMouth = mouthProximity(sRect);
+    blowMouth.classList.toggle("active", overMouth);
+    
+    // Flamme auspusten, wenn brennend
+    if(overMouth && state.splintState === "burning"){
+      setSplintState("glowing");
+    }
+
     tryIgniteFromBurner();
   });
   splint.addEventListener("pointerup", (e) => {
@@ -1099,6 +1123,7 @@
 
     const droppedInMouth = tubeMouthProximity(getRect(splint));
     tube.classList.remove("dragOver");
+    blowMouth.classList.remove("active");
 
     if(droppedInMouth){
       runSplintTest();
@@ -1132,4 +1157,3 @@
 </script>
 </body>
 </html>
-
