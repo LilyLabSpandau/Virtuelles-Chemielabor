@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chemie-Labor-Führerschein & Gefahrstoffe</title>
+    
+    <!-- Bibliothek für die PDF Generierung -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #4a69bd;
+            --secondary: #60a3bc;
+            --bg-gradient: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+            --text-dark: #2c3e50;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Segoe UI', Tahoma, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-dark);
+            text-align: center;
+            overflow-x: hidden; /* Verhindert horizontales Scrollen durch das Hintergrund-Zertifikat */
+        }
+
+        header { background-color: var(--primary); color: white; padding: 1.5rem; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h1 { margin: 0; font-size: 28px; }
+        h2 { color: #1e3799; margin-top: 0; text-align: left;}
+
+        /* --- NAVIGATION --- */
+        nav { display: flex; justify-content: center; flex-wrap: wrap; gap: 15px; background-color: #1e3799; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.15); }
+        button.nav-btn { padding: 12px 20px; font-size: 16px; font-weight: bold; cursor: pointer; border: 3px solid transparent; border-radius: 30px; background-color: var(--secondary); color: white; transition: all 0.3s ease; }
+        button.nav-btn:hover, button.nav-btn.active { background-color: #38ada9; border: 3px solid #78e08f; box-shadow: 0 0 15px rgba(120, 224, 143, 0.6); transform: translateY(-2px); }
+        button.nav-btn.locked { background-color: #7f8c8d; cursor: not-allowed; opacity: 0.7; }
+        button.nav-btn.locked:hover { transform: none; box-shadow: none; border-color: transparent; }
+        
+        button.nav-btn.unlocked-cert { background-color: #f1c40f; color: #2c3e50; border: 3px solid #f39c12; animation: pulse-cert 2s infinite; }
+        @keyframes pulse-cert {
+            0% { box-shadow: 0 0 0 0 rgba(241, 196, 15, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(241, 196, 15, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(241, 196, 15, 0); }
+        }
+
+        .container { max-width: 1000px; margin: 30px auto; padding: 30px; background: rgba(255, 255, 255, 0.95); border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); text-align: left; display: none; }
+
+        /* --- STARTSEITE --- */
+        .welcome-box { text-align: center; padding: 20px; }
+        .welcome-box h2 { text-align: center; font-size: 32px; color: #d35400; }
+        .module-cards { display: flex; gap: 20px; margin-top: 30px; justify-content: center; flex-wrap: wrap; }
+        .card { background: #f8f9fa; border: 3px solid #78e08f; border-radius: 15px; padding: 20px; flex: 1; min-width: 250px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: transform 0.3s; }
+        .card:hover { transform: scale(1.05); }
+        .card h3 { color: #1e3799; margin-top: 0; }
+        
+        .start-btn { margin-top: 15px; padding: 10px 25px; background-color: #27ae60; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .start-btn:hover { background-color: #2ecc71; }
+
+        /* --- MODUS 1: LABOR-WIMMELBILD --- */
+        #score { font-size: 1.3em; font-weight: bold; color: #d35400; margin-bottom: 20px; text-align: center; }
+        #game-container { position: relative; display: inline-block; max-width: 100%; width: 100%; box-shadow: 0 8px 25px rgba(0,0,0,0.2); border-radius: 8px; overflow: hidden; background-color: #fff; margin: 0 auto; }
+        #game-container img { width: 100%; height: auto; display: block; }
+        .hitbox { position: absolute; cursor: pointer; border-radius: 40%; background-color: transparent; border: 2px solid transparent; transition: all 0.3s ease; }
+        .hitbox.found { border: 3px solid #e74c3c; background-color: rgba(231, 76, 60, 0.2); animation: pulse 1.5s infinite; }
+
+        /* --- MODUS 2: REGAL --- */
+        .shelf-container { display: flex; flex-direction: column; background: #5d4037; padding: 15px; border: 12px solid #3e2723; border-radius: 8px; box-shadow: 10px 10px 25px rgba(0,0,0,0.4); max-width: 600px; margin: 40px auto; }
+        .shelf-row { display: flex; background: #8d6e63; border-bottom: 25px solid #4e342e; box-shadow: inset 0 -15px 20px rgba(0,0,0,0.5), 0 5px 5px rgba(0,0,0,0.2); min-height: 180px; }
+        .shelf-compartment { flex: 1; display: flex; justify-content: center; align-items: flex-end; padding: 15px 10px; border-right: 12px solid #5d4037; position: relative; }
+        .shelf-compartment:last-child { border-right: none; }
+        .behaelter-wrapper { width: 100px; cursor: pointer; }
+        .behaelter-wrapper img { width: 100%; height: auto; filter: drop-shadow(4px 4px 6px rgba(0,0,0,0.6)); transition: transform 0.3s; transform-origin: bottom center; }
+        .behaelter-wrapper:hover img { transform: scale(1.2) translateY(-5px) !important; filter: drop-shadow(8px 8px 12px rgba(0,0,0,0.8)); z-index: 10; position: relative; }
+
+        /* --- MODUS 3: QUIZ --- */
+        .quiz-area { display: flex; gap: 30px; margin-bottom: 30px; }
+        .chem-info { flex: 1; background: #fff; padding: 25px; border-radius: 15px; text-align: center; border: 3px solid #78e08f; box-shadow: 0 5px 15px rgba(0,0,0,0.05); font-size: 17px; line-height: 1.6; }
+        .chem-info p { text-align: left; }
+        .chem-info img { max-width: 180px; max-height: 220px; object-fit: contain; margin-bottom: 15px; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.1)); }
+        .drop-zone-container { flex: 1; display: flex; flex-direction: column; }
+        .drop-zone { flex-grow: 1; border: 4px dashed #bdc3c7; border-radius: 15px; display: flex; flex-wrap: wrap; gap: 15px; padding: 25px; align-items: center; justify-content: center; background: #f8f9fa; min-height: 200px; transition: 0.3s; }
+        .drop-zone.dragover { background: #dff9fb; border-color: #1e3799; transform: scale(1.02); }
+        .pikto-pool { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; padding: 30px; background: #ecf0f1; border-radius: 15px; margin-bottom: 20px; }
+        .pikto-item { width: 120px; height: 120px; cursor: grab; transition: transform 0.2s; background: white; border-radius: 10px; padding: 5px; box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+        .pikto-item:hover { transform: scale(1.1); }
+        .pikto-item img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+        .dropped-pikto { width: 110px; height: 110px; cursor: pointer; background: white; border-radius: 10px; padding: 5px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); transition: 0.2s; }
+        .dropped-pikto:hover { background: #ffeaa7; transform: scale(1.05); }
+        .dropped-pikto img { width: 100%; height: 100%; object-fit: contain; }
+        .quiz-controls { text-align: center; margin-top: 25px; }
+        .btn-action { padding: 15px 30px; font-size: 18px; font-weight: bold; margin: 0 10px; cursor: pointer; border: none; border-radius: 8px; color: white; transition: 0.2s; }
+        .btn-check { background-color: #f39c12; }
+        .btn-check:hover { background-color: #e67e22; transform: translateY(-2px); }
+        .btn-next { background-color: #27ae60; display: none; }
+        .btn-next:hover { background-color: #2ecc71; transform: translateY(-2px); }
+        .feedback { font-size: 20px; font-weight: bold; margin-top: 20px; min-height: 30px; padding: 10px; border-radius: 8px; text-align: center; }
+        .correct { color: #155724; background-color: #d4edda; border: 1px solid #c3e6cb; }
+        .wrong { color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; }
+
+        /* --- ZERTIFIKAT-EINGABEBEREICH --- */
+        .cert-form { background: #f8f9fa; border: 3px solid #1e3799; border-radius: 10px; padding: 30px; text-align: center; max-width: 600px; margin: 0 auto; }
+        .cert-form input { display: block; width: 80%; margin: 15px auto; padding: 12px; font-size: 18px; border: 2px solid #bdc3c7; border-radius: 8px; font-family: inherit; }
+        .cert-form .pdf-btn { background-color: #e74c3c; color: white; font-size: 20px; padding: 15px 30px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 15px; transition: 0.2s; }
+        .cert-form .pdf-btn:hover { background-color: #c0392b; transform: scale(1.05); }
+        .privacy-notice { font-size: 14px; color: #7f8c8d; margin-bottom: 20px; background: #e8f8f5; padding: 10px; border-radius: 5px; border-left: 4px solid #1abc9c; text-align: left; }
+
+        /* --- DAS VERSTECKTE ZERTIFIKAT-TEMPLATE --- */
+        #cert-template-wrapper { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            opacity: 0; 
+            z-index: -1000; 
+            pointer-events: none; 
+        }
+
+        #cert-template {
+            width: 297mm;  /* Exaktes A4 Querformat in Millimetern */
+            height: 210mm; 
+            background-color: #ffffff;
+            border: 15px solid #1e3799;
+            box-sizing: border-box;
+            padding: 10mm;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #2c3e50;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .watermark-icon {
+            position: absolute;
+            font-size: 250px;
+            opacity: 0.04;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .cert-inner-border {
+            border: 4px solid #f39c12;
+            height: 100%;
+            box-sizing: border-box;
+            padding: 8mm;
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; 
+        }
+
+        .cert-header { text-align: center; border-bottom: 2px solid #eee; padding-bottom: 5mm;}
+        .cert-header h1 { color: #1e3799; font-size: 45px; margin: 0; text-transform: uppercase; letter-spacing: 2px; }
+        .cert-header h2 { color: #d35400; font-size: 24px; margin: 5px 0 0 0; }
+        
+        .cert-body { text-align: center; font-size: 22px; }
+        .cert-name-display { font-size: 38px; font-weight: bold; color: #27ae60; margin: 15px 0; border-bottom: 2px dashed #bdc3c7; display: inline-block; padding: 0 40px; }
+
+        .cert-sections { display: flex; justify-content: space-between; gap: 30px;}
+        .cert-box { flex: 1; background: rgba(255, 255, 255, 0.9); border: 2px solid #bdc3c7; border-radius: 10px; padding: 20px; text-align: left; }
+        .cert-box h3 { margin-top: 0; color: #1e3799; font-size: 20px; border-bottom: 1px solid #ccc; padding-bottom: 10px;}
+        
+        .check-item { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; font-size: 16px; } 
+        .check-box-done { color: #27ae60; font-weight: bold; font-size: 22px; }
+        .check-box-empty { display: inline-block; min-width: 20px; height: 20px; border: 2px solid #333; border-radius: 4px; }
+
+        .cert-footer {
+            display: flex;
+            justify-content: space-between;
+            padding: 0 40px;
+            margin-top: 20px;
+        }
+        
+        .signature-container { display: flex; flex-direction: column; align-items: center; }
+        .signature-line { border-top: 2px solid #333; width: 300px; text-align: center; padding-top: 8px; font-size: 18px;}
+        .signature-name { font-size: 18px; color: #1e3799; font-weight: bold; margin-top: 4px;}
+
+        /* --- MODALS (POPUPS) --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(5px); }
+        #modal-box-lab { background: #fff; padding: 30px; border-radius: 12px; max-width: 500px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.3); text-align: left; border: 5px solid #e74c3c; }
+        #modal-box-lab h2 { color: #e74c3c; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .correct-section { background-color: #e8f8f5; border-left: 4px solid #1abc9c; padding: 15px; margin-top: 20px; border-radius: 0 4px 4px 0; }
+        .correct-section h3 { margin-top: 0; color: #16a085; font-size: 1.1em; }
+        #modal-content-shelf { background: white; padding: 40px; border-radius: 20px; display: flex; gap: 40px; max-width: 850px; align-items: flex-start; box-shadow: 0 20px 40px rgba(0,0,0,0.4); border: 5px solid #1e3799; }
+        .modal-img-container img { width: 250px; max-height: 400px; object-fit: contain; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.2)); }
+        .modal-text { font-size: 17px; line-height: 1.5; text-align: left;}
+        .modal-text h2 { display: flex; align-items: center; gap: 15px; font-size: 32px; color: #d35400; border-bottom: 3px solid #eee; padding-bottom: 10px; }
+        .btn-ok { background-color: #27ae60; color: white; border: none; padding: 12px 30px; font-size: 1.1em; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 25px; box-shadow: 0 4px 6px rgba(39, 174, 96, 0.4); }
+        .btn-ok:hover { background-color: #2ecc71; transform: scale(1.05); }
+        .btn-block { display: block; width: 100%; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🧪 Chemie-Labor-Führerschein</h1>
+        <p>Absolviere die Stationen, lerne die Regeln und hole dir dein PDF-Zertifikat!</p>
+    </header>
+
+    <nav>
+        <button class="nav-btn active" id="btn-home" onclick="switchMode('home')">🏠 Startseite</button>
+        <button class="nav-btn" id="btn-lab" onclick="switchMode('lab')">🔍 1. Labor-Wimmelbild</button>
+        <button class="nav-btn" id="btn-shelf" onclick="switchMode('shelf')">🧪 2. Giftschrank-Regal</button>
+        <button class="nav-btn" id="btn-quiz" onclick="switchMode('quiz')">🧩 3. Alltags-Quiz</button>
+        <button class="nav-btn locked" id="btn-cert" onclick="if(!this.classList.contains('locked')) switchMode('cert')">🏆 Zertifikat (Gesperrt)</button>
+    </nav>
+
+    <!-- ==================== STARTSEITE ==================== -->
+    <div class="container" id="section-home" style="display: block;">
+        <div class="welcome-box">
+            <h2>Willkommen zur Stationsarbeit!</h2>
+            <p style="font-size: 18px; line-height: 1.6;">Bevor wir im Chemieunterricht mit echten Experimenten loslegen können, müssen wir sicherstellen, dass niemandem etwas passiert. <br><br><strong>Deine Aufgabe:</strong> Schließe das Wimmelbild (Modus 1) und das Quiz (Modus 3) komplett ab. Erst dann wird oben rechts der Button für dein Zertifikat freigeschaltet. Drucke das Zertifikat aus (oder schicke es per Mail) und zeige am Pult, dass du den Brenner sicher anzünden kannst!</p>
+            
+            <div class="module-cards">
+                <div class="card">
+                    <h3>🔍 Modus 1:<br>Das Suchbild</h3>
+                    <p>Finde alle 13 Sicherheitsfehler im Labor. Du brauchst 100%, um das Zertifikat freizuschalten!</p>
+                    <button class="start-btn" onclick="switchMode('lab')">Starten</button>
+                </div>
+                <div class="card">
+                    <h3>🧪 Modus 2:<br>Der Giftschrank</h3>
+                    <p>Lies dir die Gefahrenpiktogramme genau durch, du brauchst das Wissen für das Quiz.</p>
+                    <button class="start-btn" onclick="switchMode('shelf')">Starten</button>
+                </div>
+                <div class="card">
+                    <h3>🧩 Modus 3:<br>Das Alltags-Quiz</h3>
+                    <p>Ordne die richtigen Piktogramme zu. Löse alle Level, um das Zertifikat freizuschalten!</p>
+                    <button class="start-btn" onclick="switchMode('quiz')">Starten</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODUS 1: LABOR-WIMMELBILD ==================== -->
+    <div class="container" id="section-lab">
+        <h2>Finde die 13 Fehler im Labor!</h2>
+        <p>Klicke auf die Stellen im Bild, an denen sich jemand falsch oder gefährlich verhält.</p>
+        <div id="score">0 von 13 Fehlern gefunden</div>
+
+        <div id="game-container">
+            <img src="labor.jpg" alt="Laborbild">
+            <div class="hitbox" id="hb1" style="top: 7%; left: 3%; width: 10%; height: 13%;" onclick="showInfoLab('hb1', 'Trinken der Probe', 'Im Labor herrscht striktes Ess- und Trinkverbot! Gefäße dürfen niemals zum Trinken verwendet werden.')"></div>
+            <div class="hitbox" id="hb2" style="top: 52%; left: 1%; width: 25%; height: 45%;" onclick="showInfoLab('hb2', 'Unnötige Sachen auf dem Tisch', 'Jacken, Handys und Papiere gehören nicht auf den Experimentiertisch. Sie stören beim Arbeiten und können kontaminiert werden.')"></div>
+            <div class="hitbox" id="hb3" style="top: 12%; left: 21%; width: 17%; height: 85%;" onclick="showInfoLab('hb3', 'Auf dem Tisch sitzen', 'Labortische sind Arbeitsflächen für gefährliche Stoffe. Man darf sich niemals darauf setzen!')"></div>
+            <div class="hitbox" id="hb4" style="top: 25%; left: 32%; width: 7%; height: 11%;" onclick="showInfoLab('hb4', 'Rundkolben steht schief', 'Der Kolben muss beim Erhitzen sicher und gerade eingespannt sein. Bei schiefer Haltung kann die kochende Flüssigkeit unkontrolliert herausspritzen.')"></div>
+            <div class="hitbox" id="hb5" style="top: 12%; left: 35%; width: 7%; height: 10%;" onclick="showInfoLab('hb5', 'Falsche Notrufnummer an der Wand', 'Die Notrufnummer 145 ist falsch. Für Feuerwehr und Rettungsdienst wählt man in Deutschland immer die 112!')"></div>
+            <div class="hitbox" id="hb6" style="top: 23%; left: 42%; width: 8%; height: 8%;" onclick="showInfoLab('hb6', 'Falsches Riechen an der Probe', 'Niemals die Nase direkt über das Gefäß halten! Die Dämpfe müssen immer vorsichtig mit der Hand zur Nase gefächelt werden.')"></div>
+            <div class="hitbox" id="hb7" style="top: 80%; left: 44%; width: 10%; height: 15%;" onclick="showInfoLab('hb7', 'Tragen von Sandalen', 'Im Labor müssen ausnahmslos feste, geschlossene Schuhe getragen werden, um die Füße vor Chemikalien oder Scherben zu schützen.')"></div>
+            <div class="hitbox" id="hb8" style="top: 21%; left: 63%; width: 15%; height: 26%;" onclick="showInfoLab('hb8', 'Fehlende Schutzbrille & offene Haare', 'Die Dame trägt keine Schutzbrille und hat die Haare nicht zurückgebunden. Beim Arbeiten mit Brennern und Chemikalien ist das lebensgefährlich!')"></div>
+            <div class="hitbox" id="hb9" style="top: 25%; left: 85%; width: 6%; height: 12%;" onclick="showInfoLab('hb9', 'Keine Schutzhandschuhe', 'Unbekannte Proben und Chemikalien dürfen niemals mit bloßen Händen angefasst werden. Immer geeignete Handschuhe oder eine Pinzette benutzen.')"></div>
+            <div class="hitbox" id="hb10" style="top: 69%; left: 69%; width: 7%; height: 18%;" onclick="showInfoLab('hb10', 'Erlenmeyerkolben an der Kante', 'Glasgeräte dürfen nicht an der vordersten Tischkante stehen, da man sie sonst schnell versehentlich mit dem Arm herunterstößt.')"></div>
+            <div class="hitbox" id="hb11" style="top: 60%; left: 81%; width: 8%; height: 18%;" onclick="showInfoLab('hb11', 'Essen und Trinken auf dem Tisch', 'Lebensmittel und Getränkeflaschen haben im Labor nichts zu suchen. Sie können durch herumfliegende Partikel oder Dämpfe vergiftet werden.')"></div>
+            <div class="hitbox" id="hb12" style="top: 58%; left: 91.5%; width: 4.5%; height: 11%;" onclick="showInfoLab('hb12', 'Chemikalienflasche steht offen', 'Chemikalienflaschen müssen nach der Entnahme sofort wieder verschlossen werden. Andernfalls können giftige oder leicht entzündliche Dämpfe entweichen und bei einem versehentlichen Umstoßen läuft die Flüssigkeit sofort aus.')"></div>
+            <div class="hitbox" id="hb13" style="top: 72%; left: 94.5%; width: 5%; height: 15%;" onclick="showInfoLab('hb13', 'Becherglas ist nicht beschriftet', 'Auch umgefüllte Flüssigkeiten in Bechergläsern müssen zwingend beschriftet werden, um zu wissen, womit man arbeitet.')"></div>
+        </div>
+    </div>
+
+    <!-- ==================== MODUS 2: REGAL ==================== -->
+    <div class="container" id="section-shelf">
+        <h2>Entdecke das Gefahrstoff-Regal!</h2>
+        <div class="shelf-container" id="shelf"></div>
+    </div>
+
+    <!-- ==================== MODUS 3: QUIZ ==================== -->
+    <div class="container" id="section-quiz">
+        <h2>Das Alltags-Quiz: Gefahr erkannt, Gefahr gebannt!</h2>
+        <div class="quiz-area">
+            <div class="chem-info" id="chem-info"></div>
+            <div class="drop-zone-container">
+                <h3 style="color: #1e3799;">Hier Piktogramme ablegen:</h3>
+                <div class="drop-zone" id="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)"></div>
+            </div>
+        </div>
+        <h3 style="text-align: center; color: #2c3e50;">Auswahl aller Piktogramme:</h3>
+        <div class="pikto-pool" id="pikto-pool"></div>
+        <div class="quiz-controls">
+            <button class="btn-action btn-check" id="btn-check" onclick="checkSolution()">🔍 Lösung überprüfen</button>
+            <button class="btn-action btn-next" id="btn-next" onclick="nextChem()">Nächste Chemikalie ➔</button>
+            <div class="feedback" id="feedback-text"></div>
+        </div>
+    </div>
+
+    <!-- ==================== ZERTIFIKAT BEREICH ==================== -->
+    <div class="container" id="section-cert">
+        <div class="cert-form">
+            <h2 style="color: #f39c12; font-size: 30px; text-align: center;">🏆 Glückwunsch! Du hast es geschafft!</h2>
+            <p>Du hast das Wimmelbild und das Quiz fehlerfrei absolviert. Die Theorie sitzt! Jetzt fehlt nur noch der praktische Teil bei der Lehrkraft.</p>
+            
+            <div class="privacy-notice">
+                <strong>🔒 Wichtiger Datenschutzhinweis:</strong> Dein Name und deine Klasse werden NICHT im Internet gespeichert oder an einen Server gesendet. Die Erstellung deines PDFs passiert sicher und lokal direkt hier auf deinem Gerät.
+            </div>
+
+            <input type="text" id="input-name" placeholder="Dein Vor- und Nachname" autocomplete="off">
+            <input type="text" id="input-class" placeholder="Deine Klasse (z.B. 7b)" autocomplete="off">
+            <input type="text" id="input-teacher" placeholder="Name der Lehrkraft (z. B. Herr Neumann)" autocomplete="off">
+            
+            <button class="pdf-btn" onclick="generatePDF()">📥 PDF-Zertifikat herunterladen</button>
+            
+            <p style="margin-top: 20px; font-size: 14px;"><em>Schicke das fertige PDF per E-Mail an die Lehrkraft oder drucke es für die praktische Brennerprüfung aus.</em></p>
+        </div>
+    </div>
+
+    <!-- ==================== DAS VERSTECKTE PDF TEMPLATE ==================== -->
+    <div id="cert-template-wrapper">
+        <div id="cert-template">
+            
+            <!-- Wasserzeichen (Emojis) -->
+            <div class="watermark-icon" style="top: 80px; left: 80px; transform: rotate(-25deg);">⚗️</div>
+            <div class="watermark-icon" style="bottom: 80px; right: 80px; transform: rotate(15deg);">🧪</div>
+
+            <div class="cert-inner-border">
+                
+                <!-- HEADER -->
+                <div class="cert-header">
+                    <h1>Laborführerschein</h1>
+                    <h2>Prüfungsnachweis für das Chemie-Labor</h2>
+                </div>
+                
+                <!-- BODY / NAME -->
+                <div class="cert-body">
+                    Dieses Zertifikat wird ausgestellt für:<br>
+                    <div class="cert-name-display">
+                        <span id="pdf-name">Max Mustermann</span> (<span id="pdf-class">Klasse 7x</span>)
+                    </div>
+                </div>
+
+                <!-- BOXEN -->
+                <div class="cert-sections">
+                    <div class="cert-box">
+                        <h3>✅ Teil 1: Digitale Prüfung (Bestanden)</h3>
+                        <p style="font-size: 14px; color: #7f8c8d; margin-top: -5px;">Wurde durch das fehlerfreie Absolvieren der Lern-App bestätigt.</p>
+                        <div class="check-item"><span class="check-box-done">☑</span> Sicherheitsregeln im Labor verstanden</div>
+                        <div class="check-item"><span class="check-box-done">☑</span> Gefahrenpiktogramme erkannt & zugeordnet</div>
+                    </div>
+
+                    <div class="cert-box">
+                        <h3>✏️ Teil 2: Praktische Prüfung</h3>
+                        <p style="font-size: 14px; color: #7f8c8d; margin-top: -5px;">Wird von der Lehrkraft am Lehrerpult handschriftlich geprüft und angekreuzt.</p>
+                        <div class="check-item"><span class="check-box-empty"></span> Kenntnis und sicherer Umgang mit Laborgeräten</div>
+                        <div class="check-item"><span class="check-box-empty"></span> Fachgerechtes Entzünden und Bedienen des Gasbrenners</div>
+                    </div>
+                </div>
+
+                <!-- FOOTER (Unterschriften) -->
+                <div class="cert-footer">
+                    <div class="signature-container">
+                        <div class="signature-line">Datum</div>
+                    </div>
+                    <div class="signature-container">
+                        <div class="signature-line">Unterschrift der Lehrkraft</div>
+                        <div class="signature-name" id="pdf-teacher-name">Hier steht der Name</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ==================== POPUPS ==================== -->
+    <div class="modal-overlay" id="modal-overlay-lab">
+        <div id="modal-box-lab">
+            <h2 id="modal-title-lab">Gefundener Fehler</h2>
+            <div class="correct-section">
+                <h3>Warum ist das gefährlich?</h3>
+                <p id="modal-correct-lab"></p>
+            </div>
+            <button class="btn-ok btn-block" onclick="closeModalLab()">OK, verstanden!</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-overlay-shelf">
+        <div id="modal-content-shelf">
+            <div class="modal-img-container"><img id="modal-img-shelf" src="" alt="Behälter groß"></div>
+            <div class="modal-text">
+                <h2><img id="modal-pikto-shelf" src=""> <span id="modal-title-shelf"></span></h2>
+                <p><strong>🚨 Was ist die Gefahr?</strong></p>
+                <p id="modal-gefahr-shelf"></p>
+                <p><strong>🛡️ Wie schütze ich mich?</strong></p>
+                <p id="modal-handlung-shelf"></p>
+                <button class="btn-ok" onclick="closeModalShelf()">Alles klar, verstanden!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== JAVASCRIPT ==================== -->
+    <script>
+        // --- FREISCHALTUNG LOGIK ---
+        let isLabCompleted = false;
+        let isQuizCompleted = false;
+
+        function checkCertificateUnlock() {
+            if (isLabCompleted && isQuizCompleted) {
+                const btn = document.getElementById('btn-cert');
+                btn.classList.remove('locked');
+                btn.classList.add('unlocked-cert');
+                btn.innerHTML = "🏆 Zertifikat abholen!";
+            }
+        }
+
+        function switchMode(mode) {
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('section-home').style.display = 'none';
+            document.getElementById('section-lab').style.display = 'none';
+            document.getElementById('section-shelf').style.display = 'none';
+            document.getElementById('section-quiz').style.display = 'none';
+            document.getElementById('section-cert').style.display = 'none';
+
+            document.getElementById(`btn-${mode}`).classList.add('active');
+            document.getElementById(`section-${mode}`).style.display = 'block';
+        }
+
+        // --- PDF GENERIERUNG LOGIK ---
+        function generatePDF() {
+            const nameInput = document.getElementById('input-name').value.trim();
+            const classInput = document.getElementById('input-class').value.trim();
+            const teacherInput = document.getElementById('input-teacher').value.trim();
+
+            if (!nameInput || !classInput || !teacherInput) {
+                alert("Bitte fülle alle drei Felder aus, um dein Zertifikat zu erstellen!");
+                return;
+            }
+
+            // Werte ins Template eintragen
+            document.getElementById('pdf-name').innerText = nameInput;
+            document.getElementById('pdf-class').innerText = classInput;
+            document.getElementById('pdf-teacher-name').innerText = teacherInput;
+
+            const element = document.getElementById('cert-template');
+            
+            // Konfiguration erzwingt das genaue A4 Querformat
+            const opt = {
+                margin:       0,
+                filename:     `Laborfuehrerschein_${nameInput.replace(/\s+/g, '_')}.pdf`,
+                image:        { type: 'jpeg', quality: 1 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            };
+
+            html2pdf().set(opt).from(element).save();
+        }
+
+        // --- DATEN ---
+        const behaelterDaten = [
+            { id: "Brand", datei: "Brand.png", pikto: "Brandp.png", titel: "Entzündbar", gefahr: "Achtung, Brandgefahr! Diese Stoffe fangen sehr schnell Feuer, wenn ein Funke oder eine heiße Flamme in die Nähe kommt.", handlung: "Halte diese Behälter unbedingt von Feuerzeugen, Streichhölzern, Bunsenbrennern und Heizungen fern. Flaschen sofort dicht verschließen!" },
+            { id: "Brandf", datei: "Brandf.png", pikto: "Brandfp.png", titel: "Brandfördernd", gefahr: "Diese Stoffe wirken wie ein 'Beschleuniger' für Feuer! Sie geben Sauerstoff ab und lassen andere Materialien extrem brennen.", handlung: "Ganz weit weg von Papier oder Kleidung lagern." },
+            { id: "Explosion", datei: "Explosion.png", pikto: "Explosionp.png", titel: "Explosiv", gefahr: "Höchste Vorsicht! Diese Stoffe können mit enormer Kraft explodieren, wenn sie heiß werden oder auf den Boden fallen.", handlung: "Wie rohe Eier behandeln! Nicht werfen, nicht schütteln." },
+            { id: "Gas", datei: "Gas.png", pikto: "Gasp.png", titel: "Gas unter Druck", gefahr: "Das Gas ist stark zusammengepresst. Wird die Flasche heiß, dehnt es sich aus und die Metallflasche kann bersten!", handlung: "Niemals in die pralle Sonne oder auf die Heizung stellen." },
+            { id: "Gift", datei: "Gift.png", pikto: "Giftp.png", titel: "Giftig / Lebensgefahr", gefahr: "Schon eine winzige Menge (verschluckt, eingeatmet oder auf der Haut) kann schwerste Vergiftungen hervorrufen.", handlung: "Absolutes Berührungsverbot! Arbeiten nur unter dem Abzug mit strengsten Sicherheitsregeln." },
+            { id: "Krankheit", datei: "Krankheit.png", pikto: "Krankheitp.png", titel: "Gesundheitsgefahr", gefahr: "Diese Stoffe können über längere Zeit deine Lunge schädigen, Allergien auslösen oder sogar Krebs verursachen.", handlung: "Dämpfe auf keinen Fall einatmen! Den Raum gut durchlüften." },
+            { id: "Reiz", datei: "Reiz.png", pikto: "Reizp.png", titel: "Reizend", gefahr: "Brennt, juckt und kratzt auf der Haut oder in den Augen. Dämpfe reizen die Atemwege stark.", handlung: "Spritzen vermeiden! Bei Kontakt sofort mit viel kaltem Wasser abwaschen." },
+            { id: "Säure", datei: "Säure.png", pikto: "Säurep.png", titel: "Ätzend", gefahr: "Ätzende Stoffe können Materialien zersetzen und hinterlassen auf der Haut schlimme Wunden (Verätzungen).", handlung: "Schutzhandschuhe und Schutzbrille sind absolute Pflicht!" },
+            { id: "Umwelt", datei: "Umwelt.png", pikto: "Umweltp.png", titel: "Umweltgefährdend", gefahr: "Gift für unsere Natur! Tötet im Abwasser Fische, Insekten und Wasserpflanzen.", handlung: "Niemals in das Waschbecken gießen! Muss in den Sondermüll." }
+        ];
+
+        const chemikalienDaten = [
+            { id: "Aceton", datei: "Aceton.png", name: "Nagellackentferner (Aceton)", beschreibung: "Die klare Flüssigkeit verdunstet blitzschnell. Die Dämpfe brennen leicht in den Augen und wenn man sich dabei eine Kerze anzündet, könnte die Flüssigkeit sofort Feuer fangen.", loesung: ["Brandp", "Reizp"] },
+            { id: "CO2", datei: "CO2.png", name: "Kohlenstoffdioxid-Zylinder (CO₂)", beschreibung: "Das Kohlenstoffdioxid (CO₂), das das Wasser zum Sprudeln bringt, ist mit hohem Druck in die schwere Metallflasche gepresst worden.", loesung: ["Gasp"] },
+            { id: "Desinfektion", datei: "Desinfektion.png", name: "Händedesinfektionsmittel", beschreibung: "Der hochprozentige Alkohol tötet Bakterien, trocknet aber die Haut aus und brennt unangenehm in den Augen. Zudem entzündet er sich leicht.", loesung: ["Brandp", "Reizp"] },
+            { id: "Feuerwerk", datei: "Feuerwerk.png", name: "Silvester-Feuerwerk", beschreibung: "Wenn man die Zündschnur anzündet, reagieren diese Stoffe schlagartig miteinander und jagen die Rakete mit einem sehr lauten Knall in den Himmel.", loesung: ["Explosionp"] },
+            { id: "H2O2", datei: "H2O2.png", name: "Wasserstoffperoxid (H₂O₂)", beschreibung: "Wirkt als extremer Brand-Beschleuniger, da es reinen Sauerstoff abgibt. Zudem ist es aggressiv und verursacht Verätzungen auf der Haut.", loesung: ["Brandfp", "Säurep"] },
+            { id: "Rohrreiniger", datei: "Rohrreiniger.png", name: "Flüssiger Rohrreiniger", beschreibung: "Diese zähflüssige Chemikalie ist so aggressiv, dass sie Haare und Fett im Abfluss chemisch auflöst. Auf der Haut verursacht sie sofort schwerste Wunden.", loesung: ["Säurep"] },
+            { id: "Vapes", datei: "Vapes.png", name: "E-Zigaretten Liquid", beschreibung: "Enthält hochkonzentriertes Nikotin. Ein Verschlucken der reinen Flüssigkeit blockiert Nerven und ist lebensgefährlich!", loesung: ["Giftp"] },
+            { id: "Waschbenzin", datei: "Waschbenzin.png", name: "Waschbenzin", beschreibung: "Löst Fett perfekt, entzündet sich aber beim kleinsten Funken. Dämpfe schädigen tief eingeatmet die Lunge. Ein Tropfen im Abwasser vergiftet sofort Fische.", loesung: ["Brandp", "Krankheitp", "Umweltp"] }
+        ];
+        
+        const allePiktogramme = ["Brandfp", "Brandp", "Explosionp", "Gasp", "Giftp", "Krankheitp", "Reizp", "Säurep", "Umweltp"];
+        let aktuellesQuizIndex = 0;
+
+
+        // ==========================================
+        // INITIALISIERUNG
+        // ==========================================
+        window.onload = () => {
+            initRegal();
+            initPiktogrammPool();
+            ladeChemikalie(0);
+        };
+
+        // --- LOGIK MODUS 1 (LABOR) ---
+        let currentHitboxId = null;
+        let foundErrors = 0;
+        const totalErrors = 13;
+
+        function showInfoLab(hitboxId, errorTitle, correctText) {
+            currentHitboxId = hitboxId;
+            document.getElementById('modal-title-lab').innerText = errorTitle;
+            document.getElementById('modal-correct-lab').innerText = correctText;
+            document.getElementById('modal-overlay-lab').style.display = 'flex';
+        }
+
+        function closeModalLab() {
+            document.getElementById('modal-overlay-lab').style.display = 'none';
+            if (currentHitboxId) {
+                let hitbox = document.getElementById(currentHitboxId);
+                if (!hitbox.classList.contains('found')) {
+                    hitbox.classList.add('found'); 
+                    foundErrors++; 
+                    document.getElementById('score').innerText = foundErrors + " von " + totalErrors + " Fehlern gefunden";
+                    if(foundErrors === totalErrors) {
+                        document.getElementById('score').innerText = "🎉 Super! Du hast alle 13 Laborregeln gefunden!";
+                        document.getElementById('score').style.color = "#27ae60";
+                        isLabCompleted = true;
+                        checkCertificateUnlock();
+                    }
+                }
+                currentHitboxId = null; 
+            }
+        }
+
+        // --- LOGIK MODUS 2 (REGAL) ---
+        function initRegal() {
+            const shelf = document.getElementById('shelf');
+            let currentRow;
+            behaelterDaten.forEach((item, index) => {
+                if (index % 3 === 0) {
+                    currentRow = document.createElement('div');
+                    currentRow.className = 'shelf-row';
+                    shelf.appendChild(currentRow);
+                }
+                const compartment = document.createElement('div');
+                compartment.className = 'shelf-compartment';
+                const wrapper = document.createElement('div');
+                wrapper.className = 'behaelter-wrapper';
+                const randomRot = Math.floor(Math.random() * 14) - 7;
+                const randomX = Math.floor(Math.random() * 10) - 5;
+                wrapper.style.transform = `rotate(${randomRot}deg) translateX(${randomX}px)`;
+                wrapper.onclick = () => openModalShelf(item);
+                const img = document.createElement('img');
+                img.src = `Behälter/${item.datei}`;
+                img.alt = item.titel;
+                img.onerror = function() { this.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="150" background="gray"><text fill="red">Bild fehlt</text></svg>'; };
+                wrapper.appendChild(img);
+                compartment.appendChild(wrapper);
+                currentRow.appendChild(compartment);
+            });
+        }
+        function openModalShelf(item) {
+            document.getElementById('modal-img-shelf').src = `Behälter/${item.datei}`;
+            document.getElementById('modal-pikto-shelf').src = `Piktogramme/${item.pikto}`;
+            document.getElementById('modal-title-shelf').textContent = item.titel;
+            document.getElementById('modal-gefahr-shelf').textContent = item.gefahr;
+            document.getElementById('modal-handlung-shelf').textContent = item.handlung;
+            document.getElementById('modal-overlay-shelf').style.display = 'flex';
+        }
+        function closeModalShelf() { document.getElementById('modal-overlay-shelf').style.display = 'none'; }
+
+        // --- LOGIK MODUS 3 (QUIZ) ---
+        function initPiktogrammPool() {
+            const pool = document.getElementById('pikto-pool');
+            pool.innerHTML = '';
+            allePiktogramme.forEach(pikto => {
+                const div = document.createElement('div');
+                div.className = 'pikto-item';
+                div.draggable = true;
+                div.id = `drag_${pikto}`;
+                div.ondragstart = dragStart;
+                const img = document.createElement('img');
+                img.src = `Piktogramme/${pikto}.png`;
+                div.appendChild(img);
+                pool.appendChild(div);
+            });
+        }
+
+        function ladeChemikalie(index) {
+            const chem = chemikalienDaten[index];
+            document.getElementById('drop-zone').innerHTML = '';
+            document.getElementById('feedback-text').textContent = '';
+            document.getElementById('feedback-text').className = 'feedback';
+            document.getElementById('btn-next').style.display = 'none';
+            document.getElementById('btn-check').style.display = 'inline-block';
+            document.getElementById('chem-info').innerHTML = `
+                <img src="Chemikalien/${chem.datei}">
+                <h3 style="color: #1e3799; margin-top: 0;">Chemie-Akte: ${chem.name}</h3>
+                <p><strong>Die Situation:</strong><br>${chem.beschreibung}</p>
+            `;
+        }
+
+        function dragStart(ev) { ev.dataTransfer.setData("text", ev.target.id); }
+        function allowDrop(ev) { ev.preventDefault(); }
+        function dragEnter(ev) { ev.preventDefault(); document.getElementById('drop-zone').classList.add('dragover'); }
+        function dragLeave(ev) { document.getElementById('drop-zone').classList.remove('dragover'); }
+        function drop(ev) {
+            ev.preventDefault();
+            document.getElementById('drop-zone').classList.remove('dragover');
+            const data = ev.dataTransfer.getData("text");
+            if(!data) return; 
+            const draggedElement = document.getElementById(data);
+            const piktoId = data.replace('drag_', '');
+            const existierende = document.querySelectorAll('.dropped-pikto');
+            for(let el of existierende) { if(el.dataset.pikto === piktoId) return; }
+            const clone = draggedElement.cloneNode(true);
+            clone.className = 'dropped-pikto';
+            clone.id = ''; clone.draggable = false; clone.dataset.pikto = piktoId; 
+            clone.onclick = function() { this.style.transform = 'scale(0)'; setTimeout(() => this.remove(), 200); };
+            document.getElementById('drop-zone').appendChild(clone);
+        }
+
+        function checkSolution() {
+            const chem = chemikalienDaten[aktuellesQuizIndex];
+            const dropZoneItems = document.querySelectorAll('.dropped-pikto');
+            const feedback = document.getElementById('feedback-text');
+            let droppedPiktos = [];
+            dropZoneItems.forEach(item => { droppedPiktos.push(item.dataset.pikto); });
+            const requires = chem.loesung;
+            
+            let isCorrect = true;
+            if(droppedPiktos.length !== requires.length) { isCorrect = false; } 
+            else { for(let req of requires) { if(!droppedPiktos.includes(req)) { isCorrect = false; break; } } }
+
+            if(isCorrect) {
+                feedback.innerHTML = "✅ <strong>Richtig zugeordnet.</strong>";
+                feedback.className = "feedback correct";
+                document.getElementById('btn-check').style.display = 'none';
+                
+                if(aktuellesQuizIndex < chemikalienDaten.length - 1) {
+                    document.getElementById('btn-next').style.display = 'inline-block';
+                } else {
+                    feedback.innerHTML = "🎉 <strong>Glückwunsch! Alle Level gelöst!</strong>";
+                    isQuizCompleted = true; 
+                    checkCertificateUnlock();
+                }
+            } else {
+                feedback.innerHTML = "❌ <strong>Da stimmt was noch nicht ganz.</strong> (Klicke auf falsche Piktogramme im Kasten, um sie zu löschen).";
+                feedback.className = "feedback wrong";
+            }
+        }
+
+        function nextChem() { aktuellesQuizIndex++; ladeChemikalie(aktuellesQuizIndex); }
+    </script>
+</body>
+</html>
