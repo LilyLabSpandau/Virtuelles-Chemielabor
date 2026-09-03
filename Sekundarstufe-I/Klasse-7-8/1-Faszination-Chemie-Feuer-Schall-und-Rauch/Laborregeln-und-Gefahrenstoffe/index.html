@@ -108,10 +108,10 @@
 
         /* --- DAS VERSTECKTE ZERTIFIKAT-TEMPLATE --- */
         #cert-template-wrapper { 
-            position: absolute; 
+            position: fixed; /* WICHTIG: fixed statt absolute, um Verrutschen beim Scrollen zu verhindern */
             top: 0; 
             left: 0; 
-            opacity: 0; 
+            opacity: 0.001; /* Fast unsichtbar, aber für den Renderer physisch vorhanden */
             z-index: -1000; 
             pointer-events: none; 
         }
@@ -429,12 +429,17 @@
 
             const element = document.getElementById('cert-template');
             
-            // Konfiguration erzwingt das genaue A4 Querformat
+            // NEU: scrollX und scrollY hinzugefügt, um Verrutschen zu verhindern!
             const opt = {
                 margin:       0,
                 filename:     `Laborfuehrerschein_${nameInput.replace(/\s+/g, '_')}.pdf`,
                 image:        { type: 'jpeg', quality: 1 },
-                html2canvas:  { scale: 2 },
+                html2canvas:  { 
+                    scale: 2, 
+                    scrollX: 0, 
+                    scrollY: 0,
+                    useCORS: true
+                },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
             };
 
