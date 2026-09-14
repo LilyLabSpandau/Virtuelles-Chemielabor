@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Interaktive Lern-App: Wasser</title>
+    <style>
+        /* ==========================================
+           ALLGEMEINE STYLES & LAYOUT
+           ========================================== */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6; color: #333; margin: 0; padding: 10px;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        h1 { color: #2c3e50; text-align: center; font-size: 24px; margin-bottom: 5px; line-height: 1.2;}
+        .subtitle { color: #7f8c8d; font-size: 14px; margin-bottom: 20px; text-align: center; }
+        
+        .module-container { display: none; flex-direction: column; align-items: center; gap: 15px; max-width: 900px; width: 100%; }
+        .module-container.active { display: flex; }
+
+        .workspace {
+            width: 100%; max-width: 600px; aspect-ratio: 6 / 5;
+            background-color: #fff; border: 2px dashed #bdc3c7; border-radius: 10px;
+            position: relative; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            touch-action: none;
+        }
+        .sidebar { width: 100%; max-width: 600px; background-color: #ecf0f1; padding: 15px; border-radius: 10px; box-sizing: border-box;}
+
+        button { background-color: #3498db; color: white; border: none; padding: 12px; font-size: 16px; border-radius: 5px; cursor: pointer; margin-top: 10px; width: 100%; font-weight: bold; transition: 0.3s;}
+        button:hover { background-color: #2980b9; }
+        button:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+        
+        .btn-success { background-color: #27ae60; margin-top: 15px; font-size: 18px; box-shadow: 0 4px 6px rgba(39, 174, 96, 0.3);}
+        .btn-success:hover { background-color: #219653; }
+        
+        .btn-back { background-color: #95a5a6; width: auto; padding: 8px 15px; font-size: 14px; margin: 0; align-self: flex-start;}
+        .btn-back:hover { background-color: #7f8c8d; }
+
+        .tabs { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; width: 100%; margin-bottom: 10px;}
+        .tab-btn { background-color: #bdc3c7; width: auto; margin: 0; padding: 10px 15px; font-size: 14px; flex: 1; }
+        .tab-btn.active { background-color: #3498db; color: white; }
+
+        .draggable { position: absolute; cursor: grab; z-index: 10; user-select: none; display: flex; justify-content: center; align-items: center;}
+        .draggable:active { cursor: grabbing; }
+        .explanation { background-color: #e8f8f5; border-left: 5px solid #1abc9c; padding: 15px; border-radius: 5px; margin-top: 15px;}
+
+        /* ==========================================
+           MODUL 1 STYLES
+           ========================================== */
+        .m1-selected { box-shadow: 0 0 10px 3px #3498db; }
+        .m1-atom-o { width: 60px; height: 60px; background-color: #e74c3c; color: white; border-radius: 50%; font-size: 24px; z-index: 3; font-weight: bold;}
+        .m1-atom-h { width: 40px; height: 40px; background-color: #bdc3c7; color: #333; border-radius: 50%; font-size: 18px; z-index: 3; font-weight: bold;}
+        .m1-bond { width: 10px; height: 60px; background-color: #7f8c8d; border-radius: 5px; z-index: 2; }
+        .m1-lone-pair { width: 30px; height: 20px; background-color: rgba(241, 196, 15, 0.6); border: 2px dotted #f39c12; border-radius: 50%; display: flex; justify-content: space-around; align-items: center; z-index: 3; }
+        .m1-lone-pair::before, .m1-lone-pair::after { content: ''; width: 6px; height: 6px; background-color: #d35400; border-radius: 50%; }
+        .m1-control-group { margin-top: 15px; background: #fff; padding: 10px; border-radius: 5px; border: 1px solid #bdc3c7; display: none; }
+        .m1-control-group label { display: block; font-size: 14px; font-weight: bold; margin-bottom: 5px; }
+        .m1-control-group input[type=range] { width: 100%; }
+        #m1-feedback-box { display: none; }
+
+        /* ==========================================
+           MODUL 2 STYLES
+           ========================================== */
+        .m2-tab-content { display: none; width: 100%; flex-direction: column; align-items: center; gap: 15px;}
+        .m2-tab-content.active { display: flex; }
+        .m2-molecule { position: absolute; width: 100px; height: 100px; transform-origin: center; z-index: 2; }
+        .m2-mol-svg { position: absolute; top: 0; left: 0; pointer-events: none; }
+        .m2-internal-charge { position: absolute; font-weight: bold; font-size: 13px; color: #d35400; background: rgba(255, 255, 255, 0.9); padding: 2px 5px; border-radius: 4px; border: 1px solid #d35400; display: none; z-index: 5; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        .m2-dropzone { position: absolute; border: 2px dotted transparent; border-radius: 50%; z-index: 3; }
+        .m2-charge { width: 26px; height: 26px; background-color: #f1c40f; border-radius: 50%; font-weight: bold; font-size: 12px; border: 1px solid #d35400; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .m2-draggable-mol { cursor: grab !important; }
+        #m2-hbond-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+        .m2-charge-dock { position: absolute; bottom: 10px; left: 10px; right: 10px; height: 50px; background: rgba(236, 240, 241, 0.7); border-radius: 10px; }
+        canvas { display: block; width: 100%; height: 100%; background: linear-gradient(to bottom, #ffffff 0%, #e0f7fa 100%); }
+        select { width: 100%; padding: 10px; margin-top: 5px; font-size: 16px; border-radius: 5px; }
+
+        /* ==========================================
+           MODUL 3 STYLES
+           ========================================== */
+        .m3-circuit-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+        .m3-switch-arm { transform-origin: 300px 100px; transform: rotate(-30deg); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .m3-switch-arm.closed { transform: rotate(0deg); } 
+        .m3-switch-hitbox { cursor: pointer; pointer-events: auto; }
+        .m3-water-rect { transition: y 1.5s ease-in-out, height 1.5s ease-in-out; }
+        .m3-bulb-part { transition: all 0.4s ease-in-out; }
+        #m3-bulb-halo-large.on { opacity: 0.6; }
+        #m3-bulb-halo.on { opacity: 0.9; }
+        #m3-bulb-glass.on { fill: rgba(255, 243, 204, 0.9); stroke: #f39c12; }
+        #m3-bulb-filament.on { stroke: #fff; filter: url(#m3-glow); stroke-width: 3px; }
+        
+        .m3-water-jug { width: 10%; height: 16%; border: 3px solid #7f8c8d; border-top: none; border-radius: 0 0 5px 5px; background: linear-gradient(to bottom, transparent 30%, rgba(52, 152, 219, 0.6) 30%); left: 5%; bottom: 10%; }
+        .m3-water-jug::before { content:'H₂O'; position:absolute; bottom: 5px; width: 100%; text-align: center; font-weight:bold; color: #fff; font-size: clamp(10px, 2vw, 14px); }
+        .m3-salt-shaker { width: 7%; height: 12%; border: 3px solid #7f8c8d; border-radius: 10px 10px 5px 5px; background: #ecf0f1; left: 20%; bottom: 10%; display: none; }
+        .m3-salt-shaker::before { content:'NaCl'; position:absolute; bottom: 5px; width: 100%; text-align: center; font-weight:bold; color: #333; font-size: clamp(9px, 1.5vw, 12px);}
+        .m3-salt-shaker::after { content:'. . .'; position:absolute; top: 2px; width: 100%; text-align: center; font-weight:bold; color: #7f8c8d; font-size: 10px; letter-spacing: 2px;}
+
+        .m3-particle-svg { opacity: 0; transition: opacity 1s, transform 2s ease-in-out; }
+        .m3-step-box { display: none; margin-top: 15px; padding: 15px; border-radius: 5px; background: #fff; border-left: 5px solid #3498db; }
+        .m3-step-box.active { display: block; }
+        .m3-btn-hypothesis { background-color: #f39c12; width: 48%; display: inline-block; margin-right: 2%; margin-top: 5px; }
+        .m3-btn-hypothesis:last-child { margin-right: 0; }
+    </style>
+</head>
+<body>
+
+    <!-- ========================================================================================= -->
+    <!-- IMPRESSUM & DATENSCHUTZ OVERLAY                                                           -->
+    <!-- ========================================================================================= -->
+    <a href="/Virtuelles-Chemielabor/impressum.html" style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-family: sans-serif; font-size: 12px; z-index: 9999;">Impressum & Datenschutz</a>
+
+    <h1>Wissen kompakt: Wasser</h1>
+    <div class="subtitle">Interaktive Modelle zu Struktur, Bindungen und Eigenschaften</div>
+
+    <!-- ========================================================================================= -->
+    <!-- MODUL 1: Räumlicher Bau (VSEPR)                                                           -->
+    <!-- ========================================================================================= -->
+    <div id="modul1" class="module-container active">
+        <h2 style="margin: 0; color: #34495e; font-size: 20px;">Modul 1: Aufbau des Moleküls</h2>
+        
+        <div class="workspace" id="m1-workspace" onclick="m1_deselectAll(event)">
+            <!-- Elemente per JS eingefügt -->
+        </div>
+
+        <div class="sidebar">
+            <h3 style="margin-top: 0;">Bauteile & Winkel</h3>
+            <p style="font-size: 14px; color: #555;">Ziehe das rote Sauerstoffatom (O), die Wasserstoffatome (H), Bindungen und Elektronenpaare in das Feld. <strong>Tippe ein Bauteil an</strong>, um es mit dem Schieberegler drehen zu können.</p>
+            
+            <div class="m1-control-group" id="m1-rotation-control">
+                <label for="m1-rot-slider">Drehung einstellen:</label>
+                <input type="range" id="m1-rot-slider" min="0" max="360" value="0">
+            </div>
+
+            <button onclick="m1_checkMolecule()">Prüfen & Korrigieren</button>
+            
+            <div id="m1-feedback-box" class="explanation">
+                <h4 style="margin-top: 0;">Auswertung</h4>
+                <p id="m1-student-feedback" style="font-weight: bold; color: #d35400;"></p>
+                <p style="font-size: 14px;">Nach dem <strong>Elektronenpaarabstoßungsmodell (EPA-Modell)</strong> stoßen sich alle 4 Elektronenpaare in der Valenzschale des Sauerstoffs maximal ab. Sie ordnen sich tetraedrisch an. Da die freien Elektronenpaare etwas mehr Raum beanspruchen, wird der H-O-H Winkel von den idealen 109,5° auf ca. <strong>104,5°</strong> zusammengedrückt.</p>
+                
+                <button id="btn-next-m1" class="btn-success" style="display:none;" onclick="navToModul(2)">Weiter zu Modul 2 ➔</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ========================================================================================= -->
+    <!-- MODUL 2: H-Brücken & Dichteanomalie                                                       -->
+    <!-- ========================================================================================= -->
+    <div id="modul2" class="module-container">
+        <button class="btn-back" onclick="navToModul(1)">⬅ Zurück zu Modul 1</button>
+        <h2 style="margin: 0; color: #34495e; font-size: 20px;">Modul 2: Eigenschaften des Wassers</h2>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="m2_switchTab('m2-teil1', this)">Teil 1: Wasserstoffbrücken</button>
+            <button class="tab-btn" onclick="m2_switchTab('m2-teil2', this)">Teil 2: Becherglas-Simulation</button>
+        </div>
+
+        <!-- M2 TEIL 1: Partialladungen -->
+        <div class="m2-tab-content active" id="m2-teil1">
+            <div class="workspace" id="m2-ws1">
+                <svg id="m2-hbond-canvas">
+                    <line id="m2-hb1" stroke="#3498db" stroke-width="4" stroke-dasharray="6,4" display="none" />
+                    <line id="m2-hb2" stroke="#3498db" stroke-width="4" stroke-dasharray="6,4" display="none" />
+                    <line id="m2-hb3" stroke="#3498db" stroke-width="4" stroke-dasharray="6,4" display="none" />
+                    <line id="m2-hb4" stroke="#3498db" stroke-width="4" stroke-dasharray="6,4" display="none" />
+                </svg>
+                
+                <div class="m2-molecule" id="m2-mol1" style="left: 10%; top: 15%; transform: rotate(15deg);">
+                    <svg width="100" height="100" class="m2-mol-svg">
+                        <line x1="50" y1="35" x2="20" y2="80" stroke="#7f8c8d" stroke-width="4"/>
+                        <line x1="50" y1="35" x2="80" y2="80" stroke="#7f8c8d" stroke-width="4"/>
+                        <!-- ID für Sauerstoff ist wichtig! -->
+                        <circle id="m2-m1-o" cx="50" cy="35" r="22" fill="#e74c3c"/>
+                        <!-- HIER SIND DIE FEHLENDEN IDs FÜR DIE WASSERSTOFFATOME! -->
+                        <circle id="m2-m1-h1" cx="20" cy="80" r="14" fill="#bdc3c7"/>
+                        <circle id="m2-m1-h2" cx="80" cy="80" r="14" fill="#bdc3c7"/>
+                        <text x="50" y="41" fill="white" font-size="18" text-anchor="middle" font-weight="bold">O</text>
+                        <text x="20" y="85" fill="#333" font-size="14" text-anchor="middle" font-weight="bold">H</text>
+                        <text x="80" y="85" fill="#333" font-size="14" text-anchor="middle" font-weight="bold">H</text>
+                    </svg>
+                    <div class="m2-internal-charge" style="top: -5px; left: 35px;">δ-</div>
+                    <div class="m2-internal-charge" style="top: 75px; left: -10px;">δ+</div>
+                    <div class="m2-internal-charge" style="top: 75px; left: 80px;">δ+</div>
+                    
+                    <div class="m2-dropzone" data-accept="delta-minus" style="top:10px; left:25px; width:50px; height:50px;"></div>
+                    <div class="m2-dropzone" data-accept="delta-plus" style="top:65px; left:5px; width:30px; height:30px;"></div>
+                    <div class="m2-dropzone" data-accept="delta-plus" style="top:65px; left:65px; width:30px; height:30px;"></div>
+                </div>
+                
+                <div class="m2-molecule" id="m2-mol2" style="left: 50%; top: 35%; transform: rotate(-30deg);">
+                    <svg width="100" height="100" class="m2-mol-svg">
+                        <line x1="50" y1="35" x2="20" y2="80" stroke="#7f8c8d" stroke-width="4"/>
+                        <line x1="50" y1="35" x2="80" y2="80" stroke="#7f8c8d" stroke-width="4"/>
+                        <circle id="m2-m2-o" cx="50" cy="35" r="22" fill="#e74c3c"/>
+                        <!-- HIER SIND DIE FEHLENDEN IDs FÜR DIE WASSERSTOFFATOME! -->
+                        <circle id="m2-m2-h1" cx="20" cy="80" r="14" fill="#bdc3c7"/>
+                        <circle id="m2-m2-h2" cx="80" cy="80" r="14" fill="#bdc3c7"/>
+                        <text x="50" y="41" fill="white" font-size="18" text-anchor="middle" font-weight="bold">O</text>
+                        <text x="20" y="85" fill="#333" font-size="14" text-anchor="middle" font-weight="bold">H</text>
+                        <text x="80" y="85" fill="#333" font-size="14" text-anchor="middle" font-weight="bold">H</text>
+                    </svg>
+                    <div class="m2-internal-charge" style="top: -5px; left: 35px;">δ-</div>
+                    <div class="m2-internal-charge" style="top: 75px; left: -10px;">δ+</div>
+                    <div class="m2-internal-charge" style="top: 75px; left: 80px;">δ+</div>
+
+                    <div class="m2-dropzone" data-accept="delta-minus" style="top:10px; left:25px; width:50px; height:50px;"></div>
+                    <div class="m2-dropzone" data-accept="delta-plus" style="top:65px; left:5px; width:30px; height:30px;"></div>
+                    <div class="m2-dropzone" data-accept="delta-plus" style="top:65px; left:65px; width:30px; height:30px;"></div>
+                </div>
+
+                <div class="m2-charge-dock" id="m2-c-dock"></div>
+                <div class="draggable m2-charge m2-c-drag" data-type="delta-minus" style="left: 5%; bottom: 22px;">δ-</div>
+                <div class="draggable m2-charge m2-c-drag" data-type="delta-minus" style="left: 20%; bottom: 22px;">δ-</div>
+                <div class="draggable m2-charge m2-c-drag" data-type="delta-plus" style="left: 35%; bottom: 22px;">δ+</div>
+                <div class="draggable m2-charge m2-c-drag" data-type="delta-plus" style="left: 50%; bottom: 22px;">δ+</div>
+                <div class="draggable m2-charge m2-c-drag" data-type="delta-plus" style="left: 65%; bottom: 22px;">δ+</div>
+                <div class="draggable m2-charge m2-c-drag" data-type="delta-plus" style="left: 80%; bottom: 22px;">δ+</div>
+            </div>
+
+            <div class="sidebar">
+                <h3 style="margin-top: 0;">Schritt 1: Polarisierung</h3>
+                <p style="font-size: 14px;">Verteile die Ladungen (δ+, δ-) auf die Atome.</p>
+                <button id="m2-checkBtn" onclick="m2_checkCharges()">Prüfen</button>
+                <div id="m2-feedback-t1" class="explanation" style="display: none;">
+                    <span style="color: #27ae60; font-weight: bold;">Richtig!</span>
+                    <p style="font-size: 13px; line-height: 1.4;">Da Sauerstoff eine höhere Elektronegativität besitzt, zieht es die Bindungselektronen an. Es entsteht ein Dipol.<br><br>
+                    <em>Bewege nun BEIDE Moleküle auf der Fläche. Die positiven H-Atome richten sich zu den negativen O-Atomen aus und bilden <strong>Wasserstoffbrücken</strong>!</em></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- M2 TEIL 2: Becherglas -->
+        <div class="m2-tab-content" id="m2-teil2">
+            <div class="workspace" id="m2-ws2">
+                <canvas id="m2-beakerCanvas"></canvas>
+            </div>
+
+            <div class="sidebar">
+                <h3 style="margin-top:0;">Temperatursteuerung</h3>
+                <select id="m2-targetTempSel">
+                    <option value="100">100 °C (Gas / Sieden)</option>
+                    <option value="25" selected>25 °C (Flüssig)</option>
+                    <option value="4">4 °C (Dichteanomalie)</option>
+                    <option value="0">0 °C (Gefrierpunkt / Eiswasser)</option>
+                    <option value="-10">-10 °C (Festes Eis)</option>
+                </select>
+                
+                <button onclick="m2_startSimulation()">Zeitraffer Starten</button>
+                
+                <div style="background: #fff; padding: 12px; border-radius: 5px; margin-top: 15px; border-left: 5px solid #3498db;">
+                    <div id="m2-disp-explanation" style="font-size: 14px; line-height: 1.4;">
+                        <strong>Flüssig (25 °C):</strong> Die Wassermoleküle gleiten aneinander vorbei. Wasserstoffbrücken brechen und bilden sich fortlaufend neu.
+                    </div>
+                </div>
+                
+                <button id="btn-next-m2" class="btn-success" style="display:none;" onclick="navToModul(3)">Weiter zu Modul 3 ➔</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ========================================================================================= -->
+    <!-- MODUL 3: Elektrische Leitfähigkeit                                                        -->
+    <!-- ========================================================================================= -->
+    <div id="modul3" class="module-container">
+        <button class="btn-back" onclick="navToModul(2)">⬅ Zurück zu Modul 2</button>
+        <h2 style="margin: 0; color: #34495e; font-size: 20px;">Modul 3: Elektrische Leitfähigkeit</h2>
+
+        <div class="workspace" id="m3-ws3" style="container-type: inline-size;">
+            <svg class="m3-circuit-svg" viewBox="0 0 600 500">
+                <defs>
+                    <filter id="m3-glow" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur stdDeviation="5" result="blur" />
+                        <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                    </filter>
+                    <filter id="m3-heavy-glow" x="-100%" y="-100%" width="300%" height="300%">
+                        <feGaussianBlur stdDeviation="15" result="blur" />
+                        <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                    </filter>
+                </defs>
+
+                <line x1="226" y1="80" x2="226" y2="120" stroke="#333" stroke-width="4"/> 
+                <line x1="246" y1="70" x2="246" y2="130" stroke="#333" stroke-width="4"/> 
+                <text x="210" y="70" font-weight="bold" font-size="18">-</text>
+                <text x="255" y="70" font-weight="bold" font-size="18">+</text>
+
+                <polyline points="226,100 100,100 100,250 226,250" fill="none" stroke="#333" stroke-width="3"/>
+                <line x1="246" y1="100" x2="300" y2="100" stroke="#333" stroke-width="3"/>
+                <line x1="350" y1="100" x2="390" y2="100" stroke="#333" stroke-width="3"/>
+                <polyline points="400,118 400,130 500,130 500,250 376,250" fill="none" stroke="#333" stroke-width="3"/>
+
+                <line x1="226" y1="250" x2="226" y2="400" stroke="#555" stroke-width="14" stroke-linecap="round"/>
+                <text x="226" y="380" font-weight="bold" fill="#fff" font-size="16" text-anchor="middle">-</text>
+                
+                <line x1="376" y1="250" x2="376" y2="400" stroke="#555" stroke-width="14" stroke-linecap="round"/>
+                <text x="376" y="380" font-weight="bold" fill="#fff" font-size="16" text-anchor="middle">+</text>
+
+                <path d="M 170 240 L 170 430 Q 170 440 180 440 L 420 440 Q 430 440 430 430 L 430 240" fill="rgba(255,255,255,0.1)" stroke="#bdc3c7" stroke-width="4" />
+                <rect id="m3-svg-water" class="m3-water-rect" x="172" y="436" width="256" height="0" fill="rgba(52, 152, 219, 0.4)" rx="4" ry="4" />
+
+                <!-- SVG Partikel -->
+                <g id="m3-particles-layer">
+                    <g id="m3-h2o-1" class="m3-particle-svg" style="transform: translate(300px, 390px) rotate(20deg);">
+                        <circle cx="0" cy="-4" r="10" fill="#e74c3c"/><circle cx="-8" cy="4" r="6" fill="#bdc3c7"/><circle cx="8" cy="4" r="6" fill="#bdc3c7"/>
+                    </g>
+                    <g id="m3-h2o-2" class="m3-particle-svg" style="transform: translate(200px, 340px) rotate(-40deg);">
+                        <circle cx="0" cy="-4" r="10" fill="#e74c3c"/><circle cx="-8" cy="4" r="6" fill="#bdc3c7"/><circle cx="8" cy="4" r="6" fill="#bdc3c7"/>
+                    </g>
+                    <g id="m3-h2o-3" class="m3-particle-svg" style="transform: translate(390px, 360px) rotate(60deg);">
+                        <circle cx="0" cy="-4" r="10" fill="#e74c3c"/><circle cx="-8" cy="4" r="6" fill="#bdc3c7"/><circle cx="8" cy="4" r="6" fill="#bdc3c7"/>
+                    </g>
+                    <g id="m3-h2o-4" class="m3-particle-svg" style="transform: translate(260px, 300px) rotate(100deg);">
+                        <circle cx="0" cy="-4" r="10" fill="#e74c3c"/><circle cx="-8" cy="4" r="6" fill="#bdc3c7"/><circle cx="8" cy="4" r="6" fill="#bdc3c7"/>
+                    </g>
+
+                    <g id="m3-ion-na1" class="m3-particle-svg" style="transform: translate(390px, 330px);">
+                        <circle cx="0" cy="0" r="13" fill="#9b59b6"/><text x="0" y="4" fill="white" font-size="12" font-weight="bold" text-anchor="middle">Na⁺</text>
+                    </g>
+                    <g id="m3-ion-na2" class="m3-particle-svg" style="transform: translate(400px, 400px);">
+                        <circle cx="0" cy="0" r="13" fill="#9b59b6"/><text x="0" y="4" fill="white" font-size="12" font-weight="bold" text-anchor="middle">Na⁺</text>
+                    </g>
+                    <g id="m3-ion-cl1" class="m3-particle-svg" style="transform: translate(190px, 350px);">
+                        <circle cx="0" cy="0" r="13" fill="#27ae60"/><text x="0" y="4" fill="white" font-size="12" font-weight="bold" text-anchor="middle">Cl⁻</text>
+                    </g>
+                    <g id="m3-ion-cl2" class="m3-particle-svg" style="transform: translate(200px, 410px);">
+                        <circle cx="0" cy="0" r="13" fill="#27ae60"/><text x="0" y="4" fill="white" font-size="12" font-weight="bold" text-anchor="middle">Cl⁻</text>
+                    </g>
+                </g>
+
+                <!-- GLÜHBIRNE -->
+                <g id="m3-lightbulb-group">
+                    <circle id="m3-bulb-halo-large" cx="400" cy="65" r="40" fill="#f1c40f" opacity="0" filter="url(#m3-heavy-glow)" class="m3-bulb-part"/>
+                    <circle id="m3-bulb-halo" cx="400" cy="65" r="20" fill="#fff" opacity="0" filter="url(#m3-glow)" class="m3-bulb-part"/>
+                    <path id="m3-bulb-glass" d="M 386 95 C 370 75, 365 40, 400 30 C 435 40, 430 75, 414 95 C 414 95, 410 100, 408 100 L 392 100 C 390 100, 386 95, 386 95 Z" fill="rgba(236, 240, 241, 0.6)" stroke="#7f8c8d" stroke-width="2" class="m3-bulb-part"/>
+                    <polyline points="396,100 396,75 404,75 404,100" fill="none" stroke="#7f8c8d" stroke-width="2"/>
+                    <polyline id="m3-bulb-filament" points="396,75 398,65 402,65 404,75" fill="none" stroke="#555" stroke-width="2" class="m3-bulb-part"/>
+                    <rect x="390" y="100" width="20" height="18" fill="#95a5a6" rx="2"/>
+                    <line x1="390" y1="104" x2="410" y2="104" stroke="#7f8c8d" stroke-width="2"/>
+                    <line x1="390" y1="108" x2="410" y2="108" stroke="#7f8c8d" stroke-width="2"/>
+                    <line x1="390" y1="112" x2="410" y2="112" stroke="#7f8c8d" stroke-width="2"/>
+                    <path d="M 395 118 L 405 118" stroke="#7f8c8d" stroke-width="4" stroke-linecap="round"/>
+                </g>
+
+                <circle cx="300" cy="100" r="5" fill="#333"/>
+                <circle cx="350" cy="100" r="5" fill="#333"/>
+                <line id="m3-switch-arm" class="m3-switch-arm" x1="300" y1="100" x2="350" y2="100" stroke="#e74c3c" stroke-width="5" stroke-linecap="round"/>
+                <rect class="m3-switch-hitbox" id="m3-switch-hitbox" x="280" y="50" width="90" height="100" fill="transparent" />
+            </svg>
+
+            <!-- DRAGGABLES -->
+            <div class="draggable m3-water-jug" id="m3-drag-water"></div>
+            <div class="draggable m3-salt-shaker" id="m3-drag-salt"></div>
+        </div>
+
+        <div class="sidebar">
+            <h3 id="m3-step-title" style="margin-top: 0;">Schritt 1: Versuchsvorbereitung</h3>
+            
+            <div class="m3-step-box active" id="m3-box-1">
+                <p style="margin-top: 0;">Der Stromkreis ist durch den offenen Schalter unterbrochen. Das Becherglas ist leer.</p>
+                <p><strong>Aufgabe:</strong> Ziehe den Behälter mit <strong>reinem Wasser (H₂O)</strong> in das Becherglas.</p>
+            </div>
+
+            <div class="m3-step-box" id="m3-box-2">
+                <p style="margin-top: 0;">Das Becherglas ist nun mit Wasser gefüllt.</p>
+                <p><strong>Was vermutest du?</strong> Leitet reines Wasser den elektrischen Strom?</p>
+                <div>
+                    <button class="m3-btn-hypothesis" onclick="m3_submitHypothesis(true)">Ja, Lampe leuchtet</button>
+                    <button class="m3-btn-hypothesis" onclick="m3_submitHypothesis(false)">Nein, bleibt aus</button>
+                </div>
+            </div>
+
+            <div class="m3-step-box" id="m3-box-3">
+                <p style="margin-top: 0;">Klicke nun direkt auf den <strong>roten Schalter</strong> im Schaltplan, um ihn zu schließen und die Vermutung zu prüfen!</p>
+            </div>
+
+            <div class="m3-step-box explanation" id="m3-box-4">
+                <p style="margin-top: 0;"><strong>Die Lampe leuchtet nicht!</strong></p>
+                <p>Reines Wasser leitet den elektrischen Strom <strong>nicht</strong>. Die Wassermoleküle sind nach außen hin elektrisch neutral und es gibt keine frei beweglichen Ladungsträger.</p>
+                <p><strong>Neuer Versuch:</strong> Ziehe den Salzstreuer (NaCl) in das Wasser und klicke den Schalter erneut.</p>
+            </div>
+
+            <div class="m3-step-box explanation" id="m3-box-5">
+                <p style="margin-top: 0; font-size: 16px; color: #d35400;"><strong>Die Lampe glüht! Warum?</strong></p>
+                <ul>
+                    <li><strong>Gitterabbau:</strong> Das Wasser bricht das starre Gitter des Salzes auf.</li>
+                    <li><strong>Freie Ladungsträger:</strong> Es entstehen frei bewegliche, elektrisch geladene Teilchen: <strong>Na⁺</strong> und <strong>Cl⁻</strong>.</li>
+                    <li><strong>Ionenwanderung:</strong> Bei geschlossenem Schalter zieht die negative Elektrode (-) die positiven Na⁺-Ionen an. Die positive Elektrode (+) zieht die negativen Cl⁻-Ionen an.</li>
+                    <li><strong>Stromfluss:</strong> Genau diese gerichtete Ionenbewegung schließt den Stromkreis.</li>
+                </ul>
+                <button class="btn-success" onclick="alert('Herzlichen Glückwunsch! Du hast die gesamte Lerneinheit erfolgreich abgeschlossen!')">Lerneinheit abschließen 🎓</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // =========================================================================================
+        // NAVIGATION (Global)
+        // =========================================================================================
+        function navToModul(modNum) {
+            document.querySelectorAll('.module-container').forEach(c => c.classList.remove('active'));
+            document.getElementById(`modul${modNum}`).classList.add('active');
+            
+            // Manage Background CPU usage for Canvas
+            if (modNum === 1 || modNum === 3) {
+                m2_isAnimating = false; // Pause Modul 2 Physics
+            } else if (modNum === 2) {
+                if(document.getElementById('m2-teil2').classList.contains('active')) {
+                    m2_resizeCanvas();
+                    if(!m2_isAnimating) { m2_isAnimating = true; m2_updatePhysics(); }
+                }
+            }
+        }
+
+        // =========================================================================================
+        // JAVASCRIPT MODUL 1
+        // =========================================================================================
+        const m1_workspace = document.getElementById('m1-workspace');
+        const m1_rotationControl = document.getElementById('m1-rotation-control');
+        const m1_rotSlider = document.getElementById('m1-rot-slider');
+        
+        const m1_elementsData = [
+            { id: 'm1-o-atom', class: 'm1-atom-o', text: 'O', x: 50, y: 50 },
+            { id: 'm1-h-atom-1', class: 'm1-atom-h', text: 'H', x: 50, y: 130 },
+            { id: 'm1-h-atom-2', class: 'm1-atom-h', text: 'H', x: 110, y: 130 },
+            { id: 'm1-bond-1', class: 'm1-bond', text: '', x: 180, y: 50 },
+            { id: 'm1-bond-2', class: 'm1-bond', text: '', x: 210, y: 50 },
+            { id: 'm1-lp-1', class: 'm1-lone-pair', text: '', x: 50, y: 200 },
+            { id: 'm1-lp-2', class: 'm1-lone-pair', text: '', x: 100, y: 200 }
+        ];
+
+        let m1_draggedElement = null;
+        let m1_activeElement = null;
+        let m1_offsetX = 0; let m1_offsetY = 0;
+
+        m1_elementsData.forEach(data => {
+            const el = document.createElement('div');
+            el.className = `draggable m1-draggable ${data.class}`;
+            el.id = data.id;
+            el.innerHTML = data.text;
+            el.style.left = data.x + 'px';
+            el.style.top = data.y + 'px';
+            el.dataset.rotation = 0;
+            
+            el.addEventListener('mousedown', m1_dragStart);
+            el.addEventListener('touchstart', m1_dragStart, { passive: false });
+            m1_workspace.appendChild(el);
+        });
+
+        m1_rotSlider.addEventListener('input', (e) => {
+            if (m1_activeElement) {
+                const angle = e.target.value;
+                m1_activeElement.style.transform = `rotate(${angle}deg)`;
+                m1_activeElement.dataset.rotation = angle;
+            }
+        });
+
+        function m1_deselectAll(e) {
+            if (e.target === m1_workspace) {
+                document.querySelectorAll('.m1-draggable').forEach(el => el.classList.remove('m1-selected'));
+                m1_activeElement = null;
+                m1_rotationControl.style.display = 'none';
+            }
+        }
+
+        function m1_dragStart(e) {
+            if (e.type === 'touchstart') e.preventDefault();
+            m1_draggedElement = e.target;
+            if(m1_draggedElement.classList.contains('m1-lone-pair')) {
+                m1_draggedElement = m1_draggedElement.closest('.m1-lone-pair');
+            }
+            document.querySelectorAll('.m1-draggable').forEach(el => el.classList.remove('m1-selected'));
+            m1_activeElement = m1_draggedElement;
+            if(m1_activeElement) m1_activeElement.classList.add('m1-selected');
+            
+            m1_rotationControl.style.display = 'block';
+            m1_rotSlider.value = m1_activeElement.dataset.rotation;
+
+            const rect = m1_draggedElement.getBoundingClientRect();
+            let clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+            let clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+            
+            m1_offsetX = clientX - rect.left;
+            m1_offsetY = clientY - rect.top;
+            
+            if (e.type.includes('touch')) {
+                document.addEventListener('touchmove', m1_dragMove, { passive: false });
+                document.addEventListener('touchend', m1_dragEnd);
+            } else {
+                document.addEventListener('mousemove', m1_dragMove);
+                document.addEventListener('mouseup', m1_dragEnd);
+            }
+        }
+
+        function m1_dragMove(e) {
+            if (!m1_draggedElement) return;
+            if (e.type.includes('touch')) e.preventDefault();
+            
+            const wsRect = m1_workspace.getBoundingClientRect();
+            let clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+            let clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+
+            let x = clientX - wsRect.left - m1_offsetX;
+            let y = clientY - wsRect.top - m1_offsetY;
+
+            x = Math.max(0, Math.min(x, wsRect.width - m1_draggedElement.offsetWidth));
+            y = Math.max(0, Math.min(y, wsRect.height - m1_draggedElement.offsetHeight));
+
+            m1_draggedElement.style.left = x + 'px';
+            m1_draggedElement.style.top = y + 'px';
+        }
+
+        function m1_dragEnd() {
+            document.removeEventListener('mousemove', m1_dragMove);
+            document.removeEventListener('mouseup', m1_dragEnd);
+            document.removeEventListener('touchmove', m1_dragMove);
+            document.removeEventListener('touchend', m1_dragEnd);
+            m1_draggedElement = null;
+        }
+        
+        function m1_getCenter(el) {
+            if(!el) return {x:0, y:0};
+            const rect = el.getBoundingClientRect();
+            return { x: parseFloat(el.style.left) + (rect.width / 2), y: parseFloat(el.style.top) + (rect.height / 2) };
+        }
+
+        function m1_checkMolecule() {
+            const getEl = id => document.getElementById(id);
+            const centerO = m1_getCenter(getEl('m1-o-atom'));
+            const centerH1 = m1_getCenter(getEl('m1-h-atom-1'));
+            const centerH2 = m1_getCenter(getEl('m1-h-atom-2'));
+            
+            const v1 = { x: centerH1.x - centerO.x, y: centerH1.y - centerO.y };
+            const v2 = { x: centerH2.x - centerO.x, y: centerH2.y - centerO.y };
+            
+            const dotProduct = v1.x * v2.x + v1.y * v2.y;
+            const mag1 = Math.sqrt(v1.x * v1.x + v1.y * v1.y);
+            const mag2 = Math.sqrt(v2.x * v2.x + v2.y * v2.y);
+            
+            let feedbackMsg = "";
+            if (mag1 < 20 || mag2 < 20) {
+                feedbackMsg = "Hast du alle Atome platziert? Das sieht noch unfertig aus.";
+            } else {
+                let angleRad = Math.acos(dotProduct / (mag1 * mag2));
+                let angleDeg = angleRad * (180 / Math.PI);
+                if (angleDeg > 150) {
+                    feedbackMsg = `Winkel: ca. ${Math.round(angleDeg)}°. Du hast das Molekül linear gebaut. Das ist ein typischer Fehler!`;
+                } else if (angleDeg > 90 && angleDeg < 120) {
+                    feedbackMsg = `Sehr gut! Dein Winkel von ca. ${Math.round(angleDeg)}° zeigt, dass du an den gewinkelten Bau gedacht hast.`;
+                } else {
+                    feedbackMsg = `Winkel: ca. ${Math.round(angleDeg)}°. Das ist nicht ganz korrekt.`;
+                }
+            }
+
+            document.getElementById('m1-student-feedback').innerText = feedbackMsg;
+
+            const wsRect = m1_workspace.getBoundingClientRect();
+            const centerX = wsRect.width / 2;
+            const centerY = wsRect.height / 2;
+
+            document.querySelectorAll('.m1-draggable').forEach(el => el.classList.remove('m1-selected'));
+            m1_activeElement = null;
+            m1_rotationControl.style.display = 'none';
+
+            document.querySelectorAll('.m1-draggable').forEach(el => { el.style.transition = 'all 1s ease-in-out'; });
+
+            getEl('m1-o-atom').style.left = (centerX - 30) + 'px'; getEl('m1-o-atom').style.top = (centerY - 30) + 'px';
+            getEl('m1-h-atom-1').style.left = (centerX - 80) + 'px'; getEl('m1-h-atom-1').style.top = (centerY + 60) + 'px';
+            getEl('m1-h-atom-2').style.left = (centerX + 40) + 'px'; getEl('m1-h-atom-2').style.top = (centerY + 60) + 'px';
+
+            const b1 = getEl('m1-bond-1'); b1.style.left = (centerX - 45) + 'px'; b1.style.top = (centerY + 15) + 'px'; b1.style.transform = 'rotate(45deg)';
+            const b2 = getEl('m1-bond-2'); b2.style.left = (centerX + 35) + 'px'; b2.style.top = (centerY + 15) + 'px'; b2.style.transform = 'rotate(-45deg)';
+            const lp1 = getEl('m1-lp-1'); lp1.style.left = (centerX - 50) + 'px'; lp1.style.top = (centerY - 60) + 'px'; lp1.style.transform = 'rotate(-30deg)';
+            const lp2 = getEl('m1-lp-2'); lp2.style.left = (centerX + 20) + 'px'; lp2.style.top = (centerY - 60) + 'px'; lp2.style.transform = 'rotate(30deg)';
+
+            setTimeout(() => {
+                document.querySelectorAll('.m1-draggable').forEach(el => { el.style.transition = 'transform 0.1s'; });
+                document.getElementById('btn-next-m1').style.display = 'block';
+            }, 1000);
+
+            document.getElementById('m1-feedback-box').style.display = 'block';
+        }
+
+
+        // =========================================================================================
+        // JAVASCRIPT MODUL 2
+        // =========================================================================================
+        function m2_switchTab(tabId, btn) {
+            document.querySelectorAll('#modul2 .tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('#modul2 .m2-tab-content').forEach(cont => cont.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+            
+            if(tabId === 'm2-teil2') {
+                m2_resizeCanvas();
+                if(!m2_isAnimating) { m2_isAnimating = true; m2_updatePhysics(); }
+                document.getElementById('btn-next-m2').style.display = 'block';
+            } else {
+                m2_isAnimating = false; 
+            }
+        }
+
+        // --- M2 TEIL 1 ---
+        let m2_activeDragEl = null; let m2_isMoleculeDrag = false; let m2_offsetX = 0, m2_offsetY = 0; let m2_chargesCorrect = false;
+        const m2_ws1 = document.getElementById('m2-ws1');
+
+        document.querySelectorAll('.m2-charge, .m2-molecule').forEach(el => { el.addEventListener('pointerdown', m2_startDrag); });
+
+        function m2_startDrag(e) {
+            m2_activeDragEl = e.currentTarget;
+            m2_isMoleculeDrag = m2_activeDragEl.classList.contains('m2-molecule');
+            if(m2_isMoleculeDrag && !m2_chargesCorrect) { m2_activeDragEl = null; return; }
+            const rect = m2_activeDragEl.getBoundingClientRect();
+            m2_offsetX = e.clientX - rect.left; m2_offsetY = e.clientY - rect.top;
+            if(!m2_isMoleculeDrag) m2_activeDragEl.style.bottom = 'auto'; 
+            document.addEventListener('pointermove', m2_dragMove);
+            document.addEventListener('pointerup', m2_endDrag);
+            m2_activeDragEl.setPointerCapture(e.pointerId);
+        }
+
+        function m2_dragMove(e) {
+            if(!m2_activeDragEl) return;
+            const wsRect = m2_ws1.getBoundingClientRect();
+            let x = e.clientX - wsRect.left - m2_offsetX; let y = e.clientY - wsRect.top - m2_offsetY;
+            x = Math.max(0, Math.min(x, wsRect.width - m2_activeDragEl.offsetWidth));
+            y = Math.max(0, Math.min(y, wsRect.height - m2_activeDragEl.offsetHeight));
+            m2_activeDragEl.style.left = x + 'px'; m2_activeDragEl.style.top = y + 'px';
+            if(m2_isMoleculeDrag) m2_checkHydrogenBonds();
+        }
+
+        function m2_endDrag(e) {
+            if(!m2_activeDragEl) return;
+            document.removeEventListener('pointermove', m2_dragMove);
+            document.removeEventListener('pointerup', m2_endDrag);
+            m2_activeDragEl.releasePointerCapture(e.pointerId);
+            
+            if(!m2_isMoleculeDrag) {
+                let snapped = false;
+                const chargeRect = m2_activeDragEl.getBoundingClientRect();
+                const wsRect = m2_ws1.getBoundingClientRect();
+                document.querySelectorAll('.m2-dropzone').forEach(zone => {
+                    const zoneRect = zone.getBoundingClientRect();
+                    let cx = chargeRect.left + chargeRect.width/2; let cy = chargeRect.top + chargeRect.height/2;
+                    if(cx > zoneRect.left && cx < zoneRect.right && cy > zoneRect.top && cy < zoneRect.bottom) {
+                        m2_activeDragEl.dataset.placedOn = zone.dataset.accept;
+                        m2_activeDragEl.style.left = (zoneRect.left - wsRect.left + (zoneRect.width/2) - 13) + 'px';
+                        m2_activeDragEl.style.top = (zoneRect.top - wsRect.top + (zoneRect.height/2) - 13) + 'px';
+                        snapped = true;
+                    }
+                });
+                if(!snapped) m2_activeDragEl.dataset.placedOn = "";
+            }
+            m2_activeDragEl = null;
+        }
+
+        function m2_checkCharges() {
+            let correct = true; let placedCount = 0;
+            document.querySelectorAll('.m2-c-drag').forEach(c => {
+                if(c.dataset.placedOn) { placedCount++; if(c.dataset.placedOn !== c.dataset.type) correct = false; }
+            });
+            if(placedCount < 6 || !correct) {
+                alert("Nicht ganz! Sauerstoff zieht die Elektronen stärker an (δ-). Wasserstoff bekommt δ+."); m2_chargesCorrect = false;
+            } else {
+                m2_chargesCorrect = true;
+                document.getElementById('m2-feedback-t1').style.display = 'block';
+                document.getElementById('m2-checkBtn').disabled = true;
+                document.querySelectorAll('.m2-c-drag').forEach(c => c.style.display = 'none');
+                document.getElementById('m2-c-dock').style.display = 'none';
+                document.querySelectorAll('.m2-internal-charge').forEach(c => c.style.display = 'block');
+                document.getElementById('m2-mol1').classList.add('m2-draggable-mol');
+                document.getElementById('m2-mol2').classList.add('m2-draggable-mol');
+                m2_checkHydrogenBonds(); 
+            }
+        }
+
+        function m2_getSvgCenter(id) {
+            const el = document.getElementById(id); 
+            if(!el) return {x:0, y:0};
+            const rect = el.getBoundingClientRect(); const wsRect = m2_ws1.getBoundingClientRect();
+            return { x: rect.left + rect.width/2 - wsRect.left, y: rect.top + rect.height/2 - wsRect.top };
+        }
+
+        function m2_checkHydrogenBonds() {
+            const pairs = [
+                { o: m2_getSvgCenter('m2-m1-o'), h: m2_getSvgCenter('m2-m2-h1'), lineId: 'm2-hb1' },
+                { o: m2_getSvgCenter('m2-m1-o'), h: m2_getSvgCenter('m2-m2-h2'), lineId: 'm2-hb2' },
+                { o: m2_getSvgCenter('m2-m2-o'), h: m2_getSvgCenter('m2-m1-h1'), lineId: 'm2-hb3' },
+                { o: m2_getSvgCenter('m2-m2-o'), h: m2_getSvgCenter('m2-m1-h2'), lineId: 'm2-hb4' }
+            ];
+            pairs.forEach(pair => {
+                const line = document.getElementById(pair.lineId);
+                const dx = pair.h.x - pair.o.x; const dy = pair.h.y - pair.o.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                if(dist > 30 && dist < 120) {
+                    line.setAttribute('x1', pair.o.x); line.setAttribute('y1', pair.o.y);
+                    line.setAttribute('x2', pair.h.x); line.setAttribute('y2', pair.h.y);
+                    line.style.display = 'block';
+                } else { line.style.display = 'none'; }
+            });
+        }
+
+        // --- M2 TEIL 2 ---
+        const m2_canvas = document.getElementById('m2-beakerCanvas');
+        const m2_ctx = m2_canvas.getContext('2d');
+        let m2_particles = [];
+        const m2_numParticles = 48;
+        let m2_currentTemp = 25; let m2_targetTemp = 25; let m2_isAnimating = false;
+        let m2_iceSlots = [];
+
+        function m2_resizeCanvas() {
+            const ws2 = document.getElementById('m2-ws2');
+            m2_canvas.width = ws2.clientWidth; m2_canvas.height = ws2.clientHeight;
+            m2_initParticles();
+        }
+
+        function m2_initParticles() {
+            m2_particles = []; m2_iceSlots = [];
+            let cols = 8; let spacing = 42; 
+            let startX = (m2_canvas.width - ((cols-1) * spacing)) / 2;
+            let iceTopY = m2_canvas.height - 250; 
+
+            for(let row = 0; row < 6; row++) {
+                for(let col = 0; col < cols; col++) {
+                    let offsetX = (row % 2 === 0) ? 0 : spacing * 0.5;
+                    m2_iceSlots.push({ x: startX + col * spacing + offsetX, y: iceTopY + row * (spacing * 0.866), angle: 0, assignedParticle: null });
+                }
+            }
+            m2_iceSlots.sort((a, b) => a.y - b.y);
+
+            for(let i=0; i<m2_numParticles; i++) {
+                m2_particles.push({
+                    id: i, x: Math.random() * m2_canvas.width, y: m2_canvas.height - 50 - Math.random() * 100,
+                    targetSlot: null, vx: (Math.random() - 0.5) * 2, vy: (Math.random() - 0.5) * 2, angle: Math.random() * Math.PI * 2
+                });
+            }
+        }
+
+        function m2_drawMolecule(x, y, angle) {
+            m2_ctx.save(); m2_ctx.translate(x, y); m2_ctx.rotate(angle);
+            m2_ctx.beginPath(); m2_ctx.moveTo(0,0); m2_ctx.lineTo(-7, 7); m2_ctx.stroke();
+            m2_ctx.beginPath(); m2_ctx.moveTo(0,0); m2_ctx.lineTo(7, 7); m2_ctx.stroke();
+            m2_ctx.beginPath(); m2_ctx.arc(0, 0, 9, 0, Math.PI*2); m2_ctx.fillStyle = '#e74c3c'; m2_ctx.fill();
+            m2_ctx.beginPath(); m2_ctx.arc(-7, 7, 5, 0, Math.PI*2); m2_ctx.arc(7, 7, 5, 0, Math.PI*2);
+            m2_ctx.fillStyle = '#bdc3c7'; m2_ctx.fill();
+            m2_ctx.restore();
+        }
+
+        function m2_getHCoords(p) {
+            let cosA = Math.cos(p.angle); let sinA = Math.sin(p.angle);
+            return { h1x: p.x - 7 * cosA - 7 * sinA, h1y: p.y - 7 * sinA + 7 * cosA, h2x: p.x + 7 * cosA - 7 * sinA, h2y: p.y + 7 * sinA + 7 * cosA };
+        }
+
+        function m2_distSq(x1, y1, x2, y2) { return (x2-x1)*(x2-x1) + (y2-y1)*(y2-y1); }
+
+        function m2_updatePhysics() {
+            if(!m2_isAnimating) return;
+            let step = 0.15;
+            if (m2_currentTemp <= 10 && m2_targetTemp <= 10) step = 0.03; 
+
+            if (Math.abs(m2_currentTemp - m2_targetTemp) > step) {
+                m2_currentTemp += (m2_targetTemp > m2_currentTemp ? step : -step);
+            } else { m2_currentTemp = m2_targetTemp; }
+
+            m2_ctx.clearRect(0, 0, m2_canvas.width, m2_canvas.height);
+
+            m2_ctx.fillStyle = 'rgba(44, 62, 80, 0.1)'; m2_ctx.font = 'bold 80px sans-serif'; m2_ctx.textAlign = 'center';
+            let displayTemp = Math.round(m2_currentTemp);
+            m2_ctx.fillText(displayTemp + " °C", m2_canvas.width/2, 100);
+
+            let isGas = displayTemp >= 95;
+            
+            let expl = "";
+            if (displayTemp >= 95) {
+                expl = "<strong>Sieden (100 °C):</strong> Die thermische Energie überwindet die Wasserstoffbrücken komplett. Das Wasser verdampft, die Moleküle fliegen frei als Gas umher.";
+            } else if (displayTemp > 4 && displayTemp < 95) {
+                expl = "<strong>Flüssig (25 °C):</strong> Die Wassermoleküle gleiten aneinander vorbei. Wasserstoffbrücken brechen und bilden sich fortlaufend neu.";
+            } else if (displayTemp > 0 && displayTemp <= 4) {
+                expl = "<strong>Dichteanomalie (4 °C):</strong> Die Moleküle rücken extrem dicht zusammen. Erste Cluster bilden sich. Es herrscht aber zu viel thermische Energie für ein starres Gitter. <strong>Volumen ist minimal!</strong>";
+            } else if (displayTemp <= 0 && displayTemp > -9) {
+                expl = "<strong>Gefrierpunkt (0 °C):</strong> An der kalten Oberfläche beginnt die Eisbildung. Die wachsende Eisschicht schwimmt auf dem noch flüssigen 4°C-Wasser (Eiswasser).";
+            } else {
+                expl = "<strong>Fest (-10 °C):</strong> Alle Moleküle sind nun völlig starr im Kristallgitter verankert. Das Eis braucht <strong>deutlich mehr Platz</strong> als das flüssige Wasser. Eis schwimmt!";
+            }
+            document.getElementById('m2-disp-explanation').innerHTML = expl;
+
+            let freezingFraction = 0;
+            if (m2_currentTemp <= 4 && m2_currentTemp > 0) { freezingFraction = (4 - m2_currentTemp) / 4 * 0.25; } 
+            else if (m2_currentTemp <= 0) { freezingFraction = 0.25 + (Math.abs(m2_currentTemp) / 10) * 0.75; }
+            if (freezingFraction > 1) freezingFraction = 1;
+            let allowedSlotsCount = Math.floor(m2_iceSlots.length * freezingFraction);
+
+            m2_iceSlots.forEach((slot, index) => {
+                if (index < allowedSlotsCount) {
+                    if (!slot.assignedParticle) {
+                        let closestP = null; let minDist = Infinity;
+                        m2_particles.forEach(p => {
+                            if (!p.targetSlot) {
+                                let d = (p.x - slot.x)**2 + (p.y - slot.y)**2;
+                                if (d < minDist) { minDist = d; closestP = p; }
+                            }
+                        });
+                        if (closestP) { closestP.targetSlot = slot; slot.assignedParticle = closestP; }
+                    }
+                } else {
+                    if (slot.assignedParticle) { slot.assignedParticle.targetSlot = null; slot.assignedParticle = null; }
+                }
+            });
+
+            if(!isGas) {
+                m2_ctx.strokeStyle = "rgba(52, 152, 219, 0.8)"; m2_ctx.setLineDash([3, 3]); m2_ctx.lineWidth = 2; m2_ctx.beginPath();
+                let bondThreshold = 1120; 
+                for(let i=0; i<m2_particles.length; i++) {
+                    let p1 = m2_particles[i]; let h1 = m2_getHCoords(p1);
+                    for(let j=i+1; j<m2_particles.length; j++) {
+                        let p2 = m2_particles[j]; let h2 = m2_getHCoords(p2);
+                        if (m2_distSq(p1.x, p1.y, h2.h1x, h2.h1y) < bondThreshold) { m2_ctx.moveTo(p1.x, p1.y); m2_ctx.lineTo(h2.h1x, h2.h1y); }
+                        else if (m2_distSq(p1.x, p1.y, h2.h2x, h2.h2y) < bondThreshold) { m2_ctx.moveTo(p1.x, p1.y); m2_ctx.lineTo(h2.h2x, h2.h2y); }
+                        else if (m2_distSq(p2.x, p2.y, h1.h1x, h1.h1y) < bondThreshold) { m2_ctx.moveTo(p2.x, p2.y); m2_ctx.lineTo(h1.h1x, h1.h1y); }
+                        else if (m2_distSq(p2.x, p2.y, h1.h2x, h1.h2y) < bondThreshold) { m2_ctx.moveTo(p2.x, p2.y); m2_ctx.lineTo(h1.h2x, h1.h2y); }
+                    }
+                }
+                m2_ctx.stroke(); m2_ctx.setLineDash([]); m2_ctx.lineWidth = 1; m2_ctx.strokeStyle = "#7f8c8d";
+            }
+
+            if(!isGas) {
+                for(let i=0; i<m2_particles.length; i++) {
+                    for(let j=i+1; j<m2_particles.length; j++) {
+                        let dx = m2_particles[j].x - m2_particles[i].x; let dy = m2_particles[j].y - m2_particles[i].y;
+                        let dSq = dx*dx + dy*dy;
+                        if(dSq < 400) { 
+                            let force = (400 - dSq) * 0.0001;
+                            m2_particles[i].x -= dx * force; m2_particles[i].y -= dy * force;
+                            m2_particles[j].x += dx * force; m2_particles[j].y += dy * force;
+                        }
+                    }
+                }
+            }
+
+            let densityPull = 0;
+            if(m2_currentTemp > 4 && m2_currentTemp <= 25) { densityPull = (25 - m2_currentTemp) / 21 * 0.001; } 
+            else if (m2_currentTemp <= 4 && m2_currentTemp > 0) { densityPull = 0.002; } 
+            else if (m2_currentTemp <= 0) { densityPull = 0.001; }
+
+            m2_particles.forEach(p => {
+                if(isGas) {
+                    let speed = 4;
+                    p.vx += (Math.random() - 0.5) * speed; p.vy += (Math.random() - 0.5) * speed;
+                    p.x += p.vx; p.y += p.vy; p.vx *= 0.98; p.vy *= 0.98; p.angle += p.vx * 0.1;
+                    if(p.x < 10) { p.x = 10; p.vx *= -1; }
+                    if(p.x > m2_canvas.width-10) { p.x = m2_canvas.width-10; p.vx *= -1; }
+                    if(p.y < 10) { p.y = 10; p.vy *= -1; }
+                    if(p.y > m2_canvas.height-10) { p.y = m2_canvas.height-10; p.vy *= -1; }
+                
+                } else if(p.targetSlot) {
+                    p.vx += (p.targetSlot.x - p.x) * 0.05; p.vy += (p.targetSlot.y - p.y) * 0.05; p.angle += (p.targetSlot.angle - p.angle) * 0.1; 
+                    let vib = (m2_currentTemp > 0) ? (m2_currentTemp * 0.1) : (10 + displayTemp) * 0.01;
+                    if(vib < 0) vib = 0;
+                    p.vx += (Math.random() - 0.5) * vib; p.vy += (Math.random() - 0.5) * vib;
+                    p.x += p.vx; p.y += p.vy; p.vx *= 0.6; p.vy *= 0.6; 
+
+                } else {
+                    let speedBase = 0.5 + Math.max(0, m2_currentTemp) * 0.03; 
+                    p.vx += (Math.random() - 0.5) * speedBase; p.vy += (Math.random() - 0.5) * speedBase;
+                    p.vy += 0.1; 
+                    let surfaceLevel = m2_canvas.height - 170; 
+                    if(p.y < surfaceLevel) p.vy += 0.5; 
+                    if(densityPull > 0) {
+                        p.vx += (m2_canvas.width/2 - p.x) * densityPull; p.vy += (m2_canvas.height - 80 - p.y) * densityPull * 2; 
+                    }
+                    p.x += p.vx; p.y += p.vy; p.vx *= 0.85; p.vy *= 0.85; p.angle += p.vx * 0.1;
+                    if(p.x < 10) { p.x = 10; p.vx *= -0.8; }
+                    if(p.x > m2_canvas.width-10) { p.x = m2_canvas.width-10; p.vx *= -0.8; }
+                    if(p.y > m2_canvas.height-10) { p.y = m2_canvas.height-10; p.vy *= -0.8; }
+                }
+                m2_drawMolecule(p.x, p.y, p.angle);
+            });
+            if(m2_isAnimating) requestAnimationFrame(m2_updatePhysics);
+        }
+
+        function m2_startSimulation() {
+            m2_targetTemp = parseFloat(document.getElementById('m2-targetTempSel').value);
+        }
+
+
+        // =========================================================================================
+        // JAVASCRIPT MODUL 3
+        // =========================================================================================
+        let m3_state = 0; 
+        let m3_switchClosed = false;
+
+        const m3_ws = document.getElementById('m3-ws3');
+        const m3_switchHitbox = document.getElementById('m3-switch-hitbox');
+        const m3_switchArm = document.getElementById('m3-switch-arm');
+        const m3_waterSvg = document.getElementById('m3-svg-water');
+        const m3_dragWater = document.getElementById('m3-drag-water');
+        const m3_dragSalt = document.getElementById('m3-drag-salt');
+
+        m3_switchHitbox.addEventListener('click', () => {
+            if (m3_state < 2) { alert("Bitte fülle zuerst Wasser ein und stelle eine Vermutung auf!"); return; }
+            if (m3_state === 3) { alert("Gib erst das Salz in das Wasser, bevor du den Schalter erneut schließt."); return; }
+
+            m3_switchClosed = !m3_switchClosed;
+            
+            if (m3_switchClosed) {
+                m3_switchArm.classList.add('closed');
+                m3_evaluateCircuit();
+            } else {
+                m3_switchArm.classList.remove('closed');
+                document.querySelectorAll('.m3-bulb-part').forEach(el => el.classList.remove('on'));
+                m3_resetIons();
+            }
+        });
+
+        function m3_evaluateCircuit() {
+            if (m3_state === 2) {
+                setTimeout(() => { m3_switchArm.classList.remove('closed'); m3_switchClosed = false; m3_changeState(3); }, 1500);
+            } 
+            else if (m3_state === 4) {
+                document.querySelectorAll('.m3-bulb-part').forEach(el => el.classList.add('on'));
+                m3_animateIonsToElectrodes();
+                m3_changeState(5);
+            }
+        }
+
+        let m3_activeDragEl = null; let m3_offsetX = 0, m3_offsetY = 0; let m3_startLeft = 0, m3_startTop = 0;
+
+        [m3_dragWater, m3_dragSalt].forEach(el => { el.addEventListener('pointerdown', m3_startDrag); });
+
+        function m3_startDrag(e) {
+            m3_activeDragEl = e.currentTarget;
+            const rect = m3_activeDragEl.getBoundingClientRect();
+            m3_startLeft = m3_activeDragEl.style.left; m3_startTop = m3_activeDragEl.style.top;
+            m3_offsetX = e.clientX - rect.left; m3_offsetY = e.clientY - rect.top;
+            document.addEventListener('pointermove', m3_dragMove);
+            document.addEventListener('pointerup', m3_endDrag);
+            m3_activeDragEl.setPointerCapture(e.pointerId);
+        }
+
+        function m3_dragMove(e) {
+            if(!m3_activeDragEl) return;
+            const wsRect = m3_ws.getBoundingClientRect();
+            let x = e.clientX - wsRect.left - m3_offsetX; let y = e.clientY - wsRect.top - m3_offsetY;
+            let xPercent = (x / wsRect.width) * 100; let yPercent = (y / wsRect.height) * 100;
+            m3_activeDragEl.style.left = xPercent + '%'; m3_activeDragEl.style.top = yPercent + '%';
+        }
+
+        function m3_endDrag(e) {
+            if(!m3_activeDragEl) return;
+            document.removeEventListener('pointermove', m3_dragMove);
+            document.removeEventListener('pointerup', m3_endDrag);
+            m3_activeDragEl.releasePointerCapture(e.pointerId);
+
+            const wsRect = m3_ws.getBoundingClientRect();
+            const dropRect = m3_activeDragEl.getBoundingClientRect();
+            let cxPercent = ((dropRect.left + dropRect.width/2 - wsRect.left) / wsRect.width) * 100;
+            let cyPercent = ((dropRect.top + dropRect.height/2 - wsRect.top) / wsRect.height) * 100;
+
+            if (cxPercent > 25 && cxPercent < 75 && cyPercent > 40 && cyPercent < 90) {
+                if (m3_activeDragEl.id === 'm3-drag-water' && m3_state === 0) { m3_activeDragEl.style.display = 'none'; m3_fillWater(); } 
+                else if (m3_activeDragEl.id === 'm3-drag-salt' && m3_state === 3) { m3_activeDragEl.style.display = 'none'; m3_fillSalt(); } 
+                else { m3_snapBack(); }
+            } else { m3_snapBack(); }
+            m3_activeDragEl = null;
+        }
+
+        function m3_snapBack() {
+            m3_activeDragEl.style.transition = 'all 0.3s ease'; m3_activeDragEl.style.left = m3_startLeft; m3_activeDragEl.style.top = m3_startTop;
+            setTimeout(() => { if(m3_activeDragEl) m3_activeDragEl.style.transition = ''; }, 300);
+        }
+
+        function m3_fillWater() {
+            m3_waterSvg.setAttribute('y', '280'); m3_waterSvg.setAttribute('height', '156');
+            setTimeout(() => { for(let i=1; i<=4; i++) { document.getElementById(`m3-h2o-${i}`).style.opacity = '1'; } }, 1000);
+            m3_changeState(1);
+        }
+
+        function m3_submitHypothesis(guess) { m3_changeState(2); }
+
+        function m3_fillSalt() {
+            for(let i=1; i<=2; i++) { document.getElementById(`m3-ion-na${i}`).style.opacity = '1'; document.getElementById(`m3-ion-cl${i}`).style.opacity = '1'; }
+            m3_changeState(4);
+        }
+
+        function m3_animateIonsToElectrodes() {
+            document.getElementById('m3-ion-na1').style.transform = 'translate(245px, 340px)';
+            document.getElementById('m3-ion-na2').style.transform = 'translate(245px, 390px)';
+            document.getElementById('m3-ion-cl1').style.transform = 'translate(355px, 340px)';
+            document.getElementById('m3-ion-cl2').style.transform = 'translate(355px, 390px)';
+        }
+
+        function m3_resetIons() {
+            if(m3_state >= 4) {
+                document.getElementById('m3-ion-na1').style.transform = 'translate(390px, 330px)';
+                document.getElementById('m3-ion-na2').style.transform = 'translate(400px, 400px)';
+                document.getElementById('m3-ion-cl1').style.transform = 'translate(190px, 350px)';
+                document.getElementById('m3-ion-cl2').style.transform = 'translate(200px, 410px)';
+            }
+        }
+
+        function m3_changeState(newState) {
+            m3_state = newState;
+            document.querySelectorAll('.m3-step-box').forEach(b => b.classList.remove('active'));
+            
+            if (m3_state === 1) {
+                document.getElementById('m3-step-title').innerText = "Schritt 2: Hypothese"; document.getElementById('m3-box-2').classList.add('active');
+            } 
+            else if (m3_state === 2) {
+                document.getElementById('m3-step-title').innerText = "Schritt 3: Der Wassertest"; document.getElementById('m3-box-3').classList.add('active');
+            }
+            else if (m3_state === 3) {
+                document.getElementById('m3-step-title').innerText = "Schritt 4: Salzzugabe"; document.getElementById('m3-box-4').classList.add('active');
+                m3_dragSalt.style.display = 'block';
+            }
+            else if (m3_state === 4) {
+                document.getElementById('m3-step-title').innerText = "Schritt 5: Zweiter Test"; 
+                document.getElementById('m3-box-3').innerHTML = "<p style='margin-top:0;'>Das Salz hat sich gelöst. Schließe den <strong>roten Schalter</strong> erneut, um das Salzwasser zu testen.</p>";
+                document.getElementById('m3-box-3').classList.add('active');
+            }
+            else if (m3_state === 5) {
+                document.getElementById('m3-step-title').innerText = "Auswertung & Erklärung"; document.getElementById('m3-box-5').classList.add('active');
+            }
+        }
+    </script>
+</body>
+</html>
