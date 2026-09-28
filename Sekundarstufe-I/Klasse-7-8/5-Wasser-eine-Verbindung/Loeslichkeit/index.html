@@ -856,8 +856,8 @@
             ctx.restore();
         }
 
-        // Wasser für Ethanol und Gase (Modul 3 & 4) - Standardgröße
-        function drawBigWater(ctx, x, y, rot) {
+        // Generische Funktion: O-Atom ist im Zentrum (0,0), H-Atome liegen in positive y-Richtung.
+        function drawGenericWater(ctx, x, y, rot) {
             ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
             ctx.beginPath(); ctx.arc(0,0,8,0,6.28); ctx.fillStyle='#e74c3c'; ctx.fill(); 
             ctx.beginPath(); ctx.arc(-6,7,5,0,6.28); ctx.fillStyle='#bdc3c7'; ctx.fill(); 
@@ -865,16 +865,6 @@
             ctx.restore();
         }
 
-        // Spezifisches Carbonat-Wasser (Modul 4) - H-Atome zeigen nach innen
-        function drawCarbonateWater(ctx, x, y, rot) {
-            ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
-            ctx.beginPath(); ctx.arc(6,0,8,0,6.28); ctx.fillStyle='#e74c3c'; ctx.fill(); 
-            ctx.beginPath(); ctx.arc(-6,-7,5,0,6.28); ctx.fillStyle='#bdc3c7'; ctx.fill(); 
-            ctx.beginPath(); ctx.arc(-6,7,5,0,6.28); ctx.fillStyle='#bdc3c7'; ctx.fill();  
-            ctx.restore();
-        }
-
-        // Ionen-Zeichnung (Salze)
         function drawIon(ctx, x, y, r, col, label, p) {
             ctx.beginPath(); ctx.arc(x, y, r, 0, 6.28); ctx.fillStyle=col; ctx.fill();
             ctx.beginPath(); ctx.arc(x-r*0.3, y-r*0.3, r*0.3, 0, 6.28); ctx.fillStyle="rgba(255,255,255,0.4)"; ctx.fill();
@@ -987,7 +977,7 @@
                     cy = w.sy + (w.ty - w.sy)*eo + (p===1 ? driftY : 0);
                     rot = w.startAngle + progressEth * 0.02;
                 }
-                drawBigWater(ctxEth, cx, cy, rot); // Verwendet die entkoppelte Funktion!
+                drawGenericWater(ctxEth, cx, cy, rot);
             });
         }
         function updateTextEth() {
@@ -1061,7 +1051,7 @@
         }
         function drawNaCl() {
             ctxNaCl.clearRect(0,0,700,420);
-            ctxNaCl.globalAlpha = Math.min(1, progressNaCl / 5); // Sanftes Einblenden der Wassermoleküle
+            ctxNaCl.globalAlpha = Math.min(1, progressNaCl / 5); 
             watersNaCl.forEach(w => {
                 let p = Math.max(0, Math.min(1, (progressNaCl - w.ion.detStart)/(w.ion.detEnd - w.ion.detStart)));
                 let eo = 1 - Math.pow(1-p, 3);
@@ -1076,7 +1066,7 @@
                     cx = ix + Math.cos(a)*(w.ion.rad+14); cy = iy + Math.sin(a)*(w.ion.rad+14);
                     rot = w.ion.type === 'Na+' ? a - Math.PI/2 : a + Math.PI/2;
                 }
-                drawSmallWater(ctxNaCl, cx, cy, rot); // Verwendet die entkoppelte Funktion!
+                drawSmallWater(ctxNaCl, cx, cy, rot); 
             });
             ctxNaCl.globalAlpha = 1.0;
             let curr = ionsNaCl.map(ion => {
@@ -1196,7 +1186,7 @@
                     cx = ix + Math.cos(a)*dist; cy = iy + Math.sin(a)*dist;
                     rot = w.ion.type === 'Ba2+' ? a - Math.PI/2 : a + Math.PI/2;
                 }
-                drawSmallWater(ctxBa, cx, cy, rot); // Verwendet die entkoppelte Funktion!
+                drawSmallWater(ctxBa, cx, cy, rot); 
             });
             ctxBa.globalAlpha = 1.0;
 
@@ -1387,38 +1377,64 @@
             if(canvasCo2) return; 
             canvasCo2 = document.getElementById('co2Canvas'); ctxCo2 = canvasCo2.getContext('2d');
             
-            // 1. Linkes CO2 (physikalisches Lösen) -> saubere Hülle mit exakter Ausrichtung
-            watersCo2.push({ type: 'left_o_bond', sx: 150, sy: 210 - 130, tx: 150, ty: 210 - 48, startAngle: Math.random() * 6.28, targetAngle: Math.PI/2, startMove: 10 });
-            watersCo2.push({ type: 'left_o_bond', sx: 150, sy: 210 + 130, tx: 150, ty: 210 + 48, startAngle: Math.random() * 6.28, targetAngle: -Math.PI/2, startMove: 10 });
-            watersCo2.push({ type: 'left_h_bond', sx: 150 - 150, sy: 210, tx: 150 - 75, ty: 210, startAngle: Math.random() * 6.28, targetAngle: 0, startMove: 10 });
-            watersCo2.push({ type: 'left_h_bond', sx: 150 + 150, sy: 210, tx: 150 + 75, ty: 210, startAngle: Math.random() * 6.28, targetAngle: Math.PI, startMove: 10 });
+            // 1. Linkes CO2 (physikalisches Lösen) -> nutzen jetzt drawGenericWater
+            // H zeigt immer nach y+, O liegt im Zentrum.
+            watersCo2.push({ 
+                type: 'left_top', sx: 150, sy: 210 - 130, tx: 150, ty: 210 - 48,
+                startAngle: Math.random() * 6.28, targetAngle: Math.PI, startMove: 10
+            }); // Oben: H muss hoch zeigen -> PI
+            watersCo2.push({ 
+                type: 'left_bottom', sx: 150, sy: 210 + 130, tx: 150, ty: 210 + 48,
+                startAngle: Math.random() * 6.28, targetAngle: 0, startMove: 10
+            }); // Unten: H muss runter zeigen -> 0
+            watersCo2.push({ 
+                type: 'left_left', sx: 150 - 150, sy: 210, tx: 150 - 75, ty: 210,
+                startAngle: Math.random() * 6.28, targetAngle: -Math.PI/2, startMove: 10
+            }); // Links: H muss rechts zeigen -> -PI/2
+            watersCo2.push({ 
+                type: 'left_right', sx: 150 + 150, sy: 210, tx: 150 + 75, ty: 210,
+                startAngle: Math.random() * 6.28, targetAngle: Math.PI/2, startMove: 10
+            }); // Rechts: H muss links zeigen -> PI/2
 
             // 2. Rechtes CO2 (chemisches Lösen nach Arrhenius)
-            watersCo2.push({ type: 'reactant', sx: 550 + Math.cos(Math.random()*6.28)*100, sy: 210 + Math.sin(Math.random()*6.28)*100, tx: 550, ty: 210, startAngle: Math.random() * 6.28, targetAngle: 0, startMove: 15 });
+            watersCo2.push({ 
+                type: 'reactant',
+                sx: 550 + Math.cos(Math.random()*6.28)*100, 
+                sy: 210 + Math.sin(Math.random()*6.28)*100,
+                tx: 550, ty: 210,
+                startAngle: Math.random() * 6.28, targetAngle: 0,
+                startMove: 15
+            });
 
-            // Carbonat-Ion (CO3 2-) - exakt nach deiner Grafik: H-Atome (grau) zeigen nach INNEN zum Ion (targetAngle = angle)
+            // Carbonat-Ion (CO3 2-) - H zeigt nach innen
             for(let w = 0; w < 4; w++) {
                 let angle = (w / 4) * Math.PI * 2;
                 watersCo2.push({ 
-                    type: 'shell1', sx: 550 + Math.cos(Math.random()*6.28)*(150+Math.random()*40), sy: 210 + Math.sin(Math.random()*6.28)*(100+Math.random()*20),
-                    tx: 430 + Math.cos(angle)*70, ty: 210 + Math.sin(angle)*70, startAngle: Math.random() * 6.28, targetAngle: angle, startMove: 55 + Math.random()*15
+                    type: 'shell1',
+                    sx: 550 + Math.cos(Math.random()*6.28)*(150+Math.random()*40), 
+                    sy: 210 + Math.sin(Math.random()*6.28)*(100+Math.random()*20),
+                    tx: 430 + Math.cos(angle)*70, 
+                    ty: 210 + Math.sin(angle)*70,
+                    startAngle: Math.random() * 6.28,
+                    targetAngle: angle + Math.PI/2, // H zeigt ins Zentrum
+                    startMove: 55 + Math.random()*15
                 });
             }
 
             // --- Wasserstoffionen (H+) ---
-            // Beide H+ liegen auf einer Höhe y=350, Zentrum H1 = x=540, Zentrum H2 = x=650
+            // Oben -> H zeigt hoch (PI), Rechts -> H zeigt rechts (-PI/2), Unten -> H zeigt runter (0), Links -> H zeigt links (PI/2)
             
             // Erstes H+ (540, 350)
-            watersCo2.push({ type: 'shell2_h1', pos: 'top', sx: 540, sy: 250, tx: 540, ty: 350 - 32, startAngle: Math.random() * 6.28, targetAngle: Math.PI/2, startMove: 55 }); // Oben -> O zeigt nach unten
-            watersCo2.push({ type: 'shell2_h1', pos: 'right', sx: 640, sy: 350, tx: 540 + 32, ty: 350, startAngle: Math.random() * 6.28, targetAngle: Math.PI, startMove: 55 }); // Rechts -> O zeigt nach links
-            watersCo2.push({ type: 'shell2_h1', pos: 'bottom', sx: 540, sy: 450, tx: 540, ty: 350 + 32, startAngle: Math.random() * 6.28, targetAngle: -Math.PI/2, startMove: 55 }); // Unten -> O zeigt nach oben
-            watersCo2.push({ type: 'shell2_h1', pos: 'left', sx: 440, sy: 350, tx: 540 - 32, ty: 350, startAngle: Math.random() * 6.28, targetAngle: 0, startMove: 55 }); // Links -> O zeigt nach rechts
+            watersCo2.push({ type: 'shell2_h1', sx: 540, sy: 250, tx: 540, ty: 350 - 32, startAngle: Math.random() * 6.28, targetAngle: Math.PI, startMove: 55 }); // Oben
+            watersCo2.push({ type: 'shell2_h1', sx: 640, sy: 350, tx: 540 + 32, ty: 350, startAngle: Math.random() * 6.28, targetAngle: -Math.PI/2, startMove: 55 }); // Rechts
+            watersCo2.push({ type: 'shell2_h1', sx: 540, sy: 450, tx: 540, ty: 350 + 32, startAngle: Math.random() * 6.28, targetAngle: 0, startMove: 55 }); // Unten
+            watersCo2.push({ type: 'shell2_h1', sx: 440, sy: 350, tx: 540 - 32, ty: 350, startAngle: Math.random() * 6.28, targetAngle: Math.PI/2, startMove: 55 }); // Links
 
             // Zweites H+ (650, 350)
-            watersCo2.push({ type: 'shell2_h2', pos: 'top', sx: 650, sy: 250, tx: 650, ty: 350 - 32, startAngle: Math.random() * 6.28, targetAngle: Math.PI/2, startMove: 55 }); // Oben
-            watersCo2.push({ type: 'shell2_h2', pos: 'right', sx: 750, sy: 350, tx: 650 + 32, ty: 350, startAngle: Math.random() * 6.28, targetAngle: Math.PI, startMove: 55 }); // Rechts
-            watersCo2.push({ type: 'shell2_h2', pos: 'bottom', sx: 650, sy: 450, tx: 650, ty: 350 + 32, startAngle: Math.random() * 6.28, targetAngle: -Math.PI/2, startMove: 55 }); // Unten
-            watersCo2.push({ type: 'shell2_h2', pos: 'left', sx: 550, sy: 350, tx: 650 - 32, ty: 350, startAngle: Math.random() * 6.28, targetAngle: 0, startMove: 55 }); // Links
+            watersCo2.push({ type: 'shell2_h2', sx: 650, sy: 250, tx: 650, ty: 350 - 32, startAngle: Math.random() * 6.28, targetAngle: Math.PI, startMove: 55 }); // Oben
+            watersCo2.push({ type: 'shell2_h2', sx: 750, sy: 350, tx: 650 + 32, ty: 350, startAngle: Math.random() * 6.28, targetAngle: -Math.PI/2, startMove: 55 }); // Rechts
+            watersCo2.push({ type: 'shell2_h2', sx: 650, sy: 450, tx: 650, ty: 350 + 32, startAngle: Math.random() * 6.28, targetAngle: 0, startMove: 55 }); // Unten
+            watersCo2.push({ type: 'shell2_h2', sx: 550, sy: 350, tx: 650 - 32, ty: 350, startAngle: Math.random() * 6.28, targetAngle: Math.PI/2, startMove: 55 }); // Links
 
             drawCo2(); updateTextCo2();
         }
@@ -1455,15 +1471,15 @@
         }
 
         function drawCo2() {
-            ctxCo2.clearRect(0,0,700,460); // Höheres Canvas wegen verschobener Ionen
+            ctxCo2.clearRect(0,0,700,460);
             
             // Linkes CO2 (Physikalischer Weg)
             if(progressCo2 > 35) {
                 ctxCo2.setLineDash([4, 4]); ctxCo2.strokeStyle = '#2980b9'; ctxCo2.lineWidth = 2;
-                ctxCo2.beginPath(); ctxCo2.moveTo(150, 210 - 16); ctxCo2.lineTo(150, 210 - 48 + 8); ctxCo2.stroke(); // C zu Wasser Oben
-                ctxCo2.beginPath(); ctxCo2.moveTo(150, 210 + 16); ctxCo2.lineTo(150, 210 + 48 - 8); ctxCo2.stroke(); // C zu Wasser Unten
-                ctxCo2.beginPath(); ctxCo2.moveTo(115 - 18, 210); ctxCo2.lineTo(150 - 75 + 8, 210); ctxCo2.stroke(); // O zu Wasser Links
-                ctxCo2.beginPath(); ctxCo2.moveTo(185 + 18, 210); ctxCo2.lineTo(150 + 75 - 8, 210); ctxCo2.stroke(); // O zu Wasser Rechts
+                ctxCo2.beginPath(); ctxCo2.moveTo(150, 210 - 16); ctxCo2.lineTo(150, 210 - 48 + 8); ctxCo2.stroke(); 
+                ctxCo2.beginPath(); ctxCo2.moveTo(150, 210 + 16); ctxCo2.lineTo(150, 210 + 48 - 8); ctxCo2.stroke(); 
+                ctxCo2.beginPath(); ctxCo2.moveTo(115 - 18, 210); ctxCo2.lineTo(150 - 75 + 8, 210); ctxCo2.stroke(); 
+                ctxCo2.beginPath(); ctxCo2.moveTo(185 + 18, 210); ctxCo2.lineTo(150 + 75 - 8, 210); ctxCo2.stroke(); 
                 ctxCo2.setLineDash([]); ctxCo2.strokeStyle = '#333'; ctxCo2.lineWidth = 1;
             }
 
@@ -1506,12 +1522,7 @@
                     let eo = 1 - Math.pow(1-p, 3);
                     cx = w.sx + (w.tx - w.sx)*eo; cy = w.sy + (w.ty - w.sy)*eo;
                     rot = w.startAngle + (w.targetAngle - w.startAngle)*eo;
-                    
-                    if(w.type === 'left_o_bond') {
-                        drawGenericWater(ctxCo2, cx, cy, rot); // O zeigt nach innen
-                    } else {
-                        drawCarbonateWater(ctxCo2, cx, cy, rot); // H zeigt nach innen
-                    }
+                    drawGenericWater(ctxCo2, cx, cy, rot); // Einheitliche Funktion!
                 } 
                 else if(w.type === 'reactant') {
                     if(progressCo2 < 48) {
@@ -1531,7 +1542,7 @@
                         cx = w.sx + ((co3X + (w.tx - 430)) - w.sx)*eo; 
                         cy = w.sy + ((210 + (w.ty - 210)) - w.sy)*eo;
                         rot = w.startAngle + (w.targetAngle - w.startAngle)*eo;
-                        drawCarbonateWater(ctxCo2, cx, cy, rot);
+                        drawGenericWater(ctxCo2, cx, cy, rot); // Einheitliche Funktion!
                     }
                 }
                 else if(w.type === 'shell2_h1') {
@@ -1539,13 +1550,13 @@
                         let p = Math.min(1, Math.max(0, (progressCo2 - w.startMove) / 30));
                         let eo = 1 - Math.pow(1-p, 3);
                         let sep = Math.min(1, Math.max(0, (progressCo2 - 52) / 15));
-                        let h1X = 550 - (1 - Math.pow(1-sep, 3))*10; // H1-Zentrum x=540
-                        let h1Y = 210 + (1 - Math.pow(1-sep, 3))*140; // H1-Zentrum y=350
+                        let h1X = 550 - (1 - Math.pow(1-sep, 3))*10; 
+                        let h1Y = 210 + (1 - Math.pow(1-sep, 3))*140; 
                         
                         cx = w.sx + ((h1X + (w.tx - 540)) - w.sx)*eo; 
                         cy = w.sy + ((h1Y + (w.ty - 350)) - w.sy)*eo;
                         rot = w.startAngle + (w.targetAngle - w.startAngle)*eo;
-                        drawBigWater(ctxCo2, cx, cy, rot); // O zeigt nach innen
+                        drawGenericWater(ctxCo2, cx, cy, rot); // Einheitliche Funktion!
                     }
                 }
                 else if(w.type === 'shell2_h2') {
@@ -1553,13 +1564,13 @@
                         let p = Math.min(1, Math.max(0, (progressCo2 - w.startMove) / 30));
                         let eo = 1 - Math.pow(1-p, 3);
                         let sep = Math.min(1, Math.max(0, (progressCo2 - 52) / 15));
-                        let h2X = 550 + (1 - Math.pow(1-sep, 3))*100; // H2-Zentrum x=650
-                        let h2Y = 210 + (1 - Math.pow(1-sep, 3))*140; // H2-Zentrum y=350
+                        let h2X = 550 + (1 - Math.pow(1-sep, 3))*100; 
+                        let h2Y = 210 + (1 - Math.pow(1-sep, 3))*140; 
                         
                         cx = w.sx + ((h2X + (w.tx - 650)) - w.sx)*eo; 
                         cy = w.sy + ((h2Y + (w.ty - 350)) - w.sy)*eo;
                         rot = w.startAngle + (w.targetAngle - w.startAngle)*eo;
-                        drawBigWater(ctxCo2, cx, cy, rot); // O zeigt nach innen
+                        drawGenericWater(ctxCo2, cx, cy, rot); // Einheitliche Funktion!
                     }
                 }
             });
