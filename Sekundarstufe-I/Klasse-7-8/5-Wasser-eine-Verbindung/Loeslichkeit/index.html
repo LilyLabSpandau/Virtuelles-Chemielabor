@@ -120,6 +120,9 @@
 </head>
 <body>
 
+    <!-- Impressum & Datenschutz Overlay -->
+    <a href="/Virtuelles-Chemielabor/impressum.html" style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-family: sans-serif; font-size: 12px; z-index: 9999;">Impressum & Datenschutz</a>
+
     <!-- NAVIGATIONSLEISTE -->
     <div style="background: var(--primary); color: white; padding: 10px 20px; border-radius: 5px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
         <h3 style="margin: 0; color: white; font-size: 1.2em;">🧪 Kurslabor: Klasse 10</h3>
@@ -842,9 +845,10 @@
             }
         }
 
-        // --- HILFSFUNKTIONEN SALZE (Modul 2) ---
-        function drawWater(ctx, x, y, attached, type, p) {
-            let rot = attached ? (type.includes('+')?0:Math.PI) : (Math.sin(p*0.1));
+        // --- HILFSFUNKTIONEN WASSERZEICHNUNG ---
+
+        // Wasser für Salze (Modul 2) - etwas kleiner
+        function drawSmallWater(ctx, x, y, rot) {
             ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
             ctx.beginPath(); ctx.arc(0,0,6,0,6.28); ctx.fillStyle='#e74c3c'; ctx.fill();
             ctx.beginPath(); ctx.arc(-5,5,3.5,0,6.28); ctx.fillStyle='#bdc3c7'; ctx.fill();
@@ -852,6 +856,25 @@
             ctx.restore();
         }
 
+        // Wasser für Ethanol und Gase (Modul 3 & 4) - Standardgröße
+        function drawBigWater(ctx, x, y, rot) {
+            ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
+            ctx.beginPath(); ctx.arc(0,0,8,0,6.28); ctx.fillStyle='#e74c3c'; ctx.fill(); 
+            ctx.beginPath(); ctx.arc(-6,7,5,0,6.28); ctx.fillStyle='#bdc3c7'; ctx.fill(); 
+            ctx.beginPath(); ctx.arc(6,7,5,0,6.28); ctx.fillStyle='#bdc3c7'; ctx.fill(); 
+            ctx.restore();
+        }
+
+        // Spezifisches Carbonat-Wasser (Modul 4) - H-Atome zeigen nach innen
+        function drawCarbonateWater(ctx, x, y, rot) {
+            ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
+            ctx.beginPath(); ctx.arc(6,0,8,0,6.28); ctx.fillStyle='#e74c3c'; ctx.fill(); 
+            ctx.beginPath(); ctx.arc(-6,-7,5,0,6.28); ctx.fillStyle='#bdc3c7'; ctx.fill(); 
+            ctx.beginPath(); ctx.arc(-6,7,5,0,6.28); ctx.fillStyle='#bdc3c7'; ctx.fill();  
+            ctx.restore();
+        }
+
+        // Ionen-Zeichnung (Salze)
         function drawIon(ctx, x, y, r, col, label, p) {
             ctx.beginPath(); ctx.arc(x, y, r, 0, 6.28); ctx.fillStyle=col; ctx.fill();
             ctx.beginPath(); ctx.arc(x-r*0.3, y-r*0.3, r*0.3, 0, 6.28); ctx.fillStyle="rgba(255,255,255,0.4)"; ctx.fill();
@@ -864,23 +887,6 @@
                 ctx.fillStyle="white"; ctx.font="bold 10px Arial"; ctx.textAlign="center"; ctx.textBaseline="middle"; 
                 ctx.fillText(txt, x, y); 
             }
-        }
-
-        // --- HILFSFUNKTIONEN GASE/FLÜSSIGKEITEN (Modul 3 & 4) ---
-        function drawCarbonateWater(ctx, x, y, rot) {
-            ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
-            ctx.beginPath(); ctx.arc(6,0,8,0,6.28); ctx.fillStyle='#e74c3c'; ctx.fill(); 
-            ctx.beginPath(); ctx.arc(-6,-7,5,0,6.28); ctx.fillStyle='#bdc3c7'; ctx.fill(); 
-            ctx.beginPath(); ctx.arc(-6,7,5,0,6.28); ctx.fillStyle='#bdc3c7'; ctx.fill();  
-            ctx.restore();
-        }
-
-        function drawGenericWater(ctx, x, y, rot) {
-            ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
-            ctx.beginPath(); ctx.arc(0,0,8,0,6.28); ctx.fillStyle='#e74c3c'; ctx.fill(); 
-            ctx.beginPath(); ctx.arc(-6,7,5,0,6.28); ctx.fillStyle='#bdc3c7'; ctx.fill(); 
-            ctx.beginPath(); ctx.arc(6,7,5,0,6.28); ctx.fillStyle='#bdc3c7'; ctx.fill(); 
-            ctx.restore();
         }
 
         // ==========================================
@@ -981,7 +987,7 @@
                     cy = w.sy + (w.ty - w.sy)*eo + (p===1 ? driftY : 0);
                     rot = w.startAngle + progressEth * 0.02;
                 }
-                drawGenericWater(ctxEth, cx, cy, rot);
+                drawBigWater(ctxEth, cx, cy, rot); // Verwendet die entkoppelte Funktion!
             });
         }
         function updateTextEth() {
@@ -1009,21 +1015,38 @@
         // ==========================================
         let canvasNaCl, ctxNaCl;
         let progressNaCl = 0; let isPlayingNaCl = false; let animIdNaCl;
+        const C_X = 350, C_Y = 210;
         let ionsNaCl = [], watersNaCl = [];
+
         function initNaClCanvas() { 
             if(canvasNaCl) return; 
             canvasNaCl = document.getElementById('saltCanvas'); ctxNaCl = canvasNaCl.getContext('2d');
             if(ionsNaCl.length === 0) {
+                let naCount = 0, clCount = 0;
                 for(let r=0; r<4; r++) {
                     for(let c=0; c<4; c++) {
-                        let i = r*4 + c; let isNa = (r+c)%2 === 0;
+                        let isNa = (r+c)%2 === 0;
                         let bx = (350 - 63) + c*42 - r*14; let by = (210 - 39) + r*26 + c*9;
-                        let a = (i/16)*Math.PI*2; let rx = isNa?140:250; let ry = isNa?90:150;
+                        
+                        let a = isNa ? (naCount/8)*Math.PI*2 : (clCount/8)*Math.PI*2 + Math.PI/8;
+                        if(isNa) naCount++; else clCount++;
+                        
+                        let rx = isNa?140:240; let ry = isNa?90:150;
                         let tx = 350 + Math.cos(a)*rx; let ty = 210 + Math.sin(a)*ry;
                         let det = 15 + (3 - (Math.abs(1.5-r)+Math.abs(1.5-c)))*12;
                         let ion = {type: isNa?'Na+':'Cl-', color: isNa?'#9b59b6':'#2ecc71', rad: isNa?12:17, bx, by, tx, ty, detStart: det, detEnd: det+35};
                         ionsNaCl.push(ion);
-                        for(let w=0; w<4; w++) watersNaCl.push({ion: ion, wa: (w/4)*Math.PI*2, sx: 350+Math.cos(Math.random()*6.28)*(280+Math.random()*40), sy: 210+Math.sin(Math.random()*6.28)*(180+Math.random()*20), att: det-8});
+                        for(let w=0; w<4; w++) {
+                            let randAng = Math.random() * 6.28;
+                            let randDist = 450 + Math.random() * 150;
+                            watersNaCl.push({
+                                ion: ion, 
+                                wa: (w/4)*Math.PI*2, 
+                                sx: C_X + Math.cos(randAng)*randDist, 
+                                sy: C_Y + Math.sin(randAng)*randDist, 
+                                att: det-8
+                            });
+                        }
                     }
                 }
                 ionsNaCl.sort((a,b) => a.by - b.by);
@@ -1038,20 +1061,24 @@
         }
         function drawNaCl() {
             ctxNaCl.clearRect(0,0,700,420);
+            ctxNaCl.globalAlpha = Math.min(1, progressNaCl / 5); // Sanftes Einblenden der Wassermoleküle
             watersNaCl.forEach(w => {
                 let p = Math.max(0, Math.min(1, (progressNaCl - w.ion.detStart)/(w.ion.detEnd - w.ion.detStart)));
                 let eo = 1 - Math.pow(1-p, 3);
                 let ix = w.ion.bx + (w.ion.tx - w.ion.bx)*eo; let iy = w.ion.by + (w.ion.ty - w.ion.by)*eo;
-                let cx, cy;
+                let cx, cy, rot;
                 if(progressNaCl < w.att) {
                     let mr = Math.max(0, progressNaCl/w.att);
                     cx = w.sx + (ix - w.sx)*mr*mr; cy = w.sy + (iy - w.sy)*mr*mr;
+                    rot = w.wa + progressNaCl * 0.05;
                 } else {
                     let a = w.wa + progressNaCl*0.04;
                     cx = ix + Math.cos(a)*(w.ion.rad+14); cy = iy + Math.sin(a)*(w.ion.rad+14);
+                    rot = w.ion.type === 'Na+' ? a - Math.PI/2 : a + Math.PI/2;
                 }
-                drawWater(ctxNaCl, cx, cy, progressNaCl>w.att, w.ion.type, progressNaCl);
+                drawSmallWater(ctxNaCl, cx, cy, rot); // Verwendet die entkoppelte Funktion!
             });
+            ctxNaCl.globalAlpha = 1.0;
             let curr = ionsNaCl.map(ion => {
                 let p = Math.max(0, Math.min(1, (progressNaCl - ion.detStart)/(ion.detEnd - ion.detStart)));
                 let eo = 1 - Math.pow(1-p, 3);
@@ -1063,7 +1090,7 @@
             let t = document.getElementById('anim-text-box-nacl');
             if(progressNaCl < 15) { t.innerHTML="Der feste Salzkristall. Die starke <span class='term'>Gitterenergie</span> hält Na⁺ und Cl⁻ fest."; t.style.borderColor="#95a5a6"; t.style.background="#ecf0f1"; }
             else if(progressNaCl < 80) { t.innerHTML="Wassermoleküle greifen an. Die freigesetzte <span class='term'>Hydratationsenergie</span> überwindet das Gitter."; t.style.borderColor="#3498db"; t.style.background="#ebf5fb"; }
-            else { t.innerHTML="Gelöst! Die <span class='term'>Hydratationsenergie</span> hat die <span class='term'>Gitterenergie</span> besiegt."; t.style.borderColor="#2ecc71"; t.style.background="#eafaf1"; }
+            else { t.innerHTML="Gelöst! Die <span class='term'>Hydratationsenergie</span> hat die <span class='term'>Gitterenergie</span> besiegt. Die Ionen verteilen sich gleichmäßig in der Lösung."; t.style.borderColor="#2ecc71"; t.style.background="#eafaf1"; }
         }
         function togglePlayNaCl() {
             isPlayingNaCl = !isPlayingNaCl;
@@ -1073,7 +1100,7 @@
         }
         function loopNaCl() {
             if(!isPlayingNaCl) return;
-            progressNaCl += 0.15;
+            progressNaCl += 0.07; 
             if(progressNaCl>100) { progressNaCl=100; isPlayingNaCl=false; document.getElementById('playBtnNaCl').innerText="↺"; }
             updateAnimationNaCl(progressNaCl);
             if(isPlayingNaCl) animIdNaCl = requestAnimationFrame(loopNaCl);
@@ -1092,11 +1119,14 @@
             for(let r=0; r<4; r++) {
                 for(let c=0; c<4; c++) {
                     let isBa = (r+c)%2 === 0;
-                    let bx = (350 - 63) + c*42 - r*14; let by = (210 - 39) + r*26 + c*9;
+                    let bx = (C_X - 63) + c*42 - r*14; let by = (C_Y - 39) + r*26 + c*9;
                     let canDetach = (r===0 && c===3) || (r===1 && c===3); 
                     
                     let tx = bx; let ty = by;
-                    if(canDetach) { tx = 350 + (isBa? 130 : 250); ty = 210 - (isBa? 110 : 20); }
+                    if(canDetach) {
+                        tx = C_X + (isBa? 130 : 250); 
+                        ty = C_Y - (isBa? 110 : 20);
+                    }
 
                     ionsBa.push({ type: isBa?'Ba2+':'SO42-', color: isBa?'#2980b9':'#e67e22', rad: isBa?14:18, bx, by, tx, ty, canDetach: canDetach, detStart: 130, detEnd: 180 });
                 }
@@ -1106,12 +1136,16 @@
             let detachableIons = ionsBa.filter(io => io.canDetach);
             for(let ion of detachableIons) {
                 for(let w = 0; w < 4; w++) {
-                    watersBa.push({ ion: ion, wa: (w / 4) * Math.PI * 2, sx: 350+Math.cos(Math.random()*6.28)*(280+Math.random()*40), sy: 210+Math.sin(Math.random()*6.28)*(180+Math.random()*20), att: 40 + Math.random()*40 });
+                    let randAng = Math.random() * 6.28;
+                    let randDist = 450 + Math.random() * 150;
+                    watersBa.push({ 
+                        ion: ion, 
+                        wa: (w / 4) * Math.PI * 2, 
+                        sx: C_X + Math.cos(randAng)*randDist, 
+                        sy: C_Y + Math.sin(randAng)*randDist, 
+                        att: 40 + Math.random()*40 
+                    });
                 }
-            }
-            let fixedIons = ionsBa.filter(io => !io.canDetach);
-            for(let i=0; i<27; i++) {
-                watersBa.push({ ion: fixedIons[Math.floor(Math.random()*fixedIons.length)], wa: Math.random()*6.28, sx: 350+Math.cos(Math.random()*6.28)*(280+Math.random()*40), sy: 210+Math.sin(Math.random()*6.28)*(180+Math.random()*20), att: 40 + Math.random()*40 });
             }
             drawBa(); updateTextBa();
         }
@@ -1143,24 +1177,28 @@
         function drawBa() {
             ctxBa.clearRect(0,0,700,420);
             let wiggle = (burnerOn && progressBa > 100) ? Math.min(2, (progressBa-100)*0.05) : 0;
-            if(burnerOn && progressBa > 100) drawFlame(ctxBa, 350, 390, progressBa);
+            if(burnerOn && progressBa > 100) drawFlame(ctxBa, C_X, 390, progressBa);
 
+            ctxBa.globalAlpha = Math.min(1, progressBa / 5);
             watersBa.forEach(w => {
                 let p = (w.ion.canDetach && progressBa > w.ion.detStart) ? Math.max(0, Math.min(1, (progressBa - w.ion.detStart)/(w.ion.detEnd - w.ion.detStart))) : 0;
                 let eo = 1 - Math.pow(1-p, 3);
                 let wiggX = w.ion.canDetach && p>0 ? 0 : (Math.random()*wiggle - wiggle/2);
                 let wiggY = w.ion.canDetach && p>0 ? 0 : (Math.random()*wiggle - wiggle/2);
                 let ix = w.ion.bx + wiggX + (w.ion.tx - w.ion.bx)*eo; let iy = w.ion.by + wiggY + (w.ion.ty - w.ion.by)*eo;
-                let cx, cy;
+                let cx, cy, rot;
                 if(progressBa < w.att) {
                     let mr = Math.max(0, progressBa/w.att); cx = w.sx + (ix - w.sx)*mr*mr; cy = w.sy + (iy - w.sy)*mr*mr;
+                    rot = w.wa + progressBa*0.05;
                 } else {
                     let a = w.wa + progressBa*0.04;
                     let dist = (w.ion.canDetach && progressBa > w.ion.detStart) ? (w.ion.rad+14) : (w.ion.rad+25 + Math.sin(progressBa*0.1)*5);
                     cx = ix + Math.cos(a)*dist; cy = iy + Math.sin(a)*dist;
+                    rot = w.ion.type === 'Ba2+' ? a - Math.PI/2 : a + Math.PI/2;
                 }
-                drawWater(ctxBa, cx, cy, (w.ion.canDetach && progressBa>w.ion.detStart), w.ion.type, progressBa);
+                drawSmallWater(ctxBa, cx, cy, rot); // Verwendet die entkoppelte Funktion!
             });
+            ctxBa.globalAlpha = 1.0;
 
             let curr = ionsBa.map(ion => {
                 let p = (ion.canDetach && progressBa > ion.detStart) ? Math.max(0, Math.min(1, (progressBa - ion.detStart)/(ion.detEnd - ion.detStart))) : 0;
@@ -1350,49 +1388,24 @@
             canvasCo2 = document.getElementById('co2Canvas'); ctxCo2 = canvasCo2.getContext('2d');
             
             // 1. Linkes CO2 (physikalisches Lösen) -> saubere Hülle mit exakter Ausrichtung
-            watersCo2.push({ 
-                type: 'left_o_bond', sx: 150, sy: 210 - 130, tx: 150, ty: 210 - 48,
-                startAngle: Math.random() * 6.28, targetAngle: Math.PI/2, startMove: 10
-            });
-            watersCo2.push({ 
-                type: 'left_o_bond', sx: 150, sy: 210 + 130, tx: 150, ty: 210 + 48,
-                startAngle: Math.random() * 6.28, targetAngle: -Math.PI/2, startMove: 10
-            });
-            watersCo2.push({ 
-                type: 'left_h_bond', sx: 150 - 150, sy: 210, tx: 150 - 75, ty: 210,
-                startAngle: Math.random() * 6.28, targetAngle: 0, startMove: 10
-            });
-            watersCo2.push({ 
-                type: 'left_h_bond', sx: 150 + 150, sy: 210, tx: 150 + 75, ty: 210,
-                startAngle: Math.random() * 6.28, targetAngle: Math.PI, startMove: 10
-            });
+            watersCo2.push({ type: 'left_o_bond', sx: 150, sy: 210 - 130, tx: 150, ty: 210 - 48, startAngle: Math.random() * 6.28, targetAngle: Math.PI/2, startMove: 10 });
+            watersCo2.push({ type: 'left_o_bond', sx: 150, sy: 210 + 130, tx: 150, ty: 210 + 48, startAngle: Math.random() * 6.28, targetAngle: -Math.PI/2, startMove: 10 });
+            watersCo2.push({ type: 'left_h_bond', sx: 150 - 150, sy: 210, tx: 150 - 75, ty: 210, startAngle: Math.random() * 6.28, targetAngle: 0, startMove: 10 });
+            watersCo2.push({ type: 'left_h_bond', sx: 150 + 150, sy: 210, tx: 150 + 75, ty: 210, startAngle: Math.random() * 6.28, targetAngle: Math.PI, startMove: 10 });
 
             // 2. Rechtes CO2 (chemisches Lösen nach Arrhenius)
-            watersCo2.push({ 
-                type: 'reactant',
-                sx: 550 + Math.cos(Math.random()*6.28)*100, 
-                sy: 210 + Math.sin(Math.random()*6.28)*100,
-                tx: 550, ty: 210,
-                startAngle: Math.random() * 6.28, targetAngle: 0,
-                startMove: 15
-            });
+            watersCo2.push({ type: 'reactant', sx: 550 + Math.cos(Math.random()*6.28)*100, sy: 210 + Math.sin(Math.random()*6.28)*100, tx: 550, ty: 210, startAngle: Math.random() * 6.28, targetAngle: 0, startMove: 15 });
 
             // Carbonat-Ion (CO3 2-) - exakt nach deiner Grafik: H-Atome (grau) zeigen nach INNEN zum Ion (targetAngle = angle)
             for(let w = 0; w < 4; w++) {
                 let angle = (w / 4) * Math.PI * 2;
                 watersCo2.push({ 
-                    type: 'shell1',
-                    sx: 550 + Math.cos(Math.random()*6.28)*(150+Math.random()*40), 
-                    sy: 210 + Math.sin(Math.random()*6.28)*(100+Math.random()*20),
-                    tx: 430 + Math.cos(angle)*70, 
-                    ty: 210 + Math.sin(angle)*70,
-                    startAngle: Math.random() * 6.28,
-                    targetAngle: angle, // H zeigt nach innen
-                    startMove: 55 + Math.random()*15
+                    type: 'shell1', sx: 550 + Math.cos(Math.random()*6.28)*(150+Math.random()*40), sy: 210 + Math.sin(Math.random()*6.28)*(100+Math.random()*20),
+                    tx: 430 + Math.cos(angle)*70, ty: 210 + Math.sin(angle)*70, startAngle: Math.random() * 6.28, targetAngle: angle, startMove: 55 + Math.random()*15
                 });
             }
 
-            // NEUE ANORDNUNG FÜR DIE WASSERSTOFFIONEN (H+) ENTSPRECHEND DEINER VORGABE:
+            // --- Wasserstoffionen (H+) ---
             // Beide H+ liegen auf einer Höhe y=350, Zentrum H1 = x=540, Zentrum H2 = x=650
             
             // Erstes H+ (540, 350)
@@ -1435,8 +1448,8 @@
             if(showCharges) {
                 ctx.fillStyle='#2c3e50'; ctx.font='bold 14px Arial';
                 ctx.fillText('δ+', 0, -25);
-                ctx.fillText('δ-', -35, -25);
-                ctx.fillText('δ-', 35, -25);
+                ctx.fillText('δ-', -45, -25);
+                ctx.fillText('δ-', 45, -25);
             }
             ctx.restore();
         }
@@ -1518,7 +1531,7 @@
                         cx = w.sx + ((co3X + (w.tx - 430)) - w.sx)*eo; 
                         cy = w.sy + ((210 + (w.ty - 210)) - w.sy)*eo;
                         rot = w.startAngle + (w.targetAngle - w.startAngle)*eo;
-                        drawCarbonateWater(ctxCo2, cx, cy, rot); // H zeigt nach innen
+                        drawCarbonateWater(ctxCo2, cx, cy, rot);
                     }
                 }
                 else if(w.type === 'shell2_h1') {
@@ -1532,7 +1545,7 @@
                         cx = w.sx + ((h1X + (w.tx - 540)) - w.sx)*eo; 
                         cy = w.sy + ((h1Y + (w.ty - 350)) - w.sy)*eo;
                         rot = w.startAngle + (w.targetAngle - w.startAngle)*eo;
-                        drawGenericWater(ctxCo2, cx, cy, rot); // O zeigt nach innen
+                        drawBigWater(ctxCo2, cx, cy, rot); // O zeigt nach innen
                     }
                 }
                 else if(w.type === 'shell2_h2') {
@@ -1546,7 +1559,7 @@
                         cx = w.sx + ((h2X + (w.tx - 650)) - w.sx)*eo; 
                         cy = w.sy + ((h2Y + (w.ty - 350)) - w.sy)*eo;
                         rot = w.startAngle + (w.targetAngle - w.startAngle)*eo;
-                        drawGenericWater(ctxCo2, cx, cy, rot); // O zeigt nach innen
+                        drawBigWater(ctxCo2, cx, cy, rot); // O zeigt nach innen
                     }
                 }
             });
@@ -1563,7 +1576,7 @@
                 t.style.borderColor="#f1c40f"; t.style.background="#fff3cd"; 
             }
             else { 
-                t.innerHTML="Rechts (Arrhenius): Die Kohlensäure spaltet sich in ein Carbonat-Ion und zwei Wasserstoffionen (H⁺). Alle Ionen sind jetzt sauber getrennt aufgereiht und die Sauerstoffatome des Wassers zeigen geometrisch exakt zu den H⁺-Ionen!"; 
+                t.innerHTML="Rechts (Arrhenius-Konzept): Die Kohlensäure spaltet sich in ein Carbonat-Ion und zwei Wasserstoffionen (H⁺). Alle Ionen sind jetzt sauber getrennt aufgereiht und die Sauerstoffatome des Wassers zeigen geometrisch exakt zu den H⁺-Ionen!"; 
                 t.style.borderColor="#2ecc71"; t.style.background="#eafaf1"; 
             }
         }
