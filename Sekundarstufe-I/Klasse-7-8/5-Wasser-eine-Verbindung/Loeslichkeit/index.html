@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interaktive Chemie: Löslichkeit</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --light: #ecf0f1;
+            --accent: #e74c3c;
+            --text: #333;
+            --bg: #f4f7f6;
+            --burner: #e67e22;
+            --gas: #8e44ad;
+        }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: var(--bg); 
+            color: var(--text); 
+            max-width: 900px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            line-height: 1.6;
+        }
+        h1, h2, h3 { color: var(--primary); }
+        h1 { text-align: center; border-bottom: 3px solid var(--secondary); padding-bottom: 10px; }
+        
+        /* Modul-Sichtbarkeit */
+        .view { display: none; animation: fadeIn 0.4s ease-in-out; }
+        .view.active { display: block; }
+        
+        /* Startseite (Hub) */
+        .hub-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 30px; }
+        .hub-card { 
+            background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            text-align: center; cursor: pointer; border: 2px solid transparent; transition: all 0.2s;
+            display: flex; flex-direction: column; justify-content: center;
+        }
+        .hub-card.main-module {
+            grid-column: 1 / -1; 
+            border: 2px solid var(--secondary);
+            background: #fdfefe;
+        }
+        .hub-card:hover { border-color: var(--secondary); transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
+        .hub-card h3 { margin-top: 0; color: var(--secondary); }
+        .hub-card.disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+
+        @media (max-width: 768px) {
+            .hub-grid { grid-template-columns: 1fr; }
+        }
+        
+        /* Modul-Karten (Schritte) */
+        .step-card { 
+            background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); 
+            display: none; animation: fadeIn 0.4s; margin-top: 20px;
+        }
+        .step-card.active { display: block; }
+
+        /* SVG & Quiz-Styles */
+        .svg-container { text-align: center; margin: 20px 0; background: #f9fbFC; border-radius: 8px; padding: 25px; border: 1px dashed #bdc3c7; position: relative; }
+        .animated-molecule { animation: float 4s ease-in-out infinite; transform-origin: center; }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
+        
+        .quiz-item { background: var(--light); padding: 20px; border-radius: 8px; border-left: 5px solid #bdc3c7; display: none; margin-bottom: 15px;}
+        .quiz-item.active { display: block; animation: fadeIn 0.4s; }
+        .btn-unpolar { background: #a2d9ce; color: #0e6251; margin-right: 10px; }
+        .btn-polar { background: #fad7a1; color: #7e5109; margin-right: 10px; }
+        .btn-ionic { background: #f5b7b1; color: #78281f; margin-right: 10px; }
+        .btn-neutral { background: #d6dbdf; color: #2c3e50; margin-right: 10px; }
+        .feedback { margin-top: 15px; font-weight: bold; padding: 15px; border-radius: 5px; display: none; }
+        .highlight { background: #fff3cd; padding: 20px; border-radius: 5px; border-left: 5px solid #f1c40f; font-size: 1.1em; line-height: 1.5; }
+
+        /* Animation & Canvas */
+        canvas { background: white; border-radius: 5px; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); max-width: 100%; height: auto; }
+        .legend { display: flex; justify-content: center; flex-wrap: wrap; gap: 20px; margin-top: 12px; background: white; padding: 10px; border-radius: 6px; font-size: 0.9em; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-weight: 500; }
+        .legend-dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
+
+        /* Controls für Animation */
+        .controls { display: flex; align-items: center; gap: 15px; margin-top: 15px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        input[type=range] { flex-grow: 1; height: 8px; border-radius: 5px; background: #ddd; outline: none; -webkit-appearance: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; background: var(--secondary); border-radius: 50%; cursor: pointer; transition: background 0.3s; }
+        .play-btn { background: var(--secondary); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .play-btn:hover { background: #2980b9; }
+
+        /* Erklärtext in Animation */
+        .anim-text-box { margin-top: 15px; min-height: 80px; padding: 15px; background: #fff3cd; border-left: 5px solid #f1c40f; border-radius: 5px; font-weight: bold; font-size: 1.1em; transition: 0.3s; }
+        .term { color: var(--accent); font-weight: 800; text-decoration: underline; }
+
+        /* Tabelle Schritt 4 & 7 */
+        .solubility-table { width: 100%; border-collapse: collapse; margin-top: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .solubility-table th { background: var(--primary); color: white; padding: 12px; border: 1px solid #bdc3c7; }
+        .solubility-table td { padding: 12px; border: 1px solid #bdc3c7; text-align: center; }
+
+        /* Buttons & Sonstiges */
+        .btn { padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.2s; margin-top: 15px; }
+        .btn:hover { opacity: 0.9; }
+        .btn-nav { background: var(--primary); color: white; float: right; }
+        .btn-back { background: #95a5a6; color: white; float: left; }
+        .btn-burner { background: var(--burner); color: white; display: none; margin-left: 10px; font-size: 14px; padding: 8px 15px; animation: pulse 1.5s infinite; }
+        .clearfix::after { content: ""; clear: both; display: table; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(230, 126, 34, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(230, 126, 34, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(230, 126, 34, 0); }
+        }
+
+        /* Exo/Endo Grid */
+        .thermo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+        .thermo-box { padding: 20px; border-radius: 8px; color: white; }
+        .exo { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+        .endo { background: linear-gradient(135deg, #3498db, #2980b9); }
+        .transition-question { font-size: 1.3em; font-weight: bold; color: var(--primary); text-align: center; margin-top: 40px; padding: 20px; border-top: 2px dashed #bdc3c7; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <!-- NAVIGATIONSLEISTE -->
+    <div style="background: var(--primary); color: white; padding: 10px 20px; border-radius: 5px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="margin: 0; color: white; font-size: 1.2em;">🧪 Kurslabor: Klasse 10</h3>
+        <button onclick="showView('hub-view')" style="background: transparent; border: 1px solid white; color: white; padding: 5px 10px; border-radius: 3px; cursor: pointer;">🏠 Zurück zur Übersicht</button>
+    </div>
+
+    <!-- STARTSEITE (HUB) -->
+    <div id="hub-view" class="view active">
+        <h1>Löslichkeit untersuchen</h1>
+        <p style="text-align: center;">Wähle das Modul aus, das ihr bearbeiten möchtet.</p>
+        
+        <div class="hub-grid">
+            <div class="hub-card main-module" onclick="showView('polaritaet-view')">
+                <h3>1. Grundlagen (Pflichtmodul)</h3>
+                <p>Wiederholung: Elektronegativität und Dipole (Am Beispiel H₂O und CO₂)</p>
+            </div>
+            <div class="hub-card" onclick="showView('salze-view'); initNaClCanvas();">
+                <h3>2. Feste Stoffe (Salze)</h3>
+                <p>Gitterenergie, Hydratationsenergie & das Löslichkeitsprodukt.</p>
+            </div>
+            <div class="hub-card" onclick="showView('flu-view')">
+                <h3>3. Flüssigkeiten</h3>
+                <p>Polare und unpolare Flüssigkeiten, am Beispiel Heptan und Ethanol.</p>
+            </div>
+            <div class="hub-card" onclick="showView('gas-view'); initGasCanvas();">
+                <h3>4. Gase</h3>
+                <p>Induzierter Dipol und chemische Reaktion (Arrhenius). Warum CO₂ sprudelt.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODUL 1: POLARITÄT -->
+    <!-- ========================================== -->
+    <div id="polaritaet-view" class="view">
+        <h1>Modul 1: Grundlagen der Polarität</h1>
+        <div class="step-card active clearfix" id="pol-step1">
+            <h2>1. Elektronegativität (EN)</h2>
+            <p>Die Elektronegativität ist ein Maß dafür, wie stark ein Atom in einer chemischen Bindung die gemeinsamen Elektronen an sich zieht. Das Atom mit dem höheren EN-Wert zieht die Elektronen stärker zu sich heran.</p>
+            <div class="svg-container">
+                <h3>Beispiel: Das Wassermolekül (H₂O)</h3>
+                <svg viewBox="0 0 100 100" width="180" height="180" class="animated-molecule">
+                   <line x1="37" y1="55" x2="28" y2="66" stroke="#333" stroke-width="4"/>
+                   <line x1="63" y1="55" x2="72" y2="66" stroke="#333" stroke-width="4"/>
+                   <circle r="4" fill="#f1c40f">
+                       <animate attributeName="cx" values="30; 36; 30" dur="1.5s" repeatCount="indefinite" />
+                       <animate attributeName="cy" values="64; 56; 64" dur="1.5s" repeatCount="indefinite" />
+                   </circle>
+                   <circle r="4" fill="#f1c40f">
+                       <animate attributeName="cx" values="70; 64; 70" dur="1.5s" repeatCount="indefinite" />
+                       <animate attributeName="cy" values="64; 56; 64" dur="1.5s" repeatCount="indefinite" />
+                   </circle>
+                   <circle cx="50" cy="40" r="20" fill="#e74c3c" />
+                   <text x="50" y="45" fill="white" font-family="Arial" font-size="14" text-anchor="middle">O</text>
+                   <text x="50" y="15" fill="#2c3e50" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle">δ-</text>
+                   <circle cx="20" cy="75" r="12" fill="#bdc3c7" />
+                   <text x="20" y="79" fill="black" font-family="Arial" font-size="12" text-anchor="middle">H</text>
+                   <text x="10" y="95" fill="#2c3e50" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle">δ+</text>
+                   <circle cx="80" cy="75" r="12" fill="#bdc3c7" />
+                   <text x="80" y="79" fill="black" font-family="Arial" font-size="12" text-anchor="middle">H</text>
+                   <text x="90" y="95" fill="#2c3e50" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle">δ+</text>
+                </svg>
+                <p style="font-size: 0.9em; color: #555;">🟡 <em>Die gelben Punkte stellen die Bindungselektronen dar.</em></p>
+            </div>
+            <p>Beim Wasser zieht der Sauerstoff (EN = 3,4) die Elektronen stärker an als der Wasserstoff (EN = 2,2). Dadurch entstehen Teilladungen. Das Molekül hat zwei Pole und ist somit ein <strong>Dipol</strong>.</p>
+            <button class="btn btn-nav" onclick="goToStep('pol-step2')">Weiter ➔</button>
+        </div>
+        <div class="step-card clearfix" id="pol-step2">
+            <h2>2. Die Elektronegativitätsdifferenz (ΔEN)</h2>
+            <p>Um herauszufinden, welche Bindungsart genau vorliegt, berechnet man die Differenz der Elektronegativitätswerte (ΔEN):</p>
+            <p style="text-align: center; font-size: 1.3em; margin: 25px 0;"><strong>ΔEN = | EN(Atom 1) - EN(Atom 2) |</strong></p>
+            <ul style="font-size: 1.1em; line-height: 2;">
+                <li><strong>0,0 - 0,4:</strong> unpolare Elektronenpaarbindung</li>
+                <li><strong>0,5 - 1,7:</strong> polare Elektronenpaarbindung</li>
+                <li><strong>> 1,7:</strong> Ionenbindung (ionisch)</li>
+            </ul>
+            <button class="btn btn-back" onclick="goToStep('pol-step1')">⬅ Zurück</button>
+            <button class="btn btn-nav" onclick="goToStep('pol-step3')">Zum Quiz ➔</button>
+        </div>
+        <div class="step-card clearfix" id="pol-step3">
+            <h2>3. Quiz: Polar, unpolar oder ionisch?</h2>
+            <div class="quiz-item active" id="quiz-nacl">
+                <h3>Natriumchlorid (NaCl)</h3>
+                <p>Lewis-Formel: [Na]⁺ [Cl]⁻ <br> EN(Na) = 0,9 | EN(Cl) = 3,2</p>
+                <button class="btn btn-unpolar" onclick="checkQuiz('nacl', 'unpolar')">Unpolar</button>
+                <button class="btn btn-polar" onclick="checkQuiz('nacl', 'polar')">Polar</button>
+                <button class="btn btn-ionic" onclick="checkQuiz('nacl', 'ionic')">Ionisch</button>
+                <div id="fb-nacl" class="feedback"></div>
+                <button id="next-nacl" class="btn btn-nav" style="display:none;" onclick="showNextQuiz('o2')">Weiter zu O₂ ➔</button>
+            </div>
+            <div class="quiz-item" id="quiz-o2">
+                <h3>Sauerstoff (O₂)</h3>
+                <p>Lewis-Formel: O=O <br> EN(O) = 3,4</p>
+                <button class="btn btn-unpolar" onclick="checkQuiz('o2', 'unpolar')">Unpolar</button>
+                <button class="btn btn-polar" onclick="checkQuiz('o2', 'polar')">Polar</button>
+                <button class="btn btn-ionic" onclick="checkQuiz('o2', 'ionic')">Ionisch</button>
+                <div id="fb-o2" class="feedback"></div>
+                <button id="next-o2" class="btn btn-nav" style="display:none;" onclick="showNextQuiz('co2')">Weiter zu CO₂ ➔</button>
+            </div>
+            <div class="quiz-item" id="quiz-co2">
+                <h3>Kohlenstoffdioxid (CO₂)</h3>
+                <p>Lewis-Formel: O=C=O <br> EN(C) = 2,5 | EN(O) = 3,4</p>
+                <button class="btn btn-unpolar" onclick="checkQuiz('co2', 'unpolar')">Unpolar</button>
+                <button class="btn btn-polar" onclick="checkQuiz('co2', 'polar')">Polar</button>
+                <button class="btn btn-ionic" onclick="checkQuiz('co2', 'ionic')">Ionisch</button>
+                <div id="fb-co2" class="feedback"></div>
+                <button id="next-co2" class="btn btn-nav" style="display:none;" onclick="goToStep('pol-step4')">Zur Auflösung ➔</button>
+            </div>
+            <div class="clearfix"></div>
+            <button class="btn btn-back" style="margin-top: 20px;" onclick="goToStep('pol-step2')">⬅ Zurück</button>
+        </div>
+        <div class="step-card clearfix" id="pol-step4">
+            <h2>4. Die CO₂-Falle: Der Molekülbau entscheidet!</h2>
+            <p>Die ΔEN zwischen C und O beträgt 0,9. Die Bindung selbst ist polar. <strong>ABER: Das Molekül als Ganzes ist trotzdem UNPOLAR!</strong> Warum?</p>
+            <div class="svg-container">
+                <svg viewBox="0 0 200 100" width="100%" max-width="400" height="150">
+                   <line x1="60" y1="46" x2="82" y2="46" stroke="#333" stroke-width="4"/>
+                   <line x1="60" y1="54" x2="82" y2="54" stroke="#333" stroke-width="4"/>
+                   <line x1="118" y1="46" x2="140" y2="46" stroke="#333" stroke-width="4"/>
+                   <line x1="118" y1="54" x2="140" y2="54" stroke="#333" stroke-width="4"/>
+                   <circle cx="100" cy="50" r="18" fill="#7f8c8d" />
+                   <text x="100" y="55" fill="white" font-family="Arial" font-size="14" text-anchor="middle">C</text>
+                   <text x="100" y="25" fill="#2c3e50" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle">δ+</text>
+                   <circle cx="40" cy="50" r="20" fill="#e74c3c" />
+                   <text x="40" y="55" fill="white" font-family="Arial" font-size="14" text-anchor="middle">O</text>
+                   <text x="40" y="25" fill="#2c3e50" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle">δ-</text>
+                   <circle cx="160" cy="50" r="20" fill="#e74c3c" />
+                   <text x="160" y="55" fill="white" font-family="Arial" font-size="14" text-anchor="middle">O</text>
+                   <text x="160" y="25" fill="#2c3e50" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle">δ-</text>
+                   <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#2c3e50" /></marker></defs>
+                   <line x1="85" y1="80" x2="45" y2="80" stroke="#2c3e50" stroke-width="3" marker-end="url(#arrow)"/>
+                   <line x1="115" y1="80" x2="155" y2="80" stroke="#2c3e50" stroke-width="3" marker-end="url(#arrow)"/>
+                   <text x="100" y="98" fill="#2c3e50" font-family="Arial" font-size="12" font-weight="bold" text-anchor="middle">Dipolmomente heben sich auf (180°)</text>
+                </svg>
+            </div>
+            <p>Das CO₂-Molekül ist komplett linear gebaut. Die Zugkräfte heben sich auf wie bei einem Tauziehen. Das Molekül ist unpolar.</p>
+            <button class="btn btn-back" onclick="goToStep('pol-step3')">⬅ Zurück</button>
+            <button class="btn btn-nav" onclick="goToStep('pol-step5')">Zusammenhang zur Löslichkeit ➔</button>
+        </div>
+        <div class="step-card clearfix" id="pol-step5">
+            <h2>5. Zusammenhang zur Löslichkeit</h2>
+            <div class="highlight">
+                <strong>Merksatz: Gleiches löst sich in Gleichem!</strong><br><br>
+                • Polare Stoffe lösen sich gut in polaren Lösungsmitteln (z.B. Salz in Wasser).<br>
+                • Unpolare Stoffe lösen sich gut in unpolaren Lösungsmitteln (z.B. Öl in Benzin).
+            </div>
+            <button class="btn btn-back" onclick="goToStep('pol-step4')">⬅ Zurück</button>
+            <button class="btn btn-nav" onclick="showView('hub-view')">Modul abschließen ➔</button>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODUL 2: SALZE -->
+    <!-- ========================================== -->
+    <div id="salze-view" class="view">
+        <h1>Modul 2: Lösen von Salzen</h1>
+
+        <div class="step-card active clearfix" id="salz-step1">
+            <h2>Der Lösungsvorgang im Zeitraffer (Natriumchlorid)</h2>
+            <p>Betrachte den Salzkristall. Jedes gelöste Ion erhält exakt eine Hydrathülle aus 4 Wassermolekülen.</p>
+            <div class="canvas-container">
+                <canvas id="saltCanvas" width="700" height="420"></canvas>
+                <div class="legend">
+                    <div class="legend-item"><span class="legend-dot" style="background: #9b59b6;"></span> Na⁺-Ion</div>
+                    <div class="legend-item"><span class="legend-dot" style="background: #2ecc71;"></span> Cl⁻-Ion</div>
+                    <div class="legend-item"><span class="legend-dot" style="background: #e74c3c;"></span> Wasser (H₂O)</div>
+                </div>
+                <div class="controls">
+                    <button class="play-btn" id="playBtnNaCl" onclick="togglePlayNaCl()">▶</button>
+                    <input type="range" id="timeSliderNaCl" min="0" max="100" value="0" oninput="updateAnimationNaCl(this.value)">
+                    <span id="timeDisplayNaCl" style="font-weight: bold; width: 40px;">0%</span>
+                </div>
+            </div>
+            <div id="anim-text-box-nacl" class="anim-text-box"></div>
+            <button class="btn btn-nav" onclick="goToStep('salz-step2')">Weiter zur Erklärung ➔</button>
+        </div>
+
+        <div class="step-card clearfix" id="salz-step2">
+            <h2>Kräftemessen: Gitterenergie vs. Hydratationsenergie</h2>
+            <p>Beim Lösen eines Salzes finden zwei konkurrierende Vorgänge statt:</p>
+            <ul>
+                <li><strong>Die <span class="term">Gitterenergie</span>:</strong> Die Ionen ziehen sich stark an. Das Aufbrechen kostet Energie!</li>
+                <li><strong>Die <span class="term">Hydratationsenergie</span>:</strong> Wasser lagert sich an die Ionen an. Hierbei wird Energie frei!</li>
+            </ul>
+            <div class="thermo-grid">
+                <div class="thermo-box exo">
+                    <h3>Exotherm 🔥</h3>
+                    <p><strong>Hydratationsenergie > Gitterenergie</strong><br>Das Wasser wird warm.</p>
+                </div>
+                <div class="thermo-box endo">
+                    <h3>Endotherm ❄️</h3>
+                    <p><strong>Gitterenergie > Hydratationsenergie</strong><br>Das Wasser kühlt ab.</p>
+                </div>
+            </div>
+            <div class="transition-question">
+                🤔 Wenn Salze sich nach diesem Prinzip lösen...<br>
+                Warum löst sich dann Bariumsulfat nicht oder fast gar nicht im Wasser?
+            </div>
+            <button class="btn btn-back" onclick="goToStep('salz-step1')">⬅ Zurück</button>
+            <button class="btn btn-nav" onclick="goToStep('salz-step3'); initBaCanvas();">Dem Geheimnis auf die Spur gehen ➔</button>
+        </div>
+
+        <div class="step-card clearfix" id="salz-step3">
+            <h2>Schwerlösliche Salze (Bariumsulfat)</h2>
+            <p>Bariumsulfat (BaSO₄) besteht aus doppelt positiv geladenen Barium-Ionen (Ba²⁺) und doppelt negativ geladenen Sulfat-Ionen (SO₄²⁻).</p>
+            <div class="canvas-container">
+                <canvas id="baCanvas" width="700" height="420"></canvas>
+                <div class="legend">
+                    <div class="legend-item"><span class="legend-dot" style="background: #2980b9;"></span> Ba²⁺-Ion</div>
+                    <div class="legend-item"><span class="legend-dot" style="background: #e67e22;"></span> SO₄²⁻-Ion</div>
+                    <div class="legend-item"><span class="legend-dot" style="background: #e74c3c;"></span> Wasser (H₂O)</div>
+                </div>
+                <div class="controls">
+                    <button class="play-btn" id="playBtnBa" onclick="togglePlayBa()">▶</button>
+                    <input type="range" id="timeSliderBa" min="0" max="100" value="0" oninput="updateAnimationBa(this.value)">
+                    <span id="timeDisplayBa" style="font-weight: bold; width: 40px;">0%</span>
+                    <button id="burnerBtn" class="btn btn-burner" onclick="activateBurner()">🔥 Brenner einschalten</button>
+                </div>
+            </div>
+            <div id="anim-text-box-ba" class="anim-text-box"></div>
+            <button class="btn btn-back" onclick="goToStep('salz-step2')">⬅ Zurück</button>
+            <button class="btn btn-nav" onclick="goToStep('salz-step4')">Zur Zusammenfassung ➔</button>
+        </div>
+
+        <div class="step-card clearfix" id="salz-step4">
+            <h2>Zusammenfassung & Das Löslichkeitsprodukt</h2>
+            <div class="highlight">
+                <strong>Grundsätzlich gilt weiterhin:</strong> Polare Feststoffe lösen sich in polaren Lösungsmitteln (wie Wasser) und unpolare in unpolaren Lösungsmitteln (wie Benzin).
+            </div>
+            <p><strong>Aber Vorsicht:</strong> Bei Salzen muss man beachten, dass trotz ihres ionischen (polaren) Charakters ihre Löslichkeit stark von der inneren Bindungsstärke abhängt. Nur wenn die Wasserteilchen die <strong>Gitterenergie</strong> überwinden können, löst sich das Salz.</p>
+
+            <h3 style="margin-top: 30px;">Der Grenzwert: Das Löslichkeitsprodukt (K<sub>L</sub>)</h3>
+            <p>Um vorherzusagen, wie gut sich ein Salz bei Raumtemperatur (25°C) löst, verwendet man das <strong>Löslichkeitsprodukt</strong>. Es beschreibt, wie viele Ionen maximal ins Wasser passen, bevor sich der Rest als Feststoff auf dem Boden absetzt.</p>
+
+            <table class="solubility-table">
+                <tr>
+                    <th>Löslichkeit</th>
+                    <th>Löslichkeitsprodukt (K<sub>L</sub>)</th>
+                    <th>Beispiel</th>
+                </tr>
+                <tr style="background: #eafaf1;">
+                    <td><strong>Gut löslich</strong></td>
+                    <td>größer als 1</td>
+                    <td><strong>Natriumchlorid (NaCl)</strong><br>K<sub>L</sub> ≈ 38</td>
+                </tr>
+                <tr style="background: #ebf5fb;">
+                    <td><strong>Mäßig löslich</strong></td>
+                    <td>10<sup>-2</sup> bis 10<sup>-4</sup></td>
+                    <td><strong>Gips (CaSO₄)</strong><br>K<sub>L</sub> ≈ 10<sup>-4</sup></td>
+                </tr>
+                <tr style="background: #fdebd0;">
+                    <td><strong>Schwer löslich</strong></td>
+                    <td>10<sup>-5</sup> bis 10<sup>-7</sup></td>
+                    <td><strong>Bleichlorid (PbCl₂)</strong><br>K<sub>L</sub> ≈ 10<sup>-5</sup></td>
+                </tr>
+                <tr style="background: #fadbd8;">
+                    <td><strong>Nahezu unlöslich</strong></td>
+                    <td>kleiner als 10<sup>-8</sup></td>
+                    <td><strong>Bariumsulfat (BaSO₄)</strong><br>K<sub>L</sub> ≈ 10<sup>-10</sup></td>
+                </tr>
+            </table>
+            <p style="margin-top: 20px; font-size: 1.1em; color: var(--primary);">
+                <strong>Fazit:</strong> Bei Bariumsulfat ist der Wert mit 10<sup>-10</sup> so winzig, dass man es in der Schule schlicht als "unlöslich" bezeichnet!
+            </p>
+            <button class="btn btn-back" onclick="goToStep('salz-step3')">⬅ Zurück</button>
+            <button class="btn btn-nav" onclick="showView('hub-view')">Modul abschließen ➔</button>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODUL 3: FLÜSSIGKEITEN -->
+    <!-- ========================================== -->
+    <div id="flu-view" class="view">
+        <h1>Modul 3: Flüssigkeiten</h1>
+
+        <!-- SCHRITT 1 -->
+        <div class="step-card active clearfix" id="flu-step1">
+            <h2>1. Unpolare Stoffe erkennen: Heptan</h2>
+            <p>Heptan ist eine farblose Flüssigkeit und ein Hauptbestandteil von Benzin. Schau dir die Lewis-Formel des Heptan-Moleküls (C₇H₁₆) an:</p>
+            
+            <div class="svg-container">
+                <svg viewBox="0 0 400 100" width="100%" height="120" style="max-width: 500px;">
+                    <line x1="40" y1="50" x2="340" y2="50" stroke="#333" stroke-width="3"/>
+                    <line x1="40" y1="25" x2="40" y2="75" stroke="#333" stroke-width="3"/>
+                    <line x1="90" y1="25" x2="90" y2="75" stroke="#333" stroke-width="3"/>
+                    <line x1="140" y1="25" x2="140" y2="75" stroke="#333" stroke-width="3"/>
+                    <line x1="190" y1="25" x2="190" y2="75" stroke="#333" stroke-width="3"/>
+                    <line x1="240" y1="25" x2="240" y2="75" stroke="#333" stroke-width="3"/>
+                    <line x1="290" y1="25" x2="290" y2="75" stroke="#333" stroke-width="3"/>
+                    <line x1="340" y1="25" x2="340" y2="75" stroke="#333" stroke-width="3"/>
+                    <line x1="15" y1="50" x2="40" y2="50" stroke="#333" stroke-width="3"/>
+                    <line x1="340" y1="50" x2="365" y2="50" stroke="#333" stroke-width="3"/>
+
+                    <g fill="white" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle">
+                        <circle cx="40" cy="50" r="12" fill="#7f8c8d"/><text x="40" y="55">C</text>
+                        <circle cx="90" cy="50" r="12" fill="#7f8c8d"/><text x="90" y="55">C</text>
+                        <circle cx="140" cy="50" r="12" fill="#7f8c8d"/><text x="140" y="55">C</text>
+                        <circle cx="190" cy="50" r="12" fill="#7f8c8d"/><text x="190" y="55">C</text>
+                        <circle cx="240" cy="50" r="12" fill="#7f8c8d"/><text x="240" y="55">C</text>
+                        <circle cx="290" cy="50" r="12" fill="#7f8c8d"/><text x="290" y="55">C</text>
+                        <circle cx="340" cy="50" r="12" fill="#7f8c8d"/><text x="340" y="55">C</text>
+                    </g>
+                    <g fill="black" font-family="Arial" font-size="12" text-anchor="middle">
+                        <circle cx="40" cy="20" r="8" fill="#bdc3c7"/><text x="40" y="24">H</text>
+                        <circle cx="90" cy="20" r="8" fill="#bdc3c7"/><text x="90" y="24">H</text>
+                        <circle cx="140" cy="20" r="8" fill="#bdc3c7"/><text x="140" y="24">H</text>
+                        <circle cx="190" cy="20" r="8" fill="#bdc3c7"/><text x="190" y="24">H</text>
+                        <circle cx="240" cy="20" r="8" fill="#bdc3c7"/><text x="240" y="24">H</text>
+                        <circle cx="290" cy="20" r="8" fill="#bdc3c7"/><text x="290" y="24">H</text>
+                        <circle cx="340" cy="20" r="8" fill="#bdc3c7"/><text x="340" y="24">H</text>
+                        <circle cx="40" cy="80" r="8" fill="#bdc3c7"/><text x="40" y="84">H</text>
+                        <circle cx="90" cy="80" r="8" fill="#bdc3c7"/><text x="90" y="84">H</text>
+                        <circle cx="140" cy="80" r="8" fill="#bdc3c7"/><text x="140" y="84">H</text>
+                        <circle cx="190" cy="80" r="8" fill="#bdc3c7"/><text x="190" y="84">H</text>
+                        <circle cx="240" cy="80" r="8" fill="#bdc3c7"/><text x="240" y="84">H</text>
+                        <circle cx="290" cy="80" r="8" fill="#bdc3c7"/><text x="290" y="84">H</text>
+                        <circle cx="340" cy="80" r="8" fill="#bdc3c7"/><text x="340" y="84">H</text>
+                        <circle cx="10" cy="50" r="8" fill="#bdc3c7"/><text x="10" y="54">H</text>
+                        <circle cx="370" cy="50" r="8" fill="#bdc3c7"/><text x="370" y="54">H</text>
+                    </g>
+                </svg>
+            </div>
+
+            <p>Heptan besteht nur aus zwei Arten von Bindungen: der <strong>C-C-Bindung</strong> und der <strong>C-H-Bindung</strong>. Die EN-Werte lauten:</p>
+            <ul>
+                <li>EN(C) = 2,5</li>
+                <li>EN(H) = 2,2</li>
+            </ul>
+
+            <button class="btn btn-nav" onclick="goToStep('flu-step2')">Zu den Aufgaben ➔</button>
+        </div>
+
+        <!-- SCHRITT 2 -->
+        <div class="step-card clearfix" id="flu-step2">
+            <h2>2. Aufgaben zu Heptan</h2>
+            
+            <div class="quiz-item active" id="quiz-flu1">
+                <h3>Aufgabe 1: Elektronegativitätsdifferenz</h3>
+                <p>Wie groß ist die Elektronegativitätsdifferenz (ΔEN) der <strong>C-H-Bindung</strong>?</p>
+                <button class="btn btn-neutral" onclick="checkFluQuiz('flu1', 0.9)">0,9</button>
+                <button class="btn btn-neutral" onclick="checkFluQuiz('flu1', 0.3)">0,3</button>
+                <button class="btn btn-neutral" onclick="checkFluQuiz('flu1', 1.2)">1,2</button>
+                <div id="fb-flu1" class="feedback"></div>
+                <button id="next-flu1" class="btn btn-nav" style="display:none;" onclick="document.getElementById('quiz-flu2').classList.add('active');">Weiter zu Aufgabe 2 ➔</button>
+            </div>
+
+            <div class="quiz-item" id="quiz-flu2">
+                <h3>Aufgabe 2: Polar oder Unpolar?</h3>
+                <p>Erinnerung: ΔEN zwischen 0,0 und 0,4 = unpolar. <br>Ist das gesamte Heptan-Molekül polar oder unpolar?</p>
+                <button class="btn btn-polar" onclick="checkFluQuiz('flu2', 'polar')">Polar</button>
+                <button class="btn btn-unpolar" onclick="checkFluQuiz('flu2', 'unpolar')">Unpolar</button>
+                <div id="fb-flu2" class="feedback"></div>
+                <button id="next-flu2" class="btn btn-nav" style="display:none;" onclick="document.getElementById('quiz-flu3').classList.add('active');">Weiter zu Aufgabe 3 ➔</button>
+            </div>
+
+            <div class="quiz-item" id="quiz-flu3">
+                <h3>Aufgabe 3: Löslichkeit</h3>
+                <p>Wird sich flüssiges Heptan in flüssigem Wasser (stark polar) lösen?</p>
+                <button class="btn btn-neutral" onclick="checkFluQuiz('flu3', 'ja')">Ja, sie vermischen sich.</button>
+                <button class="btn btn-neutral" onclick="checkFluQuiz('flu3', 'nein')">Nein, sie bilden zwei Schichten.</button>
+                <div id="fb-flu3" class="feedback"></div>
+                <button id="next-flu3" class="btn btn-nav" style="display:none;" onclick="goToStep('flu-step3')">Zum Fazit ➔</button>
+            </div>
+
+            <div class="clearfix"></div>
+            <button class="btn btn-back" style="margin-top: 20px;" onclick="goToStep('flu-step1')">⬅ Zurück</button>
+        </div>
+
+        <!-- SCHRITT 3 -->
+        <div class="step-card clearfix" id="flu-step3">
+            <h2>3. Fazit: Unpolare Flüssigkeiten</h2>
+            <div class="highlight">
+                <strong>Gleiches löst sich in Gleichem!</strong><br><br>
+                Da Heptan völlig <strong>unpolar</strong> ist, mischt es sich nicht mit dem <strong>polaren</strong> Wasser. Die starken Wasserstoffbrückenbindungen der Wassermoleküle untereinander drücken die unpolaren Moleküle förmlich nach außen. 
+            </div>
+            <p>Da Heptan außerdem eine geringere Dichte als Wasser hat, wird es als zweite Schicht oben auf dem Wasser schwimmen.</p>
+            
+            <button class="btn btn-back" onclick="goToStep('flu-step2')">⬅ Zurück</button>
+            <button class="btn btn-nav" onclick="goToStep('flu-step4')">Weiter zu Ethanol ➔</button>
+        </div>
+
+        <!-- SCHRITT 4: Ethanol -->
+        <div class="step-card clearfix" id="flu-step4">
+            <h2>4. Ein Molekül mit zwei Gesichtern: Ethanol</h2>
+            <p>Ethanol (Trinkalkohol) ist eine besondere Flüssigkeit. Um herauszufinden, warum Ethanol sich sowohl in Wasser als auch in Benzin löst, müssen wir uns seine Bindungen einzeln ansehen.</p>
+            
+            <div class="svg-container">
+                <svg viewBox="0 0 400 120" width="100%" height="150" style="max-width: 450px;">
+                    <line x1="80" y1="60" x2="160" y2="60" stroke="#333" stroke-width="3"/>
+                    <line x1="160" y1="60" x2="240" y2="60" stroke="#333" stroke-width="3"/>
+                    <line x1="240" y1="60" x2="320" y2="60" stroke="#333" stroke-width="3"/>
+                    <line x1="80" y1="60" x2="80" y2="20" stroke="#333" stroke-width="3"/>
+                    <line x1="80" y1="60" x2="80" y2="100" stroke="#333" stroke-width="3"/>
+                    <line x1="80" y1="60" x2="40" y2="60" stroke="#333" stroke-width="3"/>
+                    <line x1="160" y1="60" x2="160" y2="20" stroke="#333" stroke-width="3"/>
+                    <line x1="160" y1="60" x2="160" y2="100" stroke="#333" stroke-width="3"/>
+                    <circle cx="80" cy="60" r="14" fill="#7f8c8d"/><text x="80" y="65" fill="white" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle">C</text>
+                    <circle cx="160" cy="60" r="14" fill="#7f8c8d"/><text x="160" y="65" fill="white" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle">C</text>
+                    <circle cx="240" cy="60" r="16" fill="#e74c3c"/><text x="240" y="65" fill="white" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle">O</text>
+                    <circle cx="80" cy="20" r="10" fill="#bdc3c7"/><text x="80" y="24" fill="black" font-family="Arial" font-size="12" text-anchor="middle">H</text>
+                    <circle cx="80" cy="100" r="10" fill="#bdc3c7"/><text x="80" y="104" fill="black" font-family="Arial" font-size="12" text-anchor="middle">H</text>
+                    <circle cx="40" cy="60" r="10" fill="#bdc3c7"/><text x="40" y="64" fill="black" font-family="Arial" font-size="12" text-anchor="middle">H</text>
+                    <circle cx="160" cy="20" r="10" fill="#bdc3c7"/><text x="160" y="24" fill="black" font-family="Arial" font-size="12" text-anchor="middle">H</text>
+                    <circle cx="160" cy="100" r="10" fill="#bdc3c7"/><text x="160" y="104" fill="black" font-family="Arial" font-size="12" text-anchor="middle">H</text>
+                    <circle cx="320" cy="60" r="10" fill="#bdc3c7"/><text x="320" y="64" fill="black" font-family="Arial" font-size="12" text-anchor="middle">H</text>
+                </svg>
+            </div>
+
+            <p>Im Ethanolmolekül (C₂H₅OH) gibt es vier verschiedene Arten von Bindungen. Um herauszufinden, ob das Molekül polar oder unpolar ist, müssen wir jede einzelne betrachten.</p>
+            <ul>
+                <li>EN(C) = 2,5</li>
+                <li>EN(H) = 2,2</li>
+                <li>EN(O) = 3,4</li>
+            </ul>
+
+            <button class="btn btn-back" onclick="goToStep('flu-step3')">⬅ Zurück</button>
+            <button class="btn btn-nav" onclick="goToStep('flu-step5')">Polarität bestimmen ➔</button>
+        </div>
+
+        <!-- SCHRITT 5: Ethanol Quiz -->
+        <div class="step-card clearfix" id="flu-step5">
+            <h2>5. Aufgaben zu Ethanol</h2>
+            <p>Berechne die ΔEN im Kopf und bestimme die Polarität der einzelnen Bindungen (Denk dran: ΔEN bis 0,4 ist unpolar).</p>
+            
+            <div class="quiz-item active" id="quiz-flu4">
+                <h3>1. Die C-C Bindung</h3>
+                <button class="btn btn-unpolar" onclick="checkFluQuiz('flu4', 'unpolar')">Unpolar</button>
+                <button class="btn btn-polar" onclick="checkFluQuiz('flu4', 'polar')">Polar</button>
+                <div id="fb-flu4" class="feedback"></div>
+                <button id="next-flu4" class="btn btn-nav" style="display:none;" onclick="document.getElementById('quiz-flu5').classList.add('active');">Weiter zur C-H Bindung ➔</button>
+            </div>
+
+            <div class="quiz-item" id="quiz-flu5">
+                <h3>2. Die C-H Bindungen</h3>
+                <button class="btn btn-unpolar" onclick="checkFluQuiz('flu5', 'unpolar')">Unpolar</button>
+                <button class="btn btn-polar" onclick="checkFluQuiz('flu5', 'polar')">Polar</button>
+                <div id="fb-flu5" class="feedback"></div>
+                <button id="next-flu5" class="btn btn-nav" style="display:none;" onclick="document.getElementById('quiz-flu6').classList.add('active');">Weiter zur C-O Bindung ➔</button>
+            </div>
+
+            <div class="quiz-item" id="quiz-flu6">
+                <h3>3. Die C-O Bindung</h3>
+                <button class="btn btn-unpolar" onclick="checkFluQuiz('flu6', 'unpolar')">Unpolar</button>
+                <button class="btn btn-polar" onclick="checkFluQuiz('flu6', 'polar')">Polar</button>
+                <div id="fb-flu6" class="feedback"></div>
+                <button id="next-flu6" class="btn btn-nav" style="display:none;" onclick="document.getElementById('quiz-flu7').classList.add('active');">Weiter zur O-H Bindung ➔</button>
+            </div>
+
+            <div class="quiz-item" id="quiz-flu7">
+                <h3>4. Die O-H Bindung</h3>
+                <button class="btn btn-unpolar" onclick="checkFluQuiz('flu7', 'unpolar')">Unpolar</button>
+                <button class="btn btn-polar" onclick="checkFluQuiz('flu7', 'polar')">Polar</button>
+                <div id="fb-flu7" class="feedback"></div>
+                <button id="next-flu7" class="btn btn-nav" style="display:none;" onclick="goToStep('flu-step6'); initEthCanvas();">Animation ansehen ➔</button>
+            </div>
+
+            <div class="clearfix"></div>
+            <button class="btn btn-back" style="margin-top: 20px;" onclick="goToStep('flu-step4')">⬅ Zurück</button>
+        </div>
+
+        <!-- SCHRITT 6: Vermittler -->
+        <div class="step-card clearfix" id="flu-step6">
+            <h2>6. Vermittler zwischen den Welten</h2>
+            
+            <div class="highlight">
+                <strong>Ein Molekül, zwei Eigenschaften (Amphiphil)</strong><br><br>
+                Wie du richtig berechnet hast, besitzt Ethanol:
+                <ul style="margin-bottom: 0;">
+                    <li>Einen <strong>unpolaren</strong> Teil (die Kohlenstoffkette, Alkylrest).</li>
+                    <li>Einen stark <strong>polaren</strong> Teil (die OH-Gruppe, Hydroxygruppe).</li>
+                </ul>
+            </div>
+
+            <div class="canvas-container" style="margin-top: 25px;">
+                <canvas id="ethCanvas" width="700" height="420"></canvas>
+                <div class="legend">
+                    <div class="legend-item"><span class="legend-dot" style="background: #7f8c8d;"></span> Kohlenstoff (C)</div>
+                    <div class="legend-item"><span class="legend-dot" style="background: #e74c3c;"></span> Sauerstoff (O)</div>
+                    <div class="legend-item"><span class="legend-dot" style="background: #bdc3c7;"></span> Wasserstoff (H)</div>
+                </div>
+                <div class="controls">
+                    <button class="play-btn" id="playBtnEth" onclick="togglePlayEth()">▶</button>
+                    <input type="range" id="timeSliderEth" min="0" max="100" value="0" oninput="updateAnimationEth(this.value)">
+                    <span id="timeDisplayEth" style="font-weight: bold; width: 40px;">0%</span>
+                </div>
+            </div>
+            <div id="anim-text-box-eth" class="anim-text-box"></div>
+            
+            <p>Aufgrund dieses besonderen Baus ist Ethanol ein echter "Vermittler". Mit seiner polaren OH-Gruppe kann es Wasserstoffbrücken zu Wassermolekülen ausbilden (deshalb mischt sich Alkohol perfekt mit Wasser). Gleichzeitig kann sich sein unpolarer Kohlenstoff-Schwanz wunderbar in unpolare Stoffe einlagern.</p>
+            <p>Solche Moleküle bezeichnet man als <strong>amphiphil</strong> (griech. "beides liebend").</p>
+            
+            <button class="btn btn-back" onclick="goToStep('flu-step5')">⬅ Zurück</button>
+            <button class="btn btn-nav" onclick="goToStep('flu-step7')">Zum Fazit ➔</button>
+        </div>
+
+        <!-- SCHRITT 7: FAZIT KETTENLÄNGE -->
+        <div class="step-card clearfix" id="flu-step7">
+            <h2>7. Fazit: Die Kettenlänge entscheidet</h2>
+            <p>Wenn ein Molekül sowohl einen unpolaren als auch einen polaren Teil hat, gibt es einen "Machtkampf" zwischen den beiden Bereichen.</p>
+            <div class="highlight">
+                <strong>Regel:</strong> Je größer der unpolare Teil (die Kohlenstoffkette) eines Moleküls wird, desto schlechter löst sich das gesamte Molekül im polaren Wasser!
+            </div>
+            <table class="solubility-table" style="margin-top: 25px;">
+                <tr>
+                    <th>Alkohol</th>
+                    <th>Unpolarer Teil</th>
+                    <th>Polarer Teil</th>
+                    <th>Löslichkeit in Wasser</th>
+                </tr>
+                <tr style="background: #eafaf1;">
+                    <td><strong>Ethanol</strong></td>
+                    <td>klein (2 C-Atome)</td>
+                    <td>-OH Gruppe</td>
+                    <td><strong>Unbegrenzt mischbar</strong><br>Die polare Gruppe dominiert.</td>
+                </tr>
+                <tr style="background: #fdebd0;">
+                    <td><strong>Butanol</strong></td>
+                    <td>mittel (4 C-Atome)</td>
+                    <td>-OH Gruppe</td>
+                    <td><strong>Mäßig löslich</strong><br>Die Kette beginnt zu stören.</td>
+                </tr>
+                <tr style="background: #fadbd8;">
+                    <td><strong>Octanol</strong></td>
+                    <td>sehr groß (8 C-Atome)</td>
+                    <td>-OH Gruppe</td>
+                    <td><strong>Nahezu unlöslich</strong><br>Der unpolare Teil ist zu dominant.</td>
+                </tr>
+            </table>
+            <button class="btn btn-back" onclick="goToStep('flu-step6')">⬅ Zurück</button>
+            <button class="btn btn-nav" onclick="showView('hub-view')">Modul abschließen ➔</button>
+        </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODUL 4: GASE (NEU) -->
+    <!-- ========================================== -->
+    <div id="gas-view" class="view">
+        <h1>Modul 4: Gase in Wasser</h1>
+
+        <!-- SCHRITT 1: Die Leitfrage -->
+        <div class="step-card active clearfix" id="gas-step1">
+            <h2>Ein ungelöstes Rätsel</h2>
+            <p>Wir haben in den letzten Modulen eine eiserne Regel gelernt:</p>
+            <div class="highlight" style="text-align: center;">
+                <strong>Polare Stoffe lösen sich in polarem Wasser.<br>Unpolare Stoffe lösen sich NICHT in polarem Wasser.</strong>
+            </div>
+            <p>Aber Moment mal... Fische atmen im Wasser gelösten Sauerstoff (O₂). Und in unserem Sprudelwasser ist Kohlenstoffdioxid (CO₂) gelöst. Wir haben in Modul 1 bereits bewiesen, dass beide Gase <strong>völlig unpolar</strong> sind!</p>
+            
+            <div class="transition-question">
+                🤔 Wie kann das sein? Warum lösen sich unpolare Gase überhaupt in polarem Wasser?
+            </div>
+            <button class="btn btn-nav" onclick="goToStep('gas-step2'); initGasCanvas();">Dem Rätsel auf den Grund gehen ➔</button>
+        </div>
+
+        <!-- SCHRITT 2: Interaktive Simulation (O2) -->
+        <div class="step-card clearfix" id="gas-step2">
+            <h2>Der Induzierte Dipol (Interaktives Modell)</h2>
+            <p>Die Elektronenwolke des unpolaren Sauerstoffmoleküls ist nicht starr, sondern flexibel wie ein weicher Gummiball. Finde heraus, was passiert, wenn sie auf das Wasser trifft.</p>
+            <p>👉 <strong>Aufgabe:</strong> Ziehe das Sauerstoff-Molekül (rechts) mit der Maus oder dem Finger an das Wasser-Molekül (links) heran.</p>
+
+            <div class="canvas-container" style="cursor: pointer; user-select: none;">
+                <canvas id="gasCanvas" width="700" height="300"></canvas>
+                <div class="legend">
+                    <div class="legend-item"><span class="legend-dot" style="background: #e74c3c;"></span> O (Sauerstoff)</div>
+                    <div class="legend-item"><span class="legend-dot" style="background: #bdc3c7;"></span> H (Wasserstoff)</div>
+                    <div class="legend-item"><span class="legend-dot" style="background: #95a5a6;"></span> Neutrale Elektronenwolke</div>
+                    <div class="legend-item"><span class="legend-dot" style="background: linear-gradient(90deg, #3498db, #e74c3c);"></span> Polarisierte Elektronenwolke</div>
+                </div>
+            </div>
+            <div id="anim-text-box-gas" class="anim-text-box" style="text-align: center;">
+                Bewege das Sauerstoffmolekül, um die Erklärung zu sehen.
+            </div>
+
+            <button class="btn btn-back" onclick="goToStep('gas-step1')">⬅ Zurück</button>
+            <button class="btn btn-nav" onclick="goToStep('gas-step3')">Zur Auswertung ➔</button>
+        </div>
+
+        <!-- SCHRITT 3: Auswertung O2 -->
+        <div class="step-card clearfix" id="gas-step3">
+            <h2>Fazit: Der aufgezwungene Pol</h2>
+            <p>Du hast es im Modell gesehen: Sobald das stark polare Wassermolekül (der permanente Dipol) in die Nähe kommt, wirkt dessen negativer Pol abstoßend auf die Elektronen des O₂-Moleküls.</p>
+            <ul>
+                <li>Die Elektronen im Sauerstoff weichen vor dem Wasser auf die andere Seite aus.</li>
+                <li>Plötzlich hat das eigentlich unpolare O₂-Molekül für einen kurzen Moment eine leicht positive und eine leicht negative Seite. Man nennt dies einen <strong>induzierten Dipol</strong>.</li>
+                <li>Nun können sich das kurzzeitig polarisierte Sauerstoffmolekül und das Wasser schwach anziehen (Debye-Kräfte).</li>
+            </ul>
+            <div class="highlight">
+                Da diese Kräfte viel schwächer sind als die Wasserstoffbrücken der Wassermoleküle untereinander, löst sich zwar nur sehr wenig Sauerstoff im Wasser – aber eben genug, damit Fische atmen können!
+            </div>
+            <p style="margin-top: 20px; font-weight: bold; color: var(--primary);">Kohlenstoffdioxid (CO₂) löst sich übrigens noch deutlich besser in Wasser als Sauerstoff. Warum das so ist, schauen wir uns im nächsten Schritt an!</p>
+            
+            <button class="btn btn-back" onclick="goToStep('gas-step2')">⬅ Zurück</button>
+            <button class="btn btn-nav" onclick="goToStep('gas-step4'); initCo2Canvas();">Warum löst sich CO₂ besser? ➔</button>
+        </div>
+
+        <!-- SCHRITT 4: CO2-Trick -->
+        <div class="step-card clearfix" id="gas-step4">
+            <h2>Der CO₂-Trick: Feste Teilladungen und chemische Spaltung</h2>
+            <p>Kohlenstoffdioxid löst sich wesentlich besser in Wasser als Sauerstoff. In der folgenden Animation siehst du im Vergleich zwei Wege, wie CO₂ mit Wasser wechselwirkt.</p>
+            
+            <div class="canvas-container">
+                <canvas id="co2Canvas" width="700" height="460"></canvas>
+                <div class="legend">
+                    <div class="legend-item"><span class="legend-dot" style="background: #e74c3c;"></span> O (Sauerstoff)</div>
+                    <div class="legend-item"><span class="legend-dot" style="background: #7f8c8d;"></span> C (Kohlenstoff)</div>
+                    <div class="legend-item"><span class="legend-dot" style="background: #bdc3c7;"></span> H (Wasserstoff)</div>
+                    <div class="legend-item"><span class="legend-dot" style="background: #16a085;"></span> CO₃²⁻ (Carbonat-Ion)</div>
+                    <div class="legend-item"><span class="legend-dot" style="background: #e74c3c;"></span> H⁺ (Wasserstoff-Ionen)</div>
+                </div>
+                <div class="controls">
+                    <button class="play-btn" id="playBtnCo2" onclick="togglePlayCo2()">▶</button>
+                    <input type="range" id="timeSliderCo2" min="0" max="100" value="0" oninput="updateAnimationCo2(this.value)">
+                    <span id="timeDisplayCo2" style="font-weight: bold; width: 40px;">0%</span>
+                </div>
+            </div>
+            <div id="anim-text-box-co2" class="anim-text-box"></div>
+            
+            <div class="highlight" style="margin-top: 20px;">
+                <strong>1. Warum löst sich CO₂ besser (Der physikalische Weg - links)?</strong><br>
+                Zwar ist das CO₂-Molekül nach außen hin unpolar (weil es linear gebaut ist und sich die Kräfte aufheben), aber die einzelnen Atome tragen im Inneren dauerhafte Teilladungen (der Kohlenstoff ist positiv, die Sauerstoffe sind negativ). Das Wasser findet hier also feste "Ankerpunkte" und lagert sich an – ganz im Gegensatz zum Sauerstoff (O₂), der gar keine permanenten Teilladungen besitzt!
+            </div>
+            
+            <div class="highlight" style="margin-top: 20px;">
+                <strong>2. Der chemische Weg nach Arrhenius (rechts):</strong><br>
+                Ein Teil des gelösten CO₂ reagiert mit dem Wasser chemisch zu Kohlensäure. Nach dem Arrhenius-Konzept spaltet sich diese in wässriger Lösung in Bausteine auf: Es entstehen <strong>zwei Wasserstoffionen (2 H⁺)</strong> und <strong>ein Carbonat-Ion (CO₃²⁻)</strong>. Da hierbei echte Ionen entstehen, lagern sich sofort perfekt geordnete, saubere Hydrathüllen an (genau wie bei den Salzen!). Das zieht permanent neues CO₂ aus der Gasphase nach.
+            </div>
+            
+            <button class="btn btn-back" style="margin-top: 20px;" onclick="goToStep('gas-step3')">⬅ Zurück</button>
+            <button class="btn btn-nav" style="margin-top: 20px;" onclick="goToStep('gas-step5')">Weiter ➔</button>
+        </div>
+
+        <!-- SCHRITT 5: Temperaturabhängigkeit -->
+        <div class="step-card clearfix" id="gas-step5">
+            <h2>5. Warum sprudelt warme Cola weniger? (Einfluss der Temperatur)</h2>
+            <p>Du hast es bestimmt schon einmal im Sommer erlebt: Ein warmes Sprudelwasser oder eine warme Cola verliert beim Öffnen extrem schnell ihre Kohlensäure und schmeckt dann "schal". Bei warmem Wasser lösen sich Gase plötzlich viel schlechter. Aber woran liegt das?</p>
+            
+            <div class="highlight" style="margin-top: 20px;">
+                <strong>1. Wärme bedeutet schnelle Bewegung:</strong><br>
+                Wenn du das Wasser erwärmst, führst du dem System Energie zu. Die Wassermoleküle bewegen sich dadurch viel schneller kreuz und quer (die <strong>kinetische Energie</strong> bzw. Bewegungsenergie der Teilchen steigt massiv an).
+            </div>
+            
+            <div class="highlight" style="margin-top: 20px;">
+                <strong>2. Der Zusammenhalt reißt ab:</strong><br>
+                Wir haben gelernt, dass unpolare Gase nur durch <strong>induzierte Dipole</strong> (oder schwache Teilladungen) im Wasser gehalten werden. Wenn die Teilchen nun extrem schnell und wild durcheinanderflitzen, haben die Wassermoleküle kaum noch die Chance, die Elektronenwolke des Gases in Ruhe zu verformen oder sich sauber an die Enden des CO₂ anzuheften. 
+                <br><br>
+                Die ohnehin schon sehr schwachen Anziehungskräfte entstehen durch das ständige, heftige Zusammenstoßen der schnellen Teilchen nur noch für Bruchteile von Sekunden und werden sofort wieder "auseinandergerissen". Die Gasteilchen werden förmlich aus dem Wasser geschubst und entweichen als Bläschen.
+            </div>
+            
+            <button class="btn btn-back" style="margin-top: 20px;" onclick="goToStep('gas-step4')">⬅ Zurück</button>
+            <button class="btn btn-nav" style="margin-top: 20px;" onclick="showView('hub-view')">Modul abschließen ➔</button>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- JAVASCRIPT LOGIK ALLER MODULE -->
+    <!-- ========================================== -->
+    <script>
+        // --- ALLGEMEINE NAVIGATION ---
+        function showView(viewId) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            window.scrollTo(0, 0);
+        }
+        function goToStep(stepId) {
+            let el = document.getElementById(stepId);
+            let parentView = el.closest('.view');
+            parentView.querySelectorAll('.step-card').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        // --- QUIZ LOGIK (MODUL 1 & 3) ---
+        function showNextQuiz(molecule) { document.getElementById('quiz-' + molecule).classList.add('active'); }
+        function checkQuiz(molecule, answer) {
+            const fb = document.getElementById('fb-' + molecule); fb.style.display = 'block';
+            if(molecule === 'nacl') {
+                if(answer === 'ionic') { fb.innerHTML = '✅ Richtig! ΔEN = 2,3.'; fb.style.backgroundColor = '#d5f5e3'; fb.style.color = '#1d8348'; document.getElementById('next-nacl').style.display = 'block'; }
+                else { fb.innerHTML = '❌ Falsch.'; fb.style.backgroundColor = '#f9ebea'; fb.style.color = '#922b21'; }
+            }
+            if(molecule === 'o2') {
+                if(answer === 'unpolar') { fb.innerHTML = '✅ Richtig! ΔEN = 0.'; fb.style.backgroundColor = '#d5f5e3'; fb.style.color = '#1d8348'; document.getElementById('next-o2').style.display = 'block'; }
+                else { fb.innerHTML = '❌ Falsch.'; fb.style.backgroundColor = '#f9ebea'; fb.style.color = '#922b21'; }
+            }
+            if(molecule === 'co2') {
+                if(answer === 'polar') { fb.innerHTML = '🎯 Fast! Die Bindung ist polar... ABER da ist ein Haken!'; fb.style.backgroundColor = '#fef9e7'; fb.style.color = '#d35400'; document.getElementById('next-co2').style.display = 'block'; }
+                else if(answer === 'unpolar') { fb.innerHTML = 'Das ist zwar das Endergebnis, aber rein rechnerisch müsstest du eigentlich auf "Polar" tippen.'; fb.style.backgroundColor = '#eaf2f8'; fb.style.color = '#2874a6'; }
+                else { fb.innerHTML = '❌ Falsch.'; fb.style.backgroundColor = '#f9ebea'; fb.style.color = '#922b21'; }
+            }
+        }
+        function checkFluQuiz(qId, answer) {
+            const fb = document.getElementById('fb-' + qId); fb.style.display = 'block';
+            if(qId === 'flu1') {
+                if(answer === 0.3) { fb.innerHTML = '✅ Richtig! |2,5 - 2,2| = 0,3.'; fb.style.backgroundColor = '#d5f5e3'; fb.style.color = '#1d8348'; document.getElementById('next-flu1').style.display = 'block'; }
+                else { fb.innerHTML = '❌ Falsch. Rechne nochmal (2,5 minus 2,2).'; fb.style.backgroundColor = '#f9ebea'; fb.style.color = '#922b21'; }
+            }
+            if(qId === 'flu2') {
+                if(answer === 'unpolar') { fb.innerHTML = '✅ Richtig! Alle Bindungen sind unter 0,4.'; fb.style.backgroundColor = '#d5f5e3'; fb.style.color = '#1d8348'; document.getElementById('next-flu2').style.display = 'block'; }
+                else { fb.innerHTML = '❌ Falsch.'; fb.style.backgroundColor = '#f9ebea'; fb.style.color = '#922b21'; }
+            }
+            if(qId === 'flu3') {
+                if(answer === 'nein') { fb.innerHTML = '✅ Richtig! Wasser und Heptan mischen sich nicht.'; fb.style.backgroundColor = '#d5f5e3'; fb.style.color = '#1d8348'; document.getElementById('next-flu3').style.display = 'block'; }
+                else { fb.innerHTML = '❌ Falsch.'; fb.style.backgroundColor = '#f9ebea'; fb.style.color = '#922b21'; }
+            }
+            if(qId === 'flu4') {
+                if(answer === 'unpolar') { fb.innerHTML = '✅ Richtig! ΔEN = 0.'; fb.style.backgroundColor = '#d5f5e3'; fb.style.color = '#1d8348'; document.getElementById('next-flu4').style.display = 'block'; }
+                else { fb.innerHTML = '❌ Falsch.'; fb.style.backgroundColor = '#f9ebea'; fb.style.color = '#922b21'; }
+            }
+            if(qId === 'flu5') {
+                if(answer === 'unpolar') { fb.innerHTML = '✅ Richtig! ΔEN = 0,3.'; fb.style.backgroundColor = '#d5f5e3'; fb.style.color = '#1d8348'; document.getElementById('next-flu5').style.display = 'block'; }
+                else { fb.innerHTML = '❌ Falsch.'; fb.style.backgroundColor = '#f9ebea'; fb.style.color = '#922b21'; }
+            }
+            if(qId === 'flu6') {
+                if(answer === 'polar') { fb.innerHTML = '✅ Richtig! ΔEN = 0,9.'; fb.style.backgroundColor = '#d5f5e3'; fb.style.color = '#1d8348'; document.getElementById('next-flu6').style.display = 'block'; }
+                else { fb.innerHTML = '❌ Falsch.'; fb.style.backgroundColor = '#f9ebea'; fb.style.color = '#922b21'; }
+            }
+            if(qId === 'flu7') {
+                if(answer === 'polar') { fb.innerHTML = '✅ Richtig! ΔEN = 1,2. Die stärkste polare Bindung!'; fb.style.backgroundColor = '#d5f5e3'; fb.style.color = '#1d8348'; document.getElementById('next-flu7').style.display = 'block'; }
+                else { fb.innerHTML = '❌ Falsch.'; fb.style.backgroundColor = '#f9ebea'; fb.style.color = '#922b21'; }
+            }
+        }
+
+        // --- HILFSFUNKTIONEN SALZE (Modul 2) ---
+        function drawWater(ctx, x, y, attached, type, p) {
+            let rot = attached ? (type.includes('+')?0:Math.PI) : (Math.sin(p*0.1));
+            ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
+            ctx.beginPath(); ctx.arc(0,0,6,0,6.28); ctx.fillStyle='#e74c3c'; ctx.fill();
+            ctx.beginPath(); ctx.arc(-5,5,3.5,0,6.28); ctx.fillStyle='#bdc3c7'; ctx.fill();
+            ctx.beginPath(); ctx.arc(5,5,3.5,0,6.28); ctx.fillStyle='#bdc3c7'; ctx.fill();
+            ctx.restore();
+        }
+
+        function drawIon(ctx, x, y, r, col, label, p) {
+            ctx.beginPath(); ctx.arc(x, y, r, 0, 6.28); ctx.fillStyle=col; ctx.fill();
+            ctx.beginPath(); ctx.arc(x-r*0.3, y-r*0.3, r*0.3, 0, 6.28); ctx.fillStyle="rgba(255,255,255,0.4)"; ctx.fill();
+            let txt = label;
+            if(label === 'Na+') txt = 'Na⁺';
+            if(label === 'Cl-') txt = 'Cl⁻';
+            if(label === 'Ba2+') txt = 'Ba²⁺';
+            if(label === 'SO42-') txt = 'SO₄²⁻';
+            if(p === undefined || p > 30) { 
+                ctx.fillStyle="white"; ctx.font="bold 10px Arial"; ctx.textAlign="center"; ctx.textBaseline="middle"; 
+                ctx.fillText(txt, x, y); 
+            }
+        }
+
+        // --- HILFSFUNKTIONEN GASE/FLÜSSIGKEITEN (Modul 3 & 4) ---
+        function drawCarbonateWater(ctx, x, y, rot) {
+            ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
+            ctx.beginPath(); ctx.arc(6,0,8,0,6.28); ctx.fillStyle='#e74c3c'; ctx.fill(); 
+            ctx.beginPath(); ctx.arc(-6,-7,5,0,6.28); ctx.fillStyle='#bdc3c7'; ctx.fill(); 
+            ctx.beginPath(); ctx.arc(-6,7,5,0,6.28); ctx.fillStyle='#bdc3c7'; ctx.fill();  
+            ctx.restore();
+        }
+
+        function drawGenericWater(ctx, x, y, rot) {
+            ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
+            ctx.beginPath(); ctx.arc(0,0,8,0,6.28); ctx.fillStyle='#e74c3c'; ctx.fill(); 
+            ctx.beginPath(); ctx.arc(-6,7,5,0,6.28); ctx.fillStyle='#bdc3c7'; ctx.fill(); 
+            ctx.beginPath(); ctx.arc(6,7,5,0,6.28); ctx.fillStyle='#bdc3c7'; ctx.fill(); 
+            ctx.restore();
+        }
+
+        // ==========================================
+        // ANIMATION: ETHANOL IN WASSER (Modul 3)
+        // ==========================================
+        let canvasEth, ctxEth;
+        let progressEth = 0; let isPlayingEth = false; let animIdEth;
+        let watersEth = [];
+
+        function initEthCanvas() {
+            if(canvasEth) return; 
+            canvasEth = document.getElementById('ethCanvas'); ctxEth = canvasEth.getContext('2d');
+            for(let i=0; i<15; i++) {
+                let isBonding = i < 3; 
+                let tx, ty, targetAngle;
+                
+                if(isBonding) {
+                    if(i===0) { tx = 455; ty = 210; targetAngle = -Math.PI/2; }
+                    else if(i===1) { tx = 390; ty = 165; targetAngle = 0; }
+                    else if(i===2) { tx = 390; ty = 255; targetAngle = Math.PI; }
+                } else {
+                    let angle = -Math.PI/2.5 + Math.random() * (Math.PI*0.8);
+                    let dist = 130 + Math.random() * 80;
+                    tx = 390 + Math.cos(angle) * dist;
+                    ty = 210 + Math.sin(angle) * dist;
+                    targetAngle = Math.random() * 6.28;
+                }
+                
+                watersEth.push({ 
+                    sx: 350 + (Math.random()-0.5)*600, sy: 210 + (Math.random()-0.5)*400, 
+                    tx, ty, startAngle: Math.random() * 6.28, targetAngle, isBonding, startMove: 10 + Math.random()*20 
+                });
+            }
+            drawEth(); updateTextEth();
+        }
+        function updateAnimationEth(val) {
+            progressEth = parseFloat(val);
+            document.getElementById('timeSliderEth').value = progressEth;
+            document.getElementById('timeDisplayEth').innerText = Math.floor(progressEth) + "%";
+            drawEth(); updateTextEth();
+        }
+        function drawEthanolMolecule(ctx) {
+            let cx = 350; let cy = 210;
+            if(progressEth > 15) {
+                ctx.fillStyle = "rgba(46, 204, 113, 0.2)"; ctx.beginPath(); ctx.ellipse(cx-20, cy, 60, 45, 0, 0, 6.28); ctx.fill();
+                ctx.fillStyle = "rgba(52, 152, 219, 0.2)"; ctx.beginPath(); ctx.ellipse(cx+55, cy, 35, 30, 0, 0, 6.28); ctx.fill();
+                ctx.fillStyle = "#333"; ctx.font = "bold 12px Arial";
+                ctx.fillText("Unpolar", cx-20, cy-55); ctx.fillText("Polar (Dipol)", cx+55, cy-40);
+            }
+            ctx.strokeStyle='#333'; ctx.lineWidth=3;
+            ctx.beginPath(); ctx.moveTo(cx-40, cy); ctx.lineTo(cx, cy); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx+40, cy); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(cx+40, cy); ctx.lineTo(cx+70, cy); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(cx-40, cy); ctx.lineTo(cx-40, cy-30); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(cx-40, cy); ctx.lineTo(cx-40, cy+30); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(cx-40, cy); ctx.lineTo(cx-70, cy); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, cy-30); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, cy+30); ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx-40, cy, 14, 0, 6.28); ctx.fillStyle='#7f8c8d'; ctx.fill();
+            ctx.beginPath(); ctx.arc(cx, cy, 14, 0, 6.28); ctx.fillStyle='#7f8c8d'; ctx.fill();
+            ctx.beginPath(); ctx.arc(cx+40, cy, 16, 0, 6.28); ctx.fillStyle='#e74c3c'; ctx.fill();
+            ctx.fillStyle='#bdc3c7';
+            ctx.beginPath(); ctx.arc(cx-40, cy-30, 8, 0, 6.28); ctx.fill();
+            ctx.beginPath(); ctx.arc(cx-40, cy+30, 8, 0, 6.28); ctx.fill();
+            ctx.beginPath(); ctx.arc(cx-70, cy, 8, 0, 6.28); ctx.fill();
+            ctx.beginPath(); ctx.arc(cx, cy-30, 8, 0, 6.28); ctx.fill();
+            ctx.beginPath(); ctx.arc(cx, cy+30, 8, 0, 6.28); ctx.fill();
+            ctx.beginPath(); ctx.arc(cx+70, cy, 8, 0, 6.28); ctx.fill();
+            ctx.fillStyle='white'; ctx.font='bold 12px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+            ctx.fillText('C', cx-40, cy); ctx.fillText('C', cx, cy); ctx.fillText('O', cx+40, cy);
+            
+            if(progressEth > 80) {
+                ctx.setLineDash([4, 4]); ctx.strokeStyle = '#2980b9'; ctx.lineWidth = 2;
+                watersEth.filter(w=>w.isBonding).forEach((w, idx) => {
+                    ctx.beginPath(); 
+                    if(idx === 0) { ctx.moveTo(428, 210); ctx.lineTo(w.tx - 8, w.ty); } 
+                    else if(idx === 1) { ctx.moveTo(390, 194); ctx.lineTo(w.tx, w.ty + 10); } 
+                    else if(idx === 2) { ctx.moveTo(390, 226); ctx.lineTo(w.tx, w.ty - 10); }
+                    ctx.stroke();
+                });
+                ctx.setLineDash([]); ctx.strokeStyle = '#333'; ctx.lineWidth = 1;
+            }
+        }
+        function drawEth() {
+            ctxEth.clearRect(0,0,700,420);
+            drawEthanolMolecule(ctxEth);
+            watersEth.forEach(w => {
+                let p = Math.min(1, Math.max(0, (progressEth - w.startMove) / 50));
+                let eo = 1 - Math.pow(1-p, 3);
+                let cx, cy, rot;
+                if (w.isBonding) {
+                    cx = w.sx + (w.tx - w.sx)*eo; cy = w.sy + (w.ty - w.sy)*eo;
+                    rot = w.startAngle + (w.targetAngle - w.startAngle) * eo;
+                } else {
+                    let driftX = Math.cos(progressEth * 0.05 + w.startAngle) * 10;
+                    let driftY = Math.sin(progressEth * 0.05 + w.startAngle) * 10;
+                    cx = w.sx + (w.tx - w.sx)*eo + (p===1 ? driftX : 0);
+                    cy = w.sy + (w.ty - w.sy)*eo + (p===1 ? driftY : 0);
+                    rot = w.startAngle + progressEth * 0.02;
+                }
+                drawGenericWater(ctxEth, cx, cy, rot);
+            });
+        }
+        function updateTextEth() {
+            let t = document.getElementById('anim-text-box-eth');
+            if(progressEth < 20) { t.innerHTML="Wassermoleküle schwirren um das Ethanol herum."; t.style.borderColor="#95a5a6"; t.style.background="#ecf0f1"; }
+            else if(progressEth < 75) { t.innerHTML="Die unpolare linke Seite (Alkylrest) wird vom Wasser gemieden. Die Wassermoleküle wandern gezielt zur rechten Seite."; t.style.borderColor="#f1c40f"; t.style.background="#fff3cd"; }
+            else { t.innerHTML="Wasserstoffbrücken! Das Wasser richtet seine Pole exakt zur stark polaren OH-Gruppe aus. So wird Ethanol ins Wasser 'hineingezogen' und löst sich perfekt."; t.style.borderColor="#2ecc71"; t.style.background="#eafaf1"; }
+        }
+        function togglePlayEth() {
+            isPlayingEth = !isPlayingEth;
+            document.getElementById('playBtnEth').innerText = isPlayingEth?"⏸":"▶";
+            if(isPlayingEth) { if(progressEth>=100) progressEth=0; loopEth(); }
+            else cancelAnimationFrame(animIdEth);
+        }
+        function loopEth() {
+            if(!isPlayingEth) return;
+            progressEth += 0.2;
+            if(progressEth>100) { progressEth=100; isPlayingEth=false; document.getElementById('playBtnEth').innerText="↺"; }
+            updateAnimationEth(progressEth);
+            if(isPlayingEth) animIdEth = requestAnimationFrame(loopEth);
+        }
+
+        // ==========================================
+        // ANIMATION 1: NATRIUMCHLORID (NaCl)
+        // ==========================================
+        let canvasNaCl, ctxNaCl;
+        let progressNaCl = 0; let isPlayingNaCl = false; let animIdNaCl;
+        let ionsNaCl = [], watersNaCl = [];
+        function initNaClCanvas() { 
+            if(canvasNaCl) return; 
+            canvasNaCl = document.getElementById('saltCanvas'); ctxNaCl = canvasNaCl.getContext('2d');
+            if(ionsNaCl.length === 0) {
+                for(let r=0; r<4; r++) {
+                    for(let c=0; c<4; c++) {
+                        let i = r*4 + c; let isNa = (r+c)%2 === 0;
+                        let bx = (350 - 63) + c*42 - r*14; let by = (210 - 39) + r*26 + c*9;
+                        let a = (i/16)*Math.PI*2; let rx = isNa?140:250; let ry = isNa?90:150;
+                        let tx = 350 + Math.cos(a)*rx; let ty = 210 + Math.sin(a)*ry;
+                        let det = 15 + (3 - (Math.abs(1.5-r)+Math.abs(1.5-c)))*12;
+                        let ion = {type: isNa?'Na+':'Cl-', color: isNa?'#9b59b6':'#2ecc71', rad: isNa?12:17, bx, by, tx, ty, detStart: det, detEnd: det+35};
+                        ionsNaCl.push(ion);
+                        for(let w=0; w<4; w++) watersNaCl.push({ion: ion, wa: (w/4)*Math.PI*2, sx: 350+Math.cos(Math.random()*6.28)*(280+Math.random()*40), sy: 210+Math.sin(Math.random()*6.28)*(180+Math.random()*20), att: det-8});
+                    }
+                }
+                ionsNaCl.sort((a,b) => a.by - b.by);
+            }
+            drawNaCl(); updateTextNaCl();
+        }
+        function updateAnimationNaCl(val) {
+            progressNaCl = parseFloat(val);
+            document.getElementById('timeSliderNaCl').value = progressNaCl;
+            document.getElementById('timeDisplayNaCl').innerText = Math.floor(progressNaCl) + "%";
+            drawNaCl(); updateTextNaCl();
+        }
+        function drawNaCl() {
+            ctxNaCl.clearRect(0,0,700,420);
+            watersNaCl.forEach(w => {
+                let p = Math.max(0, Math.min(1, (progressNaCl - w.ion.detStart)/(w.ion.detEnd - w.ion.detStart)));
+                let eo = 1 - Math.pow(1-p, 3);
+                let ix = w.ion.bx + (w.ion.tx - w.ion.bx)*eo; let iy = w.ion.by + (w.ion.ty - w.ion.by)*eo;
+                let cx, cy;
+                if(progressNaCl < w.att) {
+                    let mr = Math.max(0, progressNaCl/w.att);
+                    cx = w.sx + (ix - w.sx)*mr*mr; cy = w.sy + (iy - w.sy)*mr*mr;
+                } else {
+                    let a = w.wa + progressNaCl*0.04;
+                    cx = ix + Math.cos(a)*(w.ion.rad+14); cy = iy + Math.sin(a)*(w.ion.rad+14);
+                }
+                drawWater(ctxNaCl, cx, cy, progressNaCl>w.att, w.ion.type, progressNaCl);
+            });
+            let curr = ionsNaCl.map(ion => {
+                let p = Math.max(0, Math.min(1, (progressNaCl - ion.detStart)/(ion.detEnd - ion.detStart)));
+                let eo = 1 - Math.pow(1-p, 3);
+                return {...ion, cx: ion.bx + (ion.tx - ion.bx)*eo, cy: ion.by + (ion.ty - ion.by)*eo};
+            }).sort((a,b) => a.cy - b.cy);
+            curr.forEach(ion => drawIon(ctxNaCl, ion.cx, ion.cy, ion.rad, ion.color, ion.type, progressNaCl));
+        }
+        function updateTextNaCl() {
+            let t = document.getElementById('anim-text-box-nacl');
+            if(progressNaCl < 15) { t.innerHTML="Der feste Salzkristall. Die starke <span class='term'>Gitterenergie</span> hält Na⁺ und Cl⁻ fest."; t.style.borderColor="#95a5a6"; t.style.background="#ecf0f1"; }
+            else if(progressNaCl < 80) { t.innerHTML="Wassermoleküle greifen an. Die freigesetzte <span class='term'>Hydratationsenergie</span> überwindet das Gitter."; t.style.borderColor="#3498db"; t.style.background="#ebf5fb"; }
+            else { t.innerHTML="Gelöst! Die <span class='term'>Hydratationsenergie</span> hat die <span class='term'>Gitterenergie</span> besiegt."; t.style.borderColor="#2ecc71"; t.style.background="#eafaf1"; }
+        }
+        function togglePlayNaCl() {
+            isPlayingNaCl = !isPlayingNaCl;
+            document.getElementById('playBtnNaCl').innerText = isPlayingNaCl?"⏸":"▶";
+            if(isPlayingNaCl) { if(progressNaCl>=100) progressNaCl=0; loopNaCl(); }
+            else cancelAnimationFrame(animIdNaCl);
+        }
+        function loopNaCl() {
+            if(!isPlayingNaCl) return;
+            progressNaCl += 0.15;
+            if(progressNaCl>100) { progressNaCl=100; isPlayingNaCl=false; document.getElementById('playBtnNaCl').innerText="↺"; }
+            updateAnimationNaCl(progressNaCl);
+            if(isPlayingNaCl) animIdNaCl = requestAnimationFrame(loopNaCl);
+        }
+
+        // ==========================================
+        // ANIMATION 2: BARIUMSULFAT (BaSO4)
+        // ==========================================
+        let canvasBa, ctxBa;
+        let progressBa = 0; let isPlayingBa = false; let burnerOn = false; let animIdBa;
+        let ionsBa = [], watersBa = [];
+
+        function initBaCanvas() {
+            if(canvasBa) return; 
+            canvasBa = document.getElementById('baCanvas'); ctxBa = canvasBa.getContext('2d');
+            for(let r=0; r<4; r++) {
+                for(let c=0; c<4; c++) {
+                    let isBa = (r+c)%2 === 0;
+                    let bx = (350 - 63) + c*42 - r*14; let by = (210 - 39) + r*26 + c*9;
+                    let canDetach = (r===0 && c===3) || (r===1 && c===3); 
+                    
+                    let tx = bx; let ty = by;
+                    if(canDetach) { tx = 350 + (isBa? 130 : 250); ty = 210 - (isBa? 110 : 20); }
+
+                    ionsBa.push({ type: isBa?'Ba2+':'SO42-', color: isBa?'#2980b9':'#e67e22', rad: isBa?14:18, bx, by, tx, ty, canDetach: canDetach, detStart: 130, detEnd: 180 });
+                }
+            }
+            ionsBa.sort((a,b) => a.by - b.by);
+
+            let detachableIons = ionsBa.filter(io => io.canDetach);
+            for(let ion of detachableIons) {
+                for(let w = 0; w < 4; w++) {
+                    watersBa.push({ ion: ion, wa: (w / 4) * Math.PI * 2, sx: 350+Math.cos(Math.random()*6.28)*(280+Math.random()*40), sy: 210+Math.sin(Math.random()*6.28)*(180+Math.random()*20), att: 40 + Math.random()*40 });
+                }
+            }
+            let fixedIons = ionsBa.filter(io => !io.canDetach);
+            for(let i=0; i<27; i++) {
+                watersBa.push({ ion: fixedIons[Math.floor(Math.random()*fixedIons.length)], wa: Math.random()*6.28, sx: 350+Math.cos(Math.random()*6.28)*(280+Math.random()*40), sy: 210+Math.sin(Math.random()*6.28)*(180+Math.random()*20), att: 40 + Math.random()*40 });
+            }
+            drawBa(); updateTextBa();
+        }
+        function updateAnimationBa(val) {
+            progressBa = parseFloat(val);
+            document.getElementById('timeSliderBa').value = progressBa;
+            document.getElementById('timeDisplayBa').innerText = Math.floor(progressBa) + "%";
+            if(progressBa >= 100 && !burnerOn) {
+                progressBa = 100; document.getElementById('timeSliderBa').value = 100;
+                document.getElementById('burnerBtn').style.display = 'inline-block';
+                isPlayingBa = false; document.getElementById('playBtnBa').innerText = "▶";
+            }
+            drawBa(); updateTextBa();
+        }
+        function activateBurner() {
+            burnerOn = true; document.getElementById('burnerBtn').style.display = 'none';
+            let slider = document.getElementById('timeSliderBa');
+            slider.max = 200; slider.style.background = "linear-gradient(90deg, #ddd 50%, #fdebd0 100%)";
+            slider.style.setProperty('--secondary', '#e67e22'); 
+            isPlayingBa = true; document.getElementById('playBtnBa').innerText = "⏸"; loopBa();
+        }
+        function drawFlame(ctx, x, y, p) {
+            ctx.save(); ctx.translate(x, y);
+            let scale = 1 + Math.sin(p*0.5)*0.1; ctx.scale(scale, scale);
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(20, -30, 0, -60); ctx.quadraticCurveTo(-20, -30, 0, 0); ctx.fillStyle = "rgba(230, 126, 34, 0.7)"; ctx.fill();
+            ctx.beginPath(); ctx.moveTo(0, -10); ctx.quadraticCurveTo(10, -25, 0, -40); ctx.quadraticCurveTo(-10, -25, 0, -10); ctx.fillStyle = "rgba(241, 196, 15, 0.9)"; ctx.fill();
+            ctx.restore();
+        }
+        function drawBa() {
+            ctxBa.clearRect(0,0,700,420);
+            let wiggle = (burnerOn && progressBa > 100) ? Math.min(2, (progressBa-100)*0.05) : 0;
+            if(burnerOn && progressBa > 100) drawFlame(ctxBa, 350, 390, progressBa);
+
+            watersBa.forEach(w => {
+                let p = (w.ion.canDetach && progressBa > w.ion.detStart) ? Math.max(0, Math.min(1, (progressBa - w.ion.detStart)/(w.ion.detEnd - w.ion.detStart))) : 0;
+                let eo = 1 - Math.pow(1-p, 3);
+                let wiggX = w.ion.canDetach && p>0 ? 0 : (Math.random()*wiggle - wiggle/2);
+                let wiggY = w.ion.canDetach && p>0 ? 0 : (Math.random()*wiggle - wiggle/2);
+                let ix = w.ion.bx + wiggX + (w.ion.tx - w.ion.bx)*eo; let iy = w.ion.by + wiggY + (w.ion.ty - w.ion.by)*eo;
+                let cx, cy;
+                if(progressBa < w.att) {
+                    let mr = Math.max(0, progressBa/w.att); cx = w.sx + (ix - w.sx)*mr*mr; cy = w.sy + (iy - w.sy)*mr*mr;
+                } else {
+                    let a = w.wa + progressBa*0.04;
+                    let dist = (w.ion.canDetach && progressBa > w.ion.detStart) ? (w.ion.rad+14) : (w.ion.rad+25 + Math.sin(progressBa*0.1)*5);
+                    cx = ix + Math.cos(a)*dist; cy = iy + Math.sin(a)*dist;
+                }
+                drawWater(ctxBa, cx, cy, (w.ion.canDetach && progressBa>w.ion.detStart), w.ion.type, progressBa);
+            });
+
+            let curr = ionsBa.map(ion => {
+                let p = (ion.canDetach && progressBa > ion.detStart) ? Math.max(0, Math.min(1, (progressBa - ion.detStart)/(ion.detEnd - ion.detStart))) : 0;
+                let eo = 1 - Math.pow(1-p, 3);
+                let wiggX = (p===0) ? (Math.random()*wiggle - wiggle/2) : 0; let wiggY = (p===0) ? (Math.random()*wiggle - wiggle/2) : 0;
+                return {...ion, cx: ion.bx + wiggX + (ion.tx - ion.bx)*eo, cy: ion.by + wiggY + (ion.ty - ion.by)*eo};
+            }).sort((a,b) => a.cy - b.cy);
+            curr.forEach(ion => drawIon(ctxBa, ion.cx, ion.cy, ion.rad, ion.color, ion.type, progressBa));
+        }
+        function updateTextBa() {
+            let t = document.getElementById('anim-text-box-ba');
+            if(progressBa < 40) { t.innerHTML="Wasser nähert sich dem Kristall. Bariumsulfat hat doppelte Ladungen (2+ und 2-), die Ionen ziehen sich massiv an."; t.style.borderColor="#95a5a6"; t.style.background="#ecf0f1"; }
+            else if(progressBa <= 100 && !burnerOn) { t.innerHTML="Die <span class='term'>Gitterenergie</span> ist einfach zu stark! Das Wasser zerrt an den Ionen, aber die <span class='term'>Hydratationsenergie</span> reicht nicht aus, um das Gitter zu knacken. Das Salz bleibt fest."; t.style.borderColor="#e74c3c"; t.style.background="#fadbd8"; }
+            else if(progressBa < 140 && burnerOn) { t.innerHTML="Hitze führt zu starker Teilchenbewegung. Der Kristall wackelt heftig, die Bindungen werden durch die kinetische Energie extrem strapaziert."; t.style.borderColor="#e67e22"; t.style.background="#fdebd0"; }
+            else if(burnerOn && progressBa >= 140) { t.innerHTML="Selbst mit Hitze reißt das Wasser nur mit größter Mühe ein winziges Rand-Paar ab. Der Hauptkristall bleibt bestehen. <strong>Schwerlösliche Salze lösen sich auch in heißem Wasser fast gar nicht!</strong>"; t.style.borderColor="#f1c40f"; t.style.background="#fef9e7"; }
+        }
+        function togglePlayBa() {
+            isPlayingBa = !isPlayingBa;
+            document.getElementById('playBtnBa').innerText = isPlayingBa?"⏸":"▶";
+            if(isPlayingBa) { 
+                if(progressBa>=(burnerOn?200:100)) {
+                    progressBa=0; burnerOn=false; document.getElementById('timeSliderBa').max = 100;
+                    document.getElementById('timeSliderBa').style.background = "#ddd";
+                    document.getElementById('burnerBtn').style.display = 'none';
+                }
+                loopBa(); 
+            } else cancelAnimationFrame(animIdBa);
+        }
+        function loopBa() {
+            if(!isPlayingBa) return;
+            progressBa += 0.15; let maxP = burnerOn ? 200 : 100;
+            if(progressBa >= maxP) { progressBa = maxP; isPlayingBa = false; document.getElementById('playBtnBa').innerText="↺"; }
+            updateAnimationBa(progressBa);
+            if(isPlayingBa) animIdBa = requestAnimationFrame(loopBa);
+        }
+
+        // ==========================================
+        // ANIMATION 4: GASE (Induzierter Dipol)
+        // ==========================================
+        let canvasGas, ctxGas;
+        let ox = 550, oy = 150; 
+        let wx = 150, wy = 150;
+        let isDraggingO2 = false;
+
+        function initGasCanvas() {
+            if(canvasGas) return;
+            canvasGas = document.getElementById('gasCanvas');
+            ctxGas = canvasGas.getContext('2d');
+            
+            canvasGas.addEventListener('mousedown', startDragO2);
+            canvasGas.addEventListener('mousemove', dragO2);
+            window.addEventListener('mouseup', endDragO2);
+            
+            canvasGas.addEventListener('touchstart', startDragO2, {passive: false});
+            canvasGas.addEventListener('touchmove', dragO2, {passive: false});
+            window.addEventListener('touchend', endDragO2);
+
+            drawGas();
+        }
+
+        function getMousePos(evt) {
+            let rect = canvasGas.getBoundingClientRect();
+            let clientX = evt.clientX;
+            let clientY = evt.clientY;
+            
+            if(evt.touches && evt.touches.length > 0) {
+                clientX = evt.touches[0].clientX;
+                clientY = evt.touches[0].clientY;
+            }
+            
+            return {
+                x: (clientX - rect.left) * (canvasGas.width / rect.width),
+                y: (clientY - rect.top) * (canvasGas.height / rect.height)
+            };
+        }
+
+        function startDragO2(evt) {
+            let pos = getMousePos(evt);
+            let dx = pos.x - ox;
+            let dy = pos.y - oy;
+            if (Math.hypot(dx, dy) < 50) { 
+                isDraggingO2 = true;
+                if(evt.cancelable) evt.preventDefault();
+            }
+        }
+
+        function dragO2(evt) {
+            if (!isDraggingO2) return;
+            let pos = getMousePos(evt);
+            ox = Math.max(50, Math.min(canvasGas.width - 50, pos.x));
+            oy = Math.max(50, Math.min(canvasGas.height - 50, pos.y));
+            drawGas();
+            if(evt.cancelable) evt.preventDefault();
+        }
+
+        function endDragO2(evt) {
+            isDraggingO2 = false;
+        }
+
+        function drawGas() {
+            ctxGas.clearRect(0,0, canvasGas.width, canvasGas.height);
+
+            let dx = ox - wx;
+            let dy = oy - wy;
+            let dist = Math.hypot(dx, dy);
+            let maxDist = 300;
+            let intensity = Math.max(0, Math.min(1, 1 - (dist - 100)/(maxDist - 100)));
+
+            let wAngle = Math.atan2(dy, dx); 
+            ctxGas.save();
+            ctxGas.translate(wx, wy);
+            ctxGas.rotate(wAngle); 
+            
+            ctxGas.beginPath(); ctxGas.arc(0, 0, 25, 0, 6.28); ctxGas.fillStyle='#e74c3c'; ctxGas.fill();
+            ctxGas.fillStyle='white'; ctxGas.font='bold 16px Arial'; ctxGas.textAlign='center'; ctxGas.textBaseline='middle'; ctxGas.fillText('O', 0, 0);
+            ctxGas.fillStyle='#2c3e50'; ctxGas.font='bold 16px Arial'; ctxGas.fillText('δ-', 20, -25);
+            
+            ctxGas.beginPath(); ctxGas.arc(-20, 20, 15, 0, 6.28); ctxGas.fillStyle='#bdc3c7'; ctxGas.fill();
+            ctxGas.fillStyle='black'; ctxGas.font='bold 14px Arial'; ctxGas.fillText('H', -20, 20);
+            ctxGas.fillStyle='#2c3e50'; ctxGas.fillText('δ+', -35, 35);
+            
+            ctxGas.beginPath(); ctxGas.arc(-20, -20, 15, 0, 6.28); ctxGas.fillStyle='#bdc3c7'; ctxGas.fill();
+            ctxGas.fillStyle='black'; ctxGas.font='bold 14px Arial'; ctxGas.fillText('H', -20, -20);
+            ctxGas.fillStyle='#2c3e50'; ctxGas.fillText('δ+', -35, -35);
+            ctxGas.restore();
+
+            ctxGas.save();
+            ctxGas.translate(ox, oy);
+            let oAngle = Math.atan2(wy - oy, wx - ox); 
+            ctxGas.rotate(oAngle); 
+
+            let grd = ctxGas.createLinearGradient(45, 0, -45, 0); 
+            if(intensity === 0) {
+                grd.addColorStop(0, "#ccc");
+                grd.addColorStop(1, "#ccc");
+            } else {
+                grd.addColorStop(0, `rgba(52, 152, 219, ${0.4 + intensity*0.6})`); 
+                grd.addColorStop(1, `rgba(231, 76, 60, ${0.4 + intensity*0.6})`); 
+            }
+
+            ctxGas.fillStyle = grd;
+            ctxGas.beginPath();
+            let squeeze = intensity * 10;
+            ctxGas.ellipse(squeeze, 0, 50 + squeeze/2, 30 - squeeze/3, 0, 0, Math.PI*2);
+            ctxGas.fill();
+
+            ctxGas.fillStyle = "#e74c3c";
+            ctxGas.beginPath(); ctxGas.arc(-15, 0, 15, 0, 6.28); ctxGas.fill();
+            ctxGas.beginPath(); ctxGas.arc(15, 0, 15, 0, 6.28); ctxGas.fill();
+            
+            ctxGas.fillStyle = "white"; ctxGas.font = "bold 16px Arial"; ctxGas.textAlign='center'; ctxGas.textBaseline='middle';
+            
+            ctxGas.save(); ctxGas.translate(-15, 0); ctxGas.rotate(-oAngle); ctxGas.fillText("O", 0, 0); ctxGas.restore();
+            ctxGas.save(); ctxGas.translate(15, 0); ctxGas.rotate(-oAngle); ctxGas.fillText("O", 0, 0); ctxGas.restore();
+
+            ctxGas.restore();
+
+            if(intensity > 0.5) {
+                ctxGas.fillStyle='#2c3e50'; ctxGas.font='bold 18px Arial'; ctxGas.textAlign='center'; ctxGas.textBaseline='middle';
+                
+                ctxGas.fillText('δ+', ox - 45, oy - 30);
+                ctxGas.fillText('δ-', ox + 45, oy - 30);
+            }
+
+            let t = document.getElementById('anim-text-box-gas');
+            if(intensity === 0) {
+                t.innerHTML = "Weit entfernt: Die Elektronenwolke (grau) des O₂-Moleküls ist symmetrisch. Es ist völlig <strong>unpolar</strong>.";
+                t.style.borderColor = "#95a5a6"; t.style.background = "#ecf0f1";
+            } else if(intensity < 0.7) {
+                t.innerHTML = "Annäherung: Das polare Wasser nähert sich. Der negative Sauerstoffpol des Wassers beginnt, die Elektronenwolke des O₂ <strong>abzustoßen</strong>.";
+                t.style.borderColor = "#f1c40f"; t.style.background = "#fff3cd";
+            } else {
+                t.innerHTML = "<strong>Induzierter Dipol!</strong> Die Elektronenwolke wird extrem verschoben. Vorne entsteht ein Pluspol (blau), hinten ein Minuspol (rot). Die Moleküle ziehen sich an!";
+                t.style.borderColor = "#2ecc71"; t.style.background = "#eafaf1";
+            }
+        }
+
+        // ==========================================
+        // ANIMATION 5: CO2 TRICK (Chemische Lösung nach Arrhenius)
+        // ==========================================
+        let canvasCo2, ctxCo2;
+        let progressCo2 = 0; let isPlayingCo2 = false; let animIdCo2;
+        let watersCo2 = [];
+
+        function initCo2Canvas() {
+            if(canvasCo2) return; 
+            canvasCo2 = document.getElementById('co2Canvas'); ctxCo2 = canvasCo2.getContext('2d');
+            
+            // 1. Linkes CO2 (physikalisches Lösen) -> saubere Hülle mit exakter Ausrichtung
+            watersCo2.push({ 
+                type: 'left_o_bond', sx: 150, sy: 210 - 130, tx: 150, ty: 210 - 48,
+                startAngle: Math.random() * 6.28, targetAngle: Math.PI/2, startMove: 10
+            });
+            watersCo2.push({ 
+                type: 'left_o_bond', sx: 150, sy: 210 + 130, tx: 150, ty: 210 + 48,
+                startAngle: Math.random() * 6.28, targetAngle: -Math.PI/2, startMove: 10
+            });
+            watersCo2.push({ 
+                type: 'left_h_bond', sx: 150 - 150, sy: 210, tx: 150 - 75, ty: 210,
+                startAngle: Math.random() * 6.28, targetAngle: 0, startMove: 10
+            });
+            watersCo2.push({ 
+                type: 'left_h_bond', sx: 150 + 150, sy: 210, tx: 150 + 75, ty: 210,
+                startAngle: Math.random() * 6.28, targetAngle: Math.PI, startMove: 10
+            });
+
+            // 2. Rechtes CO2 (chemisches Lösen nach Arrhenius)
+            watersCo2.push({ 
+                type: 'reactant',
+                sx: 550 + Math.cos(Math.random()*6.28)*100, 
+                sy: 210 + Math.sin(Math.random()*6.28)*100,
+                tx: 550, ty: 210,
+                startAngle: Math.random() * 6.28, targetAngle: 0,
+                startMove: 15
+            });
+
+            // Carbonat-Ion (CO3 2-) - exakt nach deiner Grafik: H-Atome (grau) zeigen nach INNEN zum Ion (targetAngle = angle)
+            for(let w = 0; w < 4; w++) {
+                let angle = (w / 4) * Math.PI * 2;
+                watersCo2.push({ 
+                    type: 'shell1',
+                    sx: 550 + Math.cos(Math.random()*6.28)*(150+Math.random()*40), 
+                    sy: 210 + Math.sin(Math.random()*6.28)*(100+Math.random()*20),
+                    tx: 430 + Math.cos(angle)*70, 
+                    ty: 210 + Math.sin(angle)*70,
+                    startAngle: Math.random() * 6.28,
+                    targetAngle: angle, // H zeigt nach innen
+                    startMove: 55 + Math.random()*15
+                });
+            }
+
+            // NEUE ANORDNUNG FÜR DIE WASSERSTOFFIONEN (H+) ENTSPRECHEND DEINER VORGABE:
+            // Beide H+ liegen auf einer Höhe y=350, Zentrum H1 = x=540, Zentrum H2 = x=650
+            
+            // Erstes H+ (540, 350)
+            watersCo2.push({ type: 'shell2_h1', pos: 'top', sx: 540, sy: 250, tx: 540, ty: 350 - 32, startAngle: Math.random() * 6.28, targetAngle: Math.PI/2, startMove: 55 }); // Oben -> O zeigt nach unten
+            watersCo2.push({ type: 'shell2_h1', pos: 'right', sx: 640, sy: 350, tx: 540 + 32, ty: 350, startAngle: Math.random() * 6.28, targetAngle: Math.PI, startMove: 55 }); // Rechts -> O zeigt nach links
+            watersCo2.push({ type: 'shell2_h1', pos: 'bottom', sx: 540, sy: 450, tx: 540, ty: 350 + 32, startAngle: Math.random() * 6.28, targetAngle: -Math.PI/2, startMove: 55 }); // Unten -> O zeigt nach oben
+            watersCo2.push({ type: 'shell2_h1', pos: 'left', sx: 440, sy: 350, tx: 540 - 32, ty: 350, startAngle: Math.random() * 6.28, targetAngle: 0, startMove: 55 }); // Links -> O zeigt nach rechts
+
+            // Zweites H+ (650, 350)
+            watersCo2.push({ type: 'shell2_h2', pos: 'top', sx: 650, sy: 250, tx: 650, ty: 350 - 32, startAngle: Math.random() * 6.28, targetAngle: Math.PI/2, startMove: 55 }); // Oben
+            watersCo2.push({ type: 'shell2_h2', pos: 'right', sx: 750, sy: 350, tx: 650 + 32, ty: 350, startAngle: Math.random() * 6.28, targetAngle: Math.PI, startMove: 55 }); // Rechts
+            watersCo2.push({ type: 'shell2_h2', pos: 'bottom', sx: 650, sy: 450, tx: 650, ty: 350 + 32, startAngle: Math.random() * 6.28, targetAngle: -Math.PI/2, startMove: 55 }); // Unten
+            watersCo2.push({ type: 'shell2_h2', pos: 'left', sx: 550, sy: 350, tx: 650 - 32, ty: 350, startAngle: Math.random() * 6.28, targetAngle: 0, startMove: 55 }); // Links
+
+            drawCo2(); updateTextCo2();
+        }
+
+        function updateAnimationCo2(val) {
+            progressCo2 = parseFloat(val);
+            document.getElementById('timeSliderCo2').value = progressCo2;
+            document.getElementById('timeDisplayCo2').innerText = Math.floor(progressCo2) + "%";
+            drawCo2(); updateTextCo2();
+        }
+
+        function drawCO2Molecule(ctx, x, y, scale=1, showCharges=false) {
+            ctx.save(); ctx.translate(x, y); ctx.scale(scale, scale);
+            ctx.strokeStyle='#333'; ctx.lineWidth=4;
+            ctx.beginPath(); ctx.moveTo(-30, -5); ctx.lineTo(30, -5); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(-30, 5); ctx.lineTo(30, 5); ctx.stroke();
+            
+            ctx.beginPath(); ctx.arc(0, 0, 16, 0, 6.28); ctx.fillStyle='#7f8c8d'; ctx.fill();
+            ctx.fillStyle='white'; ctx.font='bold 14px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('C', 0, 0);
+            
+            ctx.beginPath(); ctx.arc(-35, 0, 18, 0, 6.28); ctx.fillStyle='#e74c3c'; ctx.fill();
+            ctx.fillStyle='white'; ctx.fillText('O', -35, 0);
+            
+            ctx.beginPath(); ctx.arc(35, 0, 18, 0, 6.28); ctx.fillStyle='#e74c3c'; ctx.fill();
+            ctx.fillStyle='white'; ctx.fillText('O', 35, 0);
+
+            if(showCharges) {
+                ctx.fillStyle='#2c3e50'; ctx.font='bold 14px Arial';
+                ctx.fillText('δ+', 0, -25);
+                ctx.fillText('δ-', -35, -25);
+                ctx.fillText('δ-', 35, -25);
+            }
+            ctx.restore();
+        }
+
+        function drawCo2() {
+            ctxCo2.clearRect(0,0,700,460); // Höheres Canvas wegen verschobener Ionen
+            
+            // Linkes CO2 (Physikalischer Weg)
+            if(progressCo2 > 35) {
+                ctxCo2.setLineDash([4, 4]); ctxCo2.strokeStyle = '#2980b9'; ctxCo2.lineWidth = 2;
+                ctxCo2.beginPath(); ctxCo2.moveTo(150, 210 - 16); ctxCo2.lineTo(150, 210 - 48 + 8); ctxCo2.stroke(); // C zu Wasser Oben
+                ctxCo2.beginPath(); ctxCo2.moveTo(150, 210 + 16); ctxCo2.lineTo(150, 210 + 48 - 8); ctxCo2.stroke(); // C zu Wasser Unten
+                ctxCo2.beginPath(); ctxCo2.moveTo(115 - 18, 210); ctxCo2.lineTo(150 - 75 + 8, 210); ctxCo2.stroke(); // O zu Wasser Links
+                ctxCo2.beginPath(); ctxCo2.moveTo(185 + 18, 210); ctxCo2.lineTo(150 + 75 - 8, 210); ctxCo2.stroke(); // O zu Wasser Rechts
+                ctxCo2.setLineDash([]); ctxCo2.strokeStyle = '#333'; ctxCo2.lineWidth = 1;
+            }
+
+            drawCO2Molecule(ctxCo2, 150, 210, 1, true);
+
+            // Rechtes CO2 (Chemisches Lösen nach Arrhenius)
+            if(progressCo2 < 48) {
+                drawCO2Molecule(ctxCo2, 550, 210, 1, false);
+            } else if(progressCo2 >= 48 && progressCo2 < 52) {
+                ctxCo2.beginPath(); ctxCo2.arc(550, 210, 50, 0, 6.28); ctxCo2.fillStyle='rgba(241, 196, 15, 0.8)'; ctxCo2.fill();
+            } else {
+                let sep = Math.min(1, (progressCo2 - 52) / 15);
+                let eo = 1 - Math.pow(1-sep, 3);
+                let co3X = 550 - eo*120; // Zentrum bei 430
+                let h1X = 550 - eo*10;   // Zentrum bei 540
+                let h1Y = 210 + eo*140;  // Zentrum bei 350
+                let h2X = 550 + eo*100;  // Zentrum bei 650
+                let h2Y = 210 + eo*140;  // Zentrum bei 350
+                
+                // Carbonat-Ion (CO3 2-)
+                ctxCo2.beginPath(); ctxCo2.arc(co3X, 210, 28, 0, 6.28); ctxCo2.fillStyle='#16a085'; ctxCo2.fill();
+                ctxCo2.fillStyle='white'; ctxCo2.font='bold 12px Arial'; ctxCo2.textAlign='center'; ctxCo2.textBaseline='middle'; 
+                ctxCo2.fillText('CO₃²⁻', co3X, 210);
+                
+                // H+ Kugeln mit weißer "H⁺" Beschriftung
+                ctxCo2.beginPath(); ctxCo2.arc(h1X, h1Y, 14, 0, 6.28); ctxCo2.fillStyle='#e74c3c'; ctxCo2.fill();
+                ctxCo2.fillStyle = 'white'; ctxCo2.font = 'bold 12px Arial'; ctxCo2.textAlign = 'center'; ctxCo2.textBaseline = 'middle';
+                ctxCo2.fillText('H⁺', h1X, h1Y);
+
+                ctxCo2.beginPath(); ctxCo2.arc(h2X, h2Y, 14, 0, 6.28); ctxCo2.fillStyle='#e74c3c'; ctxCo2.fill();
+                ctxCo2.fillStyle = 'white'; ctxCo2.font = 'bold 12px Arial'; ctxCo2.textAlign = 'center'; ctxCo2.textBaseline = 'middle';
+                ctxCo2.fillText('H⁺', h2X, h2Y);
+            }
+
+            watersCo2.forEach(w => {
+                let cx = w.sx, cy = w.sy, rot = w.startAngle;
+                
+                if(w.type.startsWith('left')) {
+                    let p = Math.min(1, Math.max(0, (progressCo2 - w.startMove) / 30));
+                    let eo = 1 - Math.pow(1-p, 3);
+                    cx = w.sx + (w.tx - w.sx)*eo; cy = w.sy + (w.ty - w.sy)*eo;
+                    rot = w.startAngle + (w.targetAngle - w.startAngle)*eo;
+                    
+                    if(w.type === 'left_o_bond') {
+                        drawGenericWater(ctxCo2, cx, cy, rot); // O zeigt nach innen
+                    } else {
+                        drawCarbonateWater(ctxCo2, cx, cy, rot); // H zeigt nach innen
+                    }
+                } 
+                else if(w.type === 'reactant') {
+                    if(progressCo2 < 48) {
+                        let p = Math.min(1, Math.max(0, (progressCo2 - w.startMove) / 33));
+                        let eo = p*p; 
+                        cx = w.sx + (w.tx - w.sx)*eo; cy = w.sy + (w.ty - w.sy)*eo;
+                        drawGenericWater(ctxCo2, cx, cy, rot);
+                    }
+                }
+                else if(w.type === 'shell1') {
+                    if(progressCo2 >= w.startMove) {
+                        let p = Math.min(1, Math.max(0, (progressCo2 - w.startMove) / 30));
+                        let eo = 1 - Math.pow(1-p, 3);
+                        let sep = Math.min(1, Math.max(0, (progressCo2 - 52) / 15));
+                        let co3X = 550 - (1 - Math.pow(1-sep, 3))*120;
+                        
+                        cx = w.sx + ((co3X + (w.tx - 430)) - w.sx)*eo; 
+                        cy = w.sy + ((210 + (w.ty - 210)) - w.sy)*eo;
+                        rot = w.startAngle + (w.targetAngle - w.startAngle)*eo;
+                        drawCarbonateWater(ctxCo2, cx, cy, rot); // H zeigt nach innen
+                    }
+                }
+                else if(w.type === 'shell2_h1') {
+                    if(progressCo2 >= w.startMove) {
+                        let p = Math.min(1, Math.max(0, (progressCo2 - w.startMove) / 30));
+                        let eo = 1 - Math.pow(1-p, 3);
+                        let sep = Math.min(1, Math.max(0, (progressCo2 - 52) / 15));
+                        let h1X = 550 - (1 - Math.pow(1-sep, 3))*10; // H1-Zentrum x=540
+                        let h1Y = 210 + (1 - Math.pow(1-sep, 3))*140; // H1-Zentrum y=350
+                        
+                        cx = w.sx + ((h1X + (w.tx - 540)) - w.sx)*eo; 
+                        cy = w.sy + ((h1Y + (w.ty - 350)) - w.sy)*eo;
+                        rot = w.startAngle + (w.targetAngle - w.startAngle)*eo;
+                        drawGenericWater(ctxCo2, cx, cy, rot); // O zeigt nach innen
+                    }
+                }
+                else if(w.type === 'shell2_h2') {
+                    if(progressCo2 >= w.startMove) {
+                        let p = Math.min(1, Math.max(0, (progressCo2 - w.startMove) / 30));
+                        let eo = 1 - Math.pow(1-p, 3);
+                        let sep = Math.min(1, Math.max(0, (progressCo2 - 52) / 15));
+                        let h2X = 550 + (1 - Math.pow(1-sep, 3))*100; // H2-Zentrum x=650
+                        let h2Y = 210 + (1 - Math.pow(1-sep, 3))*140; // H2-Zentrum y=350
+                        
+                        cx = w.sx + ((h2X + (w.tx - 650)) - w.sx)*eo; 
+                        cy = w.sy + ((h2Y + (w.ty - 350)) - w.sy)*eo;
+                        rot = w.startAngle + (w.targetAngle - w.startAngle)*eo;
+                        drawGenericWater(ctxCo2, cx, cy, rot); // O zeigt nach innen
+                    }
+                }
+            });
+        }
+
+        function updateTextCo2() {
+            let t = document.getElementById('anim-text-box-co2');
+            if(progressCo2 < 30) { 
+                t.innerHTML="Zwei CO₂-Moleküle im Wasser. Links zeigt das physikalische Lösen über feste Teilladungen. Rechts bereitet sich die chemische Spaltung vor."; 
+                t.style.borderColor="#95a5a6"; t.style.background="#ecf0f1"; 
+            }
+            else if(progressCo2 < 55) { 
+                t.innerHTML="Links: Wassermoleküle docken exakt, ohne die Brücken zu überlappen, an die Teilladungen an. Rechts: Das Wassermolekül reagiert mit dem CO₂ zu Kohlensäure."; 
+                t.style.borderColor="#f1c40f"; t.style.background="#fff3cd"; 
+            }
+            else { 
+                t.innerHTML="Rechts (Arrhenius): Die Kohlensäure spaltet sich in ein Carbonat-Ion und zwei Wasserstoffionen (H⁺). Alle Ionen sind jetzt sauber getrennt aufgereiht und die Sauerstoffatome des Wassers zeigen geometrisch exakt zu den H⁺-Ionen!"; 
+                t.style.borderColor="#2ecc71"; t.style.background="#eafaf1"; 
+            }
+        }
+
+        function togglePlayCo2() {
+            isPlayingCo2 = !isPlayingCo2;
+            document.getElementById('playBtnCo2').innerText = isPlayingCo2?"⏸":"▶";
+            if(isPlayingCo2) { if(progressCo2>=100) progressCo2=0; loopCo2(); }
+            else cancelAnimationFrame(animIdCo2);
+        }
+        function loopCo2() {
+            if(!isPlayingCo2) return;
+            progressCo2 += 0.2;
+            if(progressCo2>100) {
+                progressCo2=100; isPlayingCo2=false; document.getElementById('playBtnCo2').innerText="↺";
+            }
+            updateAnimationCo2(progressCo2);
+            if(isPlayingCo2) animIdCo2 = requestAnimationFrame(loopCo2);
+        }
+
+    </script>
+</body>
+</html>
