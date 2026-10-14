@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lewis-Vorzeichner (JSON-Editor)</title>
+  <style>
+    :root {
+      --bg-dark: #0f172a; --panel-bg: #1e293b; --border: rgba(148, 163, 184, 0.25);
+      --accent: #38bdf8; --accent-green: #22c55e; --accent-red: #ef4444;
+      --accent-purple: #a855f7; --text-main: #f8fafc; --text-muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg-dark); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+    header { height: 58px; background: #090d16; border-bottom: 1px solid var(--border); padding: 0 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-shrink: 0; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand h1 { font-size: 1.15rem; font-weight: 700; color: var(--accent); }
+    .brand-badge { font-size: 0.78rem; color: var(--text-muted); background: rgba(56, 189, 248, 0.12); padding: 3px 9px; border-radius: 99px; border: 1px solid rgba(56, 189, 248, 0.3); }
+    .header-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .filename-input { background: #0f172a; color: #fff; border: 1px solid var(--border); padding: 6px 10px; border-radius: 7px; font-size: 0.82rem; width: 190px; }
+    .action-btn { background: #1e293b; color: var(--text-main); border: 1px solid var(--border); padding: 6px 12px; border-radius: 7px; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.12s; }
+    .action-btn:hover { border-color: var(--accent); background: rgba(56, 189, 248, 0.12); }
+    .action-btn.save-btn { background: var(--accent-green); color: #052e16; border-color: var(--accent-green); font-weight: 700; }
+    .action-btn.save-btn:hover { filter: brightness(1.08); }
+    .toolbar { padding: 10px 18px; background: #151f32; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+    .tool-palette { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .tool-btn { background: #0f172a; border: 1px solid rgba(148, 163, 184, 0.3); color: var(--text-main); min-width: 40px; height: 35px; padding: 0 11px; border-radius: 6px; font-size: 0.84rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 5px; user-select: none; }
+    .tool-btn:hover { border-color: var(--accent); background: rgba(56, 189, 248, 0.12); }
+    .tool-btn.active { background: var(--accent); border-color: var(--accent); color: #090d16; box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.3); }
+    .tool-btn.ring-btn.active { background: var(--accent-purple); border-color: var(--accent-purple); color: #fff; }
+    .tool-btn.eraser.active { background: var(--accent-red); border-color: var(--accent-red); color: #fff; }
+    .dots-icon { display: inline-flex; gap: 3px; align-items: center; }
+    .dots-icon span { width: 5px; height: 5px; border-radius: 50%; background: currentColor; display: inline-block; }
+    #paper-wrapper { flex: 1; padding: 14px 18px; background: #0b111e; display: flex; flex-direction: column; overflow: hidden; }
+    #paper-sheet { flex: 1; background: #ffffff; border-radius: 8px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), inset 0 0 0 1px #cbd5e1; position: relative; overflow: hidden; }
+    #lewis-canvas { width: 100%; height: 100%; display: block; cursor: crosshair; }
+    #paper-status-pill { position: absolute; top: 10px; left: 44px; right: 14px; pointer-events: none; display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; color: #334155; background: rgba(248, 250, 252, 0.94); border: 1px solid #cbd5e1; padding: 5px 12px; border-radius: 6px; z-index: 2; }
+    .status-badge { font-weight: 700; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; }
+    .status-badge.ok { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+    .status-badge.warn { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <h1>✏️ Lewis-Vorzeichner</h1>
+      <span class="brand-badge">Vorlagen-Editor für Molekülbuilder (.json)</span>
+    </div>
+    <div class="header-actions">
+      <input type="text" id="filename-input" class="filename-input" placeholder="Dateiname (z.B. Butanol)" value="molekuel_vorlage" />
+      <button class="action-btn save-btn" type="button" onclick="window.saveMoleculeFile()">💾 JSON speichern</button>
+      <input type="file" id="file-input" style="display:none" accept=".json" onchange="window.loadMoleculeFile(event)" />
+      <button class="action-btn" type="button" onclick="document.getElementById('file-input').click()">📂 JSON laden</button>
+      <button class="action-btn" type="button" id="btn-clear-paper">📄 Leeres Blatt</button>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <div class="tool-palette" id="toolbar-container">
+      <button class="tool-btn active" data-tool="C">C</button>
+      <button class="tool-btn" data-tool="H">H</button>
+      <button class="tool-btn" data-tool="N" style="color:#60a5fa">N</button>
+      <button class="tool-btn" data-tool="O" style="color:#f87171">O</button>
+      <button class="tool-btn" data-tool="F" style="color:#4ade80">F</button>
+      <button class="tool-btn" data-tool="Cl" style="color:#22c55e">Cl</button>
+      <button class="tool-btn" data-tool="Br" style="color:#fb923c">Br</button>
+      <button class="tool-btn" data-tool="I" style="color:#c084fc">I</button>
+      <button class="tool-btn" data-tool="S" style="color:#facc15">S</button>
+      <button class="tool-btn" data-tool="bond">─ Bindung</button>
+      <button class="tool-btn ring-btn" data-tool="ringclose">⬡ Ringschluss</button>
+      <button class="tool-btn" data-tool="lonepair"><span class="dots-icon"><span></span><span></span></span> Elektronenpaar</button>
+      <button class="tool-btn eraser" data-tool="eraser">🧽 Radierer</button>
+      <button class="tool-btn" data-tool="hand">✋ Hand</button>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <button class="action-btn" type="button" id="btn-auto-h" title="Füllt alle noch freien Bindungsplätze automatisch mit H-Atomen auf">⚡ H-Atome auffüllen</button>
+      <button class="action-btn" type="button" id="btn-center-formula">🎯 Formel zentrieren</button>
+    </div>
+  </div>
+
+  <div id="paper-wrapper">
+    <div id="paper-sheet">
+      <div id="paper-status-pill">
+        <span id="status-hint">Wähle ein Werkzeug und klicke auf das Blatt.</span>
+        <span id="valence-status" class="status-badge warn">Blatt ist leer</span>
+      </div>
+      <canvas id="lewis-canvas"></canvas>
+    </div>
+  </div>
+
+  <script>
+    const ELEMENT_SPECS = {
+      C:  { valence: 4, lonePairs: 0, color2D: '#0f172a', name: 'Kohlenstoff (C)' },
+      H:  { valence: 1, lonePairs: 0, color2D: '#475569', name: 'Wasserstoff (H)' },
+      O:  { valence: 2, lonePairs: 2, color2D: '#dc2626', name: 'Sauerstoff (O)' },
+      N:  { valence: 3, lonePairs: 1, color2D: '#2563eb', name: 'Stickstoff (N)' },
+      S:  { valence: 2, lonePairs: 2, color2D: '#ca8a04', name: 'Schwefel (S)' },
+      F:  { valence: 1, lonePairs: 3, color2D: '#16a34a', name: 'Fluor (F)' },
+      Cl: { valence: 1, lonePairs: 3, color2D: '#15803d', name: 'Chlor (Cl)' },
+      Br: { valence: 1, lonePairs: 3, color2D: '#9a3412', name: 'Brom (Br)' },
+      I:  { valence: 1, lonePairs: 3, color2D: '#7e22ce', name: 'Iod (I)' }
+    };
+
+    const SUB_GRID = 24, BOND_LEN_HEAVY = 70, BOND_LEN_H = 34, STUB_LEN = 38, ZONE_DIST = 24;
+    let atoms = [], bonds = [], nextId = 100;
+    let activeTool = 'C', hoverTarget = null;
+    let mouseCanvasPos = { x: -100, y: -100, inside: false };
+    let invalidAtomIds = new Set(), invalidBondIds = new Set();
+    let isDraggingFormula = false, dragLastPos = { x: 0, y: 0 };
+
+    const normAngle = rad => ((rad % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+    const angleDiff = (a, b) => { let d = normAngle(a - b); if (d > Math.PI) d -= Math.PI * 2; return Math.abs(d); };
+
+    const getAtom = id => atoms.find(a => a.id === id);
+    const getAtomBonds = atomId => bonds.filter(b => b.a === atomId || b.b === atomId);
+    const getBondBetween = (idA, idB) => bonds.find(b => (b.a === idA && b.b === idB) || (b.a === idB && b.b === idA));
+    const getUsedValence = atomId => getAtomBonds(atomId).reduce((s, b) => s + b.order, 0);
+    const getPiBondCount = atomId => getAtomBonds(atomId).reduce((s, b) => s + (b.order - 1), 0);
+
+    function getHeavyNeighbors(atomId) {
+      const res = [];
+      getAtomBonds(atomId).forEach(b => {
+        if (b.b === null) return;
+        const other = getAtom(b.a === atomId ? b.b : b.a);
+        if (other && other.el !== 'H') res.push({ atom: other, bond: b });
+      });
+      return res;
+    }
+
+    function getBondAngleFrom(bond, atomId) {
+      const a = getAtom(atomId);
+      if (!a) return 0;
+      if (bond.b === null) return normAngle(bond.angle);
+      const other = getAtom(bond.a === atomId ? bond.b : bond.a);
+      return other ? normAngle(Math.atan2(other.y - a.y, other.x - a.x)) : 0;
+    }
+
+    function getBondEndpoints2D(bond) {
+      const a1 = getAtom(bond.a);
+      if (!a1) return { x1: 0, y1: 0, x2: 0, y2: 0 };
+      if (bond.b !== null) {
+        const a2 = getAtom(bond.b);
+        return { x1: a1.x, y1: a1.y, x2: a2.x, y2: a2.y };
+      }
+      return { x1: a1.x, y1: a1.y, x2: a1.x + Math.cos(bond.angle) * STUB_LEN, y2: a1.y + Math.sin(bond.angle) * STUB_LEN };
+    }
+
+    function getConnectedSubtree(startAtomId, blockedAtomId) {
+      const visited = new Set([startAtomId]), queue = [startAtomId];
+      while (queue.length > 0) {
+        const curr = queue.shift();
+        getAtomBonds(curr).forEach(b => {
+          if (b.b === null) return;
+          const next = b.a === curr ? b.b : b.a;
+          if (next !== blockedAtomId && !visited.has(next)) { visited.add(next); queue.push(next); }
+        });
+      }
+      return visited;
+    }
+
+    function translateSubtree(atomIdSet, dx, dy) {
+      atomIdSet.forEach(id => { const a = getAtom(id); if (a) { a.x += dx; a.y += dy; } });
+    }
+
+    // Verlängert Bindungen NUR, wenn an benachbarten Atomen zwei Seitenketten in die gleiche Richtung zeigen
+    function autoAdjust2DBondLengths() {
+      bonds.forEach(b => {
+        if (b.b === null) return;
+        const a1 = getAtom(b.a), a2 = getAtom(b.b);
+        if (!a1 || !a2 || a1.el === 'H' || a2.el === 'H') return;
+        const sub2 = getConnectedSubtree(a2.id, a1.id);
+        if (sub2.has(a1.id)) return;
+
+        const dx = a2.x - a1.x, dy = a2.y - a1.y;
+        const currLen = Math.hypot(dx, dy) || 1;
+        const ux = dx / currLen, uy = dy / currLen;
+        const nx = -uy, ny = ux;
+
+        const branches1 = getHeavyNeighbors(a1.id).filter(n => n.atom.id !== a2.id);
+        const branches2 = getHeavyNeighbors(a2.id).filter(n => n.atom.id !== a1.id);
+
+        let sameDirectionBranches = false;
+        for (const br1 of branches1) {
+          const v1x = br1.atom.x - a1.x, v1y = br1.atom.y - a1.y, len1 = Math.hypot(v1x, v1y) || 1;
+          const side1 = (v1x / len1) * nx + (v1y / len1) * ny;
+          if (Math.abs(side1) < 0.4) continue;
+          for (const br2 of branches2) {
+            const v2x = br2.atom.x - a2.x, v2y = br2.atom.y - a2.y, len2 = Math.hypot(v2x, v2y) || 1;
+            const side2 = (v2x / len2) * nx + (v2y / len2) * ny;
+            if (Math.abs(side2) < 0.4) continue;
+            if (side1 * side2 > 0.25) { sameDirectionBranches = true; break; }
+          }
+          if (sameDirectionBranches) break;
+        }
+
+        const targetLen = sameDirectionBranches ? 104 : BOND_LEN_HEAVY;
+        if (Math.abs(currLen - targetLen) > 1) {
+          translateSubtree(sub2, ux * (targetLen - currLen), uy * (targetLen - currLen));
+        }
+      });
+    }
+
+    function findNearestRingPartner(sourceAtom) {
+      if (!sourceAtom || sourceAtom.el === 'H') return null;
+      const srcSpec = ELEMENT_SPECS[sourceAtom.el];
+      const srcStubs = getAtomBonds(sourceAtom.id).filter(b => b.b === null).length;
+      if (getUsedValence(sourceAtom.id) - srcStubs >= srcSpec.valence) return null;
+
+      let bestCand = null, bestDist = Infinity;
+      atoms.forEach(cand => {
+        if (cand.id === sourceAtom.id || cand.el === 'H' || getBondBetween(sourceAtom.id, cand.id)) return;
+        const candSpec = ELEMENT_SPECS[cand.el];
+        const candStubs = getAtomBonds(cand.id).filter(b => b.b === null).length;
+        if (getUsedValence(cand.id) - candStubs >= candSpec.valence) return;
+        const d = Math.hypot(cand.x - sourceAtom.x, cand.y - sourceAtom.y);
+        if (d < bestDist) { bestDist = d; bestCand = cand; }
+      });
+      return bestCand;
+    }
+
+    function computeIdealSlotsForAtom(atom) {
+      if (atom.el === 'H') {
+        const bList = getAtomBonds(atom.id);
+        return bList.length > 0 ? [getBondAngleFrom(bList[0], atom.id)] : [0];
+      }
+      const totalSlots = Math.max(2, 4 - getPiBondCount(atom.id));
+      const attached = getAtomBonds(atom.id);
+      if (attached.length === 0) {
+        if (totalSlots === 4) return [0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2];
+        if (totalSlots === 3) return [0, (2 * Math.PI) / 3, (4 * Math.PI) / 3];
+        return [0, Math.PI];
+      }
+      const sorted = [...attached].sort((b1, b2) => {
+        if (b2.order !== b1.order) return b2.order - b1.order;
+        const o1 = b1.b !== null ? getAtom(b1.a === atom.id ? b1.b : b1.a) : null;
+        const o2 = b2.b !== null ? getAtom(b2.a === atom.id ? b2.b : b2.a) : null;
+        return (o2 && o2.el !== 'H' ? 1 : 0) - (o1 && o1.el !== 'H' ? 1 : 0);
+      });
+      const refAngle = getBondAngleFrom(sorted[0], atom.id);
+      if (totalSlots === 2) return [refAngle, normAngle(refAngle + Math.PI)];
+      if (totalSlots === 3) {
+        if (attached.length >= 2) {
+          const a0 = getBondAngleFrom(attached[0], atom.id), a1 = getBondAngleFrom(attached[1], atom.id);
+          const vx = Math.cos(a0) + Math.cos(a1), vy = Math.sin(a0) + Math.sin(a1);
+          if (Math.hypot(vx, vy) > 0.05) return [a0, a1, normAngle(Math.atan2(-vy, -vx))];
+        }
+        return [refAngle, normAngle(refAngle + (2 * Math.PI) / 3), normAngle(refAngle + (4 * Math.PI) / 3)];
+      }
+      const heavyBonds = attached.filter(b => b.b !== null && getAtom(b.a === atom.id ? b.b : b.a)?.el !== 'H');
+      if (heavyBonds.length === 2) {
+        const a0 = getBondAngleFrom(heavyBonds[0], atom.id), a1 = getBondAngleFrom(heavyBonds[1], atom.id);
+        const diff = angleDiff(a0, a1);
+        if (Math.abs(diff - Math.PI / 2) > 0.2 && Math.abs(diff - Math.PI) > 0.2) {
+          const vx = Math.cos(a0) + Math.cos(a1), vy = Math.sin(a0) + Math.sin(a1);
+          const outB = normAngle(Math.atan2(-vy, -vx));
+          return [a0, a1, normAngle(outB - Math.PI / 3), normAngle(outB + Math.PI / 3)];
+        }
+      }
+      return [refAngle, normAngle(refAngle + Math.PI / 2), normAngle(refAngle + Math.PI), normAngle(refAngle + (3 * Math.PI) / 2)];
+    }
+
+    function getFreeZonesForAtom(atom, forTool = 'bond') {
+      const spec = ELEMENT_SPECS[atom.el];
+      if (forTool === 'bond' && getUsedValence(atom.id) >= spec.valence) return [];
+      if (forTool === 'lonepair' && atom.el === 'H') return [];
+      const slots = computeIdealSlotsForAtom(atom);
+      const occupied = [...getAtomBonds(atom.id).map(b => getBondAngleFrom(b, atom.id)), ...(atom.lonePairs || [])];
+      const freeZones = [];
+      slots.forEach(slotAngle => {
+        if (!occupied.some(occ => angleDiff(occ, slotAngle) < 0.38)) {
+          freeZones.push({ atomId: atom.id, angle: slotAngle, zx: atom.x + Math.cos(slotAngle) * ZONE_DIST, zy: atom.y + Math.sin(slotAngle) * ZONE_DIST });
+        }
+      });
+      return freeZones;
+    }
+
+    function rotateSubtreeAround(atomIdSet, pivotX, pivotY, deltaAngle) {
+      if (Math.abs(deltaAngle) < 1e-4) return;
+      const cosA = Math.cos(deltaAngle), sinA = Math.sin(deltaAngle);
+      atomIdSet.forEach(id => {
+        const a = getAtom(id); if (!a) return;
+        const dx = a.x - pivotX, dy = a.y - pivotY;
+        a.x = pivotX + (dx * cosA - dy * sinA); a.y = pivotY + (dx * sinA + dy * cosA);
+        if (a.lonePairs) a.lonePairs = a.lonePairs.map(lp => normAngle(lp + deltaAngle));
+      });
+      bonds.forEach(b => { if (b.b === null && atomIdSet.has(b.a)) b.angle = normAngle(b.angle + deltaAngle); });
+    }
+
+    function enforceHybridizationAnglesAtAtom(centerAtom, primaryBond) {
+      const attached = getAtomBonds(centerAtom.id);
+      if (attached.length <= 1) return;
+      const totalSlots = Math.max(2, 4 - getPiBondCount(centerAtom.id));
+      while (getUsedValence(centerAtom.id) > ELEMENT_SPECS[centerAtom.el].valence) {
+        const emptyStub = attached.find(b => b.b === null && b.id !== primaryBond.id);
+        if (emptyStub) { bonds = bonds.filter(b => b.id !== emptyStub.id); attached.splice(attached.indexOf(emptyStub), 1); }
+        else break;
+      }
+      let refBond = attached.find(b => b.id !== primaryBond.id && b.b !== null && getAtom(b.a === centerAtom.id ? b.b : b.a)?.el !== 'H');
+      if (!refBond) refBond = attached.find(b => b.id !== primaryBond.id) || primaryBond;
+      const refAngle = getBondAngleFrom(refBond, centerAtom.id);
+      const targetSlots = totalSlots === 2 ? [normAngle(refAngle + Math.PI)] : (totalSlots === 3 ? [normAngle(refAngle + (2 * Math.PI) / 3), normAngle(refAngle - (2 * Math.PI) / 3)] : [normAngle(refAngle + Math.PI / 2), normAngle(refAngle + Math.PI), normAngle(refAngle - Math.PI / 2)]);
+      const otherBonds = attached.filter(b => b.id !== refBond.id).sort((a, b) => (a.id === primaryBond.id ? -1 : b.id === primaryBond.id ? 1 : 0));
+      const usedIdx = new Set();
+      otherBonds.forEach(b => {
+        const currAng = getBondAngleFrom(b, centerAtom.id);
+        let bestIdx = -1, bestDist = Infinity;
+        targetSlots.forEach((slotAng, idx) => {
+          if (!usedIdx.has(idx) && angleDiff(currAng, slotAng) < bestDist) { bestDist = angleDiff(currAng, slotAng); bestIdx = idx; }
+        });
+        if (bestIdx === -1) return;
+        usedIdx.add(bestIdx);
+        const idealAng = targetSlots[bestIdx];
+        let delta = normAngle(idealAng - currAng);
+        if (delta > Math.PI) delta -= Math.PI * 2;
+        if (b.b === null) b.angle = idealAng;
+        else {
+          const childId = b.a === centerAtom.id ? b.b : b.a;
+          const subtree = getConnectedSubtree(childId, centerAtom.id);
+          if (!subtree.has(centerAtom.id)) rotateSubtreeAround(subtree, centerAtom.x, centerAtom.y, delta);
+        }
+      });
+    }
+
+    const lewisCanvas = document.getElementById('lewis-canvas');
+    const ctx = lewisCanvas.getContext('2d');
+    const paperCenter = () => ({ cx: lewisCanvas.clientWidth / 2, cy: lewisCanvas.clientHeight / 2 });
+    const toScreen = (x, y) => { const { cx, cy } = paperCenter(); return { x: cx + x, y: cy + y }; };
+    const toModel = (sx, sy) => { const { cx, cy } = paperCenter(); return { x: sx - cx, y: sy - cy }; };
+
+    function distToSegmentExact(px, py, x1, y1, x2, y2) {
+      const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy);
+      if (len < 1e-3) return { dist: Math.hypot(px - x1, py - y1) };
+      const ux = dx / len, uy = dy / len, pad = Math.min(13, len * 0.25);
+      const sx = x1 + ux * pad, sy = y1 + uy * pad, ex = x2 - ux * pad, ey = y2 - uy * pad;
+      const segL2 = (ex - sx) ** 2 + (ey - sy) ** 2;
+      if (segL2 < 1e-3) return { dist: Math.hypot(px - sx, py - sy) };
+      const t = Math.max(0, Math.min(1, ((px - sx) * (ex - sx) + (py - sy) * (ey - sy)) / segL2));
+      return { dist: Math.hypot(px - (sx + t * (ex - sx)), py - (sy + t * (ey - sy))) };
+    }
+
+    function findHitTarget(mx, my, tool) {
+      const m = toModel(mx, my);
+      if (tool === 'eraser') {
+        const cands = [];
+        atoms.forEach(atom => {
+          (atom.lonePairs || []).forEach((ang, idx) => {
+            const d = Math.hypot(m.x - (atom.x + Math.cos(ang) * 15), m.y - (atom.y + Math.sin(ang) * 15));
+            if (d <= 11) cands.push({ dist: d - 1, target: { type: 'lonepair', atom, lpIndex: idx, angle: ang } });
+          });
+          const dA = Math.hypot(m.x - atom.x, m.y - atom.y);
+          if (dA <= 14) cands.push({ dist: dA, target: { type: 'atom', atom } });
+        });
+        bonds.forEach(b => {
+          const ep = getBondEndpoints2D(b);
+          const { dist } = distToSegmentExact(m.x, m.y, ep.x1, ep.y1, ep.x2, ep.y2);
+          if (dist <= 10) cands.push({ dist, target: { type: 'bond', bond: b } });
+        });
+        if (!cands.length) return null;
+        cands.sort((a, b) => a.dist - b.dist);
+        return cands[0].target;
+      }
+      if (tool === 'ringclose') {
+        let bestAtom = null, bestDist = 18;
+        atoms.forEach(atom => {
+          if (atom.el === 'H') return;
+          const d = Math.hypot(m.x - atom.x, m.y - atom.y);
+          if (d < bestDist) { bestDist = d; bestAtom = atom; }
+        });
+        return bestAtom ? { type: 'ringclose', atom: bestAtom, partner: findNearestRingPartner(bestAtom) } : null;
+      }
+      if (ELEMENT_SPECS[tool] || tool === 'lonepair') {
+        const zoneMode = tool === 'lonepair' ? 'lonepair' : 'bond';
+        let bestZone = null, bestDist = 16;
+        atoms.forEach(atom => {
+          getFreeZonesForAtom(atom, zoneMode).forEach(z => {
+            const d = Math.hypot(m.x - z.zx, m.y - z.zy);
+            if (d < bestDist) { bestDist = d; bestZone = z; }
+          });
+        });
+        if (bestZone) return { type: 'zone', zone: bestZone };
+      }
+      if (ELEMENT_SPECS[tool]) {
+        let bestOpen = null, bestDist = 18;
+        bonds.forEach(b => {
+          if (b.b === null) {
+            const ep = getBondEndpoints2D(b);
+            const d = Math.hypot(m.x - ep.x2, m.y - ep.y2);
+            if (d < bestDist) { bestDist = d; bestOpen = b; }
+          }
+        });
+        if (bestOpen) return { type: 'openBondEnd', bond: bestOpen };
+      }
+      let bestAtom = null, bestAtomDist = 14;
+      atoms.forEach(atom => {
+        const d = Math.hypot(m.x - atom.x, m.y - atom.y);
+        if (d < bestAtomDist) { bestAtomDist = d; bestAtom = atom; }
+      });
+      let bestBond = null, bestBondDist = 10;
+      bonds.forEach(b => {
+        const ep = getBondEndpoints2D(b);
+        const { dist } = distToSegmentExact(m.x, m.y, ep.x1, ep.y1, ep.x2, ep.y2);
+        if (dist < bestBondDist) { bestBondDist = dist; bestBond = b; }
+      });
+      if (bestBond && (!bestAtom || bestBondDist < bestAtomDist)) return { type: 'bond', bond: bestBond };
+      if (bestAtom) return { type: 'atom', atom: bestAtom };
+      return null;
+    }
+
+    // Live-Valenzprüfung
+    function checkStructureStatus() {
+      invalidAtomIds.clear(); invalidBondIds.clear();
+      const badge = document.getElementById('valence-status');
+      if (atoms.length === 0) {
+        badge.className = "status-badge warn"; badge.textContent = "Blatt ist leer"; return false;
+      }
+      let openCount = 0, valErr = null;
+      bonds.forEach(b => { if (b.b === null) { invalidBondIds.add(b.id); openCount++; } });
+      atoms.forEach(a => {
+        const spec = ELEMENT_SPECS[a.el], used = getUsedValence(a.id);
+        if (used !== spec.valence) { invalidAtomIds.add(a.id); if (!valErr) valErr = `${a.el} (${used}/${spec.valence} Bindungen)`; }
+      });
+      if (openCount > 0) {
+        badge.className = "status-badge warn"; badge.textContent = `⚠️ ${openCount} offene Bindung(en)`; return false;
+      }
+      if (valErr) {
+        badge.className = "status-badge warn"; badge.textContent = `⚠️ Valenz prüfen: ${valErr}`; return false;
+      }
+      badge.className = "status-badge ok"; badge.textContent = "✔ Chemisch vollständig & bereit zum Speichern";
+      return true;
+    }
+
+    function drawPaper() {
+      checkStructureStatus();
+      const w = lewisCanvas.clientWidth, h = lewisCanvas.clientHeight;
+      ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, w, h);
+
+      ctx.strokeStyle = "#dbeafe"; ctx.lineWidth = 1; ctx.beginPath();
+      for (let x = SUB_GRID; x < w; x += SUB_GRID) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
+      for (let y = SUB_GRID; y < h; y += SUB_GRID) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
+      ctx.stroke();
+
+      ctx.strokeStyle = "rgba(239, 68, 68, 0.3)"; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(32, 0); ctx.lineTo(32, h); ctx.stroke();
+
+      const showBondZones = Boolean(ELEMENT_SPECS[activeTool]);
+      const showLPZones = (activeTool === 'lonepair');
+
+      if (showBondZones || showLPZones) {
+        const zoneMode = showLPZones ? 'lonepair' : 'bond';
+        atoms.forEach(atom => {
+          getFreeZonesForAtom(atom, zoneMode).forEach(z => {
+            const sp = toScreen(z.zx, z.zy);
+            const isHovered = hoverTarget && hoverTarget.type === 'zone' && hoverTarget.zone.atomId === z.atomId && angleDiff(hoverTarget.zone.angle, z.angle) < 0.1;
+            ctx.save();
+            ctx.strokeStyle = showLPZones ? (isHovered ? "#dc2626" : "rgba(220,38,38,0.5)") : (isHovered ? "#0284c7" : "rgba(2,132,199,0.45)");
+            ctx.fillStyle = showLPZones ? (isHovered ? "rgba(220,38,38,0.24)" : "rgba(220,38,38,0.08)") : (isHovered ? "rgba(2,132,199,0.24)" : "rgba(2,132,199,0.07)");
+            ctx.lineWidth = isHovered ? 2.2 : 1.4; ctx.setLineDash(isHovered ? [] : [3, 2]);
+            ctx.beginPath(); ctx.arc(sp.x, sp.y, isHovered ? 9 : 7.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+            if (isHovered && activeTool === 'bond') {
+              const pAtom = toScreen(atom.x, atom.y), endPos = toScreen(atom.x + Math.cos(z.angle) * STUB_LEN, atom.y + Math.sin(z.angle) * STUB_LEN);
+              ctx.strokeStyle = "#0284c7"; ctx.lineWidth = 2.4;
+              ctx.beginPath(); ctx.moveTo(pAtom.x + Math.cos(z.angle) * 13, pAtom.y + Math.sin(z.angle) * 13); ctx.lineTo(endPos.x, endPos.y); ctx.stroke();
+            }
+            ctx.restore();
+          });
+        });
+      }
+
+      if (activeTool === 'ringclose' && hoverTarget && hoverTarget.type === 'ringclose' && hoverTarget.partner) {
+        const p1 = toScreen(hoverTarget.atom.x, hoverTarget.atom.y), p2 = toScreen(hoverTarget.partner.x, hoverTarget.partner.y);
+        ctx.save();
+        ctx.strokeStyle = "#9333ea"; ctx.lineWidth = 3; ctx.setLineDash([6, 4]);
+        ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+        ctx.setLineDash([]); ctx.fillStyle = "rgba(168, 85, 247, 0.2)";
+        for (const pt of [p1, p2]) { ctx.beginPath(); ctx.arc(pt.x, pt.y, 16, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); }
+        ctx.restore();
+      }
+
+      bonds.forEach(b => {
+        const ep = getBondEndpoints2D(b), p1 = toScreen(ep.x1, ep.y1), p2 = toScreen(ep.x2, ep.y2);
+        const dx = p2.x - p1.x, dy = p2.y - p1.y, len = Math.hypot(dx, dy) || 1;
+        const ux = dx / len, uy = dy / len, nx = -uy, ny = ux;
+        const sx = p1.x + ux * 13, sy = p1.y + uy * 13, ex = p2.x - ux * (b.b !== null ? 13 : 4), ey = p2.y - uy * (b.b !== null ? 13 : 4);
+        const isHoveredBond = hoverTarget && hoverTarget.type === 'bond' && hoverTarget.bond.id === b.id;
+
+        if (isHoveredBond) {
+          ctx.save();
+          ctx.strokeStyle = activeTool === 'eraser' ? "rgba(239, 68, 68, 0.35)" : "rgba(56, 189, 248, 0.38)";
+          ctx.lineWidth = 10; ctx.lineCap = "round";
+          ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke();
+          ctx.restore();
+        }
+
+        ctx.strokeStyle = invalidBondIds.has(b.id) ? "#ef4444" : "#0f172a";
+        ctx.lineWidth = 2.4; ctx.lineCap = "round";
+        const offsets = b.order === 1 ? [0] : (b.order === 2 ? [-3.5, 3.5] : [-5.5, 0, 5.5]);
+        offsets.forEach(off => {
+          ctx.beginPath(); ctx.moveTo(sx + nx * off, sy + ny * off); ctx.lineTo(ex + nx * off, ey + ny * off); ctx.stroke();
+        });
+
+        if (b.b === null) {
+          const isHoveredEnd = hoverTarget && hoverTarget.type === 'openBondEnd' && hoverTarget.bond.id === b.id;
+          ctx.save();
+          ctx.strokeStyle = isHoveredEnd ? "#16a34a" : "#0284c7";
+          ctx.fillStyle = isHoveredEnd ? "rgba(34, 197, 94, 0.22)" : "rgba(56, 189, 248, 0.12)";
+          ctx.lineWidth = isHoveredEnd ? 2.2 : 1.5; ctx.setLineDash(isHoveredEnd ? [] : [3, 3]);
+          ctx.beginPath(); ctx.arc(p2.x, p2.y, 11, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          if (isHoveredEnd && ELEMENT_SPECS[activeTool]) {
+            ctx.fillStyle = ELEMENT_SPECS[activeTool].color2D; ctx.font = "bold 14px system-ui, sans-serif";
+            ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(activeTool, p2.x, p2.y);
+          }
+          ctx.restore();
+        }
+      });
+
+      atoms.forEach(atom => {
+        const p = toScreen(atom.x, atom.y), spec = ELEMENT_SPECS[atom.el] || ELEMENT_SPECS.C;
+        const isHoveredAtom = hoverTarget && hoverTarget.type === 'atom' && hoverTarget.atom.id === atom.id;
+
+        if (invalidAtomIds.has(atom.id) || isHoveredAtom) {
+          ctx.save();
+          const isWarn = invalidAtomIds.has(atom.id) || (isHoveredAtom && activeTool === 'eraser');
+          ctx.fillStyle = isWarn ? "rgba(239, 68, 68, 0.18)" : "rgba(56, 189, 248, 0.2)";
+          ctx.strokeStyle = isWarn ? "#ef4444" : "#0284c7";
+          ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p.x, p.y, 14, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          ctx.restore();
+        }
+
+        ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(p.x, p.y, 10.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = spec.color2D; ctx.font = "bold 17px system-ui, sans-serif";
+        ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(atom.el, p.x, p.y);
+
+        (atom.lonePairs || []).forEach((ang, idx) => {
+          const isHoveredLP = hoverTarget && hoverTarget.type === 'lonepair' && hoverTarget.atom.id === atom.id && hoverTarget.lpIndex === idx;
+          const lx = p.x + Math.cos(ang) * 15, ly = p.y + Math.sin(ang) * 15, tx = -Math.sin(ang) * 6, ty = Math.cos(ang) * 6;
+          ctx.strokeStyle = isHoveredLP ? "#dc2626" : spec.color2D; ctx.lineWidth = 2.4; ctx.lineCap = "round";
+          ctx.beginPath(); ctx.moveTo(lx - tx, ly - ty); ctx.lineTo(lx + tx, ly + ty); ctx.stroke();
+        });
+      });
+
+      if (activeTool === 'eraser' && mouseCanvasPos.inside) {
+        ctx.save();
+        ctx.strokeStyle = hoverTarget ? "#dc2626" : "rgba(239, 68, 68, 0.55)";
+        ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(mouseCanvasPos.x, mouseCanvasPos.y, 9, 0, Math.PI * 2); ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    function resizePaperCanvas() {
+      const rect = lewisCanvas.parentElement.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      lewisCanvas.width = Math.round(rect.width * dpr);
+      lewisCanvas.height = Math.round(rect.height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      drawPaper();
+    }
+
+    document.querySelectorAll('.tool-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        activeTool = btn.dataset.tool;
+        document.querySelectorAll('.tool-btn').forEach(b => b.classList.toggle('active', b === btn));
+        hoverTarget = null;
+        drawPaper();
+      });
+    });
+
+    lewisCanvas.addEventListener('pointerenter', () => { mouseCanvasPos.inside = true; });
+    lewisCanvas.addEventListener('pointerleave', () => { mouseCanvasPos.inside = false; hoverTarget = null; drawPaper(); });
+
+    lewisCanvas.addEventListener('pointermove', (e) => {
+      const rect = lewisCanvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+      mouseCanvasPos = { x: mx, y: my, inside: true };
+      if (isDraggingFormula) {
+        const dx = mx - dragLastPos.x, dy = my - dragLastPos.y;
+        dragLastPos = { x: mx, y: my };
+        atoms.forEach(a => { a.x += dx; a.y += dy; });
+        drawPaper(); return;
+      }
+      hoverTarget = findHitTarget(mx, my, activeTool);
+      drawPaper();
+    });
+
+    lewisCanvas.addEventListener('pointerdown', (e) => {
+      const rect = lewisCanvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+      if (activeTool === 'hand') { isDraggingFormula = true; dragLastPos = { x: mx, y: my }; return; }
+      const hit = findHitTarget(mx, my, activeTool);
+
+     if (ELEMENT_SPECS[activeTool]) {
+        // Klick direkt in eine blaue Zone -> Bindung + neues Atom gleichzeitig erzeugen!
+        if (hit && hit.type === 'zone') {
+          const z = hit.zone, parentAtom = getAtom(z.atomId);
+          const dist = activeTool === 'H' ? BOND_LEN_H : BOND_LEN_HEAVY;
+          const newAtom = { id: nextId++, el: activeTool, x: parentAtom.x + Math.cos(z.angle) * dist, y: parentAtom.y + Math.sin(z.angle) * dist, lonePairs: [] };
+          atoms.push(newAtom);
+          bonds.push({ id: nextId++, a: parentAtom.id, b: newAtom.id, angle: z.angle, order: 1 });
+          if (activeTool !== 'H') autoAdjust2DBondLengths();
+          hoverTarget = null; drawPaper(); return;
+        }
+        if (hit && hit.type === 'openBondEnd') {
+          const b = hit.bond, parentAtom = getAtom(b.a);
+          const dist = activeTool === 'H' ? BOND_LEN_H : BOND_LEN_HEAVY;
+          const newAtom = { id: nextId++, el: activeTool, x: parentAtom.x + Math.cos(b.angle) * dist, y: parentAtom.y + Math.sin(b.angle) * dist, lonePairs: [] };
+          atoms.push(newAtom); b.b = newAtom.id;
+          if (activeTool !== 'H') autoAdjust2DBondLengths();
+          hoverTarget = null; drawPaper(); return;
+        }
+        if (hit && hit.type === 'atom') {
+          hit.atom.el = activeTool;
+          if (activeTool !== 'H') autoAdjust2DBondLengths();
+          hoverTarget = null; drawPaper(); return;
+        }
+        if (!hit) {
+          const m = toModel(mx, my);
+          atoms.push({ id: nextId++, el: activeTool, x: Math.round(m.x / SUB_GRID) * SUB_GRID, y: Math.round(m.y / SUB_GRID) * SUB_GRID, lonePairs: [] });
+          hoverTarget = null; drawPaper();
+        }
+        return;
+      }
+
+      if (activeTool === 'ringclose' && hit && hit.type === 'ringclose' && hit.partner) {
+        const src = hit.atom, dst = hit.partner;
+        for (const node of [src, dst]) {
+          const spec = ELEMENT_SPECS[node.el];
+          while (getUsedValence(node.id) >= spec.valence) {
+            const stub = getAtomBonds(node.id).find(b => b.b === null);
+            if (stub) bonds = bonds.filter(b => b.id !== stub.id); else break;
+          }
+        }
+        bonds.push({ id: nextId++, a: src.id, b: dst.id, angle: normAngle(Math.atan2(dst.y - src.y, dst.x - src.x)), order: 1 });
+        
+        // 1. Alle Ring-Atome einsammeln
+        const ringAtoms = new Set();
+        let queue = [src.id]; ringAtoms.add(src.id);
+        while(queue.length > 0) {
+          let curr = queue.shift();
+          getAtomBonds(curr).forEach(b => {
+            let next = b.a === curr ? b.b : b.a;
+            if (next !== null && !ringAtoms.has(next)) {
+              if (ringAtoms.size < 8) { ringAtoms.add(next); queue.push(next); }
+            }
+          });
+        }
+
+        if (ringAtoms.size >= 3) {
+          const unsortedList = Array.from(ringAtoms).map(id => getAtom(id));
+          
+          // 2. Atome exakt nach ihrer echten Bindungsreihenfolge sortieren
+          const orderedList = [src];
+          let current = src, prev = null;
+          while (orderedList.length < unsortedList.length) {
+            const neighbors = getAtomBonds(current.id)
+              .map(b => b.a === current.id ? b.b : b.a)
+              .filter(id => id !== null && ringAtoms.has(id) && id !== prev);
+            if (neighbors.length === 0) break;
+            const nextAtom = getAtom(neighbors[0]);
+            prev = current.id;
+            current = nextAtom;
+            orderedList.push(current);
+          }
+
+          // 3. Im sauberen Kreis anordnen
+          const cx = orderedList.reduce((s, a) => s + a.x, 0) / orderedList.length;
+          const cy = orderedList.reduce((s, a) => s + a.y, 0) / orderedList.length;
+          const radius = 65;
+          orderedList.forEach((a, idx) => {
+            const angle = (idx / orderedList.length) * Math.PI * 2 - Math.PI / 2;
+            a.x = Math.round(cx + Math.cos(angle) * radius);
+            a.y = Math.round(cy + Math.sin(angle) * radius);
+          });
+        }
+
+        hoverTarget = null; drawPaper(); return;
+      }
+
+      // Bindungs-Button ändert nur noch bestehende Bindungen (1x -> 2x -> 3x)
+      if (activeTool === 'bond') {
+        if (hit && hit.type === 'bond') {
+          const b = hit.bond; b.order = (b.order % 3) + 1;
+          const atomA = getAtom(b.a); if (atomA) enforceHybridizationAnglesAtAtom(atomA, b);
+          if (b.b !== null) { const atomB = getAtom(b.b); if (atomB) enforceHybridizationAnglesAtAtom(atomB, b); }
+          hoverTarget = null; drawPaper(); return;
+        }
+      }
+      if (activeTool === 'lonepair') {
+        if (hit && hit.type === 'zone') { getAtom(hit.zone.atomId)?.lonePairs.push(hit.zone.angle); hoverTarget = null; drawPaper(); return; }
+        if (hit && hit.type === 'lonepair') { hit.atom.lonePairs.splice(hit.lpIndex, 1); hoverTarget = null; drawPaper(); return; }
+        if (hit && hit.type === 'atom') {
+          const zones = getFreeZonesForAtom(hit.atom, 'lonepair');
+          if (zones.length > 0) hit.atom.lonePairs.push(zones[0].angle); else hit.atom.lonePairs = [];
+          hoverTarget = null; drawPaper(); return;
+        }
+      }
+
+      if (activeTool === 'eraser' && hit) {
+        if (hit.type === 'lonepair') { hit.atom.lonePairs.splice(hit.lpIndex, 1); hoverTarget = null; drawPaper(); return; }
+        if (hit.type === 'bond') { bonds = bonds.filter(b => b.id !== hit.bond.id); hoverTarget = null; drawPaper(); return; }
+        if (hit.type === 'atom') {
+          const targetAtom = hit.atom;
+          if (targetAtom.el === 'H') {
+            bonds.forEach(b => {
+              if (b.b === targetAtom.id) {
+                const a1 = getAtom(b.a); b.angle = a1 ? normAngle(Math.atan2(targetAtom.y - a1.y, targetAtom.x - a1.x)) : 0; b.b = null;
+              } else if (b.a === targetAtom.id) {
+                if (b.b !== null) { const a2 = getAtom(b.b); b.a = b.b; b.angle = a2 ? normAngle(Math.atan2(targetAtom.y - a2.y, targetAtom.x - a2.x)) : 0; b.b = null; }
+                else b._del = true;
+              }
+            });
+            bonds = bonds.filter(b => !b._del); atoms = atoms.filter(a => a.id !== targetAtom.id);
+            hoverTarget = null; drawPaper(); return;
+          }
+          const removeAtomIds = new Set([targetAtom.id]);
+          getAtomBonds(targetAtom.id).forEach(b => { if (b.a !== null) removeAtomIds.add(b.a); if (b.b !== null) removeAtomIds.add(b.b); });
+          bonds = bonds.filter(b => b.a !== targetAtom.id && b.b !== targetAtom.id);
+          bonds.forEach(b => {
+            const remA = removeAtomIds.has(b.a), remB = b.b !== null && removeAtomIds.has(b.b);
+            if (remA && (remB || b.b === null)) b._del = true;
+            else if (remB) { const stay = getAtom(b.a), gone = getAtom(b.b); b.angle = (stay && gone) ? normAngle(Math.atan2(gone.y - stay.y, gone.x - stay.x)) : 0; b.b = null; }
+            else if (remA && b.b !== null) { const stay = getAtom(b.b), gone = getAtom(b.a); b.a = b.b; b.angle = (stay && gone) ? normAngle(Math.atan2(gone.y - stay.y, gone.x - stay.x)) : 0; b.b = null; }
+          });
+          bonds = bonds.filter(b => !b._del); atoms = atoms.filter(a => !removeAtomIds.has(a.id));
+          hoverTarget = null; drawPaper();
+        }
+      }
+    });
+
+    window.addEventListener('pointerup', () => { isDraggingFormula = false; });
+
+    // Komfort-Button: Alle freien Valenzen & offenen Striche automatisch mit H-Atomen füllen
+    document.getElementById('btn-auto-h').onclick = () => {
+      bonds.forEach(b => {
+        if (b.b === null) {
+          const parent = getAtom(b.a);
+          const hId = nextId++;
+          atoms.push({ id: hId, el: 'H', x: parent.x + Math.cos(b.angle) * BOND_LEN_H, y: parent.y + Math.sin(b.angle) * BOND_LEN_H, lonePairs: [] });
+          b.b = hId;
+        }
+      });
+      const currentAtoms = [...atoms];
+      currentAtoms.forEach(a => {
+        if (a.el === 'H') return;
+        const spec = ELEMENT_SPECS[a.el];
+        const neededH = Math.max(0, spec.valence - getUsedValence(a.id));
+        const freeZones = getFreeZonesForAtom(a, 'bond');
+        for (let i = 0; i < Math.min(neededH, freeZones.length); i++) {
+          const z = freeZones[i], hId = nextId++;
+          atoms.push({ id: hId, el: 'H', x: a.x + Math.cos(z.angle) * BOND_LEN_H, y: a.y + Math.sin(z.angle) * BOND_LEN_H, lonePairs: [] });
+          bonds.push({ id: nextId++, a: a.id, b: hId, angle: z.angle, order: 1 });
+        }
+      });
+      drawPaper();
+    };
+
+    document.getElementById('btn-center-formula').onclick = () => {
+      if (atoms.length > 0) {
+        const avgX = atoms.reduce((s, a) => s + a.x, 0) / atoms.length;
+        const avgY = atoms.reduce((s, a) => s + a.y, 0) / atoms.length;
+        atoms.forEach(a => { a.x -= avgX; a.y -= avgY; });
+        drawPaper();
+      }
+    };
+
+    document.getElementById('btn-clear-paper').onclick = () => { atoms = []; bonds = []; hoverTarget = null; drawPaper(); };
+
+    // JSON-Download (100 % kompatibel mit Molekülbuilder)
+    window.saveMoleculeFile = function() {
+      if (!atoms || atoms.length === 0) { alert("Das Zeichenblatt ist noch leer!"); return; }
+      const heavyAtoms = atoms.filter(a => a.el !== 'H');
+      const heavyBonds = bonds.filter(b => getAtom(b.a)?.el !== 'H' && getAtom(b.b)?.el !== 'H');
+      const isBasicAlkane = atoms.every(a => a.el === 'C' || a.el === 'H') &&
+                            bonds.every(b => b.order === 1) &&
+                            heavyBonds.length < heavyAtoms.length;
+
+      const payload = { course: isBasicAlkane ? "basic" : "adv", atoms, bonds };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const rawName = document.getElementById('filename-input').value.trim() || "molekuel_vorlage";
+      const safeName = rawName.replace(/\.json$/i, "").replace(/[^a-zA-Z0-9äöüÄÖÜß\-_,]/g, "_");
+
+      const a = document.createElement("a");
+      a.style.display = "none"; a.href = url; a.download = safeName + ".json";
+      document.body.appendChild(a); a.click();
+      setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 150);
+    };
+
+    // JSON-Upload
+    window.loadMoleculeFile = function(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = JSON.parse(e.target.result);
+          atoms = data.atoms || []; bonds = data.bonds || [];
+          nextId = Math.max(100, ...atoms.map(a => a.id || 0), ...bonds.map(b => b.id || 0)) + 1;
+          document.getElementById('filename-input').value = file.name.replace(/\.json$/i, "");
+          hoverTarget = null; drawPaper();
+        } catch (err) { alert("Fehler beim Laden der JSON-Datei."); }
+        finally { event.target.value = ""; }
+      };
+      reader.readAsText(file);
+    };
+
+    window.addEventListener('resize', resizePaperCanvas);
+    resizePaperCanvas();
+  </script>
+</body>
+</html>
