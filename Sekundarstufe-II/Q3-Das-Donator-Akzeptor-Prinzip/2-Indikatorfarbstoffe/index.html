@@ -1,46 +1,2146 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Indikatorfarbstoffe - Chemie</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Interaktive Lernanwendung: Indikatorfarbstoffe & Titration</title>
   <style>
-    body { font-family: system-ui, sans-serif; background-color: #f8fafc; padding: 20px; color: #0f172a; }
-    .container { max-width: 800px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; border: 1px solid #e2e8f0; }
-    .nav-btn { display: inline-block; margin-bottom: 20px; color: #b91c1c; text-decoration: none; }
-    h1 { color: #b91c1c; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
-    .info-box { background: #f1f5f9; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #b91c1c; }
-    .sim-button { 
-      display: inline-block; 
-      padding: 15px 30px; 
-      background-color: #b91c1c; 
-      color: white; 
-      text-decoration: none; 
-      border-radius: 8px; 
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --accent: #0ea5e9;
+      --success: #16a34a;
+      --success-bg: #dcfce7;
+      --warning: #d97706;
+      --warning-bg: #fef3c7;
+      --danger: #dc2626;
+      --danger-bg: #fee2e2;
+      --bg: #f1f5f9;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #475569;
+      --border: #cbd5e1;
+      --highlight: #fef08a;
+      --highlight-border: #eab308;
+      --radius: 14px;
+      --shadow: 0 4px 15px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* Header & Navigation */
+    header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+      color: white;
+      padding: 1.2rem 1.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-badge {
+      background: #ef4444;
+      color: white;
+      font-weight: 800;
+      font-size: 0.8rem;
+      padding: 0.25rem 0.55rem;
+      border-radius: 6px;
+      letter-spacing: 0.05em;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+
+    .nav-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.65rem 1.1rem;
+      border-radius: 10px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.08);
+      color: white;
+      font-size: 0.95rem;
       font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .nav-btn.active {
+      background: white;
+      color: var(--primary);
+      border-color: white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .nav-btn .status-icon {
+      font-size: 1rem;
+    }
+
+    /* Main Container */
+    main {
+      max-width: 1180px;
+      margin: 1.5rem auto 3rem;
+      padding: 0 1rem;
+    }
+
+    .module-section {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .module-section.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 1.5rem;
+      border: 1px solid var(--border);
+    }
+
+    .module-header {
+      border-left: 6px solid var(--primary-light);
+      padding-left: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .module-header h2 {
+      margin: 0 0 0.35rem 0;
+      font-size: 1.5rem;
+      color: var(--primary);
+    }
+
+    .module-header p {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 0.98rem;
+    }
+
+    /* B3 Style Scale Bars */
+    .b3-box {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.15rem;
+      margin: 1.1rem 0;
+    }
+
+    .b3-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 0.65rem;
+      color: var(--text);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .ph-axis {
+      display: grid;
+      grid-template-columns: repeat(14, 1fr);
+      text-align: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      user-select: none;
+    }
+
+    .ph-axis span {
+      position: relative;
+      padding-bottom: 4px;
+    }
+
+    .ph-axis span::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 1px;
+      height: 4px;
+      background: #64748b;
+    }
+
+    .b3-bar-row {
+      margin-bottom: 0.55rem;
+    }
+
+    .b3-bar {
+      height: 30px;
+      border-radius: 6px;
+      border: 1px solid #64748b;
+      display: flex;
+      align-items: center;
+      padding-left: 0.75rem;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #0f172a;
+      text-shadow: 0 0 4px rgba(255,255,255,0.9), 0 0 8px rgba(255,255,255,0.8);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Gradients matching B3 & Thymolblau */
+    .grad-methylorange {
+      background: linear-gradient(to right,
+        #dc2626 0%, #dc2626 17%,
+        #f97316 23%, #facc15 29%,
+        #fde047 100%);
+    }
+    .grad-bromthymolblau {
+      background: linear-gradient(to right,
+        #facc15 0%, #facc15 38%,
+        #16a34a 45%, #1d4ed8 53%,
+        #1e40af 100%);
+    }
+    .grad-neutralrot {
+      background: linear-gradient(to right,
+        #be123c 0%, #be123c 44%,
+        #e11d48 48%, #f59e0b 56%,
+        #facc15 100%);
+    }
+    .grad-phenolphthalein {
+      background: linear-gradient(to right,
+        #ffffff 0%, #ffffff 55%,
+        #fbcfe8 61%, #db2777 70%,
+        #be185d 100%);
+    }
+    .grad-thymolphthalein {
+      background: linear-gradient(to right,
+        #ffffff 0%, #ffffff 63%,
+        #93c5fd 68%, #2563eb 74%,
+        #1d4ed8 100%);
+    }
+    .grad-universal {
+      background: linear-gradient(to right,
+        #dc2626 0%, #ef4444 14%,
+        #f97316 24%, #facc15 35%,
+        #84cc16 43%, #16a34a 50%,
+        #0d9488 58%, #2563eb 68%,
+        #4f46e5 80%, #581c87 100%);
+    }
+    .grad-rotkohl {
+      background: linear-gradient(to right,
+        #dc2626 0%, #e11d48 15%,
+        #9333ea 30%, #6366f1 46%,
+        #2563eb 58%, #0d9488 70%,
+        #16a34a 80%, #eab308 92%, #facc15 100%);
+    }
+    .grad-thymolblau {
+      background: linear-gradient(to right,
+        #dc2626 0%, #dc2626 4%,
+        #f97316 9%, #facc15 15%,
+        #facc15 54%, #16a34a 60%,
+        #1d4ed8 67%, #1e40af 100%);
+    }
+
+    /* Module 1: Multiple Choice Styles */
+    .mc-question {
+      background: #ffffff;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+      transition: border-color 0.25s ease;
+    }
+
+    .mc-question.correct {
+      border-color: var(--success);
+      background: #f0fdf4;
+    }
+
+    .mc-question.incorrect {
+      border-color: var(--danger);
+      background: #fef2f2;
+    }
+
+    .mc-q-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 0.85rem;
+    }
+
+    .mc-q-num {
+      background: var(--primary);
+      color: white;
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+
+    .mc-q-text {
+      font-weight: 700;
+      font-size: 1.05rem;
+      flex: 1;
+    }
+
+    .mc-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .mc-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      background: #f8fafc;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+
+    .mc-option:hover {
+      border-color: var(--primary-light);
+      background: #eff6ff;
+    }
+
+    .mc-option input[type="checkbox"] {
+      width: 22px;
+      height: 22px;
+      margin-top: 2px;
+      accent-color: var(--primary);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .mc-feedback {
+      margin-top: 0.85rem;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      display: none;
+    }
+
+    /* Buttons */
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.85rem 1.6rem;
+      font-size: 1rem;
+      font-weight: 700;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: #e2e8f0;
+      color: var(--text);
+      border: 1px solid #94a3b8;
+      padding: 0.7rem 1.25rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-secondary:hover {
+      background: #cbd5e1;
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: white;
+      border: none;
+      padding: 0.85rem 1.6rem;
+      font-size: 1rem;
+      font-weight: 700;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    /* Module 2: Virtual Lab */
+    .lab-missions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .mission-card {
+      background: #f8fafc;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem;
+      position: relative;
+      transition: all 0.25s ease;
+    }
+
+    .mission-card.active-mission {
+      border-color: var(--primary-light);
+      background: #eff6ff;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    .mission-card.done-mission {
+      border-color: var(--success);
+      background: var(--success-bg);
+    }
+
+    .mission-badge {
+      display: inline-block;
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      padding: 0.2rem 0.55rem;
+      border-radius: 6px;
+      background: #cbd5e1;
+      color: #1e293b;
+      margin-bottom: 0.4rem;
+    }
+
+    .mission-card.active-mission .mission-badge {
+      background: var(--primary-light);
+      color: white;
+    }
+
+    .mission-card.done-mission .mission-badge {
+      background: var(--success);
+      color: white;
+    }
+
+    .lab-workspace {
+      display: grid;
+      grid-template-columns: 1fr 1.25fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    @media (max-width: 860px) {
+      .lab-workspace {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .indicator-shelf {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem;
+    }
+
+    .shelf-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+
+    .ind-tile {
+      background: white;
+      border: 2px solid #94a3b8;
+      border-radius: 10px;
+      padding: 0.7rem;
+      cursor: grab;
+      user-select: none;
+      touch-action: none;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+      position: relative;
+    }
+
+    .ind-tile:hover {
+      border-color: var(--primary-light);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    .ind-tile.in-beaker {
+      border-color: var(--success);
+      background: #f0fdf4;
+    }
+
+    .ind-tile-name {
+      font-weight: 700;
+      font-size: 0.92rem;
+      margin-bottom: 0.4rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .ind-mini-bar {
+      height: 12px;
+      border-radius: 4px;
+      border: 1px solid rgba(0,0,0,0.25);
+    }
+
+    .ind-tile-hint {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      margin-top: 0.35rem;
+    }
+
+    .beaker-station {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .beaker-dropzone {
+      width: 240px;
+      height: 260px;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      margin: 0.5rem 0 1rem;
+      border-radius: 16px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .beaker-dropzone.drag-over {
+      transform: scale(1.04);
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.4);
+      background: rgba(59, 130, 246, 0.06);
+    }
+
+    .beaker-glass {
+      width: 200px;
+      height: 230px;
+      border: 5px solid #475569;
+      border-top: none;
+      border-radius: 0 0 26px 26px;
+      position: relative;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.65);
+      box-shadow: inset 0 -10px 25px rgba(0,0,0,0.08), 0 8px 20px rgba(0,0,0,0.08);
+    }
+
+    .beaker-lip {
+      width: 220px;
+      height: 12px;
+      border: 5px solid #475569;
+      border-bottom: none;
+      border-radius: 8px 8px 0 0;
+      position: absolute;
+      top: 18px;
+      left: 10px;
+      pointer-events: none;
+    }
+
+    .beaker-liquid {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 72%;
+      background-color: #e2e8f0;
+      transition: background-color 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 0.5rem;
+      text-align: center;
+    }
+
+    .beaker-liquid-wave {
+      position: absolute;
+      top: -8px;
+      left: 0;
+      right: 0;
+      height: 16px;
+      background: inherit;
+      border-radius: 50%;
+      filter: brightness(1.06);
+      border-top: 2px solid rgba(255,255,255,0.5);
+    }
+
+    .beaker-marks {
+      position: absolute;
+      right: 12px;
+      top: 30px;
+      bottom: 25px;
+      width: 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      pointer-events: none;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .beaker-marks div {
+      border-bottom: 2px solid #475569;
+      text-align: right;
+      padding-bottom: 1px;
+    }
+
+    .active-ind-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      justify-content: center;
+      min-height: 32px;
+      margin-bottom: 0.75rem;
+    }
+
+    .ind-pill {
+      background: var(--primary);
+      color: white;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    /* pH Slider Control */
+    .ph-control-box {
+      width: 100%;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.2rem;
+      margin-top: 0.5rem;
+    }
+
+    .ph-readout-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.6rem;
+    }
+
+    .ph-badge {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--primary);
+      background: #eff6ff;
+      padding: 0.2rem 0.8rem;
+      border-radius: 8px;
+      border: 1px solid #bfdbfe;
+    }
+
+    .color-readout {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    input[type="range"].ph-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 16px;
+      border-radius: 8px;
+      background: linear-gradient(to right,
+        #ef4444 0%, #f97316 18%, #facc15 35%,
+        #22c55e 50%, #06b6d4 65%, #3b82f6 82%, #6366f1 100%);
+      outline: none;
+      margin: 0.6rem 0;
+      cursor: pointer;
+      border: 1px solid #64748b;
+    }
+
+    input[type="range"].ph-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 4px solid var(--primary);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      cursor: pointer;
+    }
+
+    input[type="range"].ph-slider::-moz-range-thumb {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 4px solid var(--primary);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      cursor: pointer;
+    }
+
+    /* Floating Ghost for Touch/Pointer Drag */
+    #drag-ghost {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      background: white;
+      border: 2px solid var(--primary);
+      border-radius: 10px;
+      padding: 0.5rem 0.9rem;
+      font-weight: 700;
+      font-size: 0.9rem;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.22);
+      display: none;
+      transform: translate(-50%, -50%);
+    }
+
+    /* A1 Task Box inside Module 2 */
+    #a1-task-container {
+      display: none;
+      margin-top: 1.25rem;
+      background: #fffbeb;
+      border: 2px solid #f59e0b;
+      border-radius: 12px;
+      padding: 1.25rem;
+      width: 100%;
+    }
+
+    .a1-choice-card {
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 0.9rem 1rem;
+      margin-top: 0.65rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+    }
+
+    .a1-choice-card:hover {
+      border-color: var(--primary-light);
+      background: #f8fafc;
+    }
+
+    .a1-choice-card.selected {
+      border-color: var(--primary);
+      background: #eff6ff;
+    }
+
+    /* Module 3: Interactive Sentence Marking & A2 */
+    .reader-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .sentence {
+      padding: 2px 4px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.15s ease, box-shadow 0.15s ease;
+      display: inline;
+    }
+
+    .sentence:hover {
+      background-color: #e2e8f0;
+    }
+
+    .sentence.marked {
+      background-color: var(--highlight);
+      box-shadow: 0 0 0 1px var(--highlight-border);
+      font-weight: 500;
+    }
+
+    .text-grid-block {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 1.5rem;
+      align-items: center;
+      margin-bottom: 1.75rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    @media (max-width: 820px) {
+      .text-grid-block {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .figure-card {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .figure-caption {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      font-weight: 600;
+    }
+
+    .materials-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 1.25rem;
+      margin: 1.25rem 0;
+    }
+
+    @media (max-width: 860px) {
+      .materials-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .pk-box {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin: 1rem 0;
+    }
+
+    .pk-item {
+      flex: 1;
+      min-width: 210px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+    }
+
+    .ind-select-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.75rem;
+      margin: 1rem 0;
+    }
+
+    .ind-choice-btn {
+      background: #f8fafc;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 0.85rem;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .ind-choice-btn:hover {
+      border-color: var(--primary-light);
+    }
+
+    .ind-choice-btn.selected {
+      border-color: var(--primary);
+      background: #eff6ff;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    .unlock-banner {
+      background: var(--success-bg);
+      border: 2px solid var(--success);
+      color: #065f46;
+      padding: 1.1rem 1.25rem;
+      border-radius: 12px;
+      margin-top: 1.25rem;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <a href="../index.html" class="nav-btn">← Zurück zu Q3: Donator-Akzeptor</a>
-    
-    <h1>Indikatorfarbstoffe</h1>
-    
-    <div class="info-box">
-      <strong>Lerninhalte:</strong>
-      <ul>
-        <li>Struktur von Indikatoren (konjugierte Systeme)</li>
-        <li>Protolysegleichgewicht des Indikators</li>
-        <li>Der Farbumschlag als Funktion des pH-Werts</li>
-      </ul>
+<div id="drag-ghost">Indikator</div>
+
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <span class="brand-badge">LK CHEMIE</span>
+      <h1>7.3.2 Wirkungsweise eines Indikators</h1>
     </div>
-    
-    <p>Hier kannst du den Farbumschlag von Indikatoren in Abhängigkeit vom pH-Wert simulieren.</p>
-    
-    <a href="./simulation.html" class="sim-button">Simulation: Indikator-Farbänderung starten</a>
+    <nav class="nav-tabs" aria-label="Modulnavigation">
+      <button class="nav-btn active" id="tab-mod1" onclick="switchModule(1)">
+        <span class="status-icon" id="icon-mod1">🔓</span>
+        <span>Modul 1: Grundlagen &amp; B3</span>
+      </button>
+      <button class="nav-btn" id="tab-mod2" onclick="switchModule(2)" disabled>
+        <span class="status-icon" id="icon-mod2">🔒</span>
+        <span>Modul 2: Indikator-Labor (A1)</span>
+      </button>
+      <button class="nav-btn" id="tab-mod3" onclick="switchModule(3)" disabled>
+        <span class="status-icon" id="icon-mod3">🔒</span>
+        <span>Modul 3: Äquivalenzpunkte &amp; A2</span>
+      </button>
+    </nav>
   </div>
+</header>
+
+<main>
+  <!-- =========================================================
+       MODUL 1: MULTIPLE-CHOICE & EIN-/MEHRPROTONIGE INDIKATOREN
+       ========================================================= -->
+  <section id="mod1" class="module-section active">
+    <div class="card">
+      <div class="module-header">
+        <h2>Modul 1: Definition, Farbumschlag &amp; Protolysestufen</h2>
+        <p>Überprüfe dein Fachwissen zur Wirkungsweise von Säure-Base-Indikatoren. Beachte: Bei den Aufgaben können eine oder auch mehrere Antwortmöglichkeiten richtig sein.</p>
+      </div>
+
+      <!-- B3 Visual Reference for Phenolphthalein and Thymolblau -->
+      <div class="b3-box">
+        <div class="b3-title">
+          <span>Material im Stil von B3: Umschlagsbereiche von Phenolphthalein und Thymolblau</span>
+          <span style="font-size:0.8rem; color:var(--text-muted);">pH-Skala 1 bis 14</span>
+        </div>
+        <div class="ph-axis">
+          <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span>
+          <span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span>
+        </div>
+        <div class="b3-bar-row">
+          <div class="b3-bar grad-phenolphthalein">Phenolphthalein (Umschlagsbereich: pH 8,2 – 10,0)</div>
+        </div>
+        <div class="b3-bar-row" style="margin-bottom:0;">
+          <div class="b3-bar grad-thymolblau">Thymolblau (1. Umschlag: pH 1,2 – 2,8 | 2. Umschlag: pH 8,0 – 9,6)</div>
+        </div>
+      </div>
+
+      <div id="mc-container"></div>
+
+      <div style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap; margin-top:1.25rem;">
+        <button class="btn-primary" onclick="checkModule1()">Antworten überprüfen</button>
+        <button class="btn-secondary" onclick="resetModule1()">Auswahl zurücksetzen</button>
+        <span id="mod1-score-msg" style="font-weight:700;"></span>
+      </div>
+
+      <div class="unlock-banner" id="mod1-unlock-banner">
+        <div>
+          <strong>🎉 Ausgezeichnet! Alle Aufgaben in Modul 1 wurden vollständig gelöst.</strong><br>
+          <span>Modul 2 (Virtueller Arbeitsplatz &amp; Aufgabe A1) ist ab sofort freigeschaltet!</span>
+        </div>
+        <button class="btn-success" onclick="switchModule(2)">Weiter zu Modul 2 ➔</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       MODUL 2: VIRTUELLER ARBEITSPLATZ & AUFGABE A1
+       ========================================================= -->
+  <section id="mod2" class="module-section">
+    <div class="card">
+      <div class="module-header">
+        <h2>Modul 2: Virtueller Arbeitsplatz – Indikatormischungen &amp; Aufgabe A1</h2>
+        <p>Ziehe Indikatoren per Drag &amp; Drop (oder durch Antippen) in das Becherglas und untersuche mit dem pH-Regler die Farbumschläge über die gesamte pH-Skala. Führe nacheinander die 3 Mischungs-Aufträge durch.</p>
+      </div>
+
+      <!-- 3 Missions Tracker -->
+      <div class="lab-missions">
+        <div class="mission-card active-mission" id="mission-1">
+          <span class="mission-badge" id="badge-m1">1. Mischung (Offen)</span>
+          <div style="font-weight:700; margin-bottom:0.25rem;">Freie Zweiermischung 1</div>
+          <div style="font-size:0.88rem; color:var(--text-muted);">Mische zwei beliebige Einzelindikatoren (z. B. <em>Methylorange + Phenolphthalein</em>) im Becherglas und bewege den pH-Regler über den sauren und alkalischen Bereich.</div>
+        </div>
+        <div class="mission-card" id="mission-2">
+          <span class="mission-badge" id="badge-m2">2. Mischung (Gesperrt)</span>
+          <div style="font-weight:700; margin-bottom:0.25rem;">Freie Zweiermischung 2</div>
+          <div style="font-size:0.88rem; color:var(--text-muted);">Spüle das Becherglas, stelle eine weitere neue Zweiermischung her (z. B. <em>Neutralrot + Thymolphthalein</em>) und untersuche den Farbverlauf mit dem pH-Regler.</div>
+        </div>
+        <div class="mission-card" id="mission-3">
+          <span class="mission-badge" id="badge-m3">3. Mischung – Aufgabe A1</span>
+          <div style="font-weight:700; margin-bottom:0.25rem;">Thymolblau + Bromthymolblau</div>
+          <div style="font-size:0.88rem; color:var(--text-muted);">Mische gezielt <strong>Thymolblau</strong> und <strong>Bromthymolblau</strong> im Becherglas, untersuche die Umschlagsbereiche per pH-Regler und löse anschließend Aufgabe A1.</div>
+        </div>
+      </div>
+
+      <div class="lab-workspace">
+        <!-- Left: Indicator Shelf (B3 + Thymolblau) -->
+        <div class="indicator-shelf">
+          <div style="font-weight:700; font-size:1.05rem;">Indikatoren (B3 + Thymolblau)</div>
+          <div style="font-size:0.85rem; color:var(--text-muted);">Ziehe eine Fläche in das Becherglas oder tippe sie an:</div>
+          <div class="shelf-grid" id="shelf-grid"></div>
+        </div>
+
+        <!-- Center/Right: Beaker & pH Scale -->
+        <div class="beaker-station">
+          <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+            <span style="font-weight:700;">Becherglas (Reaktionsgefäß)</span>
+            <button class="btn-secondary" style="padding:0.4rem 0.85rem; font-size:0.85rem;" onclick="clearBeaker()">💧 Becherglas leeren</button>
+          </div>
+
+          <div class="beaker-dropzone" id="beaker-dropzone">
+            <div class="beaker-lip"></div>
+            <div class="beaker-glass">
+              <div class="beaker-liquid" id="beaker-liquid">
+                <div class="beaker-liquid-wave"></div>
+                <span id="beaker-empty-hint" style="font-size:0.85rem; font-weight:700; color:#334155; background:rgba(255,255,255,0.8); padding:0.3rem 0.6rem; border-radius:6px;">
+                  Indikatoren hierher ziehen
+                </span>
+              </div>
+              <div class="beaker-marks">
+                <div>200 mL</div>
+                <div>150 mL</div>
+                <div>100 mL</div>
+                <div>50 mL</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="active-ind-pills" id="active-ind-pills"></div>
+
+          <!-- pH Slider Box -->
+          <div class="ph-control-box">
+            <div class="ph-readout-row">
+              <span class="ph-badge" id="ph-value-display">pH = 1,0</span>
+              <span class="color-readout" id="color-name-display">Farbe: Farblos (reine Lösung)</span>
+            </div>
+
+            <div class="ph-axis" style="margin-top:0.5rem;">
+              <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span>
+              <span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span>
+            </div>
+            <input type="range" id="ph-slider" class="ph-slider" min="1" max="14" step="0.1" value="1" oninput="onPhSliderChange(this.value)">
+            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted); font-weight:600;">
+              <span>Stark sauer (pH 1)</span>
+              <span>Neutral (pH 7)</span>
+              <span>Stark alkalisch (pH 14)</span>
+            </div>
+            <div id="lab-progress-hint" style="margin-top:0.65rem; font-size:0.88rem; font-weight:600; color:var(--primary);">
+              Status: Gib zwei Einzelindikatoren für die 1. Mischung in das Becherglas.
+            </div>
+          </div>
+
+          <!-- Task A1 Container (appears after Mixture 3 is created) -->
+          <div id="a1-task-container">
+            <div style="font-weight:800; font-size:1.05rem; color:#92400e; margin-bottom:0.35rem;">
+              📋 Auswertung zu Aufgabe A1 (Thymolblau + Bromthymolblau)
+            </div>
+            <p style="margin:0 0 0.75rem 0; font-size:0.94rem;">
+              <strong>Aufgabe A1:</strong> Beschreiben Sie, welche Umschlagsbereiche sich ergeben, wenn Thymolblau und Bromthymolblau gemischt werden. Wähle die zutreffende Beobachtung aus:
+            </p>
+            <div id="a1-choices">
+              <div class="a1-choice-card" onclick="selectA1Choice(0)">
+                <input type="radio" name="a1-radio" id="a1-r0" style="margin-top:3px;">
+                <label for="a1-r0" style="cursor:pointer; font-size:0.93rem;">
+                  <strong>Beschreibung A:</strong> Da sich die beiden Indikatoren gegenseitig neutralisieren, besitzt das Gemisch nur noch einen einzigen scharfen Umschlagsbereich bei pH 7,0 von Farblos nach Violett.
+                </label>
+              </div>
+              <div class="a1-choice-card" onclick="selectA1Choice(1)">
+                <input type="radio" name="a1-radio" id="a1-r1" style="margin-top:3px;">
+                <label for="a1-r1" style="cursor:pointer; font-size:0.93rem;">
+                  <strong>Beschreibung B:</strong> Das Gemisch zeigt drei abgestufte Umschlagsbereiche über die pH-Skala: Im stark sauren Bereich (pH 1,2 – 2,8) schlägt die Farbe von Orangerot/Rot über Orange nach Gelb um (1. Umschlag des Thymolblaus, während Bromthymolblau bereits gelb ist). Zwischen pH 2,8 und 6,0 bleibt die Lösung rein gelb. Ab pH 6,0 – 7,6 erfolgt ein Umschlag von Gelb nach Grün/Blaugrün (Umschlag des Bromthymolblaus nach Blau bei noch gelbem Thymolblau) und zwischen pH 8,0 – 9,6 schlägt die Mischung schließlich vollständig nach Tiefblau um (2. Umschlag des Thymolblaus).
+                </label>
+              </div>
+              <div class="a1-choice-card" onclick="selectA1Choice(2)">
+                <input type="radio" name="a1-radio" id="a1-r2" style="margin-top:3px;">
+                <label for="a1-r2" style="cursor:pointer; font-size:0.93rem;">
+                  <strong>Beschreibung C:</strong> Im gesamten sauren Bereich (pH 1 bis 7) ist die Mischung tiefblau gefärbt, schlägt zwischen pH 7,0 und 8,0 nach Grün um und bleibt anschließend von pH 8,0 bis 14 leuchtend rot.
+                </label>
+              </div>
+            </div>
+            <div style="margin-top:0.9rem; display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+              <button class="btn-primary" onclick="checkA1Answer()">Aufgabe A1 prüfen</button>
+              <span id="a1-feedback" style="font-weight:700; font-size:0.92rem;"></span>
+            </div>
+          </div>
+
+          <div class="unlock-banner" id="mod2-unlock-banner" style="width:100%;">
+            <div>
+              <strong>🎉 Perfekt! Du hast alle 3 Indikatormischungen untersucht und Aufgabe A1 gelöst.</strong><br>
+              <span>Modul 3 (Äquivalenzpunkte bei Titrationen &amp; Aufgabe A2) ist jetzt freigeschaltet!</span>
+            </div>
+            <button class="btn-success" onclick="switchModule(3)">Weiter zu Modul 3 ➔</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       MODUL 3: INTERAKTIVER TEXT (MARKIERBAR) & AUFGABE A2
+       ========================================================= -->
+  <section id="mod3" class="module-section">
+    <div class="card">
+      <div class="module-header">
+        <h2>Modul 3: Lage des Äquivalenzpunktes &amp; Indikatorwahl bei Titrationen</h2>
+        <p>Lies den Fachtext aufmerksam durch. <strong>Jeder einzelne Satz lässt sich durch Anklicken oder Antippen gelb markieren</strong> (und durch erneutes Antippen wieder entmarkieren), um zentrale Aussagen für die Abschlussaufgabe A2 herauszuarbeiten.</p>
+      </div>
+
+      <div class="reader-toolbar">
+        <div style="font-size:0.92rem; font-weight:600;">
+          🖍️ <strong>Markier-Funktion aktiv:</strong> Tippe auf beliebige Sätze im Text, um wichtige Stellen hervorzuheben (<span id="marked-count">0</span> Sätze markiert).
+        </div>
+        <button class="btn-secondary" style="padding:0.4rem 0.85rem; font-size:0.85rem;" onclick="clearAllHighlights()">Markierungen löschen</button>
+      </div>
+
+      <!-- Block 1: Strong Acid + Strong Base -->
+      <div class="text-grid-block">
+        <div>
+          <h3 style="margin-top:0; color:var(--primary);">1. Titration einer starken Säure mit einer starken Base</h3>
+          <p>
+            <span class="sentence" onclick="toggleSentence(this)">Bei einer Säure-Base-Titration ist der Äquivalenzpunkt (ÄP) genau der Punkt, an dem die Stoffmenge der zugegebenen Maßlösung äquivalent zur Stoffmenge der titrierten Säure oder Base ist.</span>
+            <span class="sentence" onclick="toggleSentence(this)">Titriert man eine starke Säure wie Salzsäure (HCl) mit einer starken Base wie Natronlauge (NaOH), so reagieren beide Stoffe vollständig miteinander zu Wasser und gelösten Ionen (Na<sup>+</sup> und Cl<sup>−</sup>).</span>
+            <span class="sentence" onclick="toggleSentence(this)">Da weder die Natrium-Ionen noch die Chlorid-Ionen als extrem schwache korrespondierende Säure-Base-Teilchen nennenswert mit Wasser protolysieren, liegt der Äquivalenzpunkt exakt im Neutralpunkt bei pH = 7,0.</span>
+            <span class="sentence" onclick="toggleSentence(this)">Die Titrationskurve zeigt hierbei einen extrem steilen und großen pH-Sprung von etwa pH 3 bis pH 11, weshalb für diese Titration sowohl Methylorange als auch Bromthymolblau oder Phenolphthalein verwendet werden können.</span>
+          </p>
+        </div>
+        <div class="figure-card">
+          <svg viewBox="0 0 320 200" width="100%" height="auto" role="img" aria-label="Titrationskurve starke Säure mit starker Base">
+            <rect x="0" y="0" width="320" height="200" fill="#ffffff" rx="8"/>
+            <line x1="45" y1="20" x2="45" y2="170" stroke="#334155" stroke-width="2"/>
+            <line x1="45" y1="170" x2="300" y2="170" stroke="#334155" stroke-width="2"/>
+            <line x1="45" y1="95" x2="300" y2="95" stroke="#94a3b8" stroke-dasharray="4 4"/>
+            <text x="12" y="99" font-size="11" fill="#475569" font-weight="bold">pH 7</text>
+            <text x="12" y="30" font-size="11" fill="#475569" font-weight="bold">pH 13</text>
+            <text x="12" y="165" font-size="11" fill="#475569" font-weight="bold">pH 1</text>
+            <path d="M 45 162 Q 150 160 168 145 L 172 45 Q 185 30 290 28" fill="none" stroke="#2563eb" stroke-width="3"/>
+            <circle cx="170" cy="95" r="5" fill="#dc2626"/>
+            <text x="180" y="98" font-size="11" font-weight="bold" fill="#dc2626">ÄP (pH = 7,0)</text>
+            <text x="120" y="190" font-size="11" fill="#334155">Volumen starke Base V(NaOH)</text>
+          </svg>
+          <div class="figure-caption">Abb. 1: Starke Säure + starke Base – Äquivalenzpunkt bei pH = 7,0</div>
+        </div>
+      </div>
+
+      <!-- Block 2: Weak Acid + Strong Base -->
+      <div class="text-grid-block">
+        <div>
+          <h3 style="margin-top:0; color:var(--primary);">2. Titration einer schwachen Säure mit einer starken Base</h3>
+          <p>
+            <span class="sentence" onclick="toggleSentence(this)">Wird eine schwache Säure wie Essigsäure (CH<sub>3</sub>COOH) mit einer starken Base (NaOH) titriert, so verschiebt sich die Lage des Äquivalenzpunktes in den alkalischen Bereich (pH &gt; 7).</span>
+            <span class="sentence" onclick="toggleSentence(this)">Der Grund dafür ist, dass am Äquivalenzpunkt alle Essigsäure-Moleküle vollständig in ihre korrespondierende Base, die Acetat-Ionen (CH<sub>3</sub>COO<sup>−</sup>), überführt wurden.</span>
+            <span class="sentence" onclick="toggleSentence(this)">Da die korrespondierende Base einer schwachen Säure eine verhältnismäßig mittelstarke bzw. schwache Base ist, reagiert ein Teil der Acetat-Ionen mit Wasser unter Bildung von Hydroxid-Ionen (CH<sub>3</sub>COO<sup>−</sup> + H<sub>2</sub>O &rightleftharpoons; CH<sub>3</sub>COOH + OH<sup>−</sup>).</span>
+            <span class="sentence" onclick="toggleSentence(this)">Durch diesen Überschuss an OH<sup>−</sup>-Ionen liegt der Äquivalenzpunkt bei etwa pH 8,7, sodass man einen Indikator wie Phenolphthalein oder Thymolphthalein wählen muss, dessen Umschlagsbereich im schwach alkalischen Bereich liegt.</span>
+          </p>
+        </div>
+        <div class="figure-card">
+          <svg viewBox="0 0 320 200" width="100%" height="auto" role="img" aria-label="Titrationskurve schwache Säure mit starker Base">
+            <rect x="0" y="0" width="320" height="200" fill="#ffffff" rx="8"/>
+            <line x1="45" y1="20" x2="45" y2="170" stroke="#334155" stroke-width="2"/>
+            <line x1="45" y1="170" x2="300" y2="170" stroke="#334155" stroke-width="2"/>
+            <rect x="45" y="55" width="255" height="22" fill="#fbcfe8" opacity="0.55"/>
+            <text x="52" y="69" font-size="10" fill="#be185d" font-weight="bold">Umschlagsbereich Phenolphthalein</text>
+            <line x1="45" y1="95" x2="300" y2="95" stroke="#94a3b8" stroke-dasharray="4 4"/>
+            <text x="12" y="99" font-size="11" fill="#475569" font-weight="bold">pH 7</text>
+            <path d="M 45 142 Q 70 120 115 115 Q 158 110 168 95 L 172 48 Q 185 30 290 28" fill="none" stroke="#16a34a" stroke-width="3"/>
+            <circle cx="170" cy="73" r="5" fill="#dc2626"/>
+            <text x="178" y="80" font-size="11" font-weight="bold" fill="#dc2626">ÄP (pH ≈ 8,7)</text>
+            <text x="120" y="190" font-size="11" fill="#334155">Volumen starke Base V(NaOH)</text>
+          </svg>
+          <div class="figure-caption">Abb. 2: Schwache Säure + starke Base – Äquivalenzpunkt im Alkalischen (pH &gt; 7)</div>
+        </div>
+      </div>
+
+      <!-- Block 3: Weak Base + Strong Acid -->
+      <div class="text-grid-block" style="border-bottom:none; margin-bottom:0.5rem;">
+        <div>
+          <h3 style="margin-top:0; color:var(--primary);">3. Titration einer schwachen Base mit einer starken Säure</h3>
+          <p>
+            <span class="sentence" onclick="toggleSentence(this)">Umgekehrt verhält es sich, wenn eine schwache Base wie eine wässrige Ammoniaklösung (NH<sub>3</sub>) mit einer starken Säure wie Salzsäure (HCl) titriert wird.</span>
+            <span class="sentence" onclick="toggleSentence(this)">Bis zum Erreichen des Äquivalenzpunktes werden die Ammoniak-Moleküle durch die Oxonium-Ionen der Salzsäure nahezu vollständig zu Ammonium-Ionen (NH<sub>4</sub><sup>+</sup>) protoniert (NH<sub>3</sub> + H<sub>3</sub>O<sup>+</sup> &rarr; NH<sub>4</sub><sup>+</sup> + H<sub>2</sub>O).</span>
+            <span class="sentence" onclick="toggleSentence(this)">Am Äquivalenzpunkt liegt somit eine Lösung von Ammoniumchlorid (NH<sub>4</sub>Cl) vor, in der die Ammonium-Ionen als korrespondierende Kationensäure teilweise mit Wasser unter Bildung von Oxonium-Ionen reagieren (NH<sub>4</sub><sup>+</sup> + H<sub>2</sub>O &rightleftharpoons; NH<sub>3</sub> + H<sub>3</sub>O<sup>+</sup>).</span>
+            <span class="sentence" onclick="toggleSentence(this)">Folglich liegt der Äquivalenzpunkt bei der Titration einer schwachen Base mit einer starken Säure deutlich im sauren Bereich (pH &lt; 7, bei 0,1 mol/L etwa bei pH 5,3).</span>
+            <span class="sentence" onclick="toggleSentence(this)">Für eine exakte Endpunktbestimmung muss daher zwingend ein Indikator gewählt werden, dessen Umschlagsbereich vollständig im sauren Sprungbereich der Titrationskurve liegt.</span>
+          </p>
+        </div>
+        <div class="figure-card">
+          <svg viewBox="0 0 320 200" width="100%" height="auto" role="img" aria-label="Protolyse am Äquivalenzpunkt von Ammoniak und Salzsäure">
+            <rect x="0" y="0" width="320" height="200" fill="#ffffff" rx="8"/>
+            <text x="160" y="26" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">Teilchenebene am Äquivalenzpunkt</text>
+            <rect x="25" y="42" width="270" height="65" rx="8" fill="#eff6ff" stroke="#93c5fd"/>
+            <text x="160" y="66" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">NH₄⁺ + H₂O ⇌ NH₃ + H₃O⁺</text>
+            <text x="160" y="90" text-anchor="middle" font-size="11" fill="#475569">Kationensäure bildet zusätzliche H₃O⁺-Ionen</text>
+            <rect x="45" y="122" width="230" height="52" rx="8" fill="#fef2f2" stroke="#fca5a5"/>
+            <text x="160" y="144" text-anchor="middle" font-size="12" font-weight="bold" fill="#dc2626">Folge für den Äquivalenzpunkt:</text>
+            <text x="160" y="162" text-anchor="middle" font-size="12" font-weight="bold" fill="#991b1b">c(H₃O⁺) &gt; c(OH⁻) ➔ pH(ÄP) &lt; 7 (sauer)</text>
+          </svg>
+          <div class="figure-caption">Abb. 3: Schwache Base + starke Säure – Saure Reaktion durch NH₄⁺ am ÄP</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         ABSCHLUSSAUFGABE A2 IN MODUL 3
+         ========================================================= -->
+    <div class="card">
+      <div class="module-header">
+        <h2>Abschlussaufgabe A2: Indikatorwahl für die Titration einer Ammoniaklösung</h2>
+        <p>Bearbeite mithilfe des Fachtextes und der untenstehenden Materialien die Aufgabe A2.</p>
+      </div>
+
+      <div style="background:#f8fafc; border-left:5px solid var(--primary); padding:1rem 1.25rem; border-radius:8px; margin-bottom:1.25rem;">
+        <strong>Aufgabe A2:</strong> In einem Schülerpraktikum stand eine Flasche mit <strong>Ammoniaklösung</strong>, auf deren Etikett die Angabe der Stoffmengenkonzentration fehlte. Zur Bestimmung der Konzentration soll eine Titration mit Salzsäure der Konzentration <em>c</em> = 0,1 mol/L durchgeführt werden. Wählen Sie aus <strong>B3</strong> begründet einen Indikator für diese Titration.
+      </div>
+
+      <!-- Zusatzmaterialien: pKs/pKB Werte -->
+      <div class="pk-box">
+        <div class="pk-item">
+          <div style="font-size:0.82rem; font-weight:700; color:var(--primary); text-transform:uppercase;">Stoffdaten Ammoniak (Base)</div>
+          <div style="font-size:1.1rem; font-weight:800; margin-top:0.2rem;">pK<sub>B</sub>(NH<sub>3</sub>) = 4,75</div>
+          <div style="font-size:0.84rem; color:var(--text-muted);">Korrespondierende Säure NH<sub>4</sub><sup>+</sup>: pK<sub>S</sub>(NH<sub>4</sub><sup>+</sup>) = 9,25</div>
+        </div>
+        <div class="pk-item">
+          <div style="font-size:0.82rem; font-weight:700; color:var(--primary); text-transform:uppercase;">Stoffdaten Salzsäure (Maßlösung)</div>
+          <div style="font-size:1.1rem; font-weight:800; margin-top:0.2rem;">pK<sub>S</sub>(HCl) = −6</div>
+          <div style="font-size:0.84rem; color:var(--text-muted);">Konzentration der Maßlösung: <em>c</em>(HCl) = 0,1 mol/L</div>
+        </div>
+      </div>
+
+      <!-- Zusatzmaterialien: B3 und Titrationskurve -->
+      <div class="materials-grid">
+        <!-- B3 Chart -->
+        <div class="b3-box" style="margin:0;">
+          <div class="b3-title">
+            <span>Material 1: B3 Umschlagsbereiche gängiger Indikatoren</span>
+          </div>
+          <div class="ph-axis">
+            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span>
+            <span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span>
+          </div>
+          <div class="b3-bar-row"><div class="b3-bar grad-methylorange">Methylorange (3,1 – 4,4)</div></div>
+          <div class="b3-bar-row"><div class="b3-bar grad-bromthymolblau">Bromthymolblau (6,0 – 7,6)</div></div>
+          <div class="b3-bar-row"><div class="b3-bar grad-neutralrot">Neutralrot (6,8 – 8,0)</div></div>
+          <div class="b3-bar-row"><div class="b3-bar grad-phenolphthalein">Phenolphthalein (8,2 – 10,0)</div></div>
+          <div class="b3-bar-row"><div class="b3-bar grad-thymolphthalein">Thymolphthalein (9,3 – 10,5)</div></div>
+          <div class="b3-bar-row"><div class="b3-bar grad-universal">Universalindikator</div></div>
+          <div class="b3-bar-row" style="margin-bottom:0;"><div class="b3-bar grad-rotkohl">Rotkohlsaft</div></div>
+        </div>
+
+        <!-- Titration Curve NH3 + HCl -->
+        <div class="b3-box" style="margin:0; display:flex; flex-direction:column; justify-content:space-between;">
+          <div class="b3-title">
+            <span>Material 2: Titrationskurve Ammoniaklösung mit Salzsäure (<em>c</em> = 0,1 mol/L)</span>
+          </div>
+          <svg viewBox="0 0 360 250" width="100%" height="auto" style="background:white; border-radius:8px; border:1px solid #cbd5e1;">
+            <!-- Grid lines -->
+            <line x1="50" y1="30" x2="335" y2="30" stroke="#e2e8f0"/>
+            <line x1="50" y1="75" x2="335" y2="75" stroke="#e2e8f0"/>
+            <line x1="50" y1="120" x2="335" y2="120" stroke="#94a3b8" stroke-dasharray="4 4"/>
+            <line x1="50" y1="165" x2="335" y2="165" stroke="#e2e8f0"/>
+            <line x1="50" y1="210" x2="335" y2="210" stroke="#e2e8f0"/>
+
+            <!-- Axes -->
+            <line x1="50" y1="20" x2="50" y2="215" stroke="#0f172a" stroke-width="2"/>
+            <line x1="50" y1="215" x2="340" y2="215" stroke="#0f172a" stroke-width="2"/>
+
+            <!-- Y-Axis Labels (pH) -->
+            <text x="42" y="34" text-anchor="end" font-size="11" font-weight="bold" fill="#334155">13</text>
+            <text x="42" y="79" text-anchor="end" font-size="11" font-weight="bold" fill="#334155">10</text>
+            <text x="42" y="124" text-anchor="end" font-size="11" font-weight="bold" fill="#334155">7</text>
+            <text x="42" y="169" text-anchor="end" font-size="11" font-weight="bold" fill="#334155">4</text>
+            <text x="42" y="213" text-anchor="end" font-size="11" font-weight="bold" fill="#334155">1</text>
+            <text x="16" y="125" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a" transform="rotate(-90 16 125)">pH-Wert</text>
+
+            <!-- Highlight Steep Jump in Acidic Region (pH 6.2 to 3.0) -->
+            <rect x="50" y="150" width="285" height="28" fill="#fef08a" opacity="0.55"/>
+            <text x="60" y="168" font-size="10" font-weight="bold" fill="#854d0e">Steiler Sprungbereich (ca. pH 6,0 bis 3,0)</text>
+
+            <!-- Titration Curve NH3 -->
+            <path d="M 50 58 Q 70 82 125 86 Q 185 90 197 115 L 200 146 L 203 182 Q 212 198 330 204" fill="none" stroke="#1d4ed8" stroke-width="3.2"/>
+
+            <!-- Half-equivalence point -->
+            <circle cx="125" cy="86" r="4" fill="#0ea5e9"/>
+            <text x="125" y="76" text-anchor="middle" font-size="10" fill="#0369a1" font-weight="bold">Pufferbereich (pH = 9,25)</text>
+
+            <!-- Equivalence point -->
+            <circle cx="200" cy="146" r="5.5" fill="#dc2626"/>
+            <line x1="200" y1="146" x2="200" y2="215" stroke="#dc2626" stroke-dasharray="3 3"/>
+            <text x="208" y="143" font-size="11" font-weight="bold" fill="#dc2626">ÄP (pH ≈ 5,3)</text>
+
+            <!-- X-Axis Labels -->
+            <text x="50" y="230" text-anchor="middle" font-size="10" fill="#334155">0</text>
+            <text x="125" y="230" text-anchor="middle" font-size="10" fill="#334155">10</text>
+            <text x="200" y="230" text-anchor="middle" font-size="10" font-weight="bold" fill="#dc2626">20 (V_ÄP)</text>
+            <text x="275" y="230" text-anchor="middle" font-size="10" fill="#334155">30</text>
+            <text x="195" y="245" text-anchor="middle" font-size="11" font-weight="bold" fill="#0f172a">Volumen Salzsäure V(HCl) in mL</text>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Selection of the Indicator and Justification -->
+      <div style="margin-top:1.25rem;">
+        <div style="font-weight:700; font-size:1.02rem; margin-bottom:0.5rem;">
+          1. Wähle den am besten geeigneten Indikator aus B3 für diese Titration aus:
+        </div>
+        <div class="ind-select-grid" id="a2-ind-grid">
+          <button class="ind-choice-btn" onclick="selectA2Indicator('methylorange', this)">
+            <div style="font-weight:700;">Methylorange</div>
+            <div style="font-size:0.83rem; color:var(--text-muted);">Umschlag: pH 3,1 – 4,4 (rot ⇄ gelb)</div>
+          </button>
+          <button class="ind-choice-btn" onclick="selectA2Indicator('bromthymolblau', this)">
+            <div style="font-weight:700;">Bromthymolblau</div>
+            <div style="font-size:0.83rem; color:var(--text-muted);">Umschlag: pH 6,0 – 7,6 (gelb ⇄ blau)</div>
+          </button>
+          <button class="ind-choice-btn" onclick="selectA2Indicator('neutralrot', this)">
+            <div style="font-weight:700;">Neutralrot</div>
+            <div style="font-size:0.83rem; color:var(--text-muted);">Umschlag: pH 6,8 – 8,0 (rot ⇄ gelb)</div>
+          </button>
+          <button class="ind-choice-btn" onclick="selectA2Indicator('phenolphthalein', this)">
+            <div style="font-weight:700;">Phenolphthalein</div>
+            <div style="font-size:0.83rem; color:var(--text-muted);">Umschlag: pH 8,2 – 10,0 (farblos ⇄ pink)</div>
+          </button>
+          <button class="ind-choice-btn" onclick="selectA2Indicator('thymolphthalein', this)">
+            <div style="font-weight:700;">Thymolphthalein</div>
+            <div style="font-size:0.83rem; color:var(--text-muted);">Umschlag: pH 9,3 – 10,5 (farblos ⇄ blau)</div>
+          </button>
+          <button class="ind-choice-btn" onclick="selectA2Indicator('universal', this)">
+            <div style="font-weight:700;">Universalindikator / Rotkohlsaft</div>
+            <div style="font-size:0.83rem; color:var(--text-muted);">Umschlag: pH 1 – 14 (fließende Übergänge)</div>
+          </button>
+        </div>
+
+        <div style="font-weight:700; font-size:1.02rem; margin:1.1rem 0 0.5rem;">
+          2. Wähle die passende fachliche Begründung zu deiner Auswahl:
+        </div>
+        <div id="a2-reason-choices">
+          <div class="a1-choice-card" onclick="selectA2Reason(0)">
+            <input type="radio" name="a2-reason" id="a2-r0" style="margin-top:3px;">
+            <label for="a2-r0" style="cursor:pointer; font-size:0.93rem;">
+              Da Ammoniak eine Base ist (pK<sub>B</sub> = 4,75), liegt der Äquivalenzpunkt im stark alkalischen Bereich bei pH 9,25, weshalb der Indikator im Alkalischen umschlagen muss.
+            </label>
+          </div>
+          <div class="a1-choice-card" onclick="selectA2Reason(1)">
+            <input type="radio" name="a2-reason" id="a2-r1" style="margin-top:3px;">
+            <label for="a2-r1" style="cursor:pointer; font-size:0.93rem;">
+              Bei der Titration der schwachen Base Ammoniak (pK<sub>B</sub> = 4,75) mit der starken Säure Salzsäure (pK<sub>S</sub> = −6) entstehen am Äquivalenzpunkt Ammonium-Ionen (NH<sub>4</sub><sup>+</sup>, pK<sub>S</sub> = 9,25), die mit Wasser sauer reagieren (pH<sub>ÄP</sub> ≈ 5,3). Der steile pH-Sprung verläuft im Sauren (ca. pH 6,0 bis 3,0), sodass <strong>Methylorange</strong> (Umschlagsbereich pH 3,1 – 4,4) einen scharfen Farbumschlag von Gelb nach Rot exakt im Sprungbereich liefert.
+            </label>
+          </div>
+          <div class="a1-choice-card" onclick="selectA2Reason(2)">
+            <input type="radio" name="a2-reason" id="a2-r2" style="margin-top:3px;">
+            <label for="a2-r2" style="cursor:pointer; font-size:0.93rem;">
+              Ein Universalindikator ist immer am besten geeignet, weil er über alle 14 pH-Stufen hinweg fließend seine Farbe ändert und keinen scharfen Umschlagspunkt besitzt.
+            </label>
+          </div>
+        </div>
+
+        <div style="margin-top:1.1rem; display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+          <button class="btn-primary" onclick="checkModule3()">Abschlussaufgabe A2 prüfen</button>
+          <span id="a2-feedback" style="font-weight:700;"></span>
+        </div>
+
+        <div class="unlock-banner" id="mod3-unlock-banner">
+          <div>
+            <strong>🏆 Herzlichen Glückwunsch! Du hast alle drei Module der Lernanwendung erfolgreich abgeschlossen!</strong><br>
+            <span>Du kannst nun jederzeit über die obere Menüleiste zwischen Modul 1, Modul 2 und Modul 3 hin- und herwechseln.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  /* =============================================================
+     STATE & NAVIGATION
+     ============================================================= */
+  const appState = {
+    unlockedModules: [1],
+    completedModules: [],
+    currentModule: 1
+  };
+
+  function switchModule(modNum) {
+    if (!appState.unlockedModules.includes(modNum)) return;
+    appState.currentModule = modNum;
+
+    document.querySelectorAll('.module-section').forEach((sec, idx) => {
+      sec.classList.toggle('active', idx + 1 === modNum);
+    });
+
+    [1, 2, 3].forEach(n => {
+      const btn = document.getElementById('tab-mod' + n);
+      btn.classList.toggle('active', n === modNum);
+    });
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function unlockModule(modNum) {
+    if (!appState.unlockedModules.includes(modNum)) {
+      appState.unlockedModules.push(modNum);
+    }
+    const btn = document.getElementById('tab-mod' + modNum);
+    const icon = document.getElementById('icon-mod' + modNum);
+    if (btn) btn.disabled = false;
+    if (icon && !appState.completedModules.includes(modNum)) {
+      icon.textContent = '🔓';
+    }
+  }
+
+  function markModuleComplete(modNum) {
+    if (!appState.completedModules.includes(modNum)) {
+      appState.completedModules.push(modNum);
+    }
+    const icon = document.getElementById('icon-mod' + modNum);
+    if (icon) icon.textContent = '✅';
+  }
+
+  /* =============================================================
+     MODUL 1: MULTIPLE-CHOICE ENGINE
+     ============================================================= */
+  const mcQuestions = [
+    {
+      id: 'q1',
+      text: 'Welche Aussagen definieren Säure-Base-Indikatoren und ihr chemisches Gleichgewicht gemäß Buchtext korrekt?',
+      options: [
+        { text: 'Säure-Base-Indikatoren sind korrespondierende Säure-Base-Paare schwacher Säuren oder Basen, deren Säureform HInd und Baseform Ind⁻ Lösungen unterschiedlich färben.', correct: true },
+        { text: 'In wässriger Lösung stellt sich zwischen der Indikator-Säure HInd (Farbe A) und der Indikator-Base Ind⁻ (Farbe B) das Protolysegleichgewicht HInd + H₂O ⇌ Ind⁻ + H₃O⁺ ein.', correct: true },
+        { text: 'Säure-Base-Indikatoren sind starke Mineralsäuren, die bei der Zugabe von Laugen irreversibel zerstört werden und dadurch einmalig ihre Farbe verlieren.', correct: false },
+        { text: 'Durch ihre Farbveränderung eignen sich Säure-Base-Indikatoren zur Unterscheidung von sauren und alkalischen Lösungen.', correct: true }
+      ]
+    },
+    {
+      id: 'q2',
+      text: 'Worauf beruht der sichtbare Farbumschlag eines Indikators bei einer Änderung des pH-Werts auf molekularer Ebene?',
+      options: [
+        { text: 'Gibt man eine alkalische Lösung hinzu, wird die Indikator-Säure HInd deprotoniert, sodass ihre Konzentration abnimmt, während die Konzentration der Indikator-Base Ind⁻ zunimmt.', correct: true },
+        { text: 'Die Protolyse führt durch Strukturänderungen in den Molekülen bzw. Molekül-Ionen zur Verschiebung von Bindungselektronen und freien Elektronenpaaren.', correct: true },
+        { text: 'Diese elektronischen Strukturänderungen verändern die Absorption von Licht bestimmter Wellenlängen, was sich für unser Auge als Farbänderung auswirkt.', correct: true },
+        { text: 'Die Farbänderung entsteht ausschließlich durch eine Temperaturerhöhung bei der Neutralisationsreaktion, ohne dass sich die Molekülstruktur des Farbstoffs ändert.', correct: false }
+      ]
+    },
+    {
+      id: 'q3',
+      text: 'Welche quantitativen Zusammenhänge gelten für den Umschlagsbereich und das Konzentrationsverhältnis von HInd und Ind⁻?',
+      options: [
+        { text: 'Entspricht der pH-Wert der Lösung exakt dem pKs-Wert der Indikator-Säure (pH = pKs(HInd)), so beträgt das Konzentrationsverhältnis c(Ind⁻) : c(HInd) = 1 : 1 (da lg 1 = 0) und es liegt die Mischfarbe aus Farbe A und Farbe B vor.', correct: true },
+        { text: 'Das menschliche Auge nimmt Farbe B (Ind⁻) erst dann deutlich wahr, wenn die Konzentration der Indikator-Base mindestens das Zehnfache der Indikator-Säure beträgt, also pH ≥ pKs(HInd) + 1 gilt.', correct: true },
+        { text: 'Farbe A (HInd) wird erst deutlich wahrgenommen, wenn die Konzentration der Indikator-Säure mindestens das Zehnfache der Indikator-Base beträgt, also pH ≤ pKs(HInd) − 1 gilt; der Umschlagsbereich erstreckt sich daher über ca. zwei pH-Einheiten.', correct: true },
+        { text: 'Bereits ab einem Konzentrationsverhältnis von 1,1 : 1 ist für das menschliche Auge keinerlei Mischfarbe mehr erkennbar, sodass jeder Umschlagsbereich nur 0,04 pH-Einheiten breit ist.', correct: false }
+      ]
+    },
+    {
+      id: 'q4',
+      text: 'Betrachte die oben abgebildete Umschlags-Skala (im Stil von B3) für Phenolphthalein. Welche Aussagen treffen auf Phenolphthalein zu?',
+      options: [
+        { text: 'Phenolphthalein verhält sich im dargestellten Bereich der pH-Skala wie eine einprotonige Indikator-Säure, da es dort genau einen Umschlagsbereich (pH 8,2 – 10,0) besitzt.', correct: true },
+        { text: 'Die protonierte Indikator-Säure HInd von Phenolphthalein ist im sauren und neutralen Bereich farblos, während die deprotonierte Indikator-Base Ind⁻ ab pH 8,2 – 10,0 eine rosa bis rotviolette (pinke) Farbe verursacht.', correct: true },
+        { text: 'Phenolphthalein besitzt auf der Skala von pH 1 bis 14 drei getrennte Umschlagsbereiche und zählt daher zu den dreiprotonigen Indikator-Säuren.', correct: false }
+      ]
+    },
+    {
+      id: 'q5',
+      text: 'Betrachte die oben abgebildete Umschlags-Skala für Thymolblau. Welche Aussagen zur Protolysestufe und den Farben von Thymolblau sind richtig?',
+      options: [
+        { text: 'Bei Thymolblau handelt es sich um eine mehrprotonige (zweiprotonige) Indikator-Säure, weil es entsprechend seiner zwei Protolysestufen zwei getrennte Umschlagsbereiche aufweist.', correct: true },
+        { text: 'Der erste Umschlagsbereich liegt im stark sauren Bereich bei ca. pH 1,2 – 2,8 (Farbumschlag von Rot nach Gelb), der zweite Umschlagsbereich im schwach alkalischen Bereich bei ca. pH 8,0 – 9,6 (Farbumschlag von Gelb nach Blau).', correct: true },
+        { text: 'Thymolblau ist eine einprotonige Indikator-Säure, die ihre Farbe nur ein einziges Mal bei pH 7,0 von Rot direkt nach Blau ändert.', correct: false }
+      ]
+    },
+    {
+      id: 'q6',
+      text: 'Worin besteht laut Buchtext der Unterschied zwischen einem synthetischen Universalindikator und dem Farbstoff im Rotkohlsaft?',
+      options: [
+        { text: 'Der Universalindikator ist ein Gemisch aus mehreren verschiedenen Indikatoren, deren Umschlagsbereiche gleichmäßig über die gesamte pH-Skala verteilt sind.', correct: true },
+        { text: 'Im Rotkohlsaft liegt kein künstliches Indikatorgemisch vor, sondern der natürliche Farbstoff Cyanidin, dessen Molekül vier Hydroxy-Gruppen enthält und dadurch eine ganze Reihe pH-wertbedingter Protolysereaktionen eingehen kann.', correct: true },
+        { text: 'Will man den genauen pH-Wert einer dunklen oder stark eigengefärbten Flüssigkeit bestimmen, sind Farbindikatoren ungeeignet und man greift zu einem pH-Meter.', correct: true }
+      ]
+    }
+  ];
+
+  function renderModule1() {
+    const container = document.getElementById('mc-container');
+    container.innerHTML = '';
+
+    mcQuestions.forEach((q, qIdx) => {
+      const qDiv = document.createElement('div');
+      qDiv.className = 'mc-question';
+      qDiv.id = `mc-q-${qIdx}`;
+
+      let optionsHtml = '';
+      q.options.forEach((opt, oIdx) => {
+        optionsHtml += `
+          <label class="mc-option" for="q${qIdx}_o${oIdx}">
+            <input type="checkbox" id="q${qIdx}_o${oIdx}" data-q="${qIdx}" data-o="${oIdx}">
+            <span>${opt.text}</span>
+          </label>
+        `;
+      });
+
+      qDiv.innerHTML = `
+        <div class="mc-q-header">
+          <span class="mc-q-num">Aufgabe ${qIdx + 1}</span>
+          <div class="mc-q-text">${q.text}</div>
+        </div>
+        <div class="mc-options">${optionsHtml}</div>
+        <div class="mc-feedback" id="mc-fb-${qIdx}"></div>
+      `;
+      container.appendChild(qDiv);
+    });
+  }
+
+  function checkModule1() {
+    let correctCount = 0;
+
+    mcQuestions.forEach((q, qIdx) => {
+      const qDiv = document.getElementById(`mc-q-${qIdx}`);
+      const fbDiv = document.getElementById(`mc-fb-${qIdx}`);
+      let isQuestionCorrect = true;
+      let anyChecked = false;
+
+      q.options.forEach((opt, oIdx) => {
+        const cb = document.getElementById(`q${qIdx}_o${oIdx}`);
+        if (cb.checked) anyChecked = true;
+        if (cb.checked !== opt.correct) {
+          isQuestionCorrect = false;
+        }
+      });
+
+      qDiv.classList.remove('correct', 'incorrect');
+      fbDiv.style.display = 'block';
+
+      if (isQuestionCorrect) {
+        correctCount++;
+        qDiv.classList.add('correct');
+        fbDiv.style.background = '#dcfce7';
+        fbDiv.style.color = '#166534';
+        fbDiv.textContent = '✓ Vollständig richtig gelöst!';
+      } else {
+        qDiv.classList.add('incorrect');
+        fbDiv.style.background = '#fee2e2';
+        fbDiv.style.color = '#991b1b';
+        fbDiv.textContent = anyChecked
+          ? '✗ Noch nicht ganz vollständig oder teilweise unzutreffend. Überprüfe alle Aussagen dieser Aufgabe noch einmal!'
+          : '✗ Bitte wähle mindestens eine zutreffende Aussage aus.';
+      }
+    });
+
+    const msg = document.getElementById('mod1-score-msg');
+    msg.textContent = `${correctCount} von ${mcQuestions.length} Aufgaben vollständig richtig.`;
+
+    if (correctCount === mcQuestions.length) {
+      msg.style.color = 'var(--success)';
+      markModuleComplete(1);
+      unlockModule(2);
+      document.getElementById('mod1-unlock-banner').style.display = 'flex';
+    } else {
+      msg.style.color = 'var(--danger)';
+    }
+  }
+
+  function resetModule1() {
+    document.querySelectorAll('#mc-container input[type="checkbox"]').forEach(cb => cb.checked = false);
+    document.querySelectorAll('.mc-question').forEach(q => q.classList.remove('correct', 'incorrect'));
+    document.querySelectorAll('.mc-feedback').forEach(fb => fb.style.display = 'none');
+    document.getElementById('mod1-score-msg').textContent = '';
+  }
+
+  /* =============================================================
+     MODUL 2: VIRTUAL INDICATOR WORKSPACE & COLOR ENGINE
+     ============================================================= */
+  const indicatorsData = [
+    {
+      id: 'methylorange',
+      name: 'Methylorange',
+      sub: 'Umschlag: pH 3,1 – 4,4',
+      gradClass: 'grad-methylorange',
+      stops: [
+        { ph: 1.0, rgb: [220, 38, 38] },
+        { ph: 3.1, rgb: [220, 38, 38] },
+        { ph: 3.7, rgb: [249, 115, 22] },
+        { ph: 4.4, rgb: [250, 204, 21] },
+        { ph: 14.0, rgb: [250, 204, 21] }
+      ]
+    },
+    {
+      id: 'bromthymolblau',
+      name: 'Bromthymolblau',
+      sub: 'Umschlag: pH 6,0 – 7,6',
+      gradClass: 'grad-bromthymolblau',
+      stops: [
+        { ph: 1.0, rgb: [250, 204, 21] },
+        { ph: 6.0, rgb: [250, 204, 21] },
+        { ph: 6.8, rgb: [22, 163, 74] },
+        { ph: 7.6, rgb: [29, 78, 216] },
+        { ph: 14.0, rgb: [29, 78, 216] }
+      ]
+    },
+    {
+      id: 'neutralrot',
+      name: 'Neutralrot',
+      sub: 'Umschlag: pH 6,8 – 8,0',
+      gradClass: 'grad-neutralrot',
+      stops: [
+        { ph: 1.0, rgb: [190, 18, 60] },
+        { ph: 6.8, rgb: [190, 18, 60] },
+        { ph: 7.4, rgb: [245, 158, 11] },
+        { ph: 8.0, rgb: [250, 204, 21] },
+        { ph: 14.0, rgb: [250, 204, 21] }
+      ]
+    },
+    {
+      id: 'phenolphthalein',
+      name: 'Phenolphthalein',
+      sub: 'Umschlag: pH 8,2 – 10,0',
+      gradClass: 'grad-phenolphthalein',
+      stops: [
+        { ph: 1.0, rgb: null },
+        { ph: 8.2, rgb: null },
+        { ph: 9.0, rgb: [244, 114, 182] },
+        { ph: 10.0, rgb: [190, 24, 93] },
+        { ph: 14.0, rgb: [190, 24, 93] }
+      ]
+    },
+    {
+      id: 'thymolphthalein',
+      name: 'Thymolphthalein',
+      sub: 'Umschlag: pH 9,3 – 10,5',
+      gradClass: 'grad-thymolphthalein',
+      stops: [
+        { ph: 1.0, rgb: null },
+        { ph: 9.3, rgb: null },
+        { ph: 9.9, rgb: [96, 165, 250] },
+        { ph: 10.5, rgb: [29, 78, 216] },
+        { ph: 14.0, rgb: [29, 78, 216] }
+      ]
+    },
+    {
+      id: 'universal',
+      name: 'Universalindikator',
+      sub: 'Umschlag: pH 1 – 14',
+      gradClass: 'grad-universal',
+      stops: [
+        { ph: 1.0, rgb: [220, 38, 38] },
+        { ph: 3.0, rgb: [249, 115, 22] },
+        { ph: 5.0, rgb: [250, 204, 21] },
+        { ph: 7.0, rgb: [22, 163, 74] },
+        { ph: 9.5, rgb: [37, 99, 235] },
+        { ph: 12.0, rgb: [79, 70, 229] },
+        { ph: 14.0, rgb: [88, 28, 135] }
+      ]
+    },
+    {
+      id: 'rotkohl',
+      name: 'Rotkohlsaft',
+      sub: 'Cyanidin: pH 1 – 14',
+      gradClass: 'grad-rotkohl',
+      stops: [
+        { ph: 1.0, rgb: [220, 38, 38] },
+        { ph: 3.0, rgb: [225, 29, 72] },
+        { ph: 5.0, rgb: [147, 51, 234] },
+        { ph: 7.0, rgb: [79, 70, 229] },
+        { ph: 9.0, rgb: [37, 99, 235] },
+        { ph: 11.0, rgb: [22, 163, 74] },
+        { ph: 13.0, rgb: [234, 179, 8] },
+        { ph: 14.0, rgb: [250, 204, 21] }
+      ]
+    },
+    {
+      id: 'thymolblau',
+      name: 'Thymolblau',
+      sub: '1,2–2,8 & 8,0–9,6',
+      gradClass: 'grad-thymolblau',
+      stops: [
+        { ph: 1.0, rgb: [220, 38, 38] },
+        { ph: 1.2, rgb: [220, 38, 38] },
+        { ph: 2.0, rgb: [249, 115, 22] },
+        { ph: 2.8, rgb: [250, 204, 21] },
+        { ph: 8.0, rgb: [250, 204, 21] },
+        { ph: 8.8, rgb: [22, 163, 74] },
+        { ph: 9.6, rgb: [29, 78, 216] },
+        { ph: 14.0, rgb: [29, 78, 216] }
+      ]
+    }
+  ];
+
+  const labState = {
+    beakerIndicators: [],
+    currentPh: 1.0,
+    minPhSeen: 1.0,
+    maxPhSeen: 1.0,
+    completedMixturesCount: 0,
+    recordedMixKeys: [],
+    selectedA1Option: null
+  };
+
+  function renderShelf() {
+    const grid = document.getElementById('shelf-grid');
+    grid.innerHTML = '';
+
+    indicatorsData.forEach(ind => {
+      const tile = document.createElement('div');
+      tile.className = 'ind-tile';
+      tile.id = `tile-${ind.id}`;
+      tile.dataset.id = ind.id;
+      tile.innerHTML = `
+        <div class="ind-tile-name">
+          <span>${ind.name}</span>
+          <span style="font-size:0.8rem; color:var(--primary);">＋</span>
+        </div>
+        <div class="ind-mini-bar ${ind.gradClass}"></div>
+        <div class="ind-tile-hint">${ind.sub}</div>
+      `;
+
+      setupPointerDrag(tile, ind);
+      grid.appendChild(tile);
+    });
+  }
+
+  function setupPointerDrag(tile, ind) {
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    const ghost = document.getElementById('drag-ghost');
+    const dropzone = document.getElementById('beaker-dropzone');
+
+    tile.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      isDragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      tile.setPointerCapture(e.pointerId);
+
+      ghost.textContent = ind.name;
+      ghost.style.left = e.clientX + 'px';
+      ghost.style.top = e.clientY + 'px';
+      ghost.style.display = 'block';
+    });
+
+    tile.addEventListener('pointermove', (e) => {
+      if (!isDragging) return;
+      ghost.style.left = e.clientX + 'px';
+      ghost.style.top = e.clientY + 'px';
+
+      const rect = dropzone.getBoundingClientRect();
+      const over = (
+        e.clientX >= rect.left && e.clientX <= rect.right &&
+        e.clientY >= rect.top && e.clientY <= rect.bottom
+      );
+      dropzone.classList.toggle('drag-over', over);
+    });
+
+    tile.addEventListener('pointerup', (e) => {
+      if (!isDragging) return;
+      isDragging = false;
+      ghost.style.display = 'none';
+      dropzone.classList.remove('drag-over');
+
+      const dist = Math.hypot(e.clientX - startX, e.clientY - startY);
+      const rect = dropzone.getBoundingClientRect();
+      const droppedInBeaker = (
+        e.clientX >= rect.left && e.clientX <= rect.right &&
+        e.clientY >= rect.top && e.clientY <= rect.bottom
+      );
+
+      if (droppedInBeaker || dist < 10) {
+        addIndicatorToBeaker(ind.id);
+      }
+    });
+
+    tile.addEventListener('pointercancel', () => {
+      isDragging = false;
+      ghost.style.display = 'none';
+      dropzone.classList.remove('drag-over');
+    });
+  }
+
+  function addIndicatorToBeaker(indId) {
+    if (!labState.beakerIndicators.includes(indId)) {
+      if (labState.beakerIndicators.length >= 3) {
+        alert('Im Becherglas befinden sich bereits 3 Indikatoren. Bitte leere das Becherglas zuerst für eine übersichtliche Messung.');
+        return;
+      }
+      labState.beakerIndicators.push(indId);
+      labState.minPhSeen = labState.currentPh;
+      labState.maxPhSeen = labState.currentPh;
+      updateBeakerUI();
+      checkLabMissionsProgress();
+    }
+  }
+
+  function clearBeaker() {
+    labState.beakerIndicators = [];
+    labState.currentPh = 1.0;
+    labState.minPhSeen = 1.0;
+    labState.maxPhSeen = 1.0;
+    document.getElementById('ph-slider').value = 1;
+    updateBeakerUI();
+  }
+
+  function interpolateIndicatorColor(ind, ph) {
+    const stops = ind.stops;
+    for (let i = 0; i < stops.length - 1; i++) {
+      const s1 = stops[i];
+      const s2 = stops[i + 1];
+      if (ph >= s1.ph && ph <= s2.ph) {
+        const t = (s2.ph === s1.ph) ? 0 : (ph - s1.ph) / (s2.ph - s1.ph);
+        if (s1.rgb === null && s2.rgb === null) return null;
+        if (s1.rgb === null) {
+          if (t < 0.15) return null;
+          const base = [240, 249, 255];
+          return [
+            Math.round(base[0] + (s2.rgb[0] - base[0]) * t),
+            Math.round(base[1] + (s2.rgb[1] - base[1]) * t),
+            Math.round(base[2] + (s2.rgb[2] - base[2]) * t)
+          ];
+        }
+        return [
+          Math.round(s1.rgb[0] + (s2.rgb[0] - s1.rgb[0]) * t),
+          Math.round(s1.rgb[1] + (s2.rgb[1] - s1.rgb[1]) * t),
+          Math.round(s1.rgb[2] + (s2.rgb[2] - s1.rgb[2]) * t)
+        ];
+      }
+    }
+    return stops[stops.length - 1].rgb;
+  }
+
+  function isA1MixtureActive() {
+    return (
+      labState.beakerIndicators.length === 2 &&
+      labState.beakerIndicators.includes('thymolblau') &&
+      labState.beakerIndicators.includes('bromthymolblau')
+    );
+  }
+
+  function computeBeakerColorAndName(ph) {
+    if (labState.beakerIndicators.length === 0) {
+      return { css: 'rgba(226, 232, 240, 0.7)', label: 'Farblos (Reines Wasser / Säure)' };
+    }
+
+    if (isA1MixtureActive()) {
+      let rgb, label;
+      if (ph < 1.2) {
+        rgb = [230, 68, 25];
+        label = 'Orangerot (Thymolblau rot + Bromthymolblau gelb)';
+      } else if (ph <= 2.8) {
+        const t = (ph - 1.2) / 1.6;
+        rgb = [
+          Math.round(230 + (250 - 230) * t),
+          Math.round(68 + (204 - 68) * t),
+          Math.round(25 + (21 - 25) * t)
+        ];
+        label = '1. Umschlag: Orange ➔ Gelb (pH 1,2 – 2,8)';
+      } else if (ph < 6.0) {
+        rgb = [250, 204, 21];
+        label = 'Gelb (Beide Indikatoren liegen in der gelben Form vor)';
+      } else if (ph <= 7.6) {
+        const t = (ph - 6.0) / 1.6;
+        rgb = [
+          Math.round(250 + (20 - 250) * t),
+          Math.round(204 + (158 - 204) * t),
+          Math.round(21 + (110 - 21) * t)
+        ];
+        label = '2. Umschlag: Gelbgrün ➔ Grün/Blaugrün (Bromthymolblau schlägt um)';
+      } else if (ph < 8.0) {
+        rgb = [16, 150, 125];
+        label = 'Blaugrün / Türkis (Bromthymolblau blau + Thymolblau noch gelb)';
+      } else if (ph <= 9.6) {
+        const t = (ph - 8.0) / 1.6;
+        rgb = [
+          Math.round(16 + (29 - 16) * t),
+          Math.round(150 + (78 - 150) * t),
+          Math.round(125 + (216 - 125) * t)
+        ];
+        label = '3. Umschlag: Blaugrün ➔ Tiefblau (Thymolblau schlägt nach Blau um)';
+      } else {
+        rgb = [29, 78, 216];
+        label = 'Tiefblau (Beide Indikatoren liegen als blaue Indikator-Base vor)';
+      }
+      return { css: `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`, label };
+    }
+
+    const activeColors = [];
+    labState.beakerIndicators.forEach(id => {
+      const ind = indicatorsData.find(x => x.id === id);
+      const c = interpolateIndicatorColor(ind, ph);
+      if (c !== null) activeColors.push(c);
+    });
+
+    if (activeColors.length === 0) {
+      return { css: 'rgba(241, 245, 249, 0.85)', label: 'Farblos (Indikatoren in farbloser Form)' };
+    }
+
+    let r = 0, g = 0, b = 0;
+    activeColors.forEach(c => {
+      r += c[0];
+      g += c[1];
+      b += c[2];
+    });
+    r = Math.round(r / activeColors.length);
+    g = Math.round(g / activeColors.length);
+    b = Math.round(b / activeColors.length);
+
+    const hasYellow = activeColors.some(c => c[0] > 210 && c[1] > 175 && c[2] < 60);
+    const hasBlue = activeColors.some(c => c[2] > 180 && c[0] < 80);
+    if (hasYellow && hasBlue) {
+      r = Math.round(r * 0.35);
+      g = Math.min(255, Math.round(g * 1.18));
+      b = Math.round(b * 0.75);
+    }
+
+    return {
+      css: `rgb(${r}, ${g}, ${b})`,
+      label: `Mischfarbe bei pH ${ph.toFixed(1).replace('.', ',')}`
+    };
+  }
+
+  function updateBeakerUI() {
+    const liquid = document.getElementById('beaker-liquid');
+    const emptyHint = document.getElementById('beaker-empty-hint');
+    const pillsContainer = document.getElementById('active-ind-pills');
+    const phDisplay = document.getElementById('ph-value-display');
+    const colorDisplay = document.getElementById('color-name-display');
+
+    indicatorsData.forEach(ind => {
+      const tile = document.getElementById(`tile-${ind.id}`);
+      if (tile) tile.classList.toggle('in-beaker', labState.beakerIndicators.includes(ind.id));
+    });
+
+    emptyHint.style.display = labState.beakerIndicators.length === 0 ? 'inline-block' : 'none';
+
+    pillsContainer.innerHTML = '';
+    labState.beakerIndicators.forEach(id => {
+      const ind = indicatorsData.find(x => x.id === id);
+      const pill = document.createElement('span');
+      pill.className = 'ind-pill';
+      pill.innerHTML = `🧪 ${ind.name}`;
+      pillsContainer.appendChild(pill);
+    });
+
+    const colorInfo = computeBeakerColorAndName(labState.currentPh);
+    liquid.style.backgroundColor = colorInfo.css;
+    phDisplay.textContent = `pH = ${labState.currentPh.toFixed(1).replace('.', ',')}`;
+    colorDisplay.textContent = colorInfo.label;
+  }
+
+  function onPhSliderChange(val) {
+    const ph = parseFloat(val);
+    labState.currentPh = ph;
+    if (ph < labState.minPhSeen) labState.minPhSeen = ph;
+    if (ph > labState.maxPhSeen) labState.maxPhSeen = ph;
+    updateBeakerUI();
+    checkLabMissionsProgress();
+  }
+
+  function checkLabMissionsProgress() {
+    const hint = document.getElementById('lab-progress-hint');
+    const count = labState.beakerIndicators.length;
+    const spanExplored = (labState.maxPhSeen - labState.minPhSeen) >= 7.0;
+    const mixKey = [...labState.beakerIndicators].sort().join('+');
+
+    if (labState.completedMixturesCount < 2) {
+      if (count < 2) {
+        hint.textContent = `Status (${labState.completedMixturesCount + 1}. Mischung): Ziehe mindestens 2 Indikatoren zum Mischen in das Becherglas.`;
+        return;
+      }
+      if (isA1MixtureActive()) {
+        hint.textContent = `Hinweis: Hebe dir die Mischung aus Thymolblau + Bromthymolblau für die 3. Mischung (Aufgabe A1) auf und teste zuerst eine andere Zweiermischung!`;
+        return;
+      }
+      if (labState.recordedMixKeys.includes(mixKey)) {
+        hint.textContent = `Hinweis: Diese Mischung hast du bereits untersucht. Wähle für die 2. Untersuchung eine andere Kombination!`;
+        return;
+      }
+      if (!spanExplored) {
+        hint.textContent = `Mischung aktiv! Bewege nun den pH-Regler von sauer nach alkalisch (über mindestens 7 pH-Einheiten), um die Umschlagsbereiche zu untersuchen.`;
+        return;
+      }
+
+      labState.recordedMixKeys.push(mixKey);
+      labState.completedMixturesCount++;
+
+      if (labState.completedMixturesCount === 1) {
+        document.getElementById('mission-1').className = 'mission-card done-mission';
+        document.getElementById('badge-m1').textContent = '1. Mischung ✓';
+        document.getElementById('mission-2').className = 'mission-card active-mission';
+        document.getElementById('badge-m2').textContent = '2. Mischung (Aktiv)';
+        hint.textContent = '✓ 1. Mischung erfolgreich untersucht! Leere nun das Becherglas und stelle eine 2. Indikatormischung her.';
+      } else if (labState.completedMixturesCount === 2) {
+        document.getElementById('mission-2').className = 'mission-card done-mission';
+        document.getElementById('badge-m2').textContent = '2. Mischung ✓';
+        document.getElementById('mission-3').className = 'mission-card active-mission';
+        document.getElementById('badge-m3').textContent = '3. Mischung – Aufgabe A1 (Aktiv)';
+        hint.textContent = '✓ 2. Mischung erfolgreich untersucht! Leere nun das Becherglas und mische Thymolblau + Bromthymolblau (Aufgabe A1).';
+      }
+      return;
+    }
+
+    if (labState.completedMixturesCount === 2) {
+      if (!isA1MixtureActive()) {
+        hint.textContent = '3. Auftrag (Aufgabe A1): Leere das Becherglas und mische genau Thymolblau und Bromthymolblau.';
+        return;
+      }
+
+      document.getElementById('a1-task-container').style.display = 'block';
+
+      if (!spanExplored) {
+        hint.textContent = 'Mischung aus Thymolblau + Bromthymolblau erstellt! Bewege den pH-Regler von pH 1 bis pH 14 und wähle darunter die richtige Beschreibung für Aufgabe A1.';
+      } else {
+        document.getElementById('mission-3').className = 'mission-card done-mission';
+        document.getElementById('badge-m3').textContent = '3. Mischung ✓';
+        hint.textContent = '✓ Alle Umschlagsbereiche von Thymolblau + Bromthymolblau beobachtet! Beantworte nun unten Aufgabe A1.';
+      }
+    }
+  }
+
+  function selectA1Choice(idx) {
+    labState.selectedA1Option = idx;
+    document.getElementById(`a1-r${idx}`).checked = true;
+    document.querySelectorAll('#a1-choices .a1-choice-card').forEach((card, i) => {
+      card.classList.toggle('selected', i === idx);
+    });
+  }
+
+  function checkA1Answer() {
+    const fb = document.getElementById('a1-feedback');
+    if (labState.selectedA1Option === null) {
+      fb.style.color = 'var(--danger)';
+      fb.textContent = 'Bitte wähle zuerst eine der drei Beschreibungen aus.';
+      return;
+    }
+
+    if (labState.selectedA1Option === 1) {
+      fb.style.color = 'var(--success)';
+      fb.textContent = '✓ Richtig! Durch die Überlagerung der Umschlagsbereiche von Thymolblau (1,2–2,8 und 8,0–9,6) und Bromthymolblau (6,0–7,6) entstehen die drei beobachteten Farbabstufungen.';
+      document.getElementById('mission-3').className = 'mission-card done-mission';
+      document.getElementById('badge-m3').textContent = 'Aufgabe A1 ✓';
+      markModuleComplete(2);
+      unlockModule(3);
+      document.getElementById('mod2-unlock-banner').style.display = 'flex';
+    } else {
+      fb.style.color = 'var(--danger)';
+      fb.textContent = '✗ Das stimmt noch nicht mit den Beobachtungen im Becherglas überein. Schiebe den pH-Regler langsam von pH 1 bis pH 14 und vergleiche die Farben bei pH 1–3, pH 3–6, pH 6–8 und pH > 9,6!';
+    }
+  }
+
+  /* =============================================================
+     MODUL 3: SENTENCE HIGHLIGHTING & TASK A2
+     ============================================================= */
+  const mod3State = {
+    selectedIndicator: null,
+    selectedReason: null
+  };
+
+  function toggleSentence(spanEl) {
+    spanEl.classList.toggle('marked');
+    updateMarkedCount();
+  }
+
+  function clearAllHighlights() {
+    document.querySelectorAll('.sentence.marked').forEach(el => el.classList.remove('marked'));
+    updateMarkedCount();
+  }
+
+  function updateMarkedCount() {
+    const count = document.querySelectorAll('.sentence.marked').length;
+    document.getElementById('marked-count').textContent = count;
+  }
+
+  function selectA2Indicator(indId, btnEl) {
+    mod3State.selectedIndicator = indId;
+    document.querySelectorAll('#a2-ind-grid .ind-choice-btn').forEach(b => b.classList.remove('selected'));
+    btnEl.classList.add('selected');
+  }
+
+  function selectA2Reason(idx) {
+    mod3State.selectedReason = idx;
+    document.getElementById(`a2-r${idx}`).checked = true;
+    document.querySelectorAll('#a2-reason-choices .a1-choice-card').forEach((card, i) => {
+      card.classList.toggle('selected', i === idx);
+    });
+  }
+
+  function checkModule3() {
+    const fb = document.getElementById('a2-feedback');
+    if (!mod3State.selectedIndicator || mod3State.selectedReason === null) {
+      fb.style.color = 'var(--danger)';
+      fb.textContent = 'Bitte wähle sowohl einen Indikator aus B3 als auch eine Begründung aus.';
+      return;
+    }
+
+    if (mod3State.selectedIndicator === 'methylorange' && mod3State.selectedReason === 1) {
+      fb.style.color = 'var(--success)';
+      fb.textContent = '✓ Vollkommen richtig! Methylorange (Umschlag pH 3,1 – 4,4) liegt ideal im steilen sauren Sprungbereich der Titration von Ammoniaklösung mit Salzsäure.';
+      markModuleComplete(3);
+      document.getElementById('mod3-unlock-banner').style.display = 'flex';
+    } else if (mod3State.selectedIndicator !== 'methylorange') {
+      fb.style.color = 'var(--danger)';
+      fb.textContent = '✗ Überprüfe noch einmal die Wahl des Indikators: Am Äquivalenzpunkt (pH ≈ 5,3) fällt die Titrationskurve steil bis auf ca. pH 3,0 ab. Welcher Indikator aus B3 schlägt vollständig in diesem sauren Sprungbereich scharf um?';
+    } else {
+      fb.style.color = 'var(--danger)';
+      fb.textContent = '✗ Der Indikator Methylorange ist richtig gewählt, aber die ausgewählte Begründung passt noch nicht zur Reaktion am Äquivalenzpunkt.';
+    }
+  }
+
+  /* Initialize Application on Load */
+  window.addEventListener('DOMContentLoaded', () => {
+    renderModule1();
+    renderShelf();
+    updateBeakerUI();
+  });
+</script>
 
 </body>
 </html>

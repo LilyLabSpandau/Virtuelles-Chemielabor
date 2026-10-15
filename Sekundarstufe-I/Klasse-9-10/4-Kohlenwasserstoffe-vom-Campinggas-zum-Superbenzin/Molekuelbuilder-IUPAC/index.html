@@ -218,13 +218,14 @@
     ensureThreeLoaded(initMolekuelbuilder);
 
     function initMolekuelbuilder() {
-      // Eingebaute Offline-OrbitControls (keine externe Zusatzdatei nötig!)
+     // Eingebaute Offline-OrbitControls mit freier 360°-Drehung in alle Richtungen
       class SimpleOrbitControls {
         constructor(camera, domElement) {
           this.camera = camera;
           this.domElement = domElement;
           this.target = new THREE.Vector3(0, 0, 0);
-          this.spherical = new THREE.Spherical().setFromVector3(camera.position.clone().sub(this.target));
+          this.offset = camera.position.clone().sub(this.target);
+          this.camera.up.set(0, 1, 0);
           let isDown = false, btn = 0, lx = 0, ly = 0;
 
           domElement.addEventListener('contextmenu', e => e.preventDefault());
@@ -236,12 +237,25 @@
             if (!isDown) return;
             const dx = e.clientX - lx, dy = e.clientY - ly;
             lx = e.clientX; ly = e.clientY;
-            if (btn === 0) {
-              this.spherical.theta -= dx * 0.007;
-              this.spherical.phi = Math.max(0.08, Math.min(Math.PI - 0.08, this.spherical.phi - dy * 0.007));
+
+            // Aktuelle Kamera-Achsen im Raum bestimmen
+            const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion).normalize();
+            const up = new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion).normalize();
+            const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion).normalize();
+
+            if (btn === 0 && !e.shiftKey) {
+              // Linke Maustaste: Freies 360°-Drehen und Kippen ohne Pol-Sperre
+              const qYaw = new THREE.Quaternion().setFromAxisAngle(up, -dx * 0.007);
+              const qPitch = new THREE.Quaternion().setFromAxisAngle(right, -dy * 0.007);
+              const q = new THREE.Quaternion().multiplyQuaternions(qYaw, qPitch);
+              this.offset.applyQuaternion(q);
+              this.camera.up.copy(up).applyQuaternion(q).normalize();
+            } else if (btn === 1 || (btn === 0 && e.shiftKey)) {
+              // Shift + Linksklick (oder Mausrad-Klick): Molekül seitlich im/gegen den Uhrzeigersinn kippen
+              const qRoll = new THREE.Quaternion().setFromAxisAngle(forward, -dx * 0.007);
+              this.camera.up.copy(up).applyQuaternion(qRoll).normalize();
             } else if (btn === 2) {
-              const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
-              const up = new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);
+              // Rechte Maustaste: Molekül verschieben
               this.target.addScaledVector(right, -dx * 0.012).addScaledVector(up, dy * 0.012);
             }
           });
@@ -251,16 +265,15 @@
           });
           domElement.addEventListener('wheel', e => {
             e.preventDefault();
-            this.spherical.radius = Math.max(2.5, Math.min(35, this.spherical.radius + e.deltaY * 0.005));
+            const newLen = Math.max(2.5, Math.min(35, this.offset.length() + e.deltaY * 0.005));
+            this.offset.setLength(newLen);
           }, { passive: false });
         }
         update() {
-          const offset = new THREE.Vector3().setFromSpherical(this.spherical);
-          this.camera.position.copy(this.target).add(offset);
+          this.camera.position.copy(this.target).add(this.offset);
           this.camera.lookAt(this.target);
         }
       }
-
       // ==========================================================================
       // 1. CHEMISCHE STAMMDATEN
       // ==========================================================================
@@ -644,9 +657,10 @@
       // ==========================================================================
       // 5. PUNKTGENAUE KLICK- UND HOVER-ERKENNUNG
       // ==========================================================================
+      let paperZoom = 1.0;
       const paperCenter = () => ({ cx: lewisCanvas.clientWidth / 2, cy: lewisCanvas.clientHeight / 2 });
       const toScreen = (x, y) => { const { cx, cy } = paperCenter(); return { x: cx + x, y: cy + y }; };
-      const toModel = (sx, sy) => { const { cx, cy } = paperCenter(); return { x: sx - cx, y: sy - cy }; };
+      const toModel = (sx, sy) => { const { cx, cy } = paperCenter(); return { x: (sx - cx) / paperZoom, y: (sy - cy) / paperZoom }; };
 
       function distToSegmentExact(px, py, x1, y1, x2, y2) {
         const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy);
@@ -745,8 +759,9 @@
         drawPaper();
       }
 
-      function drawPaper() {
+     function drawPaper() {
         const w = lewisCanvas.clientWidth, h = lewisCanvas.clientHeight;
+        const { cx, cy } = paperCenter();
         ctx.save();
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.clearRect(0, 0, lewisCanvas.width, lewisCanvas.height);
@@ -754,16 +769,24 @@
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(0, 0, w, h);
 
+        // Kästchen-Gitter skaliert sauber mit dem Zoom mit
+        const gridStep = Math.max(6, SUB_GRID * paperZoom);
         ctx.strokeStyle = "#dbeafe";
         ctx.lineWidth = 1;
         ctx.beginPath();
-        for (let x = SUB_GRID; x < w; x += SUB_GRID) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
-        for (let y = SUB_GRID; y < h; y += SUB_GRID) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
+        for (let x = ((cx % gridStep) + gridStep) % gridStep; x < w; x += gridStep) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
+        for (let y = ((cy % gridStep) + gridStep) % gridStep; y < h; y += gridStep) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
         ctx.stroke();
 
         ctx.strokeStyle = "rgba(239, 68, 68, 0.3)";
         ctx.lineWidth = 1.5;
         ctx.beginPath(); ctx.moveTo(32, 0); ctx.lineTo(32, h); ctx.stroke();
+
+        // Ab hier alles (Zonen, Bindungen, Atome) maßstabsgetreu mit paperZoom zeichnen
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.scale(paperZoom, paperZoom);
+        ctx.translate(-cx, -cy);
 
         const showBondZones = Boolean(ELEMENT_SPECS[activeTool]);
         const showLPZones = (activeTool === 'lonepair');
@@ -875,6 +898,8 @@
           });
         });
 
+        ctx.restore(); // Zoom-Transformation beenden
+
         if (activeTool === 'eraser' && mouseCanvasPos.inside) {
           ctx.save();
           ctx.strokeStyle = hoverTarget ? "#dc2626" : "rgba(239, 68, 68, 0.55)";
@@ -882,6 +907,15 @@
           ctx.restore();
         }
       }
+
+      // Mausrad-Zoom auf dem 2D-Zeichenblatt (25 % bis 250 %)
+      lewisCanvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const factor = e.deltaY < 0 ? 1.12 : (1 / 1.12);
+        paperZoom = Math.max(0.25, Math.min(2.5, paperZoom * factor));
+        hoverTarget = findHitTarget(mouseCanvasPos.x, mouseCanvasPos.y, activeTool);
+        drawPaper();
+      }, { passive: false });
 
       // ==========================================================================
       // 7. MAUS-INTERAKTION AUF DEM ZEICHENBLATT
@@ -1237,8 +1271,30 @@
       }
 
       // ==========================================================================
+     // ==========================================================================
       // 9. DEUTSCHE IUPAC-NOMENKLATUR-ENGINE (INKL. HETEROCYCLEN & RINGEN)
       // ==========================================================================
+      const STEMS_EXT = [
+        "", "meth", "eth", "prop", "but", "pent", "hex", "hept", "oct", "non", "dec",
+        "undec", "dodec", "tridec", "tetradec", "pentadec", "hexadec", "heptadec", "octadec", "nonadec", "icos"
+      ];
+      const MULT_SIMPLE = [
+        "", "", "di", "tri", "tetra", "penta", "hexa", "hepta", "octa", "nona", "deca",
+        "undeca", "dodeca", "trideca", "tetradeca", "pentadeca", "hexadeca", "heptadeca", "octadeca", "nonadeca", "icosa"
+      ];
+      const MULT_COMPLEX = [
+        "", "", "bis", "tris", "tetrakis", "pentakis", "hexakis", "heptakis", "octakis", "nonakis", "decakis"
+      ];
+
+      const getStem = n => STEMS_EXT[n] || `c${n}`;
+      const getMultPrefix = (count, isComplex = false) => {
+        if (count <= 1) return "";
+        if (isComplex) return MULT_COMPLEX[count] || `${MULT_SIMPLE[count] || count + '-fach-'}kis`;
+        return MULT_SIMPLE[count] || `${count}-fach-`;
+      };
+      const cleanSubForSort = s => s.replace(/^[^a-zA-ZäöüÄÖÜ]+/, '').toLowerCase();
+      const sortSubNames = names => [...names].sort((a, b) => cleanSubForSort(a).localeCompare(cleanSubForSort(b), 'de'));
+
       function findAllHeavyCycles() {
         const ringCapable = atoms.filter(a => ['C', 'O', 'S', 'N'].includes(a.el));
         const cycles = [];
@@ -1264,6 +1320,92 @@
         const len = Math.min(arrA.length, arrB.length);
         for (let i = 0; i < len; i++) if (arrA[i] !== arrB[i]) return arrB[i] - arrA[i];
         return arrB.length - arrA.length;
+      }
+
+      function isRingCarboxylC(cId, ringAtomId) {
+        const neigh = getHeavyNeighbors(cId).filter(n => n.atom.id !== ringAtomId);
+        if (neigh.length !== 2) return false;
+        const hasOxo = neigh.some(n => n.atom.el === 'O' && n.bond.order === 2);
+        const hasOH = neigh.some(n => n.atom.el === 'O' && n.bond.order === 1 && getAttachedHCount(n.atom.id) === 1);
+        return hasOxo && hasOH;
+      }
+
+      function isRingFormylC(cId, ringAtomId) {
+        const neigh = getHeavyNeighbors(cId).filter(n => n.atom.id !== ringAtomId);
+        return neigh.length === 1 && neigh[0].atom.el === 'O' && neigh[0].bond.order === 2 && getAttachedHCount(cId) === 1;
+      }
+
+      function nameAminoGroup(nAtomId, parentCId, blockedSet) {
+        const nOthers = getHeavyNeighbors(nAtomId).filter(x => x.atom.id !== parentCId && !blockedSet.has(x.atom.id));
+        if (nOthers.length === 0) return 'amino';
+        const nSubMap = {};
+        nOthers.forEach(no => {
+          if (no.atom.el === 'C') {
+            const s = nameAlkylSubtree(no.atom.id, nAtomId, new Set([...blockedSet, parentCId]));
+            nSubMap[s] = (nSubMap[s] || 0) + 1;
+          }
+        });
+        const keys = sortSubNames(Object.keys(nSubMap));
+        if (keys.length === 0) return 'amino';
+        const nPref = keys.map(s => `${getMultPrefix(nSubMap[s], s.startsWith('('))}${s}`).join('-');
+        return `(${nPref}amino)`;
+      }
+
+      function collectSubstituentsAtCarbon(cId, blockedSet, excludePrincipalType = 'none', isAcidOrAldehydeC = false) {
+        const subs = [];
+        getHeavyNeighbors(cId).forEach(n => {
+          if (blockedSet.has(n.atom.id)) return;
+          if (n.atom.el === 'C') {
+            subs.push(nameAlkylSubtree(n.atom.id, cId, blockedSet));
+          } else if (['F', 'Cl', 'Br', 'I'].includes(n.atom.el)) {
+            subs.push({ F: 'fluor', Cl: 'chlor', Br: 'brom', I: 'iod' }[n.atom.el]);
+          } else if (n.atom.el === 'O') {
+            if (n.bond.order === 2) {
+              if (!isAcidOrAldehydeC && excludePrincipalType !== 'alkanone') subs.push('oxo');
+            } else if (n.bond.order === 1 && getAttachedHCount(n.atom.id) === 1) {
+              if (!isAcidOrAldehydeC && excludePrincipalType !== 'alkanol') subs.push('hydroxy');
+            } else if (n.bond.order === 1 && getHeavyNeighbors(n.atom.id).length === 2) {
+              const other = getHeavyNeighbors(n.atom.id).find(x => x.atom.id !== cId);
+              if (other && other.atom.el === 'C') {
+                const subName = nameAlkylSubtree(other.atom.id, n.atom.id, new Set([...blockedSet, cId]));
+                if (subName.endsWith('yl') && !subName.startsWith('(')) {
+                  subs.push(subName.slice(0, -2) + 'oxy');
+                } else {
+                  subs.push(`(${subName}oxy)`);
+                }
+              }
+            }
+          } else if (n.atom.el === 'S') {
+            if (n.bond.order === 1 && getAttachedHCount(n.atom.id) === 1) {
+              if (excludePrincipalType !== 'thiol') subs.push('sulfanyl');
+            } else if (n.bond.order === 1 && getHeavyNeighbors(n.atom.id).length === 2) {
+              const other = getHeavyNeighbors(n.atom.id).find(x => x.atom.id !== cId);
+              if (other && other.atom.el === 'C') {
+                subs.push(`(${nameAlkylSubtree(other.atom.id, n.atom.id, new Set([...blockedSet, cId]))}sulfanyl)`);
+              } else if (other && other.atom.el === 'S') {
+                const farC = getHeavyNeighbors(other.atom.id).find(x => x.atom.id !== n.atom.id);
+                if (farC && farC.atom.el === 'C') {
+                  subs.push(`(${nameAlkylSubtree(farC.atom.id, other.atom.id, new Set([...blockedSet, cId, n.atom.id]))}disulfanyl)`);
+                }
+              }
+            }
+          } else if (n.atom.el === 'N' && n.bond.order === 1) {
+            if (excludePrincipalType !== 'amine' || getAttachedHCount(n.atom.id) < 2) {
+              subs.push(nameAminoGroup(n.atom.id, cId, blockedSet));
+            }
+          }
+        });
+        return subs;
+      }
+
+      function formatPrefixString(subGroups) {
+        const sortedSubNames = sortSubNames(Object.keys(subGroups));
+        const prefixParts = sortedSubNames.map(sName => {
+          const locs = subGroups[sName].sort((a, b) => a - b);
+          const isComplex = sName.startsWith('(');
+          return `${locs.join(',')}-${getMultPrefix(locs.length, isComplex)}${sName}`;
+        });
+        return { prefixParts, prefixStr: prefixParts.join('-') };
       }
 
       function analyzeMolecule() {
@@ -1336,14 +1478,15 @@
           else if (halogens.length > 0) classLabel = 'Halogenalkan';
         }
 
+        const acidOrAldSet = new Set([...acids, ...aldehydes]);
         const allPaths = findAllCarbonPaths();
         let bestCandidate = null;
         for (const path of allPaths) {
-          const cand = evaluateOrientedChain(path, principalCIds, halogens);
+          const cand = evaluateOrientedChain(path, principalCIds, principalType, acidOrAldSet);
           if (!bestCandidate || compareChainCandidates(cand, bestCandidate) > 0) bestCandidate = cand;
         }
 
-        const mainChain = bestCandidate.path, chainLen = mainChain.length, stem = STEMS[chainLen] || `c${chainLen}`;
+        const mainChain = bestCandidate.path, chainLen = mainChain.length, stem = getStem(chainLen);
         const chainLabels = {}; mainChain.forEach((id, idx) => chainLabels[id] = `C${idx + 1}`);
 
         const doubleLocs = [], tripleLocs = [];
@@ -1357,43 +1500,19 @@
         const addSub = (name, loc) => { if (!subGroups[name]) subGroups[name] = []; subGroups[name].push(loc); };
 
         mainChain.forEach((cId, idx) => {
-          getHeavyNeighbors(cId).forEach(n => {
-            if (n.atom.el === 'C' && !mainSet.has(n.atom.id)) addSub(nameAlkylSubtree(n.atom.id, cId), idx + 1);
-            else if (n.atom.el === 'O' && n.bond.order === 1 && getHeavyNeighbors(n.atom.id).length === 2) {
-              const other = getHeavyNeighbors(n.atom.id).find(x => x.atom.id !== cId);
-              if (other && other.atom.el === 'C') {
-                const rPath = findPathsFromNode(other.atom.id, new Set([n.atom.id]))[0] || [other.atom.id];
-                addSub(`${STEMS[rPath.length] || 'c' + rPath.length}oxy`, idx + 1);
-              }
-            } else if (n.atom.el === 'S' && n.bond.order === 1 && getHeavyNeighbors(n.atom.id).length === 2) {
-              const other = getHeavyNeighbors(n.atom.id).find(x => x.atom.id !== cId);
-              if (other && other.atom.el === 'C') addSub(`(${nameAlkylSubtree(other.atom.id, n.atom.id)}sulfanyl)`, idx + 1);
-              else if (other && other.atom.el === 'S') {
-                const farC = getHeavyNeighbors(other.atom.id).find(x => x.atom.id !== n.atom.id);
-                if (farC && farC.atom.el === 'C') addSub(`(${nameAlkylSubtree(farC.atom.id, other.atom.id)}disulfanyl)`, idx + 1);
-              }
-            }
-          });
+          const loc = idx + 1;
+          const isPrincipalAcidOrAld = (principalType === 'acid' && acids.includes(cId)) || (principalType === 'alkanal' && aldehydes.includes(cId));
+          const subs = collectSubstituentsAtCarbon(cId, mainSet, principalType, isPrincipalAcidOrAld);
+          subs.forEach(s => addSub(s, loc));
         });
 
-        halogens.forEach(h => { const idx = mainChain.indexOf(h.cId); if (idx !== -1) addSub(h.name, idx + 1); });
-        if (principalType !== 'alkanol') alcohols.forEach(cId => { const idx = mainChain.indexOf(cId); if (idx !== -1) addSub('hydroxy', idx + 1); });
-        if (principalType !== 'thiol') thiols.forEach(cId => { const idx = mainChain.indexOf(cId); if (idx !== -1) addSub('sulfanyl', idx + 1); });
-        if (principalType !== 'amine') amines.forEach(cId => { const idx = mainChain.indexOf(cId); if (idx !== -1) addSub('amino', idx + 1); });
-        if (principalType !== 'alkanone') ketones.forEach(cId => { const idx = mainChain.indexOf(cId); if (idx !== -1) addSub('oxo', idx + 1); });
-
-        const sortedSubNames = Object.keys(subGroups).sort((a, b) => a.localeCompare(b, 'de'));
-        const prefixParts = sortedSubNames.map(sName => {
-          const locs = subGroups[sName].sort((a, b) => a - b);
-          return `${locs.join(',')}-${MULT_PREFIX[locs.length] || ""}${sName}`;
-        });
-        const prefixStr = prefixParts.join('-');
+        const { prefixParts, prefixStr } = formatPrefixString(subGroups);
 
         let unsatPart = "an";
         if (doubleLocs.length > 0 || tripleLocs.length > 0) {
           const parts = [];
-          if (doubleLocs.length > 0) parts.push(`${doubleLocs.length > 1 ? "a" : ""}-${doubleLocs.join(',')}-${MULT_PREFIX[doubleLocs.length]}en`);
-          if (tripleLocs.length > 0) parts.push(`${(doubleLocs.length === 0 && tripleLocs.length > 1) ? "a" : ""}-${tripleLocs.join(',')}-${MULT_PREFIX[tripleLocs.length]}in`);
+          if (doubleLocs.length > 0) parts.push(`${doubleLocs.length > 1 ? "a" : ""}-${doubleLocs.join(',')}-${getMultPrefix(doubleLocs.length)}en`);
+          if (tripleLocs.length > 0) parts.push(`${(doubleLocs.length === 0 && tripleLocs.length > 1) ? "a" : ""}-${tripleLocs.join(',')}-${getMultPrefix(tripleLocs.length)}in`);
           unsatPart = parts.join('');
         }
 
@@ -1401,11 +1520,11 @@
         let suffixStr = "";
         if (principalType === 'acid') suffixStr = funcLocs.length > 1 ? "disäure" : "säure";
         else if (principalType === 'alkanal') suffixStr = funcLocs.length > 1 ? "dial" : "al";
-        else if (principalType === 'alkanone') suffixStr = `-${funcLocs.join(',')}-${MULT_PREFIX[funcLocs.length]}on`;
+        else if (principalType === 'alkanone') suffixStr = `-${funcLocs.join(',')}-${getMultPrefix(funcLocs.length)}on`;
         else if (principalType === 'alkanol') {
-          suffixStr = (chainLen <= 2 && funcLocs.length === 1 && prefixParts.length === 0 && unsatPart === "an") ? "ol" : `-${funcLocs.join(',')}-${MULT_PREFIX[funcLocs.length]}ol`;
-        } else if (principalType === 'thiol') suffixStr = `-${funcLocs.join(',')}-${MULT_PREFIX[funcLocs.length]}thiol`;
-        else if (principalType === 'amine') suffixStr = `-${funcLocs.join(',')}-${MULT_PREFIX[funcLocs.length]}amin`;
+          suffixStr = (chainLen <= 2 && funcLocs.length === 1 && prefixParts.length === 0 && unsatPart === "an") ? "ol" : `-${funcLocs.join(',')}-${getMultPrefix(funcLocs.length)}ol`;
+        } else if (principalType === 'thiol') suffixStr = `-${funcLocs.join(',')}-${getMultPrefix(funcLocs.length)}thiol`;
+        else if (principalType === 'amine') suffixStr = `-${funcLocs.join(',')}-${getMultPrefix(funcLocs.length)}amin`;
 
         const coreNameRaw = `${stem}${unsatPart}${suffixStr}`;
         const fullNameDisplay = capFirstLetter(prefixStr ? `${prefixStr}${coreNameRaw}` : coreNameRaw);
@@ -1422,7 +1541,7 @@
       }
 
       function analyzeRingSystem(ringIds, formulaStr, molarMass) {
-        const n = ringIds.length, ringSet = new Set(ringIds), stem = STEMS[n] || `c${n}`;
+        const n = ringIds.length, ringSet = new Set(ringIds), stem = getStem(n);
         const HETERO_RANK = { O: 3, S: 2, N: 1, C: 0 }, HETERO_PREFIX = { O: 'oxa', S: 'thia', N: 'aza' };
 
         const orientations = [];
@@ -1443,7 +1562,7 @@
         ['O', 'S', 'N'].forEach(el => {
           const locs = [];
           orderedRing.forEach((id, idx) => { if (getAtom(id).el === el) locs.push(idx + 1); });
-          if (locs.length > 0) heteroParts.push(`${locs.join(',')}-${MULT_PREFIX[locs.length] || ""}${HETERO_PREFIX[el]}`);
+          if (locs.length > 0) heteroParts.push(`${locs.join(',')}-${getMultPrefix(locs.length)}${HETERO_PREFIX[el]}`);
         });
         const heteroPrefixStr = heteroParts.join('-'), isHeterocycle = heteroParts.length > 0;
 
@@ -1454,21 +1573,41 @@
           const loc = idx + 1;
           getHeavyNeighbors(rId).forEach(nb => {
             if (ringSet.has(nb.atom.id)) return;
-            if (nb.atom.el === 'C') addSub(nameAlkylSubtree(nb.atom.id, rId, ringSet), loc);
-            else if (['F', 'Cl', 'Br', 'I'].includes(nb.atom.el)) addSub({ F: 'fluor', Cl: 'chlor', Br: 'brom', I: 'iod' }[nb.atom.el], loc);
-            else if (nb.atom.el === 'O' && nb.bond.order === 1 && getAttachedHCount(nb.atom.id) === 1 && best.principalType !== 'alkanol') addSub('hydroxy', loc);
-            else if (nb.atom.el === 'O' && nb.bond.order === 2 && best.principalType !== 'alkanone') addSub('oxo', loc);
-            else if (nb.atom.el === 'S' && nb.bond.order === 1 && getAttachedHCount(nb.atom.id) === 1 && best.principalType !== 'thiol') addSub('sulfanyl', loc);
-            else if (nb.atom.el === 'N' && nb.bond.order === 1 && getAttachedHCount(nb.atom.id) === 2 && best.principalType !== 'amine') addSub('amino', loc);
+            if (nb.atom.el === 'C') {
+              if (isRingCarboxylC(nb.atom.id, rId)) {
+                if (best.principalType !== 'ringAcid') addSub('carboxy', loc);
+              } else if (isRingFormylC(nb.atom.id, rId)) {
+                if (best.principalType !== 'ringAldehyde') addSub('formyl', loc);
+              } else {
+                addSub(nameAlkylSubtree(nb.atom.id, rId, ringSet), loc);
+              }
+            } else if (['F', 'Cl', 'Br', 'I'].includes(nb.atom.el)) {
+              addSub({ F: 'fluor', Cl: 'chlor', Br: 'brom', I: 'iod' }[nb.atom.el], loc);
+            } else if (nb.atom.el === 'O') {
+              if (nb.bond.order === 2 && best.principalType !== 'alkanone') addSub('oxo', loc);
+              else if (nb.bond.order === 1 && getAttachedHCount(nb.atom.id) === 1 && best.principalType !== 'alkanol') addSub('hydroxy', loc);
+              else if (nb.bond.order === 1 && getHeavyNeighbors(nb.atom.id).length === 2) {
+                const other = getHeavyNeighbors(nb.atom.id).find(x => x.atom.id !== rId);
+                if (other && other.atom.el === 'C') {
+                  const subName = nameAlkylSubtree(other.atom.id, nb.atom.id, ringSet);
+                  addSub(subName.endsWith('yl') && !subName.startsWith('(') ? subName.slice(0, -2) + 'oxy' : `(${subName}oxy)`, loc);
+                }
+              }
+            } else if (nb.atom.el === 'S') {
+              if (nb.bond.order === 1 && getAttachedHCount(nb.atom.id) === 1 && best.principalType !== 'thiol') addSub('sulfanyl', loc);
+              else if (nb.bond.order === 1 && getHeavyNeighbors(nb.atom.id).length === 2) {
+                const other = getHeavyNeighbors(nb.atom.id).find(x => x.atom.id !== rId);
+                if (other && other.atom.el === 'C') addSub(`(${nameAlkylSubtree(other.atom.id, nb.atom.id, ringSet)}sulfanyl)`, loc);
+              }
+            } else if (nb.atom.el === 'N' && nb.bond.order === 1) {
+              if (best.principalType !== 'amine' || getAttachedHCount(nb.atom.id) < 2) {
+                addSub(nameAminoGroup(nb.atom.id, rId, ringSet), loc);
+              }
+            }
           });
         });
 
-        const sortedSubNames = Object.keys(subGroups).sort((a, b) => a.localeCompare(b, 'de'));
-        const subPrefixParts = sortedSubNames.map(sName => {
-          const locs = subGroups[sName].sort((a, b) => a - b);
-          return `${locs.join(',')}-${MULT_PREFIX[locs.length] || ""}${sName}`;
-        });
-        const subPrefixStr = subPrefixParts.join('-');
+        const { prefixParts: subPrefixParts, prefixStr: subPrefixStr } = formatPrefixString(subGroups);
 
         const dLocs = best.doubleLocs, tLocs = best.tripleLocs;
         const needUnsatLocs = isHeterocycle || dLocs.length + tLocs.length > 1 || subPrefixParts.length > 0 || best.principalLocs.length > 0;
@@ -1476,23 +1615,25 @@
         let unsatPart = "an";
         if (dLocs.length > 0 || tLocs.length > 0) {
           const parts = [];
-          if (dLocs.length > 0) parts.push(`${dLocs.length > 1 ? "a" : ""}${needUnsatLocs ? '-' + dLocs.join(',') + '-' : ''}${MULT_PREFIX[dLocs.length]}en`);
-          if (tLocs.length > 0) parts.push(`${(dLocs.length === 0 && tLocs.length > 1) ? "a" : ""}${needUnsatLocs ? '-' + tLocs.join(',') + '-' : ''}${MULT_PREFIX[tLocs.length]}in`);
+          if (dLocs.length > 0) parts.push(`${dLocs.length > 1 ? "a" : ""}${needUnsatLocs ? '-' + dLocs.join(',') + '-' : ''}${getMultPrefix(dLocs.length)}en`);
+          if (tLocs.length > 0) parts.push(`${(dLocs.length === 0 && tLocs.length > 1) ? "a" : ""}${needUnsatLocs ? '-' + tLocs.join(',') + '-' : ''}${getMultPrefix(tLocs.length)}in`);
           unsatPart = parts.join('');
         }
 
         let suffixStr = "";
         const pLocs = best.principalLocs;
         const needPLocs = isHeterocycle || pLocs.length > 1 || dLocs.length + tLocs.length > 0 || subPrefixParts.length > 0;
-        if (best.principalType === 'alkanone') suffixStr = `${needPLocs ? '-' + pLocs.join(',') + '-' : ''}${MULT_PREFIX[pLocs.length]}on`;
-        else if (best.principalType === 'alkanol') suffixStr = `${needPLocs ? '-' + pLocs.join(',') + '-' : ''}${MULT_PREFIX[pLocs.length]}ol`;
-        else if (best.principalType === 'thiol') suffixStr = `-${pLocs.join(',')}-${MULT_PREFIX[pLocs.length]}thiol`;
-        else if (best.principalType === 'amine') suffixStr = `-${pLocs.join(',')}-${MULT_PREFIX[pLocs.length]}amin`;
+        if (best.principalType === 'ringAcid') suffixStr = `${needPLocs ? '-' + pLocs.join(',') + '-' : ''}${getMultPrefix(pLocs.length)}carbonsäure`;
+        else if (best.principalType === 'ringAldehyde') suffixStr = `${needPLocs ? '-' + pLocs.join(',') + '-' : ''}${getMultPrefix(pLocs.length)}carbaldehyd`;
+        else if (best.principalType === 'alkanone') suffixStr = `${needPLocs ? '-' + pLocs.join(',') + '-' : ''}${getMultPrefix(pLocs.length)}on`;
+        else if (best.principalType === 'alkanol') suffixStr = `${needPLocs ? '-' + pLocs.join(',') + '-' : ''}${getMultPrefix(pLocs.length)}ol`;
+        else if (best.principalType === 'thiol') suffixStr = `-${pLocs.join(',')}-${getMultPrefix(pLocs.length)}thiol`;
+        else if (best.principalType === 'amine') suffixStr = `-${pLocs.join(',')}-${getMultPrefix(pLocs.length)}amin`;
 
         const allPrefixes = [subPrefixStr, heteroPrefixStr].filter(Boolean).join('-');
         const cycloCore = `cyclo${stem}${unsatPart}${suffixStr}`;
         const fullNameDisplay = capFirstLetter(allPrefixes ? `${allPrefixes}${cycloCore}` : cycloCore);
-        const hwName = isHeterocycle ? computeHantzschWidmanName(orderedRing, dLocs, tLocs, subPrefixStr) : "";
+        const hwName = isHeterocycle ? computeHantzschWidmanName(orderedRing, dLocs, tLocs, subPrefixStr, suffixStr) : "";
 
         const classLabel = isHeterocycle
           ? `Heterocyclus (${n}-gliedriger Ring)`
@@ -1516,25 +1657,56 @@
           if (r > 0) { heteroLocs.push(idx + 1); heteroRanksAtPos.push(-r); }
         });
 
-        const ketones = [], alcohols = [], thiols = [], amines = [], subLocs = [], subPairs = [];
+        const rAcids = [], rAldehydes = [], ketones = [], alcohols = [], thiols = [], amines = [];
         ordered.forEach((rId, idx) => {
           const loc = idx + 1;
           getHeavyNeighbors(rId).forEach(nb => {
             if (ringSet.has(nb.atom.id)) return;
-            if (nb.atom.el === 'O' && nb.bond.order === 2) ketones.push(loc);
+            if (nb.atom.el === 'C' && isRingCarboxylC(nb.atom.id, rId)) rAcids.push(loc);
+            else if (nb.atom.el === 'C' && isRingFormylC(nb.atom.id, rId)) rAldehydes.push(loc);
+            else if (nb.atom.el === 'O' && nb.bond.order === 2) ketones.push(loc);
             else if (nb.atom.el === 'O' && nb.bond.order === 1 && getAttachedHCount(nb.atom.id) === 1) alcohols.push(loc);
             else if (nb.atom.el === 'S' && nb.bond.order === 1 && getAttachedHCount(nb.atom.id) === 1) thiols.push(loc);
             else if (nb.atom.el === 'N' && nb.bond.order === 1 && getAttachedHCount(nb.atom.id) === 2) amines.push(loc);
-            else if (nb.atom.el === 'C') { subLocs.push(loc); subPairs.push({ loc, name: nameAlkylSubtree(nb.atom.id, rId, ringSet) }); }
-            else if (['F', 'Cl', 'Br', 'I'].includes(nb.atom.el)) { subLocs.push(loc); subPairs.push({ loc, name: { F: 'fluor', Cl: 'chlor', Br: 'brom', I: 'iod' }[nb.atom.el] }); }
           });
         });
 
         let principalType = 'none', principalLocs = [];
-        if (ketones.length > 0) { principalType = 'alkanone'; principalLocs = ketones; }
+        if (rAcids.length > 0) { principalType = 'ringAcid'; principalLocs = rAcids; }
+        else if (rAldehydes.length > 0) { principalType = 'ringAldehyde'; principalLocs = rAldehydes; }
+        else if (ketones.length > 0) { principalType = 'alkanone'; principalLocs = ketones; }
         else if (alcohols.length > 0) { principalType = 'alkanol'; principalLocs = alcohols; }
         else if (thiols.length > 0) { principalType = 'thiol'; principalLocs = thiols; }
         else if (amines.length > 0) { principalType = 'amine'; principalLocs = amines; }
+
+        const subLocs = [], subPairs = [];
+        ordered.forEach((rId, idx) => {
+          const loc = idx + 1;
+          getHeavyNeighbors(rId).forEach(nb => {
+            if (ringSet.has(nb.atom.id)) return;
+            if (nb.atom.el === 'C') {
+              if (isRingCarboxylC(nb.atom.id, rId)) {
+                if (principalType !== 'ringAcid') { subLocs.push(loc); subPairs.push({ loc, name: 'carboxy' }); }
+              } else if (isRingFormylC(nb.atom.id, rId)) {
+                if (principalType !== 'ringAldehyde') { subLocs.push(loc); subPairs.push({ loc, name: 'formyl' }); }
+              } else {
+                const s = nameAlkylSubtree(nb.atom.id, rId, ringSet);
+                subLocs.push(loc); subPairs.push({ loc, name: s });
+              }
+            } else if (['F', 'Cl', 'Br', 'I'].includes(nb.atom.el)) {
+              const s = { F: 'fluor', Cl: 'chlor', Br: 'brom', I: 'iod' }[nb.atom.el];
+              subLocs.push(loc); subPairs.push({ loc, name: s });
+            } else if (nb.atom.el === 'O' && nb.bond.order === 2 && principalType !== 'alkanone') {
+              subLocs.push(loc); subPairs.push({ loc, name: 'oxo' });
+            } else if (nb.atom.el === 'O' && nb.bond.order === 1 && getAttachedHCount(nb.atom.id) === 1 && principalType !== 'alkanol') {
+              subLocs.push(loc); subPairs.push({ loc, name: 'hydroxy' });
+            } else if (nb.atom.el === 'S' && nb.bond.order === 1 && getAttachedHCount(nb.atom.id) === 1 && principalType !== 'thiol') {
+              subLocs.push(loc); subPairs.push({ loc, name: 'sulfanyl' });
+            } else if (nb.atom.el === 'N' && nb.bond.order === 1 && (principalType !== 'amine' || getAttachedHCount(nb.atom.id) < 2)) {
+              subLocs.push(loc); subPairs.push({ loc, name: nameAminoGroup(nb.atom.id, rId, ringSet) });
+            }
+          });
+        });
 
         const doubleLocs = [], tripleLocs = [], multLocs = [];
         let boundaryMultPenalty = 0;
@@ -1548,7 +1720,7 @@
           }
         }
         subLocs.sort((a, b) => a - b);
-        subPairs.sort((a, b) => a.name.localeCompare(b.name, 'de'));
+        subPairs.sort((a, b) => cleanSubForSort(a.name).localeCompare(cleanSubForSort(b.name), 'de'));
         return { ordered, firstRank, heteroLocs, heteroRanksAtPos, principalType, principalLocs, boundaryMultPenalty, multLocs, doubleLocs, tripleLocs, subLocs, alphaLocs: subPairs.map(p => p.loc) };
       }
 
@@ -1564,7 +1736,7 @@
         return compareLocantArrays(a.alphaLocs, b.alphaLocs);
       }
 
-      function computeHantzschWidmanName(orderedRing, dLocs, tLocs, subPrefixStr) {
+      function computeHantzschWidmanName(orderedRing, dLocs, tLocs, subPrefixStr, suffixStr = "") {
         if (tLocs.length > 0) return "";
         const n = orderedRing.length;
         if (n < 3 || n > 7) return "";
@@ -1585,7 +1757,7 @@
         if (!isMaxUnsat && !isFullySat) return "";
 
         const suffix = isMaxUnsat ? UNSAT_END[n] : SAT_END[n];
-        const hParts = heteroTypes.map((h, idx) => `${h.locs.join(',')}-${MULT_PREFIX[h.locs.length] || ""}${HETERO_HW[h.el]}${idx === heteroTypes.length - 1 ? '' : 'a'}`);
+        const hParts = heteroTypes.map((h, idx) => `${h.locs.join(',')}-${getMultPrefix(h.locs.length)}${HETERO_HW[h.el]}${idx === heteroTypes.length - 1 ? '' : 'a'}`);
         let hwCore = (heteroTypes.length === 1 && heteroTypes[0].locs.length === 1) ? HETERO_HW[heteroTypes[0].el] + suffix : hParts.join('-') + suffix;
 
         let indicatedH = "";
@@ -1598,7 +1770,9 @@
             indicatedH = `${bestH}H-`;
           }
         }
-        return capFirstLetter(`${subPrefixStr ? subPrefixStr + '-' : ''}${indicatedH}${hwCore}`);
+        const fullCore = `${indicatedH}${hwCore}${suffixStr}`;
+        const needHyphen = subPrefixStr && /^[0-9]/.test(fullCore);
+        return capFirstLetter(`${subPrefixStr ? subPrefixStr + (needHyphen ? '-' : '') : ''}${fullCore}`);
       }
 
       function analyzeBenzeneOrPhenyl(ringIds, formulaStr, molarMass) {
@@ -1609,10 +1783,21 @@
           getHeavyNeighbors(cId).forEach(n => {
             if (!ringSet.has(n.atom.id)) {
               let subName = "", trivialBase = "";
-              if (n.atom.el === 'O' && getAttachedHCount(n.atom.id) === 1) { subName = "hydroxy"; trivialBase = "Phenol"; }
-              else if (n.atom.el === 'N' && getAttachedHCount(n.atom.id) === 2) { subName = "amino"; trivialBase = "Anilin"; }
-              else if (['F', 'Cl', 'Br', 'I'].includes(n.atom.el)) subName = { F: 'fluor', Cl: 'chlor', Br: 'brom', I: 'iod' }[n.atom.el];
-              else if (n.atom.el === 'C') { subName = nameAlkylSubtree(n.atom.id, cId, ringSet); if (subName === 'methyl') trivialBase = "Toluol"; }
+              if (n.atom.el === 'O' && n.bond.order === 1 && getAttachedHCount(n.atom.id) === 1) { subName = "hydroxy"; trivialBase = "Phenol"; }
+              else if (n.atom.el === 'S' && n.bond.order === 1 && getAttachedHCount(n.atom.id) === 1) { subName = "sulfanyl"; trivialBase = "Thiophenol (Benzolthiol)"; }
+              else if (n.atom.el === 'N' && n.bond.order === 1) {
+                subName = nameAminoGroup(n.atom.id, cId, ringSet);
+                if (subName === 'amino') trivialBase = "Anilin";
+              } else if (['F', 'Cl', 'Br', 'I'].includes(n.atom.el)) {
+                subName = { F: 'fluor', Cl: 'chlor', Br: 'brom', I: 'iod' }[n.atom.el];
+              } else if (n.atom.el === 'C') {
+                if (isRingCarboxylC(n.atom.id, cId)) { subName = "carboxy"; trivialBase = "Benzoesäure (Benzolcarbonsäure)"; }
+                else if (isRingFormylC(n.atom.id, cId)) { subName = "formyl"; trivialBase = "Benzaldehyd (Benzolcarbaldehyd)"; }
+                else {
+                  subName = nameAlkylSubtree(n.atom.id, cId, ringSet);
+                  if (subName === 'methyl') trivialBase = "Toluol";
+                }
+              }
               if (subName) ringSubs.push({ ringIndex: idx, name: subName, trivialBase });
             }
           });
@@ -1642,19 +1827,28 @@
           };
         }
 
-        let bestSubLocs = null, bestMap = null;
+        let bestSubLocs = null, bestAlphaLocs = null, bestMap = null;
         for (let start = 0; start < 6; start++) {
           for (const dir of [1, -1]) {
-            const locList = [], tempMap = {};
+            const locList = [], pairs = [], tempMap = {};
             ringSubs.forEach(s => {
               const loc = ((s.ringIndex - start) * dir + 60) % 6 + 1;
-              locList.push(loc); if (!tempMap[s.name]) tempMap[s.name] = []; tempMap[s.name].push(loc);
+              locList.push(loc);
+              pairs.push({ loc, name: s.name });
+              if (!tempMap[s.name]) tempMap[s.name] = [];
+              tempMap[s.name].push(loc);
             });
             locList.sort((a, b) => a - b);
-            if (!bestSubLocs || compareLocantArrays(locList, bestSubLocs) > 0) { bestSubLocs = locList; bestMap = tempMap; }
+            pairs.sort((a, b) => cleanSubForSort(a.name).localeCompare(cleanSubForSort(b.name), 'de'));
+            const alphaLocs = pairs.map(p => p.loc);
+            const cmp1 = bestSubLocs ? compareLocantArrays(locList, bestSubLocs) : 1;
+            const cmp2 = (cmp1 === 0 && bestAlphaLocs) ? compareLocantArrays(alphaLocs, bestAlphaLocs) : 0;
+            if (cmp1 > 0 || (cmp1 === 0 && cmp2 > 0)) {
+              bestSubLocs = locList; bestAlphaLocs = alphaLocs; bestMap = tempMap;
+            }
           }
         }
-        const pref = Object.keys(bestMap).sort().map(name => `${bestMap[name].sort((a, b) => a - b).join(',')}-${MULT_PREFIX[bestMap[name].length]}${name}`).join('-');
+        const { prefixStr: pref } = formatPrefixString(bestMap);
         const full = capFirstLetter(`${pref}benzol`);
         return {
           classLabel: "Mehrfach substituierter Aromat", iupacName: full, altName: "", formulaStr, molarMass, mainChain: ringIds, chainLabels,
@@ -1673,7 +1867,7 @@
         const alkylPaths = findPathsFromNode(alkylStartC.id, new Set([bridgeO.id]));
         let bestAlkylPath = alkylPaths[0]; for (const p of alkylPaths) if (p.length > bestAlkylPath.length) bestAlkylPath = p;
 
-        const acidStem = STEMS[bestAcidPath.length] || `c${bestAcidPath.length}`;
+        const acidStem = getStem(bestAcidPath.length);
         const alkylName = nameAlkylSubtree(alkylStartC.id, bridgeO.id, new Set([acylC.id]));
         const schoolName = capFirstLetter(`${acidStem}ansäure${alkylName}ester`), iupacAlt = capFirstLetter(`${alkylName}${acidStem}anoat`);
         const chainLabels = {};
@@ -1720,7 +1914,7 @@
         return paths;
       }
 
-      function evaluateOrientedChain(path, principalCIds, halogens) {
+      function evaluateOrientedChain(path, principalCIds, principalType, acidOrAldSet) {
         const pathSet = new Set(path);
         const principalHits = principalCIds.filter(id => pathSet.has(id)).length;
         const principalLocs = principalCIds.map(id => path.indexOf(id) + 1).filter(l => l > 0).sort((a, b) => a - b);
@@ -1731,14 +1925,16 @@
         }
         const subLocs = [], subPairs = [];
         path.forEach((cId, idx) => {
-          getHeavyNeighbors(cId).forEach(n => {
-            if (n.atom.el === 'C' && !pathSet.has(n.atom.id)) {
-              subLocs.push(idx + 1); subPairs.push({ loc: idx + 1, name: nameAlkylSubtree(n.atom.id, cId) });
-            }
+          const loc = idx + 1;
+          const isPrincipalAcidOrAld = (principalType === 'acid' || principalType === 'alkanal') && acidOrAldSet.has(cId);
+          const subs = collectSubstituentsAtCarbon(cId, pathSet, principalType, isPrincipalAcidOrAld);
+          subs.forEach(s => {
+            subLocs.push(loc);
+            subPairs.push({ loc, name: s });
           });
         });
-        halogens.forEach(h => { const idx = path.indexOf(h.cId); if (idx !== -1) { subLocs.push(idx + 1); subPairs.push({ loc: idx + 1, name: h.name }); } });
-        subLocs.sort((a, b) => a - b); subPairs.sort((a, b) => a.name.localeCompare(b.name, 'de'));
+        subLocs.sort((a, b) => a - b);
+        subPairs.sort((a, b) => cleanSubForSort(a.name).localeCompare(cleanSubForSort(b.name), 'de'));
         return { path, principalHits, multCount: multLocs.length, length: path.length, doubleCount: doubleLocs.length, principalLocs, multLocs, doubleLocs, subCount: subLocs.length, subLocs, alphaLocs: subPairs.map(p => p.loc) };
       }
 
@@ -1758,22 +1954,53 @@
       function nameAlkylSubtree(rootCId, parentId, extraBlocked = new Set()) {
         const blocked = new Set([parentId, ...extraBlocked]);
         const paths = findPathsFromNode(rootCId, blocked);
-        let longest = paths[0]; for (const p of paths) if (p.length > longest.length) longest = p;
-        const mainSet = new Set(longest), subSubs = {};
-        longest.forEach((cId, idx) => {
-          getHeavyNeighbors(cId).forEach(n => {
-            if (n.atom.el === 'C' && !blocked.has(n.atom.id) && !mainSet.has(n.atom.id)) {
-              const subName = nameAlkylSubtree(n.atom.id, cId, blocked);
-              if (!subSubs[subName]) subSubs[subName] = [];
-              subSubs[subName].push(idx + 1);
-            }
-          });
-        });
-        const stem = STEMS[longest.length] || `c${longest.length}`;
-        const subParts = Object.keys(subSubs).sort().map(s => `${subSubs[s].sort((a, b) => a - b).join(',')}-${MULT_PREFIX[subSubs[s].length]}${s}`);
-        return subParts.length === 0 ? `${stem}yl` : `(${subParts.join('-')}${stem}yl)`;
-      }
+        let longest = paths[0] || [rootCId];
+        for (const p of paths) {
+          if (p.length > longest.length) longest = p;
+        }
 
+        const mainSet = new Set(longest), subBlocked = new Set([...blocked, ...mainSet]);
+        const subSubs = {};
+        const addSubSub = (name, loc) => { if (!subSubs[name]) subSubs[name] = []; subSubs[name].push(loc); };
+
+        longest.forEach((cId, idx) => {
+          const loc = idx + 1;
+          const subs = collectSubstituentsAtCarbon(cId, subBlocked, 'none', false);
+          subs.forEach(s => addSubSub(s, loc));
+        });
+
+        const stem = getStem(longest.length);
+        const dLocs = [], tLocs = [];
+        for (let i = 0; i < longest.length - 1; i++) {
+          const b = getBondBetween(longest[i], longest[i + 1]);
+          if (b && b.order === 2) dLocs.push(i + 1);
+          if (b && b.order === 3) tLocs.push(i + 1);
+        }
+
+        let baseYl = `${stem}yl`;
+        if (dLocs.length > 0 || tLocs.length > 0) {
+          if (longest.length === 2 && dLocs.length === 1 && tLocs.length === 0) baseYl = "ethenyl";
+          else if (longest.length === 2 && tLocs.length === 1 && dLocs.length === 0) baseYl = "ethinyl";
+          else {
+            const uParts = [];
+            if (dLocs.length > 0) uParts.push(`${dLocs.length > 1 ? "a" : ""}-${dLocs.join(',')}-${getMultPrefix(dLocs.length)}en`);
+            if (tLocs.length > 0) uParts.push(`${(dLocs.length === 0 && tLocs.length > 1) ? "a" : ""}-${tLocs.join(',')}-${getMultPrefix(tLocs.length)}in`);
+            baseYl = `${stem}${uParts.join('')}-1-yl`;
+          }
+        }
+
+        const sortedKeys = sortSubNames(Object.keys(subSubs));
+        if (sortedKeys.length === 0) {
+          return (dLocs.length + tLocs.length > 0 && longest.length > 2) ? `(${baseYl})` : baseYl;
+        }
+
+        const subParts = sortedKeys.map(s => {
+          const locs = subSubs[s].sort((a, b) => a - b);
+          const mPref = getMultPrefix(locs.length, s.startsWith('('));
+          return longest.length === 1 ? `${mPref}${s}` : `${locs.join(',')}-${mPref}${s}`;
+        });
+        return `(${subParts.join('-')}${baseYl})`;
+      }
       // ==========================================================================
       // 10. KOLLISIONSFREIER 3D-MOLEKÜL-GENERATOR (VSEPR)
       // ==========================================================================
@@ -2080,10 +2307,173 @@
 
       let isQuizMode = false, revealedSteps = 4;
 
+      const TRIVIAL_NAMES = {
+        // Alkane, Alkene, Alkine
+        "2-methylpropan": "Isobutan",
+        "2-methylbutan": "Isopentan",
+        "2,2-dimethylpropan": "Neopentan",
+        "2,2,4-trimethylpentan": "Isooctan",
+        "ethen": "Ethylen",
+        "propen": "Propylen",
+        "prop-1-en": "Propylen",
+        "2-methylpropen": "Isobuten (Isobutylen)",
+        "2-methylprop-1-en": "Isobuten (Isobutylen)",
+        "buta-1,3-dien": "Butadien",
+        "2-methylbuta-1,3-dien": "Isopren",
+        "ethin": "Acetylen",
+
+        // Halogenkohlenwasserstoffe
+        "chlormethan": "Methylchlorid",
+        "chlorethan": "Ethylchlorid",
+        "dichlormethan": "Methylenchlorid",
+        "trichlormethan": "Chloroform",
+        "tribrommethan": "Bromoform",
+        "triiodmethan": "Iodoform",
+        "tetrachlormethan": "Tetrachlorkohlenstoff (Tetra)",
+        "chlorethen": "Vinylchlorid",
+        "1-chlorethen": "Vinylchlorid",
+        "1,1,2,2-tetrafluorethen": "Tetrafluorethylen (Teflon-Monomer)",
+
+        // Alkohole & mehrwertige Alkohole
+        "methanol": "Holzgeist (veraltet)",
+        "ethanol": "Weingeist / Trinkalkohol (Systematisch: Ethan-1-ol)",
+        "propan-1-ol": "n-Propanol (Propylalkohol)",
+        "propan-2-ol": "Isopropanol (Isopropylalkohol)",
+        "butan-1-ol": "n-Butanol",
+        "butan-2-ol": "sec-Butanol",
+        "2-methylpropan-1-ol": "Isobutanol",
+        "2-methylpropan-2-ol": "tert-Butanol",
+        "ethan-1,2-diol": "Glycol (Ethylenglycol)",
+        "propan-1,2-diol": "Propylenglycol",
+        "propan-1,2,3-triol": "Glycerin (Glycerol)",
+        "prop-2-en-1-ol": "Allylalkohol",
+
+        // Aldehyde & Ketone
+        "methanal": "Formaldehyd",
+        "ethanal": "Acetaldehyd",
+        "propanal": "Propionaldehyd",
+        "butanal": "Butyraldehyd",
+        "ethandial": "Glyoxal",
+        "prop-2-enal": "Acrolein",
+        "propan-2-on": "Aceton (Dimethylketon)",
+        "butan-2-on": "Methylethylketon (MEK)",
+        "butan-2,3-dion": "Diacetyl",
+
+        // Carbonsäuren (Alkansäuren & Dicarbonsäuren)
+        "methansäure": "Ameisensäure (Salze: Formiate)",
+        "ethansäure": "Essigsäure (Salze: Acetate)",
+        "propansäure": "Propionsäure (Salze: Propionate)",
+        "butansäure": "Buttersäure (Salze: Butyrate)",
+        "2-methylpropansäure": "Isobuttersäure",
+        "pentansäure": "Valeriansäure (Salze: Valerate)",
+        "3-methylbutansäure": "Isovaleriansäure",
+        "hexansäure": "Capronsäure",
+        "octansäure": "Caprylsäure",
+        "decansäure": "Caprinsäure",
+        "dodecansäure": "Laurinsäure",
+        "tetradecansäure": "Myristinsäure",
+        "hexadecansäure": "Palmitinsäure",
+        "octadecansäure": "Stearinsäure",
+        "ethandisäure": "Oxalsäure (Salze: Oxalate)",
+        "propandisäure": "Malonsäure (Salze: Malonate)",
+        "butandisäure": "Bernsteinsäure (Salze: Succinate)",
+        "pentandisäure": "Glutarsäure (Salze: Glutarate)",
+        "hexandisäure": "Adipinsäure (Salze: Adipate)",
+
+        // Ungesättigte Säuren, Hydroxy- & Ketosäuren
+        "prop-2-ensäure": "Acrylsäure",
+        "2-methylprop-2-ensäure": "Methacrylsäure",
+        "but-2-endisäure": "Fumarsäure / Maleinsäure",
+        "2-hydroxyethansäure": "Glycolsäure",
+        "hydroxyethansäure": "Glycolsäure",
+        "2-hydroxypropansäure": "Milchsäure (Salze: Lactate)",
+        "3-hydroxypropansäure": "Hydracrylsäure",
+        "2-oxopropansäure": "Brenztraubensäure (Salze: Pyruvate)",
+        "3-oxobutansäure": "Acetessigsäure",
+        "2-hydroxybutandisäure": "Äpfelsäure (Salze: Malate)",
+        "2,3-dihydroxybutandisäure": "Weinsäure (Salze: Tartrate)",
+        "2-chlorethansäure": "Chloressigsäure",
+        "2,2,2-trichlorethansäure": "Trichloressigsäure",
+
+        // Aminosäuren
+        "2-aminoethansäure": "Glycin (Gly)",
+        "aminoethansäure": "Glycin (Gly)",
+        "2-aminopropansäure": "Alanin (Ala)",
+        "2-amino-3-methylbutansäure": "Valin (Val)",
+        "2-amino-4-methylpentansäure": "Leucin (Leu)",
+        "2-amino-3-methylpentansäure": "Isoleucin (Ile)",
+        "2-amino-3-hydroxypropansäure": "Serin (Ser)",
+        "2-amino-3-hydroxybutansäure": "Threonin (Thr)",
+        "2-amino-3-sulfanylpropansäure": "Cystein (Cys)",
+        "2-aminobutandisäure": "Asparaginsäure (Asp)",
+        "2-aminopentandisäure": "Glutaminsäure (Glu)",
+        "2,6-diaminohexansäure": "Lysin (Lys)",
+
+        // Ether, Thiole & Amine
+        "methoxymethan": "Dimethylether",
+        "ethoxyethan": "Diethylether (Äther)",
+        "methoxyethan": "Ethylmethyl-ether",
+        "methan-1-amin": "Methylamin",
+        "ethan-1-amin": "Ethylamin",
+        "butan-1,4-diamin": "Putrescin",
+        "pentan-1,5-diamin": "Cadaverin",
+        "methan-1-thiol": "Methylmercaptan",
+        "ethan-1-thiol": "Ethylmercaptan",
+
+        // Typische Ester (Aromastoffe & Lösungsmittel)
+        "ethansäureethylester": "Essigsäureethylester (Ethylacetat)",
+        "ethansäuremethylester": "Essigsäuremethylester (Methylacetat)",
+        "methansäureethylester": "Ameisensäureethylester (Rum-Aroma)",
+        "butansäureethylester": "Buttersäureethylester (Ananas-Aroma)",
+        "ethansäurepentylester": "Essigsäurepentylester (Birnen-Aroma)",
+        "ethansäure-(3-methylbutyl)ester": "Essigsäureisoamylester (Bananen-Aroma)",
+
+        // Aromaten & Heterocyclen
+        "ethenylbenzol": "Styrol",
+        "1,2-dimethylbenzol": "ortho-Xylol (o-Xylol)",
+        "1,3-dimethylbenzol": "meta-Xylol (m-Xylol)",
+        "1,4-dimethylbenzol": "para-Xylol (p-Xylol)",
+        "1,2-dihydroxybenzol": "Brenzcatechin",
+        "1,3-dihydroxybenzol": "Resorcin",
+        "1,4-dihydroxybenzol": "Hydrochinon",
+        "1-carboxy-2-hydroxybenzol": "Salicylsäure",
+        "1,2-dicarboxybenzol": "Phthalsäure",
+        "1,4-dicarboxybenzol": "Terephthalsäure",
+        "1-oxacyclopropan": "Ethylenoxid (Oxiran)",
+        "1-oxacyclopentan": "Tetrahydrofuran (THF)",
+        "1-oxacyclopenta-2,4-dien": "Furan",
+        "1-thiacyclopenta-2,4-dien": "Thiophen",
+        "1-azacyclopenta-2,4-dien": "Pyrrol",
+        "1-azacyclopentan": "Pyrrolidin",
+        "1-azacyclohexan": "Piperidin",
+        "1-azacyclohexa-1,3,5-trien": "Pyridin",
+        "1-azacyclohexa-2,4,6-trien": "Pyridin",
+        "1,4-dioxacyclohexan": "1,4-Dioxan"
+      };
+
+      function applyTrivialName(analysis) {
+        if (!analysis || !analysis.iupacName) return;
+        const key = analysis.iupacName.trim().toLowerCase();
+        const trivial = TRIVIAL_NAMES[key];
+        if (!trivial) return;
+        if (!analysis.altName) {
+          analysis.altName = `Trivialname: ${trivial}`;
+        } else if (!analysis.altName.toLowerCase().includes(trivial.toLowerCase().split(' ')[0])) {
+          analysis.altName += ` • Trivialname: ${trivial}`;
+        }
+        if (analysis.steps && analysis.steps.length > 0) {
+          const lastStep = analysis.steps[analysis.steps.length - 1];
+          if (!lastStep.text.includes("Trivialname")) {
+            lastStep.text += `<br><span style="color:#38bdf8;">💡 Bekannter Trivialname: <strong>${trivial}</strong></span>`;
+          }
+        }
+      }
+
       function translateTo3DAndNomenclature() {
         if (!validateLewisStructure()) return;
         document.getElementById('empty-3d-overlay').classList.remove('visible');
         currentAnalysis = analyzeMolecule();
+        applyTrivialName(currentAnalysis);
         build3DMolecule();
         renderNomenclaturePanel();
       }
