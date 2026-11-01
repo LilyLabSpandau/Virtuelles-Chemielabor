@@ -1,1186 +1,1594 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Labortisch – Nachweis-Spiel (Lern/Experte)</title>
-<style>
-  :root{
-    --bg:#0b1020; --line:#223055; --text:#e8eefc; --muted:#a9b3cc;
-    --wood1:#6b4e2e; --wood2:#5a3f25;
-    --glass: rgba(255,255,255,.12); --glassLine: rgba(255,255,255,.42);
-  }
-  *{box-sizing:border-box}
-  body{
-    margin:0;
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-    background: radial-gradient(1100px 700px at 20% 0%, #1a2a58 0%, var(--bg) 55%);
-    color:var(--text);
-  }
-  header{
-    position:sticky; top:0; z-index:30;
-    padding:12px 14px;
-    background: linear-gradient(180deg, rgba(16,26,51,.96), rgba(16,26,51,.78));
-    border-bottom:1px solid var(--line);
-    backdrop-filter: blur(8px);
-    display:flex; gap:10px; align-items:center; flex-wrap:wrap;
-  }
-  header h1{font-size:14px; margin:0; font-weight:750}
-  .chip{
-    font-size:12px; color:var(--muted);
-    border:1px solid var(--line);
-    background: rgba(2,6,23,.35);
-    padding:6px 10px; border-radius:999px;
-    display:inline-flex; gap:8px; align-items:center;
-  }
-  .chip b{color:var(--text)}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Virtuelles 3D-Chemielabor: Salze identifizieren</title>
+  <style>
+    * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+    html, body { height: 100%; }
+    body { margin: 0; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; background: #181c22; color: #f0f4f8; }
+    #canvas-container { position: fixed; inset: 0; }
+    #canvas-container canvas { display: block; touch-action: none; }
 
-  .wrap{
-    max-width: 1200px; margin:0 auto; padding:12px;
-    display:grid; grid-template-columns: 380px 1fr; gap:12px;
-  }
-  @media (max-width: 980px){ .wrap{grid-template-columns:1fr} }
+    #ui-panel {
+      position: absolute; top: 14px; left: 14px; width: 350px; max-height: calc(100vh - 78px); overflow-y: auto;
+      background: rgba(20, 24, 31, 0.92); backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.14); border-radius: 12px;
+      padding: 12px 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    }
+    #ui-panel.collapsed .collapsible { display: none; }
+    .ui-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+    h1 { font-size: 16px; margin: 0 0 3px 0; color: #64b5f6; }
+    p.sub { font-size: 11.5px; color: #b0bec5; margin: 0 0 9px 0; line-height: 1.35; }
+    #btn-mode { flex: 0 0 auto; height: 28px; padding: 0 9px; font-size: 11.5px; white-space: nowrap; margin-left: auto; }
+    #btn-collapse { flex: 0 0 auto; width: 28px; height: 28px; padding: 0; background: rgba(255,255,255,0.1); font-size: 13px; }
+    .step-box {
+      background: rgba(255,255,255,0.06); border-left: 3px solid #64b5f6;
+      padding: 7px 10px; border-radius: 4px; font-size: 12px; margin-bottom: 9px; line-height: 1.4;
+    }
+    .step-box.warn { border-left-color: #ffb74d; background: rgba(255,183,77,0.12); }
+    .step-box.ok   { border-left-color: #66bb6a; background: rgba(102,187,106,0.12); }
+    .step-box.bad  { border-left-color: #ef5350; background: rgba(239,83,80,0.14); }
+    .tool-status { font-size: 11.5px; padding: 6px 9px; background: rgba(0,0,0,0.4); border-radius: 6px; margin-bottom: 9px; color: #ffd54f; }
+    .sec { font-size: 10.5px; color: #90a4ae; text-transform: uppercase; letter-spacing: 0.5px; margin: 8px 0 4px; display: flex; justify-content: space-between; align-items: center; }
+    .checklist { font-size: 11.5px; display: flex; flex-direction: column; gap: 3px; margin-bottom: 8px; }
+    .chk { display: flex; gap: 7px; align-items: flex-start; background: rgba(255,255,255,0.04); padding: 4px 8px; border-radius: 4px; line-height: 1.3; color: #90a4ae; }
+    .chk .ico { width: 14px; flex: 0 0 14px; text-align: center; }
+    .chk.done { color: #a5d6a7; }
+    .chk.next { color: #fff; background: rgba(100,181,246,0.18); outline: 1px solid rgba(100,181,246,0.55); }
+    .btn-row { display: flex; gap: 8px; margin-bottom: 7px; flex-wrap: wrap; }
+    button {
+      flex: 1; padding: 8px 10px; border: none; border-radius: 6px; cursor: pointer;
+      background: #3949ab; color: white; font-weight: 600; font-size: 12px; transition: 0.15s; font-family: inherit;
+    }
+    button:hover { background: #5c6bc0; }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    button.green { background: #2e7d32; } button.green:hover { background: #388e3c; }
+    button.grey  { background: #455a64; } button.grey:hover  { background: #546e7a; }
+    button.red   { background: #b71c1c; } button.red:hover   { background: #d32f2f; }
+    label.tgl { font-size: 11.5px; color: #cfd8dc; display: flex; gap: 6px; align-items: center; margin-bottom: 7px; }
+    label.tgl input { width: 15px; height: 15px; }
 
-  .panel{
-    background: linear-gradient(180deg, rgba(16,26,51,.90), rgba(8,14,30,.92));
-    border:1px solid var(--line);
-    border-radius:14px;
-    overflow:hidden;
-    box-shadow: 0 14px 34px rgba(0,0,0,.25);
-  }
-  .hd{
-    padding:10px 12px; border-bottom:1px solid var(--line);
-    display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
-  }
-  .hd h2{margin:0; font-size:13px; font-weight:800; color:#dbeafe}
-  .bd{padding:12px}
-  .small{font-size:12px; color:var(--muted); line-height:1.45}
+    #expert-box { display: none; background: rgba(255,255,255,0.05); border-radius: 8px; padding: 8px; margin-bottom: 8px; }
+    #expert-box.show { display: block; }
+    .inp-row { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
+    .inp-row input {
+      flex: 1; min-width: 0; background: #0e1217; border: 1px solid #475569; border-radius: 8px; color: #fff;
+      padding: 8px; font-size: 14px; user-select: text; -webkit-user-select: text; font-family: inherit;
+    }
+    #log {
+      max-height: 150px; overflow-y: auto; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px; padding: 7px 9px; font-size: 11.5px; line-height: 1.4;
+    }
+    #log .ok { color: #81c784; } #log .bad { color: #ef9a9a; } #log .warn { color: #ffcc80; } #log .muted { color: #90a4ae; }
 
-  .btnrow{display:flex; gap:10px; flex-wrap:wrap}
-  .btn{
-    font: inherit; font-size:13px;
-    padding:10px 10px; border-radius:12px;
-    border:1px solid rgba(96,165,250,.45);
-    background: rgba(96,165,250,.16);
-    color: var(--text);
-    cursor:pointer; user-select:none;
-    transition: transform .06s ease, background .15s ease;
-    display:inline-flex; align-items:center; gap:8px;
-    line-height:1;
-  }
-  .btn:hover{background: rgba(96,165,250,.22)}
-  .btn:active{transform: translateY(1px)}
-  .btn.secondary{border-color: rgba(169,179,204,.30); background: rgba(169,179,204,.10)}
-  .btn.danger{border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.12)}
+    #top-badges {
+      position: absolute; top: 14px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; pointer-events: none; white-space: nowrap;
+    }
+    .badge {
+      background: rgba(20,24,31,0.92); border: 1px solid rgba(255,255,255,0.18); border-radius: 20px;
+      padding: 6px 14px; font-size: 12px; font-weight: 700; color: #90caf9;
+    }
+    .badge.expert { color: #ffcc80; border-color: #ffb74d; }
+    .badge.fire { color: #ffab91; border-color: #ff7043; }
 
-  .station{
-    border:1px dashed rgba(169,179,204,.40);
-    background: rgba(2,6,23,.22);
-    border-radius:16px;
-    padding:10px;
-    position:relative;
-  }
-  .station h3{margin:0 0 8px 0; font-size:12px; color:#dbeafe}
+    #cam-bar {
+      position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px;
+      background: rgba(20,24,31,0.88); border: 1px solid rgba(255,255,255,0.14); border-radius: 12px; padding: 6px;
+    }
+    #cam-bar button { flex: 0 0 auto; padding: 7px 11px; background: #37474f; font-size: 12px; }
+    #cam-bar button:hover { background: #546e7a; }
 
-  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:8px}
-  .itemBtn{
-    border:1px solid rgba(34,48,85,.95);
-    background: rgba(2,6,23,.25);
-    border-radius: 14px;
-    padding:10px;
-    cursor:pointer;
-    user-select:none;
-    transition: transform .06s ease, background .12s ease, border-color .12s ease;
-    text-align:left;
-  }
-  .itemBtn:hover{background: rgba(2,6,23,.35)}
-  .itemBtn:active{transform: translateY(1px)}
-  .itemBtn.active{
-    outline: 2px solid rgba(96,165,250,.75);
-    border-color: rgba(96,165,250,.75);
-    box-shadow: 0 0 0 4px rgba(96,165,250,.18);
-  }
-  .itemBtn small{color:var(--muted)}
-  .itemBtn .formula{color:#ffffff; font-weight:800}
+    #tooltip {
+      position: absolute; pointer-events: none; display: none;
+      background: rgba(12, 15, 20, 0.94); color: #fff; padding: 6px 10px;
+      border-radius: 6px; font-size: 12px; border: 1px solid rgba(255,255,255,0.22);
+      transform: translate(-50%, -125%); white-space: nowrap; z-index: 10;
+    }
+    #controls-hint {
+      position: absolute; top: 56px; right: 14px; background: rgba(20,24,31,0.85); padding: 7px 12px;
+      border-radius: 8px; font-size: 11px; color: #90a4ae; border: 1px solid rgba(255,255,255,0.1);
+    }
+    #over {
+      position: absolute; inset: 0; display: none; align-items: center; justify-content: center; z-index: 30;
+      background: rgba(60,6,6,0.72); padding: 14px;
+    }
+    #over .card { width: min(420px, 100%); background: #2a1313; border: 2px solid #ef5350; border-radius: 16px; padding: 18px; text-align: center; }
+    #over h2 { margin: 0 0 8px; color: #ff8a80; font-size: 22px; }
+    #over p { margin: 0 0 14px; font-size: 13.5px; line-height: 1.5; color: #ffdede; }
+    #imp { position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: #fff; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-family: sans-serif; font-size: 12px; z-index: 9999; }
 
-  .log{
-    margin-top:12px; max-height: 250px; overflow:auto;
-    border:1px solid rgba(34,48,85,.95);
-    background: rgba(2,6,23,.32);
-    border-radius:14px;
-    padding:10px; font-size:12px; line-height:1.35;
-  }
-  .log .ok{color: rgba(34,197,94,.95)}
-  .log .bad{color: rgba(239,68,68,.95)}
-  .log .warn{color: rgba(245,158,11,.95)}
-  .log .muted{color: var(--muted)}
-
-  .bench{
-    border-top:1px solid var(--line);
-    background:
-      linear-gradient(180deg, rgba(8,14,30,.25), rgba(8,14,30,.60)),
-      repeating-linear-gradient(90deg, var(--wood1) 0 30px, var(--wood2) 30px 60px);
-    border-radius: 0 0 14px 14px;
-    padding:12px;
-    position: relative;
-    min-height: 610px;
-    overflow:hidden;
-  }
-
-  /* (4) Brenner neben dem Tisch: zwei Spalten im Arbeitsbereich */
-  .benchGrid{
-    display:grid;
-    grid-template-columns: 420px 1fr;
-    gap:12px;
-    align-items:start;
-    position: relative;
-    z-index: 1;
-  }
-  @media (max-width: 980px){
-    .benchGrid{grid-template-columns:1fr}
-  }
-
-  /* tube */
-  .tubeWrap{display:flex; justify-content:center; padding:10px 0}
-  .tube{
-    position:relative;
-    width: 120px; height: 210px;
-    border:2px solid var(--glassLine);
-    border-top-left-radius: 18px; border-top-right-radius: 18px;
-    border-bottom-left-radius: 56px 40px; border-bottom-right-radius: 56px 40px;
-    background: var(--glass);
-    overflow:hidden;
-    cursor:pointer;
-  }
-  .tube .liquid{
-    position:absolute; left:0; right:0; bottom:0;
-    height: 0%;
-    background: rgba(147,197,253,.18);
-    border-top:1px solid rgba(147,197,253,.35);
-    transition: height .25s ease, background .25s ease;
-    z-index:1;
-  }
-  .tube .precip{
-    position:absolute; left:0; right:0; bottom:0;
-    height: 0%;
-    background: rgba(255,255,255,.35);
-    transition: height .25s ease, background .35s ease;
-    z-index:2;
-  }
-  .tube .saltPile{
-    position:absolute; left:0; right:0; bottom:0;
-    height: 0%;
-    pointer-events:none;
-    z-index:3;
-    transition: height .18s ease;
-  }
-  .grain{
-    position:absolute;
-    width: 8px; height: 8px;
-    border-radius: 2px;
-    background: rgba(255,255,255,.95);
-    box-shadow: 0 1px 0 rgba(0,0,0,.25);
-    opacity:.98;
-  }
-  .tubeCaption{ text-align:center; font-size:11px; color:var(--muted); }
-  .miniBtn{
-    position:absolute; right:10px; top:10px;
-    border:1px solid rgba(169,179,204,.35);
-    background: rgba(2,6,23,.35);
-    color: var(--text);
-    border-radius: 10px;
-    font-size:12px;
-    padding:6px 8px;
-    cursor:pointer;
-    user-select:none;
-    z-index:10;
-  }
-
-  /* plate */
-  .plateGrid{
-    /* (3) wieder ordentlich nebeneinander */
-    display:grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap:10px;
-    justify-items:center;
-    align-items:center;
-    padding:10px 6px;
-    max-width: 340px;
-    margin: 0 auto;
-  }
-  .wellWrap{position:relative}
-  .wellReset{
-    position:absolute; top:-6px; right:-6px;
-    width: 22px; height: 22px;
-    border-radius:999px;
-    border:1px solid rgba(169,179,204,.35);
-    background: rgba(2,6,23,.45);
-    color: var(--text);
-    font-size:12px;
-    display:flex; align-items:center; justify-content:center;
-    cursor:pointer;
-    z-index:5;
-  }
-  .well{
-    width: 64px; height: 64px;
-    border-radius: 999px;
-    border:2px solid rgba(226,232,240,.35);
-    background: rgba(255,255,255,.06);
-    position:relative; overflow:hidden;
-    cursor:pointer;
-  }
-  .well .fluid{position:absolute; inset:0; background:transparent; transition: background .2s ease; z-index:1;}
-  .well .salt{position:absolute; inset:0; opacity:0; transition: opacity .12s ease; z-index:2;}
-  .well .tag{
-    position:absolute; left:0; right:0; bottom:4px;
-    text-align:center;
-    font-size:10px; color: rgba(229,231,235,.92);
-    text-shadow: 0 1px 0 rgba(0,0,0,.35);
-    z-index:3; pointer-events:none;
-  }
-
-  /* burner */
-  .burnerArea{
-    position:relative;
-    height: 330px;
-    border-radius: 16px;
-    border:1px solid rgba(34,48,85,.95);
-    background: radial-gradient(520px 240px at 50% 120%, rgba(96,165,250,.16) 0%, rgba(2,6,23,.30) 55%, rgba(2,6,23,.48) 100%);
-    overflow:hidden;
-    display:flex;
-    align-items:flex-end;
-    justify-content:center;
-    padding-bottom:22px;
-    cursor:pointer;
-    user-select:none;
-  }
-  .burnerSvg{width: 280px; height: 220px; pointer-events:none; z-index:2;}
-  .flame{
-    position:absolute;
-    left:50%;
-    transform: translateX(-50%);
-    bottom: 130px;
-    width: 86px;
-    height: 150px;
-    opacity:0;
-    transition: opacity .16s ease;
-    pointer-events:none;
-    filter: drop-shadow(0 14px 18px rgba(0,0,0,.30));
-    z-index:3;
-  }
-  .flame.on{opacity:1}
-  .flame::before, .flame::after{
-    content:"";
-    position:absolute; inset:0;
-    border-radius: 60% 60% 70% 70% / 55% 55% 85% 85%;
-    animation: flicker 0.12s infinite alternate;
-  }
-  .flame::before{
-    background:
-      radial-gradient(circle at 50% 28%, rgba(255,255,255,.95) 0 16%, rgba(147,197,253,.98) 17% 48%, rgba(59,130,246,.55) 49% 100%);
-  }
-  .flame::after{
-    inset: 16px 20px 44px 20px;
-    background:
-      radial-gradient(circle at 50% 30%, rgba(255,255,255,.95) 0 22%, rgba(191,219,254,.88) 23% 58%, rgba(96,165,250,.35) 59% 100%);
-    filter: blur(0.4px);
-    animation-duration: 0.10s;
-  }
-  @keyframes flicker{ from{ transform: rotate(-2deg) scaleY(1.00) } to{ transform: rotate( 2deg) scaleY(1.03) } }
-
-  .flameTint{
-    position:absolute;
-    left:50%;
-    transform: translateX(-50%);
-    bottom: 140px;
-    width: 98px;
-    height: 160px;
-    opacity:0;
-    transition: opacity .10s ease;
-    pointer-events:none;
-    mix-blend-mode: screen;
-    z-index:4;
-    border-radius: 60% 60% 70% 70% / 55% 55% 85% 85%;
-  }
-  .flameTint.show{opacity:.92}
-
-  /* draggable tool overlay */
-  .toolStage{
-    position:absolute;
-    inset:0;
-    z-index: 2;
-    pointer-events:none;
-  }
-  .tool{
-    position:absolute;
-    width: 190px;
-    height: 64px;
-    border-radius: 16px;
-    border:1px solid rgba(34,48,85,.95);
-    background: rgba(2,6,23,.30);
-    backdrop-filter: blur(6px);
-    box-shadow: 0 10px 20px rgba(0,0,0,.25);
-    display:flex; gap:10px; align-items:center; padding:10px;
-    user-select:none;
-    touch-action:none;
-    pointer-events:auto;
-    cursor: grab;
-    z-index: 5;
-  }
-  .tool:active{cursor: grabbing}
-  .tool .icon{
-    width:44px; height:44px; border-radius: 12px;
-    background: rgba(255,255,255,.06);
-    border:1px solid rgba(226,232,240,.14);
-    display:flex; align-items:center; justify-content:center;
-    flex: 0 0 auto;
-  }
-  .tool .lbl{display:flex; flex-direction:column; gap:2px}
-  .tool .lbl b{font-size:12px}
-  .tool .lbl small{font-size:10px; color:var(--muted)}
-  .tool.selected{ outline: 2px solid rgba(96,165,250,.75); }
-
-  /* expert box */
-  .expertBox{
-    margin-top:12px;
-    border:1px solid rgba(34,48,85,.95);
-    background: rgba(2,6,23,.26);
-    border-radius: 14px;
-    padding:10px;
-    display:none;
-  }
-  .expertBox.show{display:block}
-  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
-  input[type="text"]{
-    background: rgba(2,6,23,.35);
-    color: var(--text);
-    border:1px solid rgba(34,48,85,.95);
-    border-radius: 12px;
-    padding:10px;
-    font: inherit;
-    font-size:13px;
-    width: min(320px, 100%);
-  }
-</style>
+    @media (max-width: 760px) {
+      #ui-panel { top: 8px; left: 8px; right: 8px; width: auto; max-height: 44vh; padding: 9px 11px; }
+      #ui-panel .sub { display: none; }
+      h1 { font-size: 14px; }
+      #top-badges { top: auto; bottom: 56px; font-size: 11px; }
+      .badge { padding: 4px 10px; font-size: 11px; }
+      #cam-bar { bottom: 10px; max-width: calc(100vw - 16px); overflow-x: auto; }
+      #cam-bar button { padding: 7px 9px; font-size: 11.5px; }
+      #controls-hint { display: none; }
+      #log { max-height: 90px; }
+      #imp { bottom: auto; top: 2px; right: 2px; font-size: 10px; padding: 2px 6px; opacity: .6; }
+    }
+  </style>
+  <script src="three.min.js"></script>
+  <script>
+    if (typeof THREE === 'undefined') {
+      window.addEventListener('DOMContentLoaded', function () { document.body.insertAdjacentHTML('afterbegin', '<p style="padding:20px;color:#fff;font-family:sans-serif">Die lokale Datei <b>three.min.js</b> wurde nicht gefunden. Bitte stelle sicher, dass sie im selben Ordner wie diese Seite liegt.</p>'); });
+    }
+  </script>
 </head>
-
 <body>
-<header>
-  <h1>Labortisch: Nachweis-Spiel</h1>
-  <span class="chip">Modus: <b id="modeLabel">Lernmodus</b></span>
-  <span class="chip">Auswahl: <b id="selLabel">—</b></span>
-  <span class="chip">Werkzeug: <b id="toolLabel">—</b></span>
-  <span class="chip">Brenner: <b id="burnerLabel">aus</b></span>
-</header>
 
-<div class="wrap">
-  <section class="panel">
-    <div class="hd">
-      <h2>Steuerung</h2>
-      <div class="btnrow">
-        <button class="btn" id="btnMode">Zu Expertenmodus</button>
-        <button class="btn secondary" id="btnClearSel">Auswahl aufheben</button>
-        <button class="btn danger" id="btnResetAll">Alles zurücksetzen</button>
+<div id="canvas-container"></div>
+<div id="tooltip"></div>
+<div id="top-badges"><div class="badge" id="badge-mode">Lernmodus</div><div class="badge fire" id="badge-burner">🔥 Brenner: aus</div></div>
+
+<div id="ui-panel">
+  <div class="ui-head">
+    <div>
+      <h1>3D-Labor: Salze identifizieren</h1>
+      <p class="sub">Anionen mit AgNO₃ und Kationen über die Flammenfarbe nachweisen · Brenner: anklicken = an/aus</p>
+    </div>
+    <button id="btn-mode" class="grey" title="Zwischen Lernmodus und Expertenmodus wechseln">Expertenmodus</button>
+    <button id="btn-collapse" title="Panel ein-/ausklappen">▾</button>
+  </div>
+  <div class="step-box" id="instruction-text"></div>
+  <div class="collapsible">
+    <div class="tool-status" id="tool-status">In der Hand: nichts</div>
+    <div id="expert-box">
+      <div class="btn-row"><button id="btn-new-unknown" class="grey">Neue Expertenprobe (Unbekannt A)</button></div>
+      <div class="inp-row">
+        <input type="text" id="inp-guess" placeholder="Name des Salzes, z. B. Natriumchlorid" autocomplete="off">
+        <button id="btn-check" class="green" style="flex:0 0 auto;">Prüfen</button>
       </div>
     </div>
-    <div class="bd">
-      <div class="small">
-        Salz anklicken → Reagenzglas/Mulde anklicken (Kristalle erscheinen).<br>
-        Werkzeuge: ziehen & über Ziel loslassen (Wasser/AgNO₃ über Reagenzglas, HCl über Mulde, MgO über Mulde/Flamme).<br>
-        Brenner: anklicken (an/aus).<br>
-        <span class="muted">(Experte: Unbekannt A ist nicht beschriftet – identifizieren Sie es über Nachweise.)</span>
-      </div>
-
-      <div class="station" style="margin-top:12px;">
-        <h3>Salze</h3>
-        <div class="grid2" id="saltList">
-          <button class="itemBtn" data-salt="NaCl">🧂 <span class="formula">NaCl</span><br><small>Natriumchlorid</small></button>
-          <button class="itemBtn" data-salt="LiBr">🧂 <span class="formula">LiBr</span><br><small>Lithiumbromid</small></button>
-          <button class="itemBtn" data-salt="CsI">🧂 <span class="formula">CsI</span><br><small>Cäsiumiodid</small></button>
-          <button class="itemBtn" data-salt="Ba3(AsO4)2">🧂 <span class="formula">Ba₃(AsO₄)₂</span><br><small>Bariumarsenat</small></button>
-
-          <button class="itemBtn" data-salt="SrI2">🧂 <span class="formula">SrI₂</span><br><small>Strontiumiodid</small></button>
-          <button class="itemBtn" data-salt="KBr">🧂 <span class="formula">KBr</span><br><small>Kaliumbromid</small></button>
-          <button class="itemBtn" data-salt="CaCl2">🧂 <span class="formula">CaCl₂</span><br><small>Calciumchlorid</small></button>
-          <button class="itemBtn" data-salt="CuCl2">🧂 <span class="formula">CuCl₂</span><br><small>Kupferchlorid</small></button>
-
-          <button class="itemBtn" id="unknownBtn" data-salt="UNKNOWN" style="display:none;">
-            ❓ <span class="formula">Unbekannt A</span><br><small>Expertenprobe</small>
-          </button>
-        </div>
-      </div>
-
-      <div class="expertBox" id="expertBox">
-        <div class="row" style="margin-bottom:8px;">
-          <button class="btn secondary" id="btnNewUnknown">Neue Expertenprobe (Unbekannt A)</button>
-        </div>
-        <div class="row">
-          <label class="small" for="guessInput">Ihr Lösungsvorschlag (Name):</label>
-          <input id="guessInput" type="text" placeholder="z. B. Natriumchlorid" autocomplete="off" />
-          <button class="btn" id="btnCheck">Prüfen</button>
-        </div>
-        <div class="small" style="margin-top:8px; color:#cbd5e1;">
-          Eingabe ist nicht case-sensitiv; Bindestriche/Leerzeichen werden tolerant behandelt. Beispiel: „Kupferiodid“.
-        </div>
-      </div>
-
-      <div class="log" id="log"></div>
+    <div class="sec"><span>Protokoll</span></div>
+    <div id="log"></div>
+    <div class="btn-row" style="margin-top:8px;">
+      <button id="btn-clear-tube" class="grey">Reagenzglas leeren</button>
+      <button id="btn-clear-wells" class="grey">Mulden leeren</button>
     </div>
-  </section>
-
-  <section class="panel">
-    <div class="hd"><h2>Labortisch</h2></div>
-    <div class="bench" id="bench">
-      <div class="toolStage" id="toolStage"></div>
-
-      <!-- (4) Brenner rechts neben dem Tisch (nicht darunter) -->
-      <div class="benchGrid">
-        <!-- linke Spalte: Tisch (Tube + Tüpfelplatte) -->
-        <div style="display:grid; gap:12px;">
-          <div class="station">
-            <h3>Reagenzglas (AgNO₃)</h3>
-            <button class="miniBtn" id="btnResetTube" title="Nur Reagenzglas zurücksetzen">↺ Tube</button>
-            <div class="tubeWrap">
-              <div>
-                <div class="tube" id="tube" title="Klick: Salz einfüllen">
-                  <div class="precip" id="tubePrecip"></div>
-                  <div class="liquid" id="tubeLiquid"></div>
-                  <div class="saltPile" id="tubeSaltPile"></div>
-                </div>
-                <div class="tubeCaption">Kristalle sind vor dem Lösen sichtbar.</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="station">
-            <h3>Tüpfelplatte (Flammenprobe)</h3>
-            <div class="plateGrid" id="plate">
-              <div class="wellWrap">
-                <div class="wellReset" data-wreset="0">↺</div>
-                <div class="well" data-well="0"><div class="fluid"></div><div class="salt"></div><div class="tag">Feld 1</div></div>
-              </div>
-              <div class="wellWrap">
-                <div class="wellReset" data-wreset="1">↺</div>
-                <div class="well" data-well="1"><div class="fluid"></div><div class="salt"></div><div class="tag">Feld 2</div></div>
-              </div>
-              <div class="wellWrap">
-                <div class="wellReset" data-wreset="2">↺</div>
-                <div class="well" data-well="2"><div class="fluid"></div><div class="salt"></div><div class="tag">Feld 3</div></div>
-              </div>
-              <div class="wellWrap">
-                <div class="wellReset" data-wreset="3">↺</div>
-                <div class="well" data-well="3"><div class="fluid"></div><div class="salt"></div><div class="tag">Feld 4</div></div>
-              </div>
-            </div>
-            <div class="tubeCaption">HCl über Mulde → lösen. MgO über Mulde → tauchen. MgO über Flamme → Farbe.</div>
-          </div>
-        </div>
-
-        <!-- rechte Spalte: Brenner -->
-        <div style="display:grid; gap:12px;">
-          <div class="station">
-            <h3>Brenner (anklicken = an/aus)</h3>
-            <div class="burnerArea" id="burnerArea">
-              <div class="flame" id="flame"></div>
-              <div class="flameTint" id="flameTint"></div>
-              <svg class="burnerSvg" viewBox="0 0 280 240" aria-label="Bunsenbrenner">
-                <ellipse cx="140" cy="210" rx="90" ry="18" fill="rgba(15,23,42,.55)" stroke="rgba(226,232,240,.25)" stroke-width="2"/>
-                <rect x="85" y="165" width="110" height="45" rx="12" fill="rgba(148,163,184,.20)" stroke="rgba(226,232,240,.28)" stroke-width="2"/>
-                <rect x="124" y="55" width="32" height="120" rx="14" fill="rgba(226,232,240,.14)" stroke="rgba(226,232,240,.28)" stroke-width="2"/>
-                <rect x="118" y="35" width="44" height="24" rx="10" fill="rgba(226,232,240,.14)" stroke="rgba(226,232,240,.28)" stroke-width="2"/>
-              </svg>
-            </div>
-            <div class="small" style="margin-top:10px;" id="statusText">Bereit.</div>
-          </div>
-        </div>
-      </div>
+    <div class="btn-row">
+      <button id="btn-reset" class="grey">Alles zurücksetzen</button>
     </div>
-  </section>
+  </div>
 </div>
 
+<div id="cam-bar">
+  <button data-cam="view">🔭 Übersicht</button>
+  <button data-cam="salts">🧂 Salze</button>
+  <button data-cam="tube">🧪 Reagenzglas</button>
+  <button data-cam="plate">⚪ Tüpfelplatte</button>
+  <button data-cam="drawer">🗄️ Schublade</button>
+  <button data-cam="burner">🔥 Brenner</button>
+</div>
+
+<div id="over"><div class="card"><h2 id="over-title">Game Over</h2><p id="over-text"></p><button id="btn-over" class="green">Neu starten</button></div></div>
+
+<div id="controls-hint">🖱️ <b>Linksklick + Ziehen:</b> Kamera drehen &nbsp;|&nbsp; <b>Rechtsklick + Ziehen:</b> Verschieben &nbsp;|&nbsp; <b>Mausrad:</b> Zoomen</div>
+<a id="imp" href="/Virtuelles-Chemielabor/impressum.html">Impressum &amp; Datenschutz</a>
+
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-  const $ = (q,root=document)=>root.querySelector(q);
-  const $$ = (q,root=document)=>Array.from(root.querySelectorAll(q));
+'use strict';
+// ============================================================================
+// 0. KONSTANTEN, DATEN, HILFSFUNKTIONEN
+// ============================================================================
+const $ = id => document.getElementById(id);
+const lerp = (a, b, t) => a + (b - a) * t;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const TABLE_Y = 0.04;
 
-  const modeLabel = $("#modeLabel");
-  const selLabel = $("#selLabel");
-  const toolLabel = $("#toolLabel");
-  const burnerLabel = $("#burnerLabel");
-  const statusText = $("#statusText");
-  const logEl = $("#log");
+const SUB = { '0': '₀', '1': '₁', '2': '₂', '3': '₃', '4': '₄', '5': '₅', '6': '₆', '7': '₇', '8': '₈', '9': '₉' };
+const subNum = n => String(n).split('').map(c => SUB[c] || c).join('');
 
-  const bench = $("#bench");
-  const toolStage = $("#toolStage");
+// Salze (wie in der 2D-Version)
+const SALTS = {
+  'NaCl':       { name: 'Natriumchlorid', formula: 'NaCl',        ag: 'white',    flame: 'gelb' },
+  'LiBr':       { name: 'Lithiumbromid',  formula: 'LiBr',        ag: 'cream',    flame: 'karminrot' },
+  'CsI':        { name: 'Cäsiumiodid',    formula: 'CsI',         ag: 'yellow',   flame: 'blauviolett' },
+  'Ba3(AsO4)2': { name: 'Bariumarsenat',  formula: 'Ba₃(AsO₄)₂',  ag: 'arsenate', flame: 'apfelgrün' },
+  'SrI2':       { name: 'Strontiumiodid', formula: 'SrI₂',        ag: 'yellow',   flame: 'rot' },
+  'KBr':        { name: 'Kaliumbromid',   formula: 'KBr',         ag: 'cream',    flame: 'violett' },
+  'CaCl2':      { name: 'Calciumchlorid', formula: 'CaCl₂',       ag: 'white',    flame: 'ziegelrot' },
+  'CuCl2':      { name: 'Kupferchlorid',  formula: 'CuCl₂',       ag: 'white',    flame: 'blaugrün' }
+};
+const SALT_ORDER = ['NaCl', 'LiBr', 'CsI', 'Ba3(AsO4)2', 'SrI2', 'KBr', 'CaCl2', 'CuCl2'];
+const CATIONS = [
+  { key: 'Na', name: 'Natrium', sym: 'Na', charge: 1 }, { key: 'Li', name: 'Lithium', sym: 'Li', charge: 1 },
+  { key: 'Cs', name: 'Cäsium', sym: 'Cs', charge: 1 }, { key: 'K', name: 'Kalium', sym: 'K', charge: 1 },
+  { key: 'Ba', name: 'Barium', sym: 'Ba', charge: 2 }, { key: 'Sr', name: 'Strontium', sym: 'Sr', charge: 2 },
+  { key: 'Ca', name: 'Calcium', sym: 'Ca', charge: 2 }, { key: 'Cu', name: 'Kupfer', sym: 'Cu', charge: 2 }
+];
+const ANIONS = [
+  { key: 'Cl', name: 'chlorid', sym: 'Cl', charge: 1, ag: 'white' }, { key: 'Br', name: 'bromid', sym: 'Br', charge: 1, ag: 'cream' },
+  { key: 'I', name: 'iodid', sym: 'I', charge: 1, ag: 'yellow' }, { key: 'AsO4', name: 'arsenat', sym: 'AsO4', charge: 3, ag: 'arsenate', poly: true }
+];
+const FLAME_BY_CATION = { Na: 'gelb', Li: 'karminrot', Cs: 'blauviolett', K: 'violett', Ba: 'apfelgrün', Sr: 'rot', Ca: 'ziegelrot', Cu: 'blaugrün' };
+const FLAME_HEX = { 'gelb': 0xffd21f, 'karminrot': 0xe0143c, 'rot': 0xff2a18, 'blauviolett': 0x8a5cff, 'violett': 0xb892ff, 'apfelgrün': 0x86e03a, 'ziegelrot': 0xe8561f, 'blaugrün': 0x1fe0b4 };
+const PRECIP_HEX = { white: 0xf6f6f2, cream: 0xf1dc9a, yellow: 0xe7c42c };
+const ARSENATE_SEQ = [{ c: 0xf2f2ee, t: 'weißlich' }, { c: 0xf0d23a, t: 'gelb' }, { c: 0xe8902c, t: 'orange' }, { c: 0x6b3a1a, t: 'braun' }, { c: 0x14120f, t: 'schwarz' }];
 
-  const tube = $("#tube");
-  const tubeLiquid = $("#tubeLiquid");
-  const tubePrecip = $("#tubePrecip");
-  const tubeSaltPile = $("#tubeSaltPile");
+const gcd = (a, b) => { while (b) { [a, b] = [b, a % b]; } return a; };
+const lcm = (a, b) => (a * b) / gcd(a, b);
+function formatFormula(c, a) {
+  const L = lcm(c.charge, a.charge), nC = L / c.charge, nA = L / a.charge;
+  const cPart = c.sym + (nC > 1 ? subNum(nC) : '');
+  let aCore = a.sym;
+  if (a.poly && nA > 1) aCore = '(' + aCore.replace('O4', 'O₄') + ')'; else if (a.sym === 'AsO4') aCore = 'AsO₄';
+  return cPart + aCore + (nA > 1 ? subNum(nA) : '');
+}
+const canonicalName = (c, a) => c.name + a.name;
+function normalizeName(s) {
+  return (s || '').trim().toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
+    .replace(/[‐-–—-]/g, '-').replace(/\s+/g, '').replace(/[^a-z0-9()\-]/g, '');
+}
 
-  const burnerArea = $("#burnerArea");
-  const flame = $("#flame");
-  const flameTint = $("#flameTint");
+// ============================================================================
+// 1. SZENE, KAMERA & LICHT
+// ============================================================================
+const container = $('canvas-container');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x222832);
+scene.fog = new THREE.Fog(0x222832, 30, 60);
 
-  const btnMode = $("#btnMode");
-  const btnClearSel = $("#btnClearSel");
-  const btnResetAll = $("#btnResetAll");
-  const btnResetTube = $("#btnResetTube");
+const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 100);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.12;
+container.appendChild(renderer.domElement);
 
-  const unknownBtn = $("#unknownBtn");
-  const expertBox = $("#expertBox");
-  const btnNewUnknown = $("#btnNewUnknown");
-  const btnCheck = $("#btnCheck");
-  const guessInput = $("#guessInput");
+function createStudioEnvMap() {
+  const c = document.createElement('canvas'); c.width = 256; c.height = 128;
+  const ctx = c.getContext('2d');
+  const grad = ctx.createLinearGradient(0, 0, 0, 128);
+  grad.addColorStop(0, '#546e7a'); grad.addColorStop(0.45, '#eceff1'); grad.addColorStop(0.55, '#37474f'); grad.addColorStop(1, '#1a2027');
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, 256, 128);
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(35, 16, 65, 20); ctx.fillRect(155, 22, 55, 16);
+  const tex = new THREE.CanvasTexture(c); tex.mapping = THREE.EquirectangularReflectionMapping; return tex;
+}
+scene.environment = createStudioEnvMap();
 
-  function log(html){
-    const d=document.createElement("div");
-    d.innerHTML=html;
-    logEl.appendChild(d);
-    logEl.scrollTop=logEl.scrollHeight;
+const cam = { theta: -0.08, phi: 1.0, radius: 16, target: new THREE.Vector3(0.4, 1.0, -0.3) };
+const aspect = () => window.innerWidth / window.innerHeight;
+const isNarrow = () => window.innerWidth <= 760;
+const CAM_PRESETS = {
+  view:   () => ({ theta: -0.08, phi: 1.0,  radius: Math.max(15, 17.5 / aspect()), tx: isNarrow() ? 0.4 : -1.0, ty: 1.0, tz: -0.3 }),
+  salts:  () => ({ theta: 0.15,  phi: 0.95, radius: Math.max(6.2, 7.2 / aspect()),  tx: isNarrow() ? -3.2 : -4.0, ty: 0.5, tz: 0.4 }),
+  tube:   () => ({ theta: 0.0,   phi: 1.05, radius: Math.max(7.8, 9.0 / aspect()),  tx: isNarrow() ? 0.1 : -0.9, ty: 1.0, tz: -1.7 }),
+  plate:  () => ({ theta: 0.0,   phi: 0.85, radius: Math.max(7.5, 8.0 / aspect()),  tx: isNarrow() ? 0.1 : -0.8, ty: 0.2, tz: 1.1 }),
+  drawer: () => ({ theta: 0.0, phi: 0.85, radius: Math.max(9.5, 10.5 / aspect()), tx: isNarrow() ? -2.9 : -4.0, ty: -0.2, tz: 3.0 }),
+  burner: () => ({ theta: -0.25, phi: 1.05, radius: Math.max(9.5, 10.5 / aspect()), tx: isNarrow() ? 3.6 : 2.4, ty: 1.5, tz: -1.4 })
+};
+let camLocked = false;
+function updateCamera() {
+  cam.phi = clamp(cam.phi, 0.25, Math.PI / 2 - 0.02);
+  cam.radius = clamp(cam.radius, 4.2, 40);
+  camera.position.x = cam.target.x + cam.radius * Math.sin(cam.phi) * Math.sin(cam.theta);
+  camera.position.y = cam.target.y + cam.radius * Math.cos(cam.phi);
+  camera.position.z = cam.target.z + cam.radius * Math.sin(cam.phi) * Math.cos(cam.theta);
+  camera.lookAt(cam.target);
+}
+updateCamera();
+
+scene.add(new THREE.AmbientLight(0xe3edf7, 0.6));
+const mainLight = new THREE.DirectionalLight(0xfffbf2, 1.0);
+mainLight.position.set(5, 12, 8); mainLight.castShadow = true; mainLight.shadow.mapSize.set(2048, 2048);
+mainLight.shadow.camera.left = -9.5; mainLight.shadow.camera.right = 9.5; mainLight.shadow.camera.top = 10; mainLight.shadow.camera.bottom = -8;
+mainLight.shadow.bias = -0.0005; scene.add(mainLight);
+const backLight = new THREE.DirectionalLight(0x90caf9, 0.45); backLight.position.set(-6, 6, -7); scene.add(backLight);
+
+function createFloorTexture() {
+  const c = document.createElement('canvas'); c.width = 256; c.height = 256;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#2b313b'; ctx.fillRect(0, 0, 256, 256); ctx.strokeStyle = '#1e232b'; ctx.lineWidth = 4; ctx.strokeRect(0, 0, 256, 256);
+  const tex = new THREE.CanvasTexture(c); tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(20, 20); return tex;
+}
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), new THREE.MeshStandardMaterial({ map: createFloorTexture(), roughness: 0.75 }));
+floor.rotation.x = -Math.PI / 2; floor.position.y = -4.8; floor.receiveShadow = true; scene.add(floor);
+
+// ============================================================================
+// 2. MATERIALIEN & TEXTUREN
+// ============================================================================
+const glassMat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, transparent: true, opacity: 0.26, roughness: 0.04, metalness: 0.05, clearcoat: 1.0, clearcoatRoughness: 0.04, depthWrite: false, side: THREE.DoubleSide });
+const plasticMat = new THREE.MeshPhysicalMaterial({ color: 0xf0f4f8, transparent: true, opacity: 0.58, roughness: 0.35, clearcoat: 0.4, depthWrite: false });
+const whiteCapMat = new THREE.MeshStandardMaterial({ color: 0xf5f5f5, roughness: 0.3 });
+const metalMat = new THREE.MeshStandardMaterial({ color: 0xaab0b6, roughness: 0.3, metalness: 0.7 });
+const darkMetalMat = new THREE.MeshStandardMaterial({ color: 0x3d4650, roughness: 0.4, metalness: 0.6 });
+const blackMat = new THREE.MeshStandardMaterial({ color: 0x15171a, roughness: 0.6 });
+const porcelainMat = new THREE.MeshPhysicalMaterial({ color: 0xe9d9ae, roughness: 0.3, clearcoat: 0.6, clearcoatRoughness: 0.15, side: THREE.DoubleSide });
+const woodMat = new THREE.MeshStandardMaterial({ color: 0x6b3f1d, roughness: 0.75 });
+const saltMat = new THREE.MeshStandardMaterial({ color: 0xfbfaf6, roughness: 0.55 });
+
+function createLabelTexture(title, sub) {
+  const c = document.createElement('canvas'); c.width = 256; c.height = 128;
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0, 0, 256, 128);
+  ctx.fillStyle = 'rgba(255,255,255,0.96)'; ctx.fillRect(26, 22, 204, 84);
+  ctx.strokeStyle = '#263238'; ctx.lineWidth = 3; ctx.strokeRect(26, 22, 204, 84);
+  ctx.textAlign = 'center';
+  let size = 34; ctx.font = 'bold ' + size + 'px sans-serif';
+  while (ctx.measureText(title).width > 190 && size > 12) { size -= 1; ctx.font = 'bold ' + size + 'px sans-serif'; }
+  ctx.fillStyle = '#111'; ctx.fillText(title, 128, sub ? 62 : 78);
+  if (sub) {
+    let s2 = 19; ctx.font = s2 + 'px sans-serif';
+    while (ctx.measureText(sub).width > 190 && s2 > 10) { s2 -= 1; ctx.font = s2 + 'px sans-serif'; }
+    ctx.fillStyle = '#37474f'; ctx.fillText(sub, 128, 92);
   }
-  function setStatus(s){ statusText.textContent = s; }
+  return new THREE.CanvasTexture(c);
+}
+// frei schwebende Beschriftung (immer zur Kamera gedreht)
+function createTextSprite(w, h) {
+  const c = document.createElement('canvas'); c.width = 320; c.height = 80;
+  const tex = new THREE.CanvasTexture(c);
+  const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false }));
+  spr.scale.set(w, h, 1); spr.renderOrder = 30; spr.visible = false;
+  spr.userData.canvas = c; spr.userData.tex = tex; return spr;
+}
+function setSpriteText(spr, text) {
+  if (!text) { spr.visible = false; return; }
+  const c = spr.userData.canvas, ctx = c.getContext('2d');
+  ctx.clearRect(0, 0, c.width, c.height);
+  ctx.fillStyle = 'rgba(12,16,22,0.82)'; ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = 3;
+  const r = 18; ctx.beginPath(); ctx.moveTo(r, 4); ctx.arcTo(316, 4, 316, 76, r); ctx.arcTo(316, 76, 4, 76, r); ctx.arcTo(4, 76, 4, 4, r); ctx.arcTo(4, 4, 316, 4, r); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  let size = 38; ctx.font = 'bold ' + size + 'px sans-serif';
+  while (ctx.measureText(text).width > 290 && size > 14) { size -= 1; ctx.font = 'bold ' + size + 'px sans-serif'; }
+  ctx.fillText(text, 160, 42); spr.userData.tex.needsUpdate = true; spr.visible = true;
+}
 
-  const SUB = {"0":"₀","1":"₁","2":"₂","3":"₃","4":"₄","5":"₅","6":"₆","7":"₇","8":"₈","9":"₉"};
-  function subNum(n){
-    const s=String(n);
-    return s.split("").map(ch=>SUB[ch]||ch).join("");
+// ============================================================================
+// 3. LABORTISCH (wie in den anderen 3D-Simulationen) & RÜCKWAND
+// ============================================================================
+const tableGroup = new THREE.Group(); scene.add(tableGroup);
+const tableW = 11.2, tableD = 6.2;
+const mortarBed = new THREE.Mesh(new THREE.BoxGeometry(tableW, 0.18, tableD), new THREE.MeshStandardMaterial({ color: 0x9e9e98, roughness: 0.9 }));
+mortarBed.position.y = -0.1; mortarBed.receiveShadow = true; tableGroup.add(mortarBed);
+const tileMat = new THREE.MeshStandardMaterial({ color: 0x9b402c, roughness: 0.3, metalness: 0.05 });
+{
+  const cols = 9, rows = 5, innerW = tableW - 0.5, innerD = tableD - 0.5;
+  const tileW = innerW / cols, tileD = innerD / rows;
+  const tileGeo = new THREE.BoxGeometry(tileW - 0.06, 0.08, tileD - 0.06);
+  for (let ix = 0; ix < cols; ix++) for (let iz = 0; iz < rows; iz++) {
+    const tile = new THREE.Mesh(tileGeo, tileMat);
+    tile.position.set(-innerW / 2 + tileW * (ix + 0.5), 0, -innerD / 2 + tileD * (iz + 0.5));
+    tile.receiveShadow = true; tableGroup.add(tile);
   }
-
-  const SALTS = {
-    "NaCl": {name:"Natriumchlorid",      cationSym:"Na⁺",  anionSym:"Cl⁻",    ag:"white",    flame:"gelb"},
-    "LiBr": {name:"Lithiumbromid",       cationSym:"Li⁺",  anionSym:"Br⁻",    ag:"cream",    flame:"karminrot"},
-    "CsI":  {name:"Cäsiumiodid",         cationSym:"Cs⁺",  anionSym:"I⁻",     ag:"yellow",   flame:"blauviolett"},
-    "Ba3(AsO4)2": {name:"Bariumarsenat", cationSym:"Ba²⁺", anionSym:"AsO₄³⁻", ag:"arsenate", flame:"apfelgrün"},
-    "SrI2": {name:"Strontiumiodid",      cationSym:"Sr²⁺", anionSym:"I⁻",     ag:"yellow",   flame:"rot"},
-    "KBr":  {name:"Kaliumbromid",        cationSym:"K⁺",   anionSym:"Br⁻",    ag:"cream",    flame:"violett"},
-    "CaCl2":{name:"Calciumchlorid",      cationSym:"Ca²⁺", anionSym:"Cl⁻",    ag:"white",    flame:"ziegelrot"},
-    /* (1) Kupfer ohne Oxidationszahl */
-    "CuCl2":{name:"Kupferchlorid",       cationSym:"Cu²⁺", anionSym:"Cl⁻",    ag:"white",    flame:"blaugrün"}
-  };
-
-  const AG_BG = {
-    white:  "rgba(255,255,255,.42)",
-    cream:  "rgba(253,230,138,.40)",
-    yellow: "rgba(250,204,21,.42)"
-  };
-
-  const FLAME_TINT = {
-    "gelb":"radial-gradient(circle at 50% 32%, rgba(255,255,255,.90) 0 18%, rgba(250,204,21,.92) 19% 58%, rgba(245,158,11,.45) 59% 100%)",
-    "karminrot":"radial-gradient(circle at 50% 32%, rgba(255,255,255,.90) 0 18%, rgba(248,113,113,.95) 19% 58%, rgba(239,68,68,.45) 59% 100%)",
-    "rot":"radial-gradient(circle at 50% 32%, rgba(255,255,255,.90) 0 18%, rgba(239,68,68,.92) 19% 58%, rgba(220,38,38,.45) 59% 100%)",
-    "blauviolett":"radial-gradient(circle at 50% 32%, rgba(255,255,255,.90) 0 18%, rgba(167,139,250,.95) 19% 58%, rgba(139,92,246,.45) 59% 100%)",
-    "violett":"radial-gradient(circle at 50% 32%, rgba(255,255,255,.90) 0 18%, rgba(196,181,253,.95) 19% 58%, rgba(167,139,250,.45) 59% 100%)",
-    "apfelgrün":"radial-gradient(circle at 50% 32%, rgba(255,255,255,.90) 0 18%, rgba(74,222,128,.92) 19% 58%, rgba(34,197,94,.45) 59% 100%)",
-    "ziegelrot":"radial-gradient(circle at 50% 32%, rgba(255,255,255,.90) 0 18%, rgba(251,146,60,.92) 19% 58%, rgba(234,88,12,.45) 59% 100%)",
-    "blaugrün":"radial-gradient(circle at 50% 32%, rgba(255,255,255,.90) 0 18%, rgba(45,212,191,.92) 19% 58%, rgba(20,184,166,.45) 59% 100%)"
-  };
-
-  /* (1) Kupfer generell als Cu2+, aber Name ohne (II) */
-  const CATIONS = [
-    {key:"Na", name:"Natrium",   sym:"Na", charge:1},
-    {key:"Li", name:"Lithium",   sym:"Li", charge:1},
-    {key:"Cs", name:"Cäsium",    sym:"Cs", charge:1},
-    {key:"K",  name:"Kalium",    sym:"K",  charge:1},
-    {key:"Ba", name:"Barium",    sym:"Ba", charge:2},
-    {key:"Sr", name:"Strontium", sym:"Sr", charge:2},
-    {key:"Ca", name:"Calcium",   sym:"Ca", charge:2},
-    {key:"Cu", name:"Kupfer",    sym:"Cu", charge:2}
-  ];
-  const ANIONS = [
-    {key:"Cl",  name:"chlorid",  sym:"Cl",  charge:1, ag:"white"},
-    {key:"Br",  name:"bromid",   sym:"Br",  charge:1, ag:"cream"},
-    {key:"I",   name:"iodid",    sym:"I",   charge:1, ag:"yellow"},
-    {key:"AsO4",name:"arsenat",  sym:"AsO4",charge:3, ag:"arsenate", poly:true}
-  ];
-
-  function gcd(a,b){ while(b){ [a,b]=[b,a%b]; } return a; }
-  function lcm(a,b){ return (a*b)/gcd(a,b); }
-
-  function formatFormula(c, a){
-    const L = lcm(c.charge, a.charge);
-    const nC = L / c.charge;
-    const nA = L / a.charge;
-
-    const cPart = c.sym + (nC>1 ? subNum(nC) : "");
-    let aCore = a.sym;
-    if (a.poly && nA>1) aCore = "(" + aCore.replace("O4","O₄") + ")";
-    else if (a.sym==="AsO4") aCore = "AsO₄";
-    const aPart = aCore + (nA>1 ? subNum(nA) : "");
-    return cPart + aPart;
-  }
-
-  /* (1) Name ohne Oxidationszahl: Kupferiodid, Kupferchlorid, etc. */
-  function canonicalSaltName(c, a){
-    const cat = c.name;
-    const an  = a.name;
-    return cat + an;
-  }
-
-  function normalizeName(s){
-    return (s||"")
-      .trim()
-      .toLowerCase()
-      .replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss")
-      .replace(/[‐-–—-]/g,"-")
-      .replace(/\s+/g,"")
-      .replace(/[^a-z0-9()\-]/g,"");
-  }
-
-  const FLAME_BY_CATION_KEY = {
-    Na:"gelb",
-    Li:"karminrot",
-    Cs:"blauviolett",
-    K:"violett",
-    Ba:"apfelgrün",
-    Sr:"rot",
-    Ca:"ziegelrot",
-    Cu:"blaugrün"
-  };
-
-  const STATE = {
-    mode: "learn",
-    selectedSalt: null,
-    unknownActual: null,
-
-    burnerOn: false,
-
-    tube: {has:false, saltId:null, unknown:false, dissolved:false, ag:false, arsenateTimer:null},
-    wells: Array.from({length:4}, ()=>({has:false, saltId:null, unknown:false, hcl:false})),
-    mgoDipped: null,
-    activeToolId: null
-  };
-
-  function updateTop(){
-    modeLabel.textContent = (STATE.mode==="learn") ? "Lernmodus" : "Expertenmodus";
-    burnerLabel.textContent = STATE.burnerOn ? "an" : "aus";
-    flame.classList.toggle("on", STATE.burnerOn);
-    if (!STATE.burnerOn) flameTint.classList.remove("show");
-
-    if (!STATE.selectedSalt){
-      selLabel.textContent = "—";
-    } else if (STATE.selectedSalt==="UNKNOWN"){
-      selLabel.textContent = "Unbekannt A";
-    } else {
-      selLabel.textContent = STATE.selectedSalt;
-    }
-    toolLabel.textContent = STATE.activeToolId || "—";
-  }
-
-  function labelForPlacement(isUnknown, saltId){
-    if (isUnknown) return "Unbekannt A";
-    return saltId;
-  }
-
-  burnerArea.addEventListener("click", ()=>{
-    STATE.burnerOn = !STATE.burnerOn;
-    flameTint.classList.remove("show");
-    setStatus(STATE.burnerOn ? "Brenner an" : "Brenner aus");
-    updateTop();
-  });
-
-  function renderGrains(container, count, w, h){
-    container.innerHTML = "";
-    for (let i=0;i<count;i++){
-      const g=document.createElement("div");
-      g.className="grain";
-      const size = (Math.random()<0.22) ? 10 : 8;
-      g.style.width=size+"px";
-      g.style.height=size+"px";
-      const x = 10 + Math.random()*(w-20-size);
-      const y = 6 + Math.random()*(h-12-size);
-      g.style.left = x + "px";
-      g.style.top  = y + "px";
-      g.style.transform = `rotate(${Math.random()*50-25}deg)`;
-      container.appendChild(g);
-    }
-  }
-
-  function renderTubeSalt(show){
-    tubeSaltPile.style.height = show ? "18%" : "0%";
-    if (!show){ tubeSaltPile.innerHTML=""; return; }
-    const pileH = Math.max(30, Math.floor(tube.clientHeight * 0.18));
-    const pileW = tube.clientWidth;
-    tubeSaltPile.style.height = pileH + "px";
-    renderGrains(tubeSaltPile, 56, pileW, pileH);
-  }
-
-  function renderWellSalt(i){
-    const well = $(`.well[data-well="${i}"]`);
-    const salt = $(".salt", well);
-    salt.style.opacity="1";
-    renderGrains(salt, 28, well.clientWidth, well.clientHeight);
-  }
-
-  function setWellTag(i){
-    const well = $(`.well[data-well="${i}"]`);
-    const tag  = $(".tag", well);
-    const w = STATE.wells[i];
-    if (!w.has){ tag.textContent = `Feld ${i+1}`; return; }
-    const base = labelForPlacement(w.unknown, w.saltId);
-    tag.textContent = base + (w.hcl ? " • HCl" : "");
-  }
-
-  function stopArsenate(){
-    if (STATE.tube.arsenateTimer){
-      clearInterval(STATE.tube.arsenateTimer);
-      STATE.tube.arsenateTimer=null;
-    }
-  }
-  function resetTube(){
-    stopArsenate();
-    STATE.tube = {has:false, saltId:null, unknown:false, dissolved:false, ag:false, arsenateTimer:null};
-    tubeLiquid.style.height="0%";
-    tubeLiquid.style.background="rgba(147,197,253,.18)";
-    tubePrecip.style.height="0%";
-    tubePrecip.style.background="rgba(255,255,255,.35)";
-    renderTubeSalt(false);
-  }
-
-  btnResetTube.addEventListener("click",(ev)=>{
-    ev.stopPropagation();
-    resetTube();
-    setStatus("Reagenzglas: leer");
-    log(`<span class="muted">Reagenzglas zurückgesetzt.</span>`);
-  });
-
-  function pickUnknown(){
-    const c = CATIONS[Math.floor(Math.random()*CATIONS.length)];
-    const a = ANIONS[Math.floor(Math.random()*ANIONS.length)];
-    const formula = formatFormula(c, a);
-    const name = canonicalSaltName(c, a);
-    const ag = a.ag;
-    const flame = FLAME_BY_CATION_KEY[c.key] || "gelb";
-    STATE.unknownActual = {cation:c, anion:a, formula, name, ag, flame};
-    log(`<span class="muted">Unbekannt A wurde neu gewählt.</span>`);
-  }
-
-  btnMode.addEventListener("click", ()=>{
-    STATE.mode = (STATE.mode==="learn") ? "expert" : "learn";
-    const exp = (STATE.mode==="expert");
-    unknownBtn.style.display = exp ? "" : "none";
-    expertBox.classList.toggle("show", exp);
-    btnMode.textContent = exp ? "Zu Lernmodus" : "Zu Expertenmodus";
-    if (exp){
-      pickUnknown();
-      setStatus("Expertenmodus: Unbekannt A bereit.");
-    } else {
-      setStatus("Lernmodus: Bereit.");
-    }
-    updateTop();
-    log(`<span class="muted">Modus:</span> <b>${exp ? "Experte" : "Lernmodus"}</b>`);
-  });
-
-  btnNewUnknown.addEventListener("click", ()=>{
-    if (STATE.mode!=="expert"){ log(`<span class="warn">Nur im Expertenmodus.</span>`); return; }
-    pickUnknown();
-  });
-
-  function revealUnknownAfterCorrect(){
-    const u = STATE.unknownActual;
-    log(`<span class="ok">Richtig.</span> Unbekannt A ist <b>${u.name}</b> (<b>${u.formula}</b>).`);
-    setStatus(`Richtig: ${u.name} (${u.formula}). Neue Probe folgt...`);
-    pickUnknown();
-    guessInput.value = "";
-    guessInput.focus();
-    setTimeout(()=>setStatus("Neue Expertenprobe: Unbekannt A bereit."), 650);
-  }
-
-  btnCheck.addEventListener("click", ()=>{
-    if (STATE.mode!=="expert"){
-      log(`<span class="warn">Prüfen gibt es nur im Expertenmodus.</span>`);
-      return;
-    }
-    const u = STATE.unknownActual;
-    if (!u){
-      log(`<span class="warn">Unbekannt A ist noch nicht gesetzt.</span>`);
-      return;
-    }
-    const guess = normalizeName(guessInput.value);
-    if (!guess){
-      log(`<span class="warn">Bitte einen Salznamen eingeben.</span>`);
-      return;
-    }
-    const target = normalizeName(u.name);
-    const ok = (guess===target);
-    if (ok){
-      revealUnknownAfterCorrect();
-    } else {
-      log(`<span class="bad">Falsch.</span> Bitte weiter analysieren und erneut versuchen.`);
-      setStatus("Falsch: Analyse fortsetzen.");
-      guessInput.select();
-    }
-  });
-
-  guessInput.addEventListener("keydown", (ev)=>{
-    if (ev.key==="Enter") btnCheck.click();
-  });
-
-  function setSelected(id, btn){
-    STATE.selectedSalt = id;
-    $$("#saltList .itemBtn").forEach(b=>b.classList.toggle("active", b===btn));
-    if (id==="UNKNOWN"){
-      log(`<span class="muted">Auswahl:</span> <b>Unbekannt A</b>`);
-    } else {
-      log(`<span class="muted">Auswahl:</span> <b>${id}</b> (${SALTS[id].name})`);
-    }
-    updateTop();
-  }
-
-  $$("#saltList .itemBtn").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      setSelected(btn.dataset.salt, btn);
+  const rimH = 0.13, rimThick = 0.22;
+  const rimFB = new THREE.BoxGeometry(tableW, rimH, rimThick), rimLR = new THREE.BoxGeometry(rimThick, rimH, tableD - rimThick * 2);
+  [-tableD / 2 + rimThick / 2, tableD / 2 - rimThick / 2].forEach(z => { const m = new THREE.Mesh(rimFB, tileMat); m.position.set(0, 0.025, z); m.receiveShadow = true; tableGroup.add(m); });
+  [-tableW / 2 + rimThick / 2, tableW / 2 - rimThick / 2].forEach(x => { const m = new THREE.Mesh(rimLR, tileMat); m.position.set(x, 0.025, 0); m.receiveShadow = true; tableGroup.add(m); });
+}
+const orangeMat = new THREE.MeshStandardMaterial({ color: 0xcf3a1d, roughness: 0.45 });
+const orangeFrame = new THREE.Mesh(new THREE.BoxGeometry(tableW - 0.08, 0.28, tableD - 0.08), orangeMat);
+orangeFrame.position.y = -0.32; tableGroup.add(orangeFrame);
+const greyCorpusMat = new THREE.MeshStandardMaterial({ color: 0x738394, roughness: 0.5 });
+{
+  const rightApron = new THREE.Mesh(new THREE.BoxGeometry(6.3, 1.15, tableD - 0.3), greyCorpusMat); rightApron.position.set(2.3, -1.03, 0); tableGroup.add(rightApron);
+  const backLeftApron = new THREE.Mesh(new THREE.BoxGeometry(4.6, 1.15, tableD - 2.4), greyCorpusMat); backLeftApron.position.set(-3.1, -1.03, -1.05); tableGroup.add(backLeftApron);
+  [-tableW / 2 + 0.3, tableW / 2 - 0.3].forEach(x => {
+    const sideWall = new THREE.Mesh(new THREE.BoxGeometry(0.32, 3.1, tableD - 0.3), greyCorpusMat); sideWall.position.set(x, -2.0, 0); tableGroup.add(sideWall);
+    [-tableD / 2 + 0.55, tableD / 2 - 0.55].forEach(z => {
+      const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.12, 1.4, 20), orangeMat); leg.position.set(x, -4.1, z); tableGroup.add(leg);
+      const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.2, 0.1, 20), new THREE.MeshStandardMaterial({ color: 0x151515 })); foot.position.set(x, -4.75, z); tableGroup.add(foot);
     });
   });
+}
+tableGroup.traverse(o => { if (o.isMesh) o.castShadow = true; });   // Tisch wirft selbst Schatten (Gegenstände darauf nicht „durch“ den Tisch)
+// Rückwand mit Installationsplatte (Gasanschluss)
+const WALL_FRONT = -3.4;
+{
+  const wall = new THREE.Mesh(new THREE.BoxGeometry(18, 9.6, 0.3), new THREE.MeshStandardMaterial({ color: 0x8a96a3, roughness: 0.9 }));
+  wall.position.set(0, 0, WALL_FRONT - 0.15); wall.receiveShadow = true; wall.castShadow = true; scene.add(wall);
+  const panel = new THREE.Mesh(new THREE.BoxGeometry(3.9, 2.8, 0.12), new THREE.MeshStandardMaterial({ color: 0xe6e9ec, roughness: 0.5 }));
+  panel.position.set(4.0, 1.75, WALL_FRONT + 0.06); panel.receiveShadow = true; panel.castShadow = true; scene.add(panel);
+  for (let i = 0; i < 5; i++) {                                    // Lüftungsschlitze wie auf dem Foto
+    const slot = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.34, 0.02), new THREE.MeshStandardMaterial({ color: 0x4a525a }));
+    slot.position.set(2.45 + i * 0.12, 2.65, WALL_FRONT + 0.125); scene.add(slot);
+  }
+}
 
-  btnClearSel.addEventListener("click", ()=>{
-    STATE.selectedSalt=null;
-    $$("#saltList .itemBtn").forEach(b=>b.classList.remove("active"));
-    updateTop();
-    log(`<span class="muted">Auswahl aufgehoben.</span>`);
+// ============================================================================
+// 4. GASANSCHLUSS (Wand), SCHLAUCH, BRENNER, FLAMME, STREICHHÖLZER
+// ============================================================================
+const OUT_END = new THREE.Vector3(4.9, 1.3, WALL_FRONT + 0.12 + 0.55);   // Ende der Gasdüse
+const KNOB_POS = new THREE.Vector3(3.3, 1.3, WALL_FRONT + 0.12);
+const gasKnob = new THREE.Group();
+{
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.38, 0.14, 24), new THREE.MeshStandardMaterial({ color: 0xc9ced3, roughness: 0.4, metalness: 0.4 }));
+  base.rotation.x = Math.PI / 2; base.position.set(KNOB_POS.x, KNOB_POS.y, KNOB_POS.z + 0.07); scene.add(base);
+  gasKnob.position.set(KNOB_POS.x, KNOB_POS.y, KNOB_POS.z + 0.16);
+  const yellow = new THREE.MeshStandardMaterial({ color: 0xf2d11a, roughness: 0.35 });
+  const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.32, 28), yellow); cap.rotation.x = Math.PI / 2; cap.position.z = 0.16; cap.castShadow = true; gasKnob.add(cap);
+  const dome = new THREE.Mesh(new THREE.SphereGeometry(0.3, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), yellow); dome.rotation.x = Math.PI / 2; dome.position.z = 0.32; gasKnob.add(dome);
+  const grip = new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.16, 0.16), yellow); grip.position.z = 0.4; grip.castShadow = true; gasKnob.add(grip);   // Griffbalken: waagerecht = zu, senkrecht = auf
+  const mark = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.04, 0.02), new THREE.MeshBasicMaterial({ color: 0x222222 })); mark.position.z = 0.485; gasKnob.add(mark);
+  const hit = new THREE.Mesh(new THREE.SphereGeometry(0.5, 12, 12), new THREE.MeshBasicMaterial({ visible: false }));
+  hit.position.z = 0.3; hit.userData = { type: 'gasknob', name: 'Gashahn (gelb) – anklicken: öffnen / schließen' }; gasKnob.add(hit);
+  scene.add(gasKnob);
+  const gl = createTextSprite(0.9, 0.22); setSpriteText(gl, 'GAS'); gl.position.set(KNOB_POS.x, KNOB_POS.y + 0.78, KNOB_POS.z + 0.3); scene.add(gl);
+  // Düse
+  const housing = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.12, 24), new THREE.MeshStandardMaterial({ color: 0xc9ced3, roughness: 0.4, metalness: 0.4 }));
+  housing.rotation.x = Math.PI / 2; housing.position.set(OUT_END.x, OUT_END.y, WALL_FRONT + 0.18); scene.add(housing);
+  const nozLen = OUT_END.z - (WALL_FRONT + 0.12);
+  const noz = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, nozLen, 16), new THREE.MeshStandardMaterial({ color: 0x8b9a8d, roughness: 0.4, metalness: 0.5 }));
+  noz.rotation.x = Math.PI / 2; noz.position.set(OUT_END.x, OUT_END.y, WALL_FRONT + 0.12 + nozLen / 2); noz.castShadow = true; scene.add(noz);
+  [0.2, 0.34, 0.48].forEach(f => { const r = new THREE.Mesh(new THREE.TorusGeometry(0.115, 0.022, 8, 16), new THREE.MeshStandardMaterial({ color: 0x7a897d, metalness: 0.5, roughness: 0.4 })); r.position.set(OUT_END.x, OUT_END.y, WALL_FRONT + 0.12 + nozLen * f * 1.5); scene.add(r); });
+  const outHit = new THREE.Mesh(new THREE.SphereGeometry(0.5, 12, 12), new THREE.MeshBasicMaterial({ visible: false }));
+  outHit.position.copy(OUT_END).add(new THREE.Vector3(0, 0, -0.15)); outHit.userData = { type: 'outlet', name: 'Gasanschluss (Düse) – hier den Schlauch aufstecken' }; scene.add(outHit);
+}
+
+// ---- Brenner ----
+const BUX = 3.2, BUZ = -0.9, BARREL_TOP = TABLE_Y + 2.5;
+const burner = new THREE.Group(); burner.position.set(BUX, TABLE_Y, BUZ); scene.add(burner);
+const collar = new THREE.Group();
+{
+  const footPts = [[0, 0], [0.9, 0], [0.9, 0.07], [0.8, 0.16], [0.5, 0.24], [0.3, 0.36], [0.22, 0.52], [0, 0.52]].map(p => new THREE.Vector2(p[0], p[1]));
+  const foot = new THREE.Mesh(new THREE.LatheGeometry(footPts, 32), new THREE.MeshStandardMaterial({ color: 0xd5d9dd, roughness: 0.3, metalness: 0.75, side: THREE.DoubleSide })); foot.castShadow = true; foot.receiveShadow = true; burner.add(foot);
+  const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.17, 2.0, 28, 1, true), metalMat); barrel.position.y = 1.5; barrel.castShadow = true; burner.add(barrel);
+  const inner = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 2.0, 24, 1, true), new THREE.MeshStandardMaterial({ color: 0x20252a, side: THREE.BackSide })); inner.position.y = 1.5; burner.add(inner);
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(0.17, 0.02, 8, 28), metalMat); rim.rotation.x = Math.PI / 2; rim.position.y = 2.5; burner.add(rim);
+  // Luftschlitze im Rohr
+  const slits = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.36, 0.44), blackMat); slits.position.y = 0.82; burner.add(slits);
+  // Luftregler: zwei Halbschalen, drehbar
+  const g = 0.5, cm = new THREE.MeshStandardMaterial({ color: 0x23272c, roughness: 0.4, metalness: 0.5, side: THREE.DoubleSide });
+  [g, Math.PI + g].forEach(ts => { const s = new THREE.Mesh(new THREE.CylinderGeometry(0.205, 0.205, 0.5, 20, 1, true, ts, Math.PI - 2 * g), cm); s.castShadow = true; collar.add(s); });
+  [0.25, -0.25].forEach(dy => { const rr = new THREE.Mesh(new THREE.TorusGeometry(0.205, 0.016, 8, 24), cm); rr.rotation.x = Math.PI / 2; rr.position.y = dy; collar.add(rr); });
+  collar.position.y = 0.82; burner.add(collar);
+  const ch = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.7, 12), new THREE.MeshBasicMaterial({ visible: false }));
+  ch.position.y = 0.82; ch.userData = { type: 'air', name: 'Luftregler (Kappe) – anklicken: Luftzufuhr öffnen / schließen' }; burner.add(ch);
+  // Gaszuleitung (seitlich) mit Anschlussstutzen
+  const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.8, 16), metalMat); pipe.rotation.z = Math.PI / 2; pipe.position.set(0.55, 0.33, 0); pipe.castShadow = true; burner.add(pipe);
+  const nip = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.2, 16), new THREE.MeshStandardMaterial({ color: 0x8b9a8d, metalness: 0.5, roughness: 0.4 })); nip.rotation.z = Math.PI / 2; nip.position.set(0.95, 0.33, 0); burner.add(nip);
+  // Gasregulierschraube (Dekoration)
+  const nd = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.4, 12), blackMat); nd.rotation.z = Math.PI / 2; nd.position.set(-0.45, 0.33, 0); burner.add(nd);
+  const nk = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.1, 16), blackMat); nk.rotation.z = Math.PI / 2; nk.position.set(-0.7, 0.33, 0); burner.add(nk);
+  // Zünd-Trefferbereich: Rohrende + Flammenraum
+  const th = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 2.0, 12), new THREE.MeshBasicMaterial({ visible: false }));
+  th.position.y = 3.2; th.userData = { type: 'burnerTop', name: 'Brenner (Rohrende / Flamme)' }; burner.add(th);
+  const bh = new THREE.Mesh(new THREE.CylinderGeometry(0.75, 0.75, 0.6, 12), new THREE.MeshBasicMaterial({ visible: false }));
+  bh.position.y = 0.3; bh.userData = { type: 'burnerBase', name: 'Bunsenbrenner' }; burner.add(bh);
+}
+const P_IN = new THREE.Vector3(BUX + 1.05, TABLE_Y + 0.33, BUZ);          // Stutzen des Brenners
+const HOSE_CONN = [P_IN.clone(), new THREE.Vector3(BUX + 1.55, 0.3, BUZ - 0.15), new THREE.Vector3(4.85, 0.3, -1.65), new THREE.Vector3(4.95, 0.75, -2.2), new THREE.Vector3(4.9, 1.2, -2.5), OUT_END.clone().add(new THREE.Vector3(0, 0, -0.25))];
+const HOSE_LOOSE = [P_IN.clone(), new THREE.Vector3(BUX + 1.55, 0.26, BUZ + 0.2), new THREE.Vector3(5.0, 0.2, -0.2), new THREE.Vector3(5.1, 0.2, 0.45), new THREE.Vector3(4.7, 0.2, 1.0), new THREE.Vector3(4.2, 0.2, 1.25)];
+const hoseMat = new THREE.MeshStandardMaterial({ color: 0xc62f2a, roughness: 0.45 });
+const hoseMesh = new THREE.Mesh(new THREE.BufferGeometry(), hoseMat); hoseMesh.castShadow = true; scene.add(hoseMesh);
+const hoseEndMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.4, 14), new THREE.MeshStandardMaterial({ color: 0x8e1d1a, roughness: 0.5 })); hoseEndMesh.castShadow = true; scene.add(hoseEndMesh);
+const hoseHit = new THREE.Mesh(new THREE.SphereGeometry(0.5, 12, 12), new THREE.MeshBasicMaterial({ visible: false }));
+hoseHit.userData = { type: 'hose', name: 'Gasschlauch – anklicken, dann Gasanschluss an der Wand anklicken' }; scene.add(hoseHit);
+const hosePts = HOSE_CONN.map(p => p.clone());
+function rebuildHose() {
+  const curve = new THREE.CatmullRomCurve3(hosePts);
+  hoseMesh.geometry.dispose(); hoseMesh.geometry = new THREE.TubeGeometry(curve, 56, 0.09, 10, false);
+  const e = hosePts[hosePts.length - 1], d = curve.getTangent(1);
+  hoseEndMesh.position.copy(e).addScaledVector(d, -0.05); hoseEndMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d);
+  hoseHit.position.copy(e);
+}
+rebuildHose();
+
+// ---- Flamme ----
+function flameLathe() {
+  const pts = [[0, 0], [0.9, 0.03], [1.0, 0.22], [0.86, 0.5], [0.52, 0.78], [0.16, 0.95], [0, 1]].map(p => new THREE.Vector2(p[0], p[1]));
+  return new THREE.LatheGeometry(pts, 20);
+}
+const flame = new THREE.Group(); flame.position.set(BUX, BARREL_TOP - 0.02, BUZ); flame.visible = false; scene.add(flame);
+const flameMats = {
+  outer: new THREE.MeshBasicMaterial({ color: 0x8fb8ff, transparent: true, opacity: 0.25, depthWrite: false, side: THREE.DoubleSide }),
+  mid:   new THREE.MeshBasicMaterial({ color: 0x5b8fff, transparent: true, opacity: 0.45, depthWrite: false, side: THREE.DoubleSide }),
+  core:  new THREE.MeshBasicMaterial({ color: 0x2f64ff, transparent: true, opacity: 0.85, depthWrite: false, side: THREE.DoubleSide })
+};
+const flameMeshes = {};
+['outer', 'mid', 'core'].forEach(k => { const m = new THREE.Mesh(flameLathe(), flameMats[k]); m.renderOrder = 6; flame.add(m); flameMeshes[k] = m; });
+const flameLight = new THREE.PointLight(0x9ec1ff, 0, 7, 1.6); flameLight.position.set(0, 0.7, 0); flame.add(flameLight);
+// Zielwerte je Flammenart: [Breite, Höhe, Farbe, Deckkraft]
+const FLAME_BLUE = { outer: [0.30, 1.15, 0x8fb8ff, 0.22], mid: [0.2, 0.72, 0x5b8fff, 0.42], core: [0.11, 0.36, 0x2f5bff, 0.9], light: [0x8fb4ff, 0.7] };
+const FLAME_YELLOW = { outer: [0.36, 1.95, 0xff9a1a, 0.5], mid: [0.26, 1.4, 0xffc933, 0.55], core: [0.1, 0.5, 0xfff2b3, 0.6], light: [0xffa84a, 1.2] };
+const fl = { outer: { w: 0.3, h: 1.15 }, mid: { w: 0.2, h: 0.72 }, core: { w: 0.11, h: 0.36 }, alpha: 0, tint: 0, tintColor: new THREE.Color(0xffd21f), lightC: new THREE.Color(0x8fb4ff), lightI: 0 };
+function updateFlameVisual(dt, t) {
+  const tgt = state.airClosed ? FLAME_YELLOW : FLAME_BLUE;
+  fl.alpha = lerp(fl.alpha, state.ignited ? 1 : 0, Math.min(1, dt * 9));
+  flame.visible = fl.alpha > 0.02;
+  if (!flame.visible) { flameLight.intensity = 0; return; }
+  const k = Math.min(1, dt * 6), tmp = new THREE.Color();
+  ['outer', 'mid', 'core'].forEach(name => {
+    const g = tgt[name], m = flameMats[name];
+    fl[name].w = lerp(fl[name].w, g[0], k); fl[name].h = lerp(fl[name].h, g[1], k);
+    tmp.setHex(g[2]);
+    if (name !== 'core') tmp.lerp(fl.tintColor, fl.tint * (name === 'outer' ? 1.0 : 0.85));
+    m.color.lerp(tmp, k * 1.5);
+    m.opacity = lerp(m.opacity, Math.min(0.85, g[3] * fl.alpha * (name !== 'core' ? (1 + fl.tint * 1.8) : 1)), k);
+    const fw = 1 + Math.sin(t * 38 + name.length) * 0.05, fh = 1 + Math.sin(t * 27 + name.length * 2) * 0.06;
+    const gw = fl[name].w * (name === 'core' ? 1 : 1 + fl.tint * 0.45);
+    flameMeshes[name].scale.set(gw * fw, fl[name].h * fh * (name === 'core' ? 1 : 1 + fl.tint * 0.15), gw * fw);
   });
+  tmp.setHex(tgt.light[0]).lerp(fl.tintColor, fl.tint);
+  flameLight.color.lerp(tmp, k); flameLight.intensity = lerp(flameLight.intensity, (tgt.light[1] + fl.tint * 1.4) * fl.alpha, k);
+}
 
-  function selectedActualSaltId(){
-    if (!STATE.selectedSalt) return null;
-    if (STATE.selectedSalt==="UNKNOWN") return null;
-    return STATE.selectedSalt;
+// ---- Streichholzschachtel & Streichholz ----
+const BOXX = 4.6, BOXZ = 2.25, BOX_TOP = TABLE_Y + 0.3;
+const matchbox = new THREE.Group(); matchbox.position.set(BOXX, TABLE_Y, BOXZ); matchbox.visible = false; scene.add(matchbox);
+{
+  const c = document.createElement('canvas'); c.width = 256; c.height = 128;
+  const x = c.getContext('2d'); x.fillStyle = '#d9a63a'; x.fillRect(0, 0, 256, 128);
+  x.fillStyle = '#7a1f12'; x.fillRect(0, 70, 256, 58);                           // Reibfläche
+  for (let i = 0; i < 700; i++) { x.fillStyle = 'rgba(40,10,5,' + (Math.random() * 0.5) + ')'; x.fillRect(Math.random() * 256, 70 + Math.random() * 58, 2, 2); }
+  x.fillStyle = '#4a2a08'; x.font = 'bold 26px sans-serif'; x.textAlign = 'center'; x.fillText('ZÜNDHÖLZER', 128, 44);
+  const topMat = new THREE.MeshStandardMaterial({ map: new THREE.CanvasTexture(c), roughness: 0.8 });
+  const sideMat = new THREE.MeshStandardMaterial({ color: 0xc8922c, roughness: 0.8 });
+  const box = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.3, 0.86), [sideMat, sideMat, topMat, sideMat, sideMat, sideMat]); box.position.y = 0.15; box.castShadow = true; box.receiveShadow = true; matchbox.add(box);
+  const hit = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.5, 1.0), new THREE.MeshBasicMaterial({ visible: false })); hit.position.y = 0.25;
+  hit.userData = { type: 'matchbox', name: 'Streichholzschachtel – anklicken: Streichholz nehmen bzw. anzünden' }; matchbox.add(hit);
+}
+const matchObj = new THREE.Group(); matchObj.visible = false; scene.add(matchObj);   // Ursprung = Kopf des Streichholzes
+const matchFlame = new THREE.Mesh(flameLathe(), new THREE.MeshBasicMaterial({ color: 0xffb02e, transparent: true, opacity: 0.9, depthWrite: false, side: THREE.DoubleSide }));
+matchFlame.scale.set(0.12, 0.42, 0.12); matchFlame.position.y = 0.04; matchFlame.visible = false; matchObj.add(matchFlame);
+let matchHead;
+{
+  const sg = new THREE.Group(); sg.rotation.z = -0.55; matchObj.add(sg);
+  const stick = new THREE.Mesh(new THREE.BoxGeometry(0.05, 1.3, 0.05), new THREE.MeshStandardMaterial({ color: 0xe8cf9a, roughness: 0.7 })); stick.position.y = 0.65; stick.castShadow = true; sg.add(stick);
+  matchHead = new THREE.Mesh(new THREE.SphereGeometry(0.075, 12, 10), new THREE.MeshStandardMaterial({ color: 0xc02a1d, roughness: 0.6 })); matchHead.scale.y = 1.25; sg.add(matchHead);
+}
+const MATCH_HOLD = new THREE.Vector3(BOXX - 0.25, TABLE_Y + 1.45, BOXZ + 0.15);
+
+// ============================================================================
+// 5. REAGENZGLASSTÄNDER, REAGENZGLAS, FLASCHEN
+// ============================================================================
+const TUBE_X = -0.4, TUBE_Z = -1.75, TUBE_BASE = TABLE_Y + 0.17, TUBE_R = 0.26, TUBE_H = 2.4;
+{
+  const base = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.17, 0.95), woodMat); base.position.set(TUBE_X, TABLE_Y + 0.085, TUBE_Z); base.castShadow = true; base.receiveShadow = true; scene.add(base);
+  [-0.88, 0.88].forEach(dx => { const up = new THREE.Mesh(new THREE.BoxGeometry(0.12, 1.45, 0.12), woodMat); up.position.set(TUBE_X + dx, TABLE_Y + 0.9, TUBE_Z); up.castShadow = true; scene.add(up); });
+  const sh = new THREE.Shape(); sh.moveTo(-1.0, -0.42); sh.lineTo(1.0, -0.42); sh.lineTo(1.0, 0.42); sh.lineTo(-1.0, 0.42); sh.lineTo(-1.0, -0.42);
+  [-0.6, 0, 0.6].forEach(hx => { const h = new THREE.Path(); h.absarc(hx, 0, 0.3, 0, Math.PI * 2, true); sh.holes.push(h); });
+  const g = new THREE.ExtrudeGeometry(sh, { depth: 0.1, bevelEnabled: false, curveSegments: 20 }); g.rotateX(-Math.PI / 2);
+  const top = new THREE.Mesh(g, woodMat); top.position.set(TUBE_X, TABLE_Y + 1.5, TUBE_Z); top.castShadow = true; scene.add(top);
+}
+const tube = { group: new THREE.Group(), grains: new THREE.Group(), label: createTextSprite(1.2, 0.3) };
+{
+  tube.group.position.set(TUBE_X, TUBE_BASE, TUBE_Z); scene.add(tube.group);
+  const R = TUBE_R, pts = [];
+  for (let i = 0; i <= 10; i++) { const a = i / 10 * Math.PI / 2; pts.push(new THREE.Vector2(R * Math.sin(a), R * (1 - Math.cos(a)))); }
+  pts.push(new THREE.Vector2(R, TUBE_H));
+  const glass = new THREE.Mesh(new THREE.LatheGeometry(pts, 28), glassMat); glass.renderOrder = 3; glass.castShadow = true; tube.group.add(glass);
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(R, 0.02, 8, 28), glassMat); rim.rotation.x = Math.PI / 2; rim.position.y = TUBE_H; tube.group.add(rim);
+  function liqGeo(r, H) {
+    const p = [new THREE.Vector2(0, 0)];
+    for (let i = 1; i <= 10; i++) { const a = i / 10 * Math.PI / 2; p.push(new THREE.Vector2(r * Math.sin(a), r * (1 - Math.cos(a)))); }
+    p.push(new THREE.Vector2(r, H)); p.push(new THREE.Vector2(0, H)); return new THREE.LatheGeometry(p, 24);
   }
+  tube.liqMat = new THREE.MeshPhysicalMaterial({ color: 0x6cb2ea, transparent: true, opacity: 0.66, roughness: 0.05, clearcoat: 1.0, side: THREE.DoubleSide, depthWrite: false });
+  tube.liq = new THREE.Mesh(liqGeo(R - 0.025, 1.2), tube.liqMat); tube.liq.scale.y = 0.001; tube.liq.visible = false; tube.liq.renderOrder = 1; tube.group.add(tube.liq);
+  tube.precipMat = new THREE.MeshStandardMaterial({ color: 0xf6f6f2, roughness: 0.85, transparent: true, opacity: 0.96, side: THREE.DoubleSide });
+  tube.precip = new THREE.Mesh(liqGeo(R - 0.03, 1.0), tube.precipMat); tube.precip.scale.y = 0.001; tube.precip.visible = false; tube.precip.renderOrder = 2; tube.group.add(tube.precip);
+  tube.group.add(tube.grains);
+  for (let i = 0; i < 46; i++) {
+    const s = 0.045 + Math.random() * 0.045, gm = new THREE.Mesh(new THREE.BoxGeometry(s, s, s), saltMat);
+    const a = Math.random() * 6.28, rr = Math.random() * 0.16, yy = 0.05 + Math.random() * 0.14 * (1 - rr / 0.2);
+    gm.position.set(Math.cos(a) * rr, yy, Math.sin(a) * rr); gm.rotation.set(Math.random() * 3, Math.random() * 3, Math.random() * 3); tube.grains.add(gm);
+  }
+  tube.grains.visible = false;
+  tube.label.position.set(0, TUBE_H + 0.55, 0); tube.group.add(tube.label);
+  const hit = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, TUBE_H + 0.4, 12), new THREE.MeshBasicMaterial({ visible: false }));
+  hit.position.y = TUBE_H / 2; hit.userData = { type: 'tube', name: 'Reagenzglas (Anionen-Nachweis mit AgNO₃)' }; tube.group.add(hit);
+}
 
-  tube.addEventListener("click", ()=>{
-    if (!STATE.selectedSalt){
-      log(`<span class="warn">Zuerst ein Salz auswählen.</span>`);
-      return;
+// ---- Werkzeug-Verwaltung ----
+const TOOLS = {};   // key -> { pivot, lift, anim }
+function registerTool(key, pivot, lift) { pivot.userData.rest = pivot.position.clone(); pivot.userData.restRot = pivot.rotation.clone(); TOOLS[key] = { pivot, lift, anim: false, key }; }
+
+// Tropfflaschen (AgNO3, HCl) und Wasserflasche
+function createDropper(title, sub, hx, hz, liqColor, key, nameTxt, s) {
+  const tipLen = 2.24 * s;
+  const pivot = new THREE.Group();
+  const body = new THREE.Group(); body.position.y = -tipLen; pivot.add(body);
+  const bodyPts = [[0, 0], [0.46 * s, 0], [0.48 * s, 0.12 * s], [0.48 * s, 1.25 * s], [0.38 * s, 1.48 * s], [0.2 * s, 1.56 * s]].map(p => new THREE.Vector2(p[0], p[1]));
+  const bm = new THREE.Mesh(new THREE.LatheGeometry(bodyPts, 24), plasticMat); bm.castShadow = true; bm.renderOrder = 3; body.add(bm);
+  const lq = new THREE.Mesh(new THREE.CylinderGeometry(0.44 * s, 0.44 * s, 1.02 * s, 24), new THREE.MeshPhysicalMaterial({ color: liqColor, transparent: true, opacity: 0.7, roughness: 0.05, clearcoat: 1 }));
+  lq.position.y = 0.04 * s + 0.51 * s; lq.renderOrder = 1; body.add(lq);
+  const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.23 * s, 0.23 * s, 0.26 * s, 20), whiteCapMat); cap.position.y = 1.68 * s; body.add(cap);
+  const nozzle = new THREE.Mesh(new THREE.CylinderGeometry(0.035 * s, 0.13 * s, 0.44 * s, 16), whiteCapMat); nozzle.position.y = 2.02 * s; body.add(nozzle);
+  const lbl = new THREE.Mesh(new THREE.CylinderGeometry(0.486 * s, 0.486 * s, 0.92 * s, 24, 1, true, -Math.PI / 3, (Math.PI * 2) / 3),
+    new THREE.MeshBasicMaterial({ map: createLabelTexture(title, sub), transparent: true }));
+  lbl.position.y = 0.72 * s; body.add(lbl);
+  const hit = new THREE.Mesh(new THREE.CylinderGeometry(0.5 * s + 0.1, 0.5 * s + 0.1, 1.9 * s, 12), new THREE.MeshBasicMaterial({ visible: false }));
+  hit.position.y = -tipLen + 0.95 * s; hit.userData = { type: 'dropper', key, name: nameTxt }; pivot.add(hit);
+  pivot.position.set(hx, TABLE_Y + tipLen, hz); scene.add(pivot);
+  registerTool(key, pivot, 0.6);
+  return { pivot, tipLen, s };
+}
+function createWashBottle(hx, hz, s) {
+  const TIPX = 0.8, TIPY = 3.1;   // Spitze des Ausgussrohrs (lokal, vor Skalierung)
+  const pivot = new THREE.Group();
+  const inner = new THREE.Group(); inner.scale.setScalar(s); inner.position.set(-TIPX * s, -TIPY * s, 0); pivot.add(inner);
+  const bp = [[0, 0], [0.44, 0], [0.46, 0.1], [0.46, 1.55], [0.4, 1.85], [0.27, 2.0], [0.2, 2.1], [0.19, 2.2]].map(a => new THREE.Vector2(a[0], a[1]));
+  const bm = new THREE.Mesh(new THREE.LatheGeometry(bp, 28), plasticMat); bm.renderOrder = 3; bm.castShadow = true; inner.add(bm);
+  const lq = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 1.3, 28), new THREE.MeshPhysicalMaterial({ color: 0x8ec6f2, transparent: true, opacity: 0.72, roughness: 0.05, clearcoat: 1 }));
+  lq.position.y = 0.05 + 0.65; lq.renderOrder = 1; inner.add(lq);
+  const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.3, 24), whiteCapMat); cap.position.y = 2.28; inner.add(cap);
+  const curve = new THREE.CatmullRomCurve3([[0, 2.3, 0], [0, 2.85, 0], [0.05, 3.1, 0], [0.25, 3.25, 0], [0.55, 3.22, 0], [TIPX, TIPY, 0]].map(a => new THREE.Vector3(a[0], a[1], a[2])));
+  const tubeM = new THREE.Mesh(new THREE.TubeGeometry(curve, 28, 0.045, 10), whiteCapMat); tubeM.castShadow = true; inner.add(tubeM);
+  const lbl = new THREE.Mesh(new THREE.CylinderGeometry(0.466, 0.466, 0.95, 24, 1, true, -Math.PI / 3, (Math.PI * 2) / 3),
+    new THREE.MeshBasicMaterial({ map: createLabelTexture('Wasser', 'H₂O dest.'), transparent: true }));
+  lbl.position.y = 0.85; inner.add(lbl);
+  const hit = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 2.5, 12), new THREE.MeshBasicMaterial({ visible: false }));
+  hit.position.set(-TIPX, 1.2 + (-TIPY) + TIPY, 0); hit.position.y = 1.2; hit.position.x = 0;
+  hit.userData = { type: 'dropper', key: 'water', name: 'Spritzflasche (dest. Wasser)' }; inner.add(hit);
+  pivot.position.set(hx + TIPX * s, TABLE_Y + TIPY * s, hz); scene.add(pivot);
+  registerTool('water', pivot, 0.6);
+  return { pivot, s };
+}
+const water = createWashBottle(-1.9, -1.9, 0.8);
+const dropAg = createDropper('AgNO₃', 'Silbernitrat', 1.1, -1.9, 0xe9f1f7, 'agno3', 'Tropfflasche: Silbernitrat-Lösung (AgNO₃)', 0.6);
+const dropHcl = createDropper('HCl', 'Salzsäure', 1.75, -1.9, 0xe4f3df, 'hcl', 'Tropfflasche: Salzsäure (HCl)', 0.6);
+
+// ============================================================================
+// 6. TÜPFELPLATTE (6 Mulden) mit Beschriftung
+// ============================================================================
+const PX = 0.1, PZ = 1.15, WELL_R = 0.36, PS = 0.48;   // PS = Verkleinerung der Tüpfelplatte
+const WELL_OFF = [[-1, -0.52], [0, -0.52], [1, -0.52], [-1, 0.52], [0, 0.52], [1, 0.52]];
+const WELLS = [];
+{
+  const sh = new THREE.Shape(), W = 1.75, D = 1.2, r = 0.25;
+  sh.moveTo(-W + r, -D); sh.lineTo(W - r, -D); sh.quadraticCurveTo(W, -D, W, -D + r); sh.lineTo(W, D - r); sh.quadraticCurveTo(W, D, W - r, D);
+  sh.lineTo(-W + r, D); sh.quadraticCurveTo(-W, D, -W, D - r); sh.lineTo(-W, -D + r); sh.quadraticCurveTo(-W, -D, -W + r, -D);
+  WELL_OFF.forEach(o => { const h = new THREE.Path(); h.absarc(o[0], -o[1], WELL_R, 0, Math.PI * 2, true); sh.holes.push(h); });
+  const g = new THREE.ExtrudeGeometry(sh, { depth: 0.14, bevelEnabled: true, bevelSize: 0.03, bevelThickness: 0.03, bevelSegments: 2, curveSegments: 28 });
+  g.rotateX(-Math.PI / 2); g.translate(0, 0.03, 0);
+  const plate = new THREE.Mesh(g, porcelainMat); plate.position.set(PX, TABLE_Y, PZ); plate.scale.setScalar(PS); plate.castShadow = true; plate.receiveShadow = true; scene.add(plate);
+  const bp = []; for (let i = 0; i <= 10; i++) { const a = i / 10 * Math.PI / 2; bp.push(new THREE.Vector2(WELL_R * Math.cos(a), 0.17 - 0.15 * Math.sin(a))); }
+  const bowlGeo = new THREE.LatheGeometry(bp, 28);
+  WELL_OFF.forEach((o, i) => {
+    const wx = PX + o[0] * PS, wz = PZ + o[1] * PS;
+    const bowl = new THREE.Mesh(bowlGeo, porcelainMat); bowl.position.set(wx, TABLE_Y, wz); bowl.scale.setScalar(PS); bowl.receiveShadow = true; scene.add(bowl);
+    const grains = new THREE.Group(); grains.position.set(wx, TABLE_Y + 0.05 * PS, wz); grains.scale.setScalar(PS); grains.visible = false; scene.add(grains);
+    for (let k = 0; k < 20; k++) {
+      const s = 0.035 + Math.random() * 0.04, gm = new THREE.Mesh(new THREE.BoxGeometry(s, s, s), saltMat);
+      const a = Math.random() * 6.28, rr = Math.sqrt(Math.random()) * 0.22; gm.position.set(Math.cos(a) * rr, Math.random() * 0.03, Math.sin(a) * rr); gm.rotation.set(Math.random() * 3, Math.random() * 3, Math.random() * 3); grains.add(gm);
     }
-    if (STATE.tube.has){
-      log(`<span class="warn">Im Reagenzglas ist bereits eine Probe.</span>`);
-      return;
-    }
-
-    const isUnknown = (STATE.selectedSalt==="UNKNOWN");
-    if (isUnknown && STATE.mode!=="expert"){
-      log(`<span class="warn">Unbekannt A gibt es nur im Expertenmodus.</span>`);
-      return;
-    }
-    if (isUnknown && !STATE.unknownActual){
-      log(`<span class="warn">Unbekannt A ist noch nicht gesetzt.</span>`);
-      return;
-    }
-
-    STATE.tube.has=true;
-    STATE.tube.unknown=isUnknown;
-    STATE.tube.saltId = isUnknown ? null : selectedActualSaltId();
-    STATE.tube.dissolved=false;
-    STATE.tube.ag=false;
-
-    renderTubeSalt(true);
-
-    const label = labelForPlacement(isUnknown, STATE.tube.saltId);
-    setStatus(`Salz im Reagenzglas: ${label}`);
-    log(`<span class="ok">Salz ins Reagenzglas gegeben.</span>`);
+    const liq = new THREE.Mesh(new THREE.CylinderGeometry(0.29, 0.25, 0.03, 28), new THREE.MeshPhysicalMaterial({ color: 0xd8f0d8, transparent: true, opacity: 0.5, roughness: 0.05, clearcoat: 1 }));
+    liq.position.set(wx, TABLE_Y + 0.115 * PS, wz); liq.scale.setScalar(PS); liq.visible = false; scene.add(liq);
+    const label = createTextSprite(0.7, 0.175); { const alt = (i % 3) % 2, front = i > 2; label.position.set(wx, TABLE_Y + (front ? 0.12 : 0.55) + 0.22 * alt, wz + (front ? 0.5 : -0.1)); } scene.add(label);
+    const hit = new THREE.Mesh(new THREE.CylinderGeometry(0.23, 0.23, 0.12, 14), new THREE.MeshBasicMaterial({ visible: false }));
+    hit.position.set(wx, TABLE_Y + 0.08, wz); hit.userData = { type: 'well', i, name: 'Mulde ' + (i + 1) + ' der Tüpfelplatte' }; scene.add(hit);
+    WELLS.push({ i, x: wx, z: wz, grains, liq, label });
   });
+}
 
-  $$(".well").forEach(well=>{
-    const i = Number(well.dataset.well);
-    well.addEventListener("click", ()=>{
-      if (!STATE.selectedSalt){ log(`<span class="warn">Zuerst ein Salz auswählen.</span>`); return; }
-      const w = STATE.wells[i];
-      if (w.has){ log(`<span class="warn">Feld ${i+1} ist bereits belegt.</span>`); return; }
-
-      const isUnknown = (STATE.selectedSalt==="UNKNOWN");
-      if (isUnknown && STATE.mode!=="expert"){
-        log(`<span class="warn">Unbekannt A gibt es nur im Expertenmodus.</span>`);
-        return;
-      }
-      if (isUnknown && !STATE.unknownActual){
-        log(`<span class="warn">Unbekannt A ist noch nicht gesetzt.</span>`);
-        return;
-      }
-
-      w.has=true;
-      w.unknown=isUnknown;
-      w.saltId = isUnknown ? null : selectedActualSaltId();
-      renderWellSalt(i);
-      setWellTag(i);
-
-      const label = labelForPlacement(isUnknown, w.saltId);
-      setStatus(`Salz auf Feld ${i+1}: ${label}`);
-      log(`<span class="ok">Salz auf Feld ${i+1} gegeben.</span>`);
-    });
-  });
-
-  $$(".wellReset").forEach(btn=>{
-    btn.addEventListener("click",(ev)=>{
-      ev.stopPropagation();
-      const i = Number(btn.dataset.wreset);
-      STATE.wells[i] = {has:false, saltId:null, unknown:false, hcl:false};
-      const well = $(`.well[data-well="${i}"]`);
-      $(".fluid", well).style.background = "transparent";
-      const salt = $(".salt", well);
-      salt.style.opacity="0";
-      salt.innerHTML="";
-      setWellTag(i);
-      if (STATE.mgoDipped && STATE.mgoDipped.well===i) STATE.mgoDipped=null;
-      log(`<span class="muted">Feld ${i+1} zurückgesetzt.</span>`);
-    });
-  });
-
-  btnResetAll.addEventListener("click", ()=>{
-    STATE.selectedSalt=null;
-    $$("#saltList .itemBtn").forEach(b=>b.classList.remove("active"));
-    flameTint.classList.remove("show");
-    STATE.burnerOn=false;
-    STATE.mgoDipped=null;
-    resetTube();
-    for (let i=0;i<4;i++){
-      const btn = $(`.wellReset[data-wreset="${i}"]`);
-      btn.click();
-    }
-    setStatus("Bereit.");
-    updateTop();
-    log(`<span class="muted">Alles zurückgesetzt.</span>`);
-  });
-
-  function arsenateSequence(){
-    const seq = [
-      {bg:"rgba(255,255,255,.40)", text:"weißlich"},
-      {bg:"rgba(250,204,21,.40)",  text:"gelb"},
-      {bg:"rgba(251,146,60,.40)",  text:"orange"},
-      {bg:"rgba(120,53,15,.42)",   text:"braun"},
-      {bg:"rgba(2,6,23,.55)",      text:"schwarz"}
-    ];
-    let idx=0;
-
-    tubePrecip.style.height="28%";
-    tubePrecip.style.background = seq[idx].bg;
-    setStatus(`Arsenat-Niederschlag: ${seq[idx].text}`);
-
-    stopArsenate();
-    STATE.tube.arsenateTimer = setInterval(()=>{
-      idx++;
-      if (idx>=seq.length){
-        stopArsenate();
-        setStatus("Arsenat-Niederschlag: Endzustand (schwarz)");
-        log(`<span class="ok">Arsenat: Farbabfolge abgeschlossen.</span>`);
-        return;
-      }
-      tubePrecip.style.background = seq[idx].bg;
-      setStatus(`Arsenat-Niederschlag: ${seq[idx].text}`);
-    }, 650);
-  }
-
-  const TOOLS = [
-    { id:"Wasser", kind:"water",  x: 16,  y: 16, title:"Wasser (H₂O)" },
-    { id:"AgNO3",  kind:"agno3",  x: 220, y: 16, title:"Pipette (AgNO₃)" },
-    { id:"HCl",    kind:"hcl",    x: 424, y: 16, title:"Pipette (HCl)" },
-    { id:"MgO",    kind:"mgo",    x: 628, y: 16, title:"MgO-Stäbchen" }
-  ];
-
-  /* (2) klassische Tropfpipette (Bulb + Schaft + Spitze + Tropfen) */
-  function classicDropperSVG(label, dropletStroke){
-    return `
-      <svg viewBox="0 0 64 64" aria-hidden="true">
-        <!-- Gummiball -->
-        <ellipse cx="20" cy="18" rx="9" ry="9" fill="rgba(226,232,240,.18)" stroke="rgba(226,232,240,.40)" stroke-width="2"/>
-        <!-- Glas-Schaft -->
-        <path d="M26 22 L46 42" stroke="rgba(226,232,240,.55)" stroke-width="4" stroke-linecap="round"/>
-        <!-- Spitze -->
-        <path d="M46 42 L52 48" stroke="rgba(226,232,240,.35)" stroke-width="3" stroke-linecap="round"/>
-        <!-- Tropfen -->
-        <path d="M52 52c0 3-4 6-4 6s-4-3-4-6a4 4 0 0 1 8 0z"
-              fill="rgba(255,255,255,.05)" stroke="${dropletStroke}" stroke-width="2"/>
-        <!-- Etikett -->
-        <rect x="28" y="30" width="20" height="12" rx="6"
-              fill="rgba(2,6,23,.35)" stroke="rgba(226,232,240,.20)" stroke-width="2"/>
-        <text x="38" y="39" text-anchor="middle" font-size="7" font-weight="800" fill="rgba(229,231,235,.95)">${label}</text>
-      </svg>
-    `;
-  }
-
-  function toolSVG(kind){
-    if (kind==="water") return `
-      <svg viewBox="0 0 64 64" aria-hidden="true">
-        <path d="M18 10h28" stroke="rgba(226,232,240,.35)" stroke-width="2" />
-        <path d="M20 12h24l3 8v28c0 6-5 10-11 10H28c-6 0-11-4-11-10V20l3-8z"
-              fill="rgba(255,255,255,.06)" stroke="rgba(226,232,240,.35)" stroke-width="2" />
-        <path d="M23 30c5 6 13 6 18 0" fill="none" stroke="rgba(147,197,253,.55)" stroke-width="2" stroke-linecap="round"/>
-        <text x="32" y="45" text-anchor="middle" font-size="10" font-weight="800" fill="rgba(229,231,235,.95)">H₂O</text>
-      </svg>
-    `;
-    if (kind==="agno3") return classicDropperSVG("AgNO₃","rgba(147,197,253,.55)");
-    if (kind==="hcl")   return classicDropperSVG("HCl","rgba(34,197,94,.55)");
-    return `
-      <svg viewBox="0 0 64 64" aria-hidden="true">
-        <rect x="10" y="28" width="44" height="10" rx="5" fill="rgba(226,232,240,.20)" stroke="rgba(226,232,240,.35)" stroke-width="2"/>
-        <rect x="44" y="26" width="10" height="14" rx="4" fill="rgba(226,232,240,.30)" stroke="rgba(226,232,240,.35)" stroke-width="2"/>
-        <text x="18" y="35" font-size="8" font-weight="800" fill="rgba(229,231,235,.95)">MgO</text>
-      </svg>
-    `;
-  }
-
-  function rectOf(el){
-    const r = el.getBoundingClientRect();
-    return {x:r.left,y:r.top,w:r.width,h:r.height};
-  }
-  function pointIn(px,py,R){ return px>=R.x && px<=R.x+R.w && py>=R.y && py<=R.y+R.h; }
-  function findWell(px,py){
-    for (const w of $$(".well")){
-      if (pointIn(px,py,rectOf(w))) return w;
-    }
-    return null;
-  }
-  function flameZone(){
-    const r = rectOf(flame);
-    return {x:r.x-12,y:r.y-12,w:r.w+24,h:r.h+24};
-  }
-
-  function getTubeChem(){
-    if (!STATE.tube.has) return null;
-    if (STATE.tube.unknown) return STATE.unknownActual;
-    return SALTS[STATE.tube.saltId];
-  }
-
-  function applyDrop(kind, px, py){
-    if (kind==="water"){
-      if (!pointIn(px,py,rectOf(tube))){ log(`<span class="warn">Wasser: über Reagenzglas loslassen.</span>`); return; }
-      if (!STATE.tube.has){ log(`<span class="warn">Wasser: zuerst Salz ins Reagenzglas.</span>`); return; }
-      if (STATE.tube.dissolved){ log(`<span class="warn">Wasser: bereits gelöst.</span>`); return; }
-      STATE.tube.dissolved=true;
-      tubeLiquid.style.height="44%";
-      renderTubeSalt(false);
-      setStatus("Wasser zugegeben → Salz gelöst");
-      log(`<span class="ok">Wasser → gelöst.</span>`);
-      return;
-    }
-
-    if (kind==="agno3"){
-      if (!pointIn(px,py,rectOf(tube))){ log(`<span class="warn">AgNO₃: über Reagenzglas loslassen.</span>`); return; }
-      if (!STATE.tube.has || !STATE.tube.dissolved){ log(`<span class="warn">AgNO₃: erst Salz + Wasser im Reagenzglas.</span>`); return; }
-      if (STATE.tube.ag){ log(`<span class="warn">AgNO₃: bereits zugegeben.</span>`); return; }
-      STATE.tube.ag=true;
-
-      const chem = getTubeChem();
-      if (!chem){ return; }
-
-      if (chem.ag==="white" || chem.ag==="cream" || chem.ag==="yellow"){
-        stopArsenate();
-        tubePrecip.style.height = (chem.ag==="white") ? "18%" : (chem.ag==="cream" ? "22%" : "28%");
-        tubePrecip.style.background = AG_BG[chem.ag];
-        setStatus(`AgNO₃: Niederschlag passend zum Anion`);
-        log(`<span class="ok">AgNO₃ → Niederschlag.</span>`);
-        return;
-      }
-      if (chem.ag==="arsenate"){
-        arsenateSequence();
-        log(`<span class="ok">AgNO₃ → Arsenat-Niederschlag (Farbabfolge) gestartet.</span>`);
-        return;
-      }
-      return;
-    }
-
-    if (kind==="hcl"){
-      const well = findWell(px,py);
-      if (!well){ log(`<span class="warn">HCl: über einer Mulde loslassen.</span>`); return; }
-      const i = Number(well.dataset.well);
-      const w = STATE.wells[i];
-      if (!w.has){ log(`<span class="warn">HCl: zuerst Salz in die Mulde.</span>`); return; }
-      if (w.hcl){ log(`<span class="warn">HCl: bereits zugegeben.</span>`); return; }
-      w.hcl=true;
-      $(".fluid", well).style.background="rgba(34,197,94,.10)";
-      setWellTag(i);
-      setStatus(`Mulde ${i+1}: mit HCl gelöst`);
-      log(`<span class="ok">HCl → Mulde ${i+1} gelöst.</span>`);
-      return;
-    }
-
-    if (kind==="mgo"){
-      const well = findWell(px,py);
-      if (well){
-        const i = Number(well.dataset.well);
-        const w = STATE.wells[i];
-        if (!w.has || !w.hcl){ log(`<span class="warn">MgO: erst Salz + HCl in der Mulde.</span>`); return; }
-        STATE.mgoDipped = {well:i, unknown:w.unknown, saltId:w.saltId};
-        setStatus(`MgO getaucht (Mulde ${i+1}). Jetzt in die Flamme.`);
-        log(`<span class="ok">MgO → getaucht.</span>`);
-        return;
-      }
-
-      const F = flameZone();
-      if (pointIn(px,py,F)){
-        if (!STATE.burnerOn){ log(`<span class="warn">MgO in Flamme: Brenner ist aus.</span>`); return; }
-        if (!STATE.mgoDipped){ log(`<span class="warn">MgO in Flamme: zuerst in gelöste Probe tauchen.</span>`); return; }
-
-        const chem = STATE.mgoDipped.unknown ? STATE.unknownActual : SALTS[STATE.mgoDipped.saltId];
-        const flameName = chem.flame || "gelb";
-
-        flameTint.style.background = FLAME_TINT[flameName] || FLAME_TINT["gelb"];
-        flameTint.classList.add("show");
-
-        setStatus(`Flammenprobe: ${flameName}`);
-        log(`<span class="ok">Flammenfarbe: <b>${flameName}</b>.</span>`);
-        return;
-      }
-
-      log(`<span class="warn">MgO: über Mulde (tauchen) oder über Flamme (Farbe) loslassen.</span>`);
-      return;
-    }
-  }
-
-  function makeDraggable(el){
-    let dragging=false, sx=0, sy=0, ox=0, oy=0;
-    el.addEventListener("pointerdown",(ev)=>{
-      dragging=true;
-      el.setPointerCapture(ev.pointerId);
-      sx=ev.clientX; sy=ev.clientY;
-      ox=parseFloat(el.style.left||"0");
-      oy=parseFloat(el.style.top||"0");
-      STATE.activeToolId = el.dataset.id;
-      $$(".tool").forEach(t=>t.classList.toggle("selected", t===el));
-      updateTop();
-    });
-    el.addEventListener("pointermove",(ev)=>{
-      if (!dragging) return;
-      const dx=ev.clientX-sx, dy=ev.clientY-sy;
-      const benchRect=bench.getBoundingClientRect();
-      const w=el.offsetWidth, h=el.offsetHeight;
-      let nx=ox+dx, ny=oy+dy;
-      nx=Math.max(6, Math.min(nx, benchRect.width-w-6));
-      ny=Math.max(6, Math.min(ny, benchRect.height-h-6));
-      el.style.left=nx+"px";
-      el.style.top=ny+"px";
-    });
-    el.addEventListener("pointerup",(ev)=>{
-      if (!dragging) return;
-      dragging=false;
-      applyDrop(el.dataset.kind, ev.clientX, ev.clientY);
-    });
-    el.addEventListener("pointercancel",()=>{ dragging=false; });
-  }
-
-  function createTool(t){
-    const el=document.createElement("div");
-    el.className="tool";
-    el.dataset.kind=t.kind;
-    el.dataset.id=t.id;
-    el.style.left=t.x+"px";
-    el.style.top=t.y+"px";
-    el.innerHTML = `
-      <div class="icon">${toolSVG(t.kind)}</div>
-      <div class="lbl">
-        <b>${t.title}</b>
-        <small>Ziehen & loslassen</small>
-      </div>`;
-    toolStage.appendChild(el);
-    makeDraggable(el);
-  }
-
-  TOOLS.forEach(createTool);
-
-  for (let i=0;i<4;i++) setWellTag(i);
-
-  updateTop();
-  log(`<span class="muted">Start bereit.</span>`);
+// ============================================================================
+// 7. SALZGLÄSER (Stufenregal) & MAGNESIA-STÄBCHEN
+// ============================================================================
+const JAR_R = 0.32, JAR_H = 0.74, JS = 0.4;   // JS = Verkleinerung der Salzgläser
+const SHELF_Y = 0.42;
+{
+  const shelf = new THREE.Mesh(new THREE.BoxGeometry(2.9, SHELF_Y, 0.8), woodMat); shelf.position.set(-3.375, TABLE_Y + SHELF_Y / 2, -0.35); shelf.castShadow = true; shelf.receiveShadow = true; scene.add(shelf);
+}
+function createJar(key, formula, subname, x, z, y0) {
+  const pivot = new THREE.Group();
+  const body = new THREE.Group(); body.scale.setScalar(JS); body.position.y = -JAR_H * JS; pivot.add(body);
+  const glass = new THREE.Mesh(new THREE.CylinderGeometry(JAR_R, JAR_R, JAR_H, 28, 1, true), glassMat); glass.position.y = JAR_H / 2; glass.renderOrder = 3; body.add(glass);
+  const bot = new THREE.Mesh(new THREE.CylinderGeometry(JAR_R, JAR_R, 0.04, 28), glassMat); bot.position.y = 0.02; body.add(bot);
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(JAR_R, 0.02, 8, 28), glassMat); rim.rotation.x = Math.PI / 2; rim.position.y = JAR_H; body.add(rim);
+  const powder = new THREE.Mesh(new THREE.CylinderGeometry(JAR_R - 0.025, JAR_R - 0.025, 0.46, 26), saltMat); powder.position.y = 0.04 + 0.23; powder.castShadow = true; body.add(powder);
+  for (let i = 0; i < 9; i++) { const s = 0.05 + Math.random() * 0.04, gm = new THREE.Mesh(new THREE.BoxGeometry(s, s, s), saltMat); const a = Math.random() * 6.28, rr = Math.random() * 0.22; gm.position.set(Math.cos(a) * rr, 0.5 + Math.random() * 0.02, Math.sin(a) * rr); gm.rotation.set(Math.random() * 3, Math.random() * 3, Math.random() * 3); body.add(gm); }
+  const lbl = new THREE.Mesh(new THREE.CylinderGeometry(JAR_R + 0.006, JAR_R + 0.006, JAR_H * 0.6, 24, 1, true, -Math.PI / 3, (Math.PI * 2) / 3), new THREE.MeshBasicMaterial({ map: createLabelTexture(formula, subname), transparent: true }));
+  lbl.position.y = JAR_H * 0.4; body.add(lbl);
+  const hit = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, JAR_H * JS + 0.3, 12), new THREE.MeshBasicMaterial({ visible: false }));
+  hit.position.y = -JAR_H * JS / 2; hit.userData = { type: 'salt', id: key, name: key === 'UNKNOWN' ? 'Unbekannt A (Expertenprobe)' : formula + ' (' + subname + ')' }; pivot.add(hit);
+  const tag = createTextSprite(0.6, 0.15); setSpriteText(tag, key === 'UNKNOWN' ? 'Unbekannt A' : formula); tag.position.set(0, 0.3, 0); pivot.add(tag); pivot.userData.tag = tag;
+  pivot.position.set(x, y0 + JAR_H * JS, z); scene.add(pivot);
+  registerTool('salt:' + key, pivot, 0.55);
+  return pivot;
+}
+const JAR_POS = [[-4.35, -0.35, true], [-3.7, -0.35, true], [-3.05, -0.35, true], [-2.4, -0.35, true], [-4.35, 0.35, false], [-3.7, 0.35, false], [-3.05, 0.35, false], [-2.4, 0.35, false]];
+SALT_ORDER.forEach((k, i) => {
+  const p = JAR_POS[i]; createJar(k, SALTS[k].formula, SALTS[k].name, p[0], p[1], p[2] ? TABLE_Y + SHELF_Y : TABLE_Y);
 });
+const unknownJar = createJar('UNKNOWN', 'Unbekannt A', 'Expertenprobe', 1.55, 1.15, TABLE_Y); unknownJar.visible = false;
+
+// ---- Magnesia-Stäbchen im Becherglas ----
+const MG_X = 2.6, MG_Z = -1.95;
+const stickMat = new THREE.MeshStandardMaterial({ color: 0xe9e3d2, roughness: 0.8 });
+{
+  const beaker = new THREE.Mesh(new THREE.CylinderGeometry(0.46, 0.46, 1.15, 28, 1, true), glassMat); beaker.position.set(MG_X, TABLE_Y + 0.575, MG_Z); beaker.renderOrder = 3; scene.add(beaker);
+  const bb = new THREE.Mesh(new THREE.CylinderGeometry(0.46, 0.46, 0.04, 28), glassMat); bb.position.set(MG_X, TABLE_Y + 0.02, MG_Z); scene.add(bb);
+  const br = new THREE.Mesh(new THREE.TorusGeometry(0.46, 0.02, 8, 28), glassMat); br.rotation.x = Math.PI / 2; br.position.set(MG_X, TABLE_Y + 1.15, MG_Z); scene.add(br);
+  const lb = new THREE.Mesh(new THREE.CylinderGeometry(0.466, 0.466, 0.55, 24, 1, true, -Math.PI / 3, (Math.PI * 2) / 3), new THREE.MeshBasicMaterial({ map: createLabelTexture('MgO', 'Magnesiastäbchen'), transparent: true }));
+  lb.position.set(MG_X, TABLE_Y + 0.55, MG_Z); scene.add(lb);
+}
+const STICK_N = 6, sticks = [];
+const STICK_BEAKER = [[-0.2, -0.1, 0.12, 0.1], [0.18, -0.12, -0.1, 0.12], [-0.05, 0.2, 0.08, -0.12], [0.22, 0.14, -0.16, -0.08], [-0.24, 0.1, 0.05, 0.15], [0.02, -0.02, 0.0, 0.0]];
+for (let k = 0; k < STICK_N; k++) {
+  const p = new THREE.Group();
+  const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.9, 8), stickMat); rod.position.y = 0.95; rod.castShadow = true; p.add(rod);
+  const tip = new THREE.Mesh(new THREE.SphereGeometry(0.075, 12, 10), new THREE.MeshStandardMaterial({ color: 0xc8b896, roughness: 0.6, emissive: 0x000000 })); tip.position.y = 0.03; tip.visible = false; p.add(tip);
+  const hit = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 1.7, 8), new THREE.MeshBasicMaterial({ visible: false }));
+  hit.position.y = 0.95; hit.userData = { type: 'mgo', id: k, name: 'Magnesiastäbchen (MgO)' }; p.add(hit);
+  const d = STICK_BEAKER[k];
+  p.position.set(MG_X + d[0] * 0.6, TABLE_Y + 0.12, MG_Z + d[1] * 0.6); p.rotation.set(d[2], 0, d[3]); scene.add(p);
+  registerTool('mgo:' + k, p, 1.2); p.userData.holdRotX = 0.05; p.userData.holdRotZ = 0.05;
+  sticks.push({ pivot: p, tip, home: p.position.clone(), homeRot: p.rotation.clone() });
+}
+const mgoBed = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 1.4, 12), new THREE.MeshBasicMaterial({ visible: false }));
+mgoBed.position.set(MG_X, TABLE_Y + 0.7, MG_Z); mgoBed.userData = { type: 'mgo', name: 'Magnesiastäbchen (MgO) – anklicken zum Aufnehmen' }; scene.add(mgoBed);
+
+// Streichholz als Werkzeug
+matchObj.position.copy(MATCH_HOLD);
+registerTool('match', matchObj, 0);
+
+// ============================================================================
+// 8. MARKER (Auswahl / Hinweis)
+// ============================================================================
+function makeArrow(color) {
+  const m = new THREE.Mesh(new THREE.ConeGeometry(0.17, 0.42, 14), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.95, depthTest: false }));
+  m.rotation.x = Math.PI; m.renderOrder = 20; m.visible = false; scene.add(m); return m;
+}
+const markSel = makeArrow(0xffd54f), markHint = makeArrow(0x69f0ae);
+
+
+// ============================================================================
+// 8. SCHUBLADE, SPATELLÖFFEL, PUTZLAPPEN
+// ============================================================================
+const DRAWER_X = -2.9, DRAWER_Z = tableD / 2 - 0.14, DRAWER_OPEN = 1.7;
+const drawer = { group: new THREE.Group(), open: 0 };
+{
+  const g = drawer.group; g.position.set(DRAWER_X, 0, DRAWER_Z); scene.add(g);
+  const white = new THREE.MeshStandardMaterial({ color: 0xf2f4f7, roughness: 0.3 });
+  const inner = new THREE.MeshStandardMaterial({ color: 0x8e9aa6, roughness: 0.6 });
+  const front = new THREE.Mesh(new THREE.BoxGeometry(3.1, 1.02, 0.12), white); front.position.set(0, -1.02, 0); front.castShadow = true; g.add(front);
+  const handle = new THREE.Mesh(new THREE.SphereGeometry(0.22, 20, 12, 0, Math.PI, 0, Math.PI / 2), white); handle.scale.set(1.3, 0.7, 0.8); handle.position.set(0, -1.24, 0.05); g.add(handle);
+  const bottom = new THREE.Mesh(new THREE.BoxGeometry(2.9, 0.05, 1.6), inner); bottom.position.set(0, -0.95, -0.86); bottom.receiveShadow = true; g.add(bottom);
+  [-1.425, 1.425].forEach(x => { const w = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.3, 1.6), inner); w.position.set(x, -0.8, -0.86); g.add(w); });
+  const back = new THREE.Mesh(new THREE.BoxGeometry(2.9, 0.3, 0.05), inner); back.position.set(0, -0.8, -1.66); g.add(back);
+  const hit = new THREE.Mesh(new THREE.BoxGeometry(3.1, 1.0, 0.5), new THREE.MeshBasicMaterial({ visible: false }));
+  hit.position.set(0, -1.02, 0); hit.userData = { type: 'drawer', name: 'Schublade (anklicken: öffnen / schließen)' }; g.add(hit);
+}
+
+// Spatellöffel (Pivot = Mitte der Löffelmulde, Schaft zeigt in +x)
+const SP_N = 3, spatulas = [];
+const SP_DRAWER_Z = [-0.7, -1.0, -1.3];
+const spTable = k => new THREE.Vector3(-1.2, TABLE_Y + 0.04, 2.05 + 0.25 * k);
+{
+  const metal = new THREE.MeshStandardMaterial({ color: 0xdfe3e8, roughness: 0.28, metalness: 0.55 });
+  const filmMat = new THREE.MeshStandardMaterial({ color: 0xe8e4d6, roughness: 0.9 });
+  for (let k = 0; k < SP_N; k++) {
+    const pivot = new THREE.Group(), o = { pivot };
+    const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 1.5, 10), metal); rod.rotation.z = Math.PI / 2; rod.position.x = 0.85; rod.castShadow = true; pivot.add(rod);
+    const spoon = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 12), metal); spoon.scale.set(0.1, 0.03, 0.06); spoon.castShadow = true; pivot.add(spoon);
+    const blade = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.018, 0.13), metal); blade.position.x = 1.85; blade.castShadow = true; pivot.add(blade);
+    o.pile = new THREE.Mesh(new THREE.SphereGeometry(1, 12, 8), saltMat); o.pile.scale.set(0.075, 0.04, 0.05); o.pile.position.y = 0.04; o.pile.visible = false; pivot.add(o.pile);
+    o.film = new THREE.Mesh(new THREE.SphereGeometry(1, 12, 8), filmMat); o.film.scale.set(0.085, 0.012, 0.05); o.film.position.y = 0.03; o.film.visible = false; pivot.add(o.film);
+    const hit = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.2, 0.26), new THREE.MeshBasicMaterial({ visible: false }));
+    hit.position.x = 1.05; hit.userData = { type: 'spatula', id: k, name: 'Spatellöffel' }; pivot.add(hit);
+    pivot.position.set(DRAWER_X - 0.95, -0.87, DRAWER_Z + SP_DRAWER_Z[k]); scene.add(pivot);
+    registerTool('spatula:' + k, pivot, 0.55); pivot.userData.holdRotZ = 0.5;
+    spatulas.push(o);
+  }
+}
+
+// Putzlappen
+const CLOTH = new THREE.Vector3(2.5, TABLE_Y, 2.0);
+{
+  const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d');
+  x.fillStyle = '#f4f1e6'; x.fillRect(0, 0, 128, 128); x.fillStyle = 'rgba(70,120,190,0.55)';
+  for (let i = 0; i < 128; i += 32) { x.fillRect(i, 0, 14, 128); x.fillRect(0, i, 128, 14); }
+  const tex = new THREE.CanvasTexture(c); tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(2, 1.5);
+  const geo = new THREE.PlaneGeometry(1.1, 0.8, 16, 12); geo.rotateX(-Math.PI / 2);
+  const pos = geo.attributes.position;
+  for (let i = 0; i < pos.count; i++) { const px = pos.getX(i), pz = pos.getZ(i); pos.setY(i, 0.02 + 0.014 * Math.sin(px * 9) * Math.cos(pz * 7) + 0.01 * Math.sin(px * 4 + pz * 3)); }
+  geo.computeVertexNormals();
+  const cloth = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ map: tex, roughness: 0.95, side: THREE.DoubleSide }));
+  cloth.position.copy(CLOTH); cloth.rotation.y = 0.35; cloth.castShadow = true; cloth.receiveShadow = true; scene.add(cloth);
+  const hit = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.25, 0.9), new THREE.MeshBasicMaterial({ visible: false }));
+  hit.position.set(CLOTH.x, TABLE_Y + 0.1, CLOTH.z); hit.rotation.y = 0.35; hit.userData = { type: 'cloth', name: 'Putzlappen (Löffel abwischen)' }; scene.add(hit);
+  const tag = createTextSprite(0.7, 0.175); setSpriteText(tag, 'Putzlappen'); tag.position.set(CLOTH.x, TABLE_Y + 0.4, CLOTH.z); scene.add(tag);
+}
+
+// ============================================================================
+// 9. ZUSTAND, TWEENS, UI
+// ============================================================================
+const state = {
+  mode: 'learn', busy: false, tool: null, unknownActual: null, burnerStarted: false,
+  hoseConnected: true, airClosed: false, gasOpen: false, ignited: false, matchLit: false, gasTimer: 0, over: false,
+  tube: { has: false, saltId: null, unknown: false, dissolved: false, ag: false, seq: 0, contam: [] },
+  sps: [],
+  sticks: [],
+  wells: [], mgoDipped: null
+};
+function freshWells() { return Array.from({ length: 6 }, () => ({ has: false, saltId: null, unknown: false, hcl: false, contam: [] })); }
+state.wells = freshWells();
+
+const tweens = [];
+const easeIO = p => p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+function tween(dur, fn, ease = true) { return new Promise(res => tweens.push({ t: 0, dur: Math.max(dur, 0.0001), fn, res, ease })); }
+const sleep = s => tween(s, () => {}, false);
+
+function say(html, kind) { const b = $('instruction-text'); b.innerHTML = html; b.className = 'step-box' + (kind ? ' ' + kind : ''); }
+function log(html, cls) { const d = document.createElement('div'); if (cls) d.className = cls; d.innerHTML = html; $('log').appendChild(d); $('log').scrollTop = 1e6; }
+function setBusy(b) { state.busy = b; document.body.style.cursor = b ? 'progress' : 'default'; if (b) { markSel.visible = false; markHint.visible = false; } }
+
+const TOOL_NAMES = { water: 'Wasserflasche', agno3: 'Tropfflasche AgNO₃', hcl: 'Tropfflasche HCl', mgo: 'Magnesiastäbchen (MgO)', match: 'Streichholz', hose: 'Gasschlauch' };
+const isSp = k => !!k && k.startsWith('spatula:');
+function curSp() { if (!isSp(state.tool)) return null; const k = +state.tool.slice(8); return { k, sp: state.sps[k], T: TOOLS[state.tool], obj: spatulas[k] }; }
+const isMgo = k => !!k && k.startsWith('mgo:');
+function toolName(k) {
+  if (!k) return 'nichts';
+  if (isMgo(k)) { const st = state.sticks[+k.slice(4)]; return 'Magnesiastäbchen (' + (st.smp ? 'mit Probe' : (st.res.length ? 'mit Resten – ausglühen!' : 'sauber')) + ')'; }
+  if (k.startsWith('salt:')) { const id = k.slice(5); return id === 'UNKNOWN' ? 'Salzprobe Unbekannt A' : 'Salz ' + SALTS[id].formula + ' (' + SALTS[id].name + ')'; }
+  if (isSp(k)) return 'Spatellöffel (' + spatulaDesc(state.sps[+k.slice(8)]) + ')';
+  if (k === 'match') return state.matchLit ? 'Streichholz (brennt)' : 'Streichholz (noch nicht angezündet)';
+  return TOOL_NAMES[k] || k;
+}
+const saltOfTool = () => (state.tool && state.tool.startsWith('salt:')) ? state.tool.slice(5) : null;
+
+function dropMatch() { matchObj.visible = false; state.matchLit = false; matchFlame.visible = false; matchHead.material.color.setHex(0xc02a1d); }
+function selectTool(k) {
+  if (state.tool === 'match' && k !== 'match') dropMatch();
+  const prev = state.tool;
+  state.tool = k;
+  if (isMgo(prev) && prev !== k) settleStick(+prev.slice(4));
+  if (k === 'match') { matchObj.visible = true; }
+  refreshUI();
+}
+function burnerSteps() {
+  return [
+    { done: state.hoseConnected, txt: 'Schlauch an den Gasanschluss stecken' },
+    { done: state.airClosed || state.ignited, txt: 'Luftzufuhr schließen (Kappe zu)' },
+    { done: state.matchLit || state.gasOpen || state.ignited, txt: 'Streichholz anzünden' },
+    { done: state.gasOpen || state.ignited, txt: 'Gashahn öffnen (gelb)' },
+    { done: state.ignited, txt: 'Brenner zünden (Rohrende anklicken)' },
+    { done: state.ignited && !state.airClosed, txt: 'Luftzufuhr öffnen → blaue Flamme' }
+  ];
+}
+function burnerStep() { const s = burnerSteps(); const i = s.findIndex(x => !x.done); return i < 0 ? 6 : i; }
+function refreshUI() {
+  $('tool-status').textContent = 'In der Hand: ' + toolName(state.tool);
+  $('badge-mode').textContent = state.mode === 'learn' ? 'Lernmodus' : 'Expertenmodus';
+  $('badge-mode').className = 'badge' + (state.mode === 'expert' ? ' expert' : '');
+  const b = $('badge-burner');
+  b.textContent = state.ignited ? '🔥 Brenner: an' : '🔥 Brenner: aus';
+  $('btn-mode').textContent = state.mode === 'learn' ? '🎓 Expertenmodus' : '📘 Lernmodus';
+  $('expert-box').classList.toggle('show', state.mode === 'expert');
+}
+
+// ---------------- Kamera ----------------
+async function tweenCamera(preset, dur = 1.0) {
+  const to = CAM_PRESETS[preset]();
+  const from = { theta: cam.theta, phi: cam.phi, radius: cam.radius, tx: cam.target.x, ty: cam.target.y, tz: cam.target.z };
+  camLocked = true;
+  await tween(dur, e => {
+    cam.theta = lerp(from.theta, to.theta, e); cam.phi = lerp(from.phi, to.phi, e); cam.radius = lerp(from.radius, to.radius, e);
+    cam.target.set(lerp(from.tx, to.tx, e), lerp(from.ty, to.ty, e), lerp(from.tz, to.tz, e));
+  });
+  camLocked = false;
+}
+document.querySelectorAll('#cam-bar button').forEach(b => b.onclick = () => { if (!camLocked) tweenCamera(b.dataset.cam, 0.9); });
+
+// ============================================================================
+// 10. BESCHRIFTUNGEN & ANZEIGEN
+// ============================================================================
+function chemOf(isUnknown, saltId) { return isUnknown ? state.unknownActual : SALTS[saltId]; }
+const idName = id => id === 'UNKNOWN' ? 'Unbekannt A' : SALTS[id].formula;
+function spatulaDesc(s) { return s.load ? 'beladen mit ' + idName(s.load) : (s.dirt.length ? 'nicht sauber' : 'sauber'); }
+function refreshSpatulaVisual() { state.sps.forEach((s, k) => { spatulas[k].pile.visible = !!s.load; spatulas[k].film.visible = s.dirt.length > 0; }); }
+function sampleChems(smp) {
+  const list = [chemOf(smp.unknown, smp.saltId)];
+  (smp.contam || []).forEach(c => { const ch = chemOf(c === 'UNKNOWN', c); if (ch) list.push(ch); });
+  return list.filter(Boolean);
+}
+function mixHex(cols, weights) {
+  let r = 0, g = 0, b = 0, w = 0;
+  cols.forEach((c, i) => { const k = weights ? weights[i] : 1; r += ((c >> 16) & 255) * k; g += ((c >> 8) & 255) * k; b += (c & 255) * k; w += k; });
+  return (Math.round(r / w) << 16) | (Math.round(g / w) << 8) | Math.round(b / w);
+}
+const learnWarn = c => c.length > 0 && state.mode === 'learn';
+const idsOf = smp => [...new Set([smp.unknown ? 'UNKNOWN' : smp.saltId, ...(smp.contam || [])])];
+function flameMix(smp) {
+  const comps = {};
+  sampleChems(smp).forEach((c, i) => { const n = c.flame || 'gelb'; comps[n] = (comps[n] || 0) + (i === 0 ? 1 : (n === 'gelb' ? 1.6 : 0.3)); });
+  const names = Object.keys(comps).sort((a, b) => comps[b] - comps[a]);
+  if (names.length === 1) return { name: names[0], hex: FLAME_HEX[names[0]] || FLAME_HEX['gelb'] };
+  return { name: names[0], hex: mixHex(names.map(n => FLAME_HEX[n] || FLAME_HEX['gelb']), names.map(n => comps[n])) };
+}
+const contamNote = c => learnWarn(c) ? ' <b>⚠ Der Löffel war nicht sauber – die Probe ist verunreinigt, das Ergebnis wird verfälscht.</b>' : '';
+function placeLabel(isUnknown, saltId) { return isUnknown ? 'Unbekannt A' : SALTS[saltId].formula; }
+function updateLabels() {
+  setSpriteText(tube.label, state.tube.has ? placeLabel(state.tube.unknown, state.tube.saltId) : '');
+  WELLS.forEach(w => { const d = state.wells[w.i]; setSpriteText(w.label, d.has ? placeLabel(d.unknown, d.saltId) + (d.hcl ? ' • HCl' : '') : ''); });
+}
+
+// ============================================================================
+// 11. AKTIONEN: SALZE, REAGENZIEN, WERKZEUGE
+// ============================================================================
+async function pourJar(T, mouth, landing, n) {
+  T.anim = true;
+  const p0 = T.pivot.position.clone(), r0 = T.pivot.rotation.z;
+  await tween(1.0, e => { T.pivot.position.lerpVectors(p0, mouth, e); T.pivot.rotation.z = lerp(r0, 1.95, e); });
+  for (let i = 0; i < n; i++) {
+    const g = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, 0.06), saltMat); scene.add(g);
+    const dx = (Math.random() - 0.5) * 0.12, dz = (Math.random() - 0.5) * 0.12;
+    tween(0.34, e => g.position.set(mouth.x + dx, lerp(mouth.y - 0.05, landing.y, e * e), mouth.z + dz), false).then(() => scene.remove(g));
+    await sleep(0.07);
+  }
+  await sleep(0.45);
+  await tween(0.9, e => { T.pivot.position.lerpVectors(mouth, p0, e); T.pivot.rotation.z = lerp(1.95, r0, e); });
+  T.anim = false;
+}
+async function dripFrom(T, aboveTarget, dropFromY, landY, n, color) {
+  T.anim = true;
+  const p0 = T.pivot.position.clone(), r0 = T.pivot.rotation.z;
+  await tween(1.1, e => { T.pivot.position.lerpVectors(p0, aboveTarget, e); T.pivot.rotation.z = lerp(r0, Math.PI, e); });
+  for (let i = 0; i < n; i++) {
+    const d = new THREE.Mesh(new THREE.SphereGeometry(0.05, 10, 10), new THREE.MeshStandardMaterial({ color, transparent: true, opacity: 0.9 })); scene.add(d);
+    await tween(0.36, e => d.position.set(aboveTarget.x, lerp(dropFromY, landY, e * e), aboveTarget.z), false);
+    scene.remove(d); await sleep(0.1);
+  }
+  return () => (async () => {
+    await tween(1.0, e => { T.pivot.position.lerpVectors(aboveTarget, p0, e); T.pivot.rotation.z = lerp(Math.PI, r0, e); });
+    T.anim = false;
+  })();
+}
+
+// ---- Schublade, Spatellöffel, Putzlappen ----
+const spDrawerPos = k => new THREE.Vector3(DRAWER_X - 0.95, -0.87, drawer.group.position.z + SP_DRAWER_Z[k]);
+async function toggleDrawer() {
+  setBusy(true);
+  const opening = drawer.open < 0.5, from = drawer.open, to = opening ? 1 : 0;
+  const cp = tweenCamera(opening ? 'drawer' : 'view', 1.0);
+  await tween(0.8, e => { drawer.open = lerp(from, to, e); drawer.group.position.z = DRAWER_Z + DRAWER_OPEN * drawer.open; });
+  await cp;
+  setBusy(false);
+  if (opening) say(state.sps.some(s => s.place === 'drawer') ? 'Schublade offen. Klicke einen <b>Spatellöffel</b> an, um ihn auf den Tisch zu legen. Zurücklegen: Löffel in die Hand nehmen und die offene Schublade anklicken.' : 'Schublade offen (leer).', 'ok');
+  else say('Schublade geschlossen.');
+}
+function clickDrawer() {
+  if (isSp(state.tool) && drawer.open > 0.5) { returnSpatula(); return; }
+  toggleDrawer();
+}
+async function moveSpatulaToTable(k) {
+  const T = TOOLS['spatula:' + k], dest = spTable(k); setBusy(true); T.anim = true;
+  const p0 = T.pivot.position.clone(), up = new THREE.Vector3(p0.x, 0.9, p0.z), over = new THREE.Vector3(dest.x, 0.9, dest.z);
+  await tween(0.7, e => T.pivot.position.lerpVectors(p0, up, e));
+  await tween(0.8, e => T.pivot.position.lerpVectors(up, over, e));
+  await tween(0.5, e => T.pivot.position.lerpVectors(over, dest, e));
+  state.sps[k].place = 'table'; T.anim = false;
+  await tweenCamera('view', 1.0); setBusy(false);
+  say('Ein <b>Spatellöffel</b> liegt auf dem Tisch. Klicke ihn an, um ihn in die Hand zu nehmen – Salz gibt es nur mit dem Löffel. Nach jeder Probe: am <b>Putzlappen</b> reinigen.', 'ok');
+  log('<span class="ok">Spatellöffel auf den Tisch gelegt.</span>');
+}
+async function returnSpatula() {
+  const cs = curSp(); if (!cs) return;
+  const { k, sp, T } = cs, dest = spDrawerPos(k);
+  setBusy(true); T.anim = true;
+  const p0 = T.pivot.position.clone(), r0 = T.pivot.rotation.z, up = new THREE.Vector3(p0.x, 0.9, p0.z), over = new THREE.Vector3(dest.x, 0.9, dest.z);
+  await tween(0.6, e => { T.pivot.position.lerpVectors(p0, up, e); T.pivot.rotation.z = lerp(r0, 0, e); });
+  await tween(0.8, e => T.pivot.position.lerpVectors(up, over, e));
+  await tween(0.6, e => T.pivot.position.lerpVectors(over, dest, e));
+  sp.place = 'drawer'; sp.load = null; sp.contam = []; refreshSpatulaVisual();
+  T.anim = false; setBusy(false); selectTool(null);
+  say('Spatellöffel in die Schublade zurückgelegt.', 'ok'); log('<span class="muted">Löffel zurück in die Schublade.</span>');
+}
+function clickSpatula(ud) {
+  const k = ud.id, sp = state.sps[k];
+  if (sp.place === 'drawer') { if (drawer.open > 0.25) moveSpatulaToTable(k); return; }
+  if (state.tool === 'spatula:' + k) { selectTool(null); say('Spatellöffel abgelegt.'); return; }
+  selectTool('spatula:' + k);
+  say('<b>Spatellöffel</b> in der Hand. Klicke ein <b>Salzglas</b> an, um eine Probe zu nehmen. (Zurücklegen: offene Schublade anklicken.)');
+}
+async function scoopSalt(id) {
+  const cs = curSp(); if (!cs) return;
+  const { sp, T } = cs;
+  if (sp.load) { say('Der Löffel ist schon mit <b>' + idName(sp.load) + '</b> beladen. Gib die Probe zuerst ins Reagenzglas oder in eine Mulde (oder wische sie am Putzlappen ab).', 'warn'); return; }
+  setBusy(true);
+  const jar = TOOLS['salt:' + id].pivot.userData.rest;
+  T.anim = true;
+  const p0 = T.pivot.position.clone(), r0 = T.pivot.rotation.z;
+  const above = new THREE.Vector3(jar.x, jar.y + 0.6, jar.z), dip = new THREE.Vector3(jar.x, jar.y - 0.15, jar.z);
+  await tween(0.9, e => { T.pivot.position.lerpVectors(p0, above, e); T.pivot.rotation.z = lerp(r0, 0.8, e); });
+  await tween(0.45, e => T.pivot.position.lerpVectors(above, dip, e));
+  sp.contam = sp.dirt.filter(d => d !== id); sp.load = id; refreshSpatulaVisual();
+  await sleep(0.3);
+  await tween(0.45, e => T.pivot.position.lerpVectors(dip, above, e));
+  T.anim = false; setBusy(false); refreshUI();
+  say('Löffel mit <b>' + idName(id) + '</b> beladen. Klicke auf das <b>Reagenzglas</b> (Anion) oder auf eine <b>Mulde</b> (Kation).', 'ok');
+  log('<span class="muted">Löffel:</span> <b>' + idName(id) + '</b> aufgenommen.');
+}
+async function spoonDeposit(mouth, landing, n) {
+  const { T, obj } = curSp(); T.anim = true;
+  const p0 = T.pivot.position.clone(), r0 = T.pivot.rotation.z;
+  await tween(1.0, e => { T.pivot.position.lerpVectors(p0, mouth, e); T.pivot.rotation.z = lerp(r0, 0.8, e); });
+  await tween(0.45, e => { T.pivot.rotation.z = lerp(0.8, 1.45, e); });
+  obj.pile.visible = false;
+  for (let i = 0; i < n; i++) {
+    const g = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.05, 0.05), saltMat); scene.add(g);
+    const dx = (Math.random() - 0.5) * 0.1, dz = (Math.random() - 0.5) * 0.1;
+    tween(0.34, e => g.position.set(mouth.x - 0.08 + dx, lerp(mouth.y - 0.05, landing.y, e * e), mouth.z + dz), false).then(() => scene.remove(g));
+    await sleep(0.07);
+  }
+  await sleep(0.4);
+  await tween(0.8, e => { T.pivot.position.lerpVectors(mouth, p0, e); T.pivot.rotation.z = lerp(1.45, r0, e); });
+  T.anim = false;
+}
+function takeLoad() {
+  const sp = curSp().sp, r = { id: sp.load, contam: sp.contam.slice() };
+  sp.dirt = [...new Set([sp.load, ...sp.contam])]; sp.load = null; sp.contam = []; refreshSpatulaVisual(); refreshUI();
+  return r;
+}
+async function clickCloth() {
+  const cs = curSp();
+  if (!cs) { say('Mit dem <b>Putzlappen</b> reinigst du den Spatellöffel: Nimm zuerst einen Löffel in die Hand und klicke dann den Lappen an.', 'warn'); return; }
+  const { sp, T } = cs;
+  if (!sp.load && !sp.dirt.length) { say('Der Löffel ist bereits sauber.', 'ok'); return; }
+  setBusy(true);
+  T.anim = true;
+  const p0 = T.pivot.position.clone(), r0 = T.pivot.rotation.z;
+  const cx = CLOTH.x - 0.05, cz = CLOTH.z;
+  const above = new THREE.Vector3(cx, TABLE_Y + 0.6, cz), down = new THREE.Vector3(cx, TABLE_Y + 0.11, cz);
+  await tween(0.9, e => { T.pivot.position.lerpVectors(p0, above, e); T.pivot.rotation.z = lerp(r0, 0.12, e); });
+  await tween(0.4, e => T.pivot.position.lerpVectors(above, down, e));
+  await tween(1.3, e => { T.pivot.position.set(cx + 0.28 * Math.sin(e * Math.PI * 6), down.y, cz); }, false);
+  const had = sp.load;
+  sp.load = null; sp.contam = []; sp.dirt = []; refreshSpatulaVisual();
+  await tween(0.4, e => T.pivot.position.lerpVectors(new THREE.Vector3(cx, down.y, cz), above, e));
+  T.anim = false; setBusy(false); refreshUI();
+  say(had ? 'Die Probe wurde abgewischt, der Löffel ist wieder <b>sauber</b>.' : 'Der Löffel ist gereinigt – du kannst eine neue Probe nehmen.', 'ok'); log('<span class="ok">Löffel gereinigt.</span>');
+}
+function resetSpatula() {
+  state.sps = Array.from({ length: SP_N }, () => ({ place: 'drawer', load: null, contam: [], dirt: [] }));
+  drawer.open = 0; drawer.group.position.z = DRAWER_Z; refreshSpatulaVisual();
+}
+
+// ---- Salz ins Reagenzglas ----
+async function placeSaltTube(id) {
+  const isUnknown = id === 'UNKNOWN';
+  if (state.tube.has) { say('Im Reagenzglas ist bereits eine Probe. Mit <b>„Reagenzglas leeren“</b> (Panel) beginnst du neu.', 'warn'); return; }
+  if (isUnknown && state.mode !== 'expert') { say('Unbekannt A gibt es nur im Expertenmodus.', 'warn'); return; }
+  setBusy(true);
+  await spoonDeposit(new THREE.Vector3(TUBE_X, TUBE_BASE + TUBE_H + 0.5, TUBE_Z), new THREE.Vector3(TUBE_X, TUBE_BASE + 0.2, TUBE_Z), 9);
+  const contam = takeLoad().contam;
+  Object.assign(state.tube, { has: true, unknown: isUnknown, saltId: isUnknown ? null : id, dissolved: false, ag: false, contam });
+  tube.grains.visible = true; updateLabels();
+  setBusy(false); refreshUI();
+  say('Salz im Reagenzglas: <b>' + placeLabel(isUnknown, id) + '</b>. Nächster Schritt: <b>Wasserflasche</b> anklicken, dann auf das <b>Reagenzglas</b>. Reinige den Löffel danach am <b>Putzlappen</b>.' + contamNote(contam), learnWarn(contam) ? 'warn' : 'ok');
+  log(learnWarn(contam) ? '<span class="bad">Salz ins Reagenzglas gegeben – Löffel war verunreinigt.</span>' : '<span class="ok">Salz ins Reagenzglas gegeben.</span>');
+}
+async function addWater() {
+  if (!state.tube.has) { say('Zuerst ein Salz ins Reagenzglas geben.', 'warn'); return; }
+  if (state.tube.dissolved) { say('Das Salz ist bereits gelöst.', 'warn'); return; }
+  setBusy(true);
+  const T = TOOLS.water, tip = new THREE.Vector3(TUBE_X, Math.max(TUBE_BASE + TUBE_H + 0.35, TABLE_Y + 4.3), TUBE_Z);
+  T.anim = true;   // Spritzflasche bleibt aufrecht: nur anheben, über das Reagenzglas fahren (keine Drehung)
+  const p0 = T.pivot.position.clone(), rise = new THREE.Vector3(p0.x, tip.y, p0.z);
+  await tween(0.8, e => T.pivot.position.lerpVectors(p0, rise, e));
+  await tween(0.8, e => T.pivot.position.lerpVectors(rise, tip, e));
+  const stream = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 1, 8), new THREE.MeshBasicMaterial({ color: 0xbfe0ff, transparent: true, opacity: 0.8 })); scene.add(stream);
+  tube.liq.visible = true;
+  await tween(1.4, e => {
+    const lvl = TUBE_BASE + 0.05 + e * 1.05, len = tip.y - lvl;
+    stream.scale.y = Math.max(0.01, len); stream.position.set(tip.x, lvl + len / 2, tip.z);
+    tube.liq.scale.y = Math.max(0.001, e * 0.875); tube.grains.visible = e < 0.6;
+  }, false);
+  scene.remove(stream); tube.grains.visible = false;
+  await tween(0.8, e => T.pivot.position.lerpVectors(tip, rise, e));
+  await tween(0.8, e => T.pivot.position.lerpVectors(rise, p0, e));
+  T.anim = false; state.tube.dissolved = true; selectTool(null); setBusy(false);
+  say('Salz in Wasser gelöst. Nächster Schritt: <b>AgNO₃-Tropfflasche</b> anklicken, dann das <b>Reagenzglas</b>.', 'ok');
+  log('<span class="ok">Wasser → gelöst.</span>');
+}
+function setPrecip(hex, h) {
+  tube.precip.visible = true; tube.precip.scale.y = h; tube.precipMat.color.setHex(hex);
+}
+async function addAgNO3() {
+  if (!state.tube.has || !state.tube.dissolved) { say('AgNO₃ gehört in die <b>Salzlösung</b>: erst Salz einfüllen und mit Wasser lösen.', 'warn'); return; }
+  if (state.tube.ag) { say('AgNO₃ wurde bereits zugegeben.', 'warn'); return; }
+  setBusy(true);
+  const T = TOOLS.agno3, above = new THREE.Vector3(TUBE_X, TUBE_BASE + TUBE_H + 0.45, TUBE_Z);
+  const back = await dripFrom(T, above, above.y - 0.05, TUBE_BASE + 1.15, 4, 0xe9f1f7);
+  state.tube.ag = true;
+  const chems = sampleChems(state.tube), chem = chems[0], hasArs = chems.some(c => c.ag === 'arsenate');
+  const seq = ++state.tube.seq;
+  if (hasArs) {
+    tube.liqMat.color.setHex(0xf2f2ee); tube.liqMat.opacity = 0.55; setPrecip(ARSENATE_SEQ[0].c, 0.67);
+    say('AgNO₃ → Niederschlag: <b>' + ARSENATE_SEQ[0].t + '</b> …', 'ok'); log('<span class="ok">AgNO₃ → Arsenat-Niederschlag (Farbabfolge) gestartet.</span>');
+    await back(); selectTool(null); setBusy(false);
+    (async () => {
+      for (let i = 1; i < ARSENATE_SEQ.length; i++) {
+        await sleep(0.65); if (seq !== state.tube.seq) return;
+        setPrecip(ARSENATE_SEQ[i].c, 0.67); tube.liqMat.color.setHex(ARSENATE_SEQ[i].c); tube.liqMat.opacity = i > 2 ? 0.7 : 0.55;
+        say('Arsenat-Niederschlag: <b>' + ARSENATE_SEQ[i].t + '</b>' + (i === ARSENATE_SEQ.length - 1 ? ' (Endzustand)' : ' …'), 'ok');
+      }
+      log('<span class="ok">Arsenat: Farbabfolge abgeschlossen.</span>');
+    })();
+    return;
+  }
+  const RANK = { white: 0, cream: 1, yellow: 2 }, HH = { white: 0.43, cream: 0.53, yellow: 0.67 };
+  let top = chem; chems.forEach(c => { if (RANK[c.ag] > RANK[top.ag]) top = c; });
+  let hex = PRECIP_HEX[chem.ag], h = HH[chem.ag];
+  if (top !== chem) { hex = mixHex([PRECIP_HEX[chem.ag], PRECIP_HEX[top.ag]]); h = (HH[chem.ag] + HH[top.ag]) / 2; }   // Spuren eines „stärkeren“ Halogenids färben den Niederschlag um
+  tube.liqMat.color.setHex(hex); tube.liqMat.opacity = 0.5; setPrecip(hex, h);
+  await back(); selectTool(null); setBusy(false);
+  say('AgNO₃ → <b>Niederschlag</b> (Farbe beachten!). Er gehört zum Anion der Probe.', 'ok'); log('<span class="ok">AgNO₃ → Niederschlag.</span>');
+}
+
+// ---- Salz in eine Mulde ----
+async function placeSaltWell(i, id) {
+  const w = state.wells[i], isUnknown = id === 'UNKNOWN';
+  if (w.has) { say('Mulde ' + (i + 1) + ' ist bereits belegt.', 'warn'); return; }
+  if (isUnknown && state.mode !== 'expert') { say('Unbekannt A gibt es nur im Expertenmodus.', 'warn'); return; }
+  setBusy(true);
+  await spoonDeposit(new THREE.Vector3(WELLS[i].x, TABLE_Y + 0.75, WELLS[i].z), new THREE.Vector3(WELLS[i].x, TABLE_Y + 0.12, WELLS[i].z), 6);
+  const contam = takeLoad().contam;
+  Object.assign(w, { has: true, unknown: isUnknown, saltId: isUnknown ? null : id, hcl: false, contam });
+  WELLS[i].grains.visible = true; updateLabels();
+  setBusy(false);
+  say('Salz in Mulde ' + (i + 1) + ': <b>' + placeLabel(isUnknown, id) + '</b>. Weiter: <b>HCl-Tropfflasche</b> → Mulde. Reinige den Löffel danach am <b>Putzlappen</b>.' + contamNote(contam), learnWarn(contam) ? 'warn' : 'ok'); log(learnWarn(contam) ? '<span class="bad">Salz auf Feld ' + (i + 1) + ' gegeben – Löffel war verunreinigt.</span>' : '<span class="ok">Salz auf Feld ' + (i + 1) + ' gegeben.</span>');
+}
+async function addHcl(i) {
+  const w = state.wells[i];
+  if (!w.has) { say('Mulde ' + (i + 1) + ' enthält noch kein Salz.', 'warn'); return; }
+  if (w.hcl) { say('In Mulde ' + (i + 1) + ' ist schon HCl.', 'warn'); return; }
+  setBusy(true);
+  const T = TOOLS.hcl, above = new THREE.Vector3(WELLS[i].x, TABLE_Y + 1.35, WELLS[i].z);
+  const back = await dripFrom(T, above, above.y - 0.05, TABLE_Y + 0.14, 3, 0xe4f3df);
+  w.hcl = true; WELLS[i].grains.visible = false; WELLS[i].liq.visible = true; updateLabels();
+  await back(); selectTool(null); setBusy(false);
+  say('Mulde ' + (i + 1) + ': Salz mit HCl gelöst. Nun das <b>MgO-Stäbchen</b> nehmen und in die Mulde tauchen.', 'ok'); log('<span class="ok">HCl → Mulde ' + (i + 1) + ' gelöst.</span>');
+}
+function curStick() {
+  if (!isMgo(state.tool)) return null;
+  const k = +state.tool.slice(4); return { k, st: state.sticks[k], T: TOOLS[state.tool] };
+}
+function refreshStickVisual(k) {
+  const st = state.sticks[k], tip = sticks[k].tip;
+  tip.visible = !!st.smp || st.res.length > 0; tip.material.color.setHex(st.smp ? 0xd9ccaa : 0xb3a68a);
+}
+function settleStick(k) { const st = state.sticks[k]; st.place = (st.used || st.smp || st.res.length) ? 'table' : 'beaker'; }
+function resetSticks() {
+  state.sticks = Array.from({ length: STICK_N }, () => ({ place: 'beaker', used: false, smp: null, res: [] }));
+  sticks.forEach((o, k) => { o.pivot.position.copy(o.home); o.pivot.rotation.copy(o.homeRot); const u = o.pivot.userData; u.rest.copy(o.home); u.restRot.copy(o.homeRot); refreshStickVisual(k); });
+}
+async function dipStick(i) {
+  const cs = curStick(); if (!cs) return;
+  const { k, st, T } = cs, w = state.wells[i];
+  if (!w.has || !w.hcl) { say('Das Stäbchen wird in die <b>angesäuerte Probelösung</b> getaucht: erst Salz und HCl in die Mulde.', 'warn'); return; }
+  setBusy(true);
+  T.anim = true;
+  const p0 = T.pivot.position.clone(), above = new THREE.Vector3(WELLS[i].x - 0.15, TABLE_Y + 1.2, WELLS[i].z + 0.15), down = new THREE.Vector3(WELLS[i].x - 0.05, TABLE_Y + 0.16, WELLS[i].z + 0.05);
+  const tilt = { x: 0.35, z: 0.28 }, r0 = { x: T.pivot.rotation.x, z: T.pivot.rotation.z };
+  await tween(0.9, e => { T.pivot.position.lerpVectors(p0, above, e); T.pivot.rotation.x = lerp(r0.x, tilt.x, e); T.pivot.rotation.z = lerp(r0.z, tilt.z, e); });
+  await tween(0.5, e => T.pivot.position.lerpVectors(above, down, e));
+  const mainId = w.unknown ? 'UNKNOWN' : w.saltId;
+  if (st.smp) st.res = [...new Set([...st.res, ...idsOf(st.smp)])];
+  st.smp = { unknown: w.unknown, saltId: w.saltId, contam: [...new Set([...(w.contam || []), ...st.res])].filter(x => x !== mainId) };
+  st.used = true; refreshStickVisual(k); refreshUI();
+  await sleep(0.5);
+  await tween(0.5, e => T.pivot.position.lerpVectors(down, above, e));
+  T.anim = false; setBusy(false);
+  say('Stäbchen mit Probe benetzt (Mulde ' + (i + 1) + '). Klicke jetzt auf die <b>Brennerflamme</b> (Rohrende).', 'ok'); log('<span class="ok">MgO → getaucht.</span>');
+}
+
+// ---- Flammenprobe / Ausglühen ----
+async function flameTest() {
+  const cs = curStick(); if (!cs) return;
+  const { k, st, T } = cs;
+  if (!state.ignited) { say('Der Brenner ist aus. Schalte ihn durch Anklicken an.', 'warn'); return; }
+  if (!st.smp && !st.res.length) { say('Das Stäbchen ist sauber. Tauche es erst in eine <b>gelöste Probe</b> (Mulde mit HCl).', 'warn'); return; }
+  if (state.airClosed) { say('Mit der gelben, leuchtenden Flamme sind Flammenfarben kaum zu erkennen. <b>Öffne die Luftzufuhr</b> (Kappe am Brenner) für die blaue Flamme.', 'warn'); return; }
+  const burnoff = !st.smp;
+  setBusy(true); T.anim = true;
+  const p0 = T.pivot.position.clone(), r0 = { x: T.pivot.rotation.x, z: T.pivot.rotation.z };
+  const above = new THREE.Vector3(BUX + 0.9, BARREL_TOP + 1.2, BUZ + 0.5), inF = new THREE.Vector3(BUX + 0.04, BARREL_TOP + 0.62, BUZ + 0.04);
+  const tilt = { x: 0.3, z: -0.55 };
+  await tween(0.9, e => { T.pivot.position.lerpVectors(p0, above, e); T.pivot.rotation.x = lerp(r0.x, tilt.x, e); T.pivot.rotation.z = lerp(r0.z, tilt.z, e); });
+  await tween(0.5, e => T.pivot.position.lerpVectors(above, inF, e));
+  if (!burnoff) {
+    const m = flameMix(st.smp);
+    fl.tintColor.setHex(m.hex);
+    await tween(0.4, e => { fl.tint = e; });
+    say('Flammenfarbe: <b>' + m.name + '</b>', 'ok'); log('<span class="ok">Flammenfarbe: <b>' + m.name + '</b>.</span>');
+    await sleep(3.4);
+    await tween(0.8, e => { fl.tint = 1 - e; });
+    st.res = idsOf(st.smp); st.smp = null; refreshStickVisual(k);
+  } else {
+    const r = st.res, m = flameMix({ unknown: r[0] === 'UNKNOWN', saltId: r[0], contam: r.slice(1) });
+    fl.tintColor.setHex(m.hex);
+    say('Das Stäbchen wird <b>ausgeglüht</b> – halte es, bis die Reste restlos verbrannt sind …', 'ok');
+    await tween(0.5, e => { fl.tint = 0.8 * e; });
+    await tween(7.5, e => { fl.tint = 0.8 * (1 - e); }, false);
+    st.res = []; refreshStickVisual(k);
+    say('Stäbchen ausgeglüht und wieder <b>sauber</b>. Es liegt auf dem Tisch und kann erneut benutzt werden.', 'ok'); log('<span class="ok">Stäbchen ausgeglüht.</span>');
+  }
+  await tween(0.5, e => T.pivot.position.lerpVectors(inF, above, e));
+  T.anim = false; setBusy(false);
+  if (!burnoff) say('Stäbchen abgelegt – es trägt noch Probenreste. Vor einer neuen Probe <b>ausglühen</b> (Stäbchen nehmen, Flamme anklicken) oder ein <b>neues Stäbchen</b> aus dem Becherglas nehmen.', 'ok');
+  selectTool(null);
+}
+
+// ============================================================================
+// 12. BRENNER IN BETRIEB NEHMEN
+// ============================================================================
+async function connectHose() {
+  setBusy(true);
+  const from = hosePts.map(p => p.clone());
+  await tween(1.3, e => { hosePts.forEach((p, i) => p.lerpVectors(from[i], HOSE_CONN[i], e)); rebuildHose(); });
+  state.hoseConnected = true; selectTool(null); setBusy(false);
+  say('Schlauch angeschlossen. <b>Schritt 2:</b> Luftzufuhr schließen – klicke auf die <b>schwarze Kappe</b> am Fuß des Brennerrohrs.', 'ok'); log('<span class="ok">Schlauch angeschlossen.</span>');
+}
+async function toggleAir() {
+  setBusy(true);
+  const closing = !state.airClosed, a0 = collar.rotation.y, a1 = closing ? Math.PI / 2 : 0;
+  await tween(0.45, e => { collar.rotation.y = lerp(a0, a1, e); });
+  state.airClosed = closing; setBusy(false); refreshUI();
+  if (closing) { say(state.ignited ? 'Luftzufuhr geschlossen: die Flamme leuchtet <b>gelb</b> und rußt (kühler).' : 'Luftzufuhr geschlossen. <b>Schritt 3:</b> Streichholz anzünden – klicke auf die Streichholzschachtel.', 'ok'); }
+  else { say(state.ignited ? 'Luftzufuhr offen: <b>blaue</b>, nicht leuchtende Flamme – jetzt bist du bereit für die Flammenprobe.' : 'Luftzufuhr geöffnet.', 'ok'); }
+}
+async function toggleGas() {
+  if (state.gasOpen) {
+    setBusy(true); await tween(0.4, e => { gasKnob.rotation.z = lerp(Math.PI / 2, 0, e); });
+    state.gasOpen = false; const was = state.ignited; state.ignited = false; state.gasTimer = 0; setBusy(false); refreshUI();
+    say(was ? 'Gashahn geschlossen: Die Flamme ist aus.' : 'Gashahn geschlossen.', 'ok'); log('<span class="muted">Gashahn geschlossen.</span>'); return;
+  }
+  if (!state.hoseConnected) { say('Ohne angeschlossenen Schlauch strömt das Gas nirgendwohin. Stecke zuerst den <b>Schlauch</b> an.', 'warn'); return; }
+  setBusy(true); await tween(0.4, e => { gasKnob.rotation.z = lerp(0, Math.PI / 2, e); });
+  if (!state.matchLit) { setBusy(false); gameOver('Game Over', 'Sie haben das Gas geöffnet, bevor ein Streichholz brennt. Das ist gefährlich.'); return; }
+  state.gasOpen = true; state.gasTimer = 15; setBusy(false); refreshUI();
+  say('Gas ist offen – <b>zünde jetzt den Brenner</b>: klicke auf das Rohrende. Zeit bis Gefahr: 15 s.', 'warn'); log('<span class="warn">Gashahn geöffnet.</span>');
+}
+async function strikeMatch() {
+  setBusy(true);
+  const T = TOOLS.match; T.anim = true;
+  const s0 = new THREE.Vector3(BOXX - 0.5, BOX_TOP + 0.07, BOXZ + 0.25), s1 = new THREE.Vector3(BOXX + 0.45, BOX_TOP + 0.07, BOXZ + 0.25);
+  const p0 = T.pivot.position.clone();
+  await tween(0.6, e => T.pivot.position.lerpVectors(p0, s0, e));
+  await tween(0.45, e => { T.pivot.position.lerpVectors(s0, s1, e); if (e > 0.55) { state.matchLit = true; matchFlame.visible = true; } }, false);
+  await tween(0.6, e => T.pivot.position.lerpVectors(s1, MATCH_HOLD, e));
+  T.anim = false; setBusy(false); refreshUI();
+  say('Streichholz brennt. <b>Schritt 4:</b> Gashahn (gelb, an der Wand) öffnen.', 'ok'); log('<span class="ok">Streichholz entzündet.</span>');
+}
+async function igniteBurner() {
+  if (!state.hoseConnected) { say('Der Schlauch ist noch nicht angeschlossen.', 'warn'); return; }
+  if (!state.gasOpen) { say('Kein Gas: Öffne zuerst den <b>Gashahn</b> (gelb).', 'warn'); return; }
+  if (!state.airClosed) { say('Falsche Reihenfolge: Schließe vor dem Zünden die <b>Luftzufuhr</b> (Kappe), sonst schlägt die Flamme leicht zurück.', 'warn'); return; }
+  setBusy(true);
+  const T = TOOLS.match; T.anim = true;
+  const p0 = T.pivot.position.clone(), top = new THREE.Vector3(BUX + 0.35, BARREL_TOP + 0.12, BUZ + 0.1), at = new THREE.Vector3(BUX + 0.12, BARREL_TOP + 0.12, BUZ);
+  await tween(0.8, e => T.pivot.position.lerpVectors(p0, top, e));
+  await tween(0.35, e => T.pivot.position.lerpVectors(top, at, e));
+  state.ignited = true; state.gasTimer = 0; state.matchLit = false; matchFlame.visible = false; matchHead.material.color.setHex(0x151210);
+  await sleep(0.5);
+  await tween(0.5, e => T.pivot.position.lerpVectors(at, top, e));
+  T.anim = false; selectTool(null); setBusy(false);
+  say('Der Brenner zündet – gelbe, leuchtende Flamme. <b>Schritt 6:</b> Luftzufuhr öffnen (Kappe), dann wird die Flamme blau.', 'ok'); log('<span class="ok">Brenner gezündet.</span>');
+}
+function gameOver(title, text) {
+  state.over = true; state.gasOpen = false; state.ignited = false;
+  $('over-title').textContent = title; $('over-text').textContent = text; $('over').style.display = 'flex';
+  log('<span class="bad">' + title + ': ' + text + '</span>');
+}
+function resetBurner() {
+  state.hoseConnected = false; state.airClosed = false; state.gasOpen = false; state.ignited = false; state.gasTimer = 0; state.over = false; state.burnerStarted = false;
+  dropMatch(); if (state.tool === 'match' || state.tool === 'hose') state.tool = null;
+  state.hoseConnected = true; hosePts.forEach((p, i) => p.copy(HOSE_CONN[i])); rebuildHose();
+  collar.rotation.y = 0; gasKnob.rotation.z = 0; fl.alpha = 0; fl.tint = 0;
+  $('over').style.display = 'none';
+}
+$('btn-over').onclick = () => { resetBurner(); refreshUI(); say('Neustart: Nimm den Brenner noch einmal in der richtigen Reihenfolge in Betrieb.'); };
+
+// ============================================================================
+// 13. EXPERTENMODUS
+// ============================================================================
+function pickUnknown() {
+  const c = CATIONS[Math.floor(Math.random() * CATIONS.length)], a = ANIONS[Math.floor(Math.random() * ANIONS.length)];
+  state.unknownActual = { cation: c, anion: a, formula: formatFormula(c, a), name: canonicalName(c, a), ag: a.ag, flame: FLAME_BY_CATION[c.key] || 'gelb' };
+  log('<span class="muted">Unbekannt A wurde neu gewählt.</span>');
+}
+function setMode(m) {
+  state.mode = m; unknownJar.visible = (m === 'expert');
+  if (m === 'expert') { $('ui-panel').classList.remove('collapsed'); $('btn-collapse').textContent = '▾'; }
+  if (m === 'expert') { pickUnknown(); say('<b>Expertenmodus:</b> „Unbekannt A“ steht rechts neben der Tüpfelplatte. Bestimme das Salz über Anion (AgNO₃) und Kation (Flamme).'); }
+  else { state.unknownActual = null; if (state.tool === 'salt:UNKNOWN') selectTool(null); say('<b>Lernmodus:</b> Alle Salze sind beschriftet.'); }
+  refreshUI(); log('<span class="muted">Modus:</span> <b>' + (m === 'expert' ? 'Experte' : 'Lernmodus') + '</b>');
+}
+$('btn-mode').onclick = () => { if (!state.busy) setMode(state.mode === 'learn' ? 'expert' : 'learn'); };
+$('btn-new-unknown').onclick = () => { if (state.mode === 'expert') { pickUnknown(); say('Neue Expertenprobe gewählt.'); } };
+$('btn-check').onclick = () => {
+  if (state.mode !== 'expert' || !state.unknownActual) return;
+  const g = normalizeName($('inp-guess').value);
+  if (!g) { log('<span class="warn">Bitte einen Salznamen eingeben.</span>'); return; }
+  if (g === normalizeName(state.unknownActual.name)) {
+    const u = state.unknownActual;
+    log('<span class="ok">Richtig.</span> Unbekannt A ist <b>' + u.name + '</b> (<b>' + u.formula + '</b>).');
+    say('✅ Richtig: <b>' + u.name + '</b> (' + u.formula + '). Eine neue Probe wurde gewählt.', 'ok'); pickUnknown(); $('inp-guess').value = '';
+  } else { log('<span class="bad">Falsch.</span> Bitte weiter analysieren und erneut versuchen.'); say('Falsch – analysiere weiter (Anion: AgNO₃, Kation: Flamme).', 'bad'); }
+};
+$('inp-guess').addEventListener('keydown', e => { if (e.key === 'Enter') $('btn-check').click(); });
+
+// ============================================================================
+// 14. ZEIGER-EINGABE (Maus & Touch)
+// ============================================================================
+const raycaster = new THREE.Raycaster(), mouse = new THREE.Vector2(), tooltip = $('tooltip');
+function getHit(e) {
+  const r = renderer.domElement.getBoundingClientRect();
+  mouse.x = ((e.clientX - r.left) / r.width) * 2 - 1; mouse.y = -((e.clientY - r.top) / r.height) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObjects(scene.children, true);
+  const vis = o => { for (let p = o; p; p = p.parent) if (!p.visible) return false; return true; };
+  const h = hits.find(x => x.object.userData && x.object.userData.type && vis(x.object));
+  return h ? h.object.userData : null;
+}
+const ptrs = new Map();
+let drag = { on: false, button: 0, x: 0, y: 0, moved: false, sx: 0, sy: 0 }, pinchDist = 0;
+renderer.domElement.addEventListener('contextmenu', e => e.preventDefault());
+renderer.domElement.addEventListener('pointerdown', e => {
+  ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinchDist = Math.hypot(a.x - b.x, a.y - b.y); drag.on = false; return; }
+  drag = { on: true, button: e.button, x: e.clientX, y: e.clientY, moved: false, sx: e.clientX, sy: e.clientY };
+  try { renderer.domElement.setPointerCapture(e.pointerId); } catch (_) {}
+});
+window.addEventListener('pointermove', e => {
+  if (ptrs.has(e.pointerId)) ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (ptrs.size === 2 && !camLocked) {
+    const [a, b] = [...ptrs.values()], d = Math.hypot(a.x - b.x, a.y - b.y);
+    if (pinchDist > 0) { cam.radius *= pinchDist / d; updateCamera(); } pinchDist = d; return;
+  }
+  if (e.pointerType === 'mouse' && !drag.on) hover(e);
+  if (!drag.on) return;
+  const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+  if (Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) > 6) drag.moved = true;
+  if (!camLocked && drag.moved) {
+    if (drag.button === 0) { cam.theta -= dx * 0.007; cam.phi -= dy * 0.007; }
+    else if (drag.button === 2) { const right = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 0); cam.target.addScaledVector(right, -dx * 0.012); cam.target.y += dy * 0.012; }
+    updateCamera();
+  }
+  drag.x = e.clientX; drag.y = e.clientY;
+});
+function endPointer(e) {
+  ptrs.delete(e.pointerId); if (ptrs.size < 2) pinchDist = 0;
+  if (drag.on && !drag.moved && drag.button === 0 && e.type === 'pointerup') onSceneClick(e);
+  if (ptrs.size === 0) drag.on = false;
+}
+window.addEventListener('pointerup', endPointer); window.addEventListener('pointercancel', endPointer);
+renderer.domElement.addEventListener('wheel', e => { if (camLocked) return; cam.radius += e.deltaY * 0.006; updateCamera(); }, { passive: true });
+
+function hover(e) {
+  if (e.target !== renderer.domElement) { tooltip.style.display = 'none'; return; }
+  const ud = getHit(e);
+  if (ud && !state.busy) { tooltip.style.display = 'block'; tooltip.style.left = e.clientX + 'px'; tooltip.style.top = e.clientY + 'px'; tooltip.textContent = ud.name || ''; document.body.style.cursor = 'pointer'; }
+  else { tooltip.style.display = 'none'; document.body.style.cursor = state.busy ? 'progress' : 'default'; }
+}
+
+function onSceneClick(e) {
+  if (state.busy || state.over) return;
+  const ud = getHit(e);
+  if (!ud) { if (state.tool) { selectTool(null); say('Ausgewähltes Gerät abgelegt.'); } return; }
+  switch (ud.type) {
+    case 'salt': clickSalt(ud.id); break;
+    case 'tube': clickTube(); break;
+    case 'well': clickWell(ud.i); break;
+    case 'dropper': clickReagent(ud.key); break;
+    case 'drawer': clickDrawer(); break;
+    case 'spatula': clickSpatula(ud); break;
+    case 'cloth': clickCloth(); break;
+    case 'mgo': clickMgo(ud); break;
+    case 'matchbox': clickMatchbox(); break;
+    case 'hose': clickHose(); break;
+    case 'outlet': clickOutlet(); break;
+    case 'gasknob': case 'air': case 'burnerBase': case 'hose': case 'outlet': case 'matchbox': toggleBurner(); break;
+    case 'burnerTop': clickBurnerTop(); break;
+  }
+}
+function clickSalt(id) {
+  if (id === 'UNKNOWN' && state.mode !== 'expert') return;
+  if (!isSp(state.tool)) {
+    say(state.sps.every(s => s.place === 'drawer') ? 'Salz nimmst du nur mit einem <b>Spatellöffel</b>. Öffne vorn am Tisch die <b>Schublade</b> und hole einen heraus.' : 'Salz nimmst du nur mit einem <b>Spatellöffel</b>: Klicke einen Löffel auf dem Tisch an, dann das Salzglas.', 'warn'); return;
+  }
+  scoopSalt(id);
+}
+function clickReagent(key) {
+  if (state.tool === key) { selectTool(null); say('Abgelegt.'); return; }
+  selectTool(key);
+  if (key === 'water') say('<b>Wasserflasche</b> in der Hand. Klicke auf das <b>Reagenzglas</b>, um das Salz zu lösen.');
+  if (key === 'agno3') say('<b>AgNO₃</b> in der Hand. Klicke auf das <b>Reagenzglas</b> mit der Salzlösung.');
+  if (key === 'hcl') say('<b>HCl</b> in der Hand. Klicke auf eine <b>Mulde</b> mit Salz.');
+}
+function clickMgo(ud) {
+  const inBeaker = ud.id === undefined || state.sticks[ud.id].place === 'beaker';
+  if (isMgo(state.tool) && inBeaker && state.tool !== 'mgo:' + ud.id) {            // gehaltenes Stäbchen zurück ins Becherglas
+    const hk = +state.tool.slice(4);
+    selectTool(null); state.sticks[hk].place = 'beaker';
+    say('Stäbchen ins Becherglas zurückgestellt.' + ((state.sticks[hk].smp || state.sticks[hk].res.length) ? ' (Es trägt noch Reste – Vorsicht beim nächsten Verwenden!)' : ''));
+    return;
+  }
+  let k = ud.id !== undefined ? ud.id : state.sticks.findIndex((x, i) => x.place === 'beaker' && state.tool !== 'mgo:' + i);
+  if (k < 0) { say('Im Becherglas ist kein Stäbchen mehr. Benutzte Stäbchen liegen auf dem Tisch – nach dem <b>Ausglühen</b> sind sie wieder verwendbar.', 'warn'); return; }
+  if (state.tool === 'mgo:' + k) { selectTool(null); say('Stäbchen abgelegt.'); return; }
+  selectTool('mgo:' + k);
+  const st = state.sticks[k];
+  say(st.smp ? '<b>Stäbchen mit Probe</b> in der Hand. Klicke auf die <b>Brennerflamme</b> (Rohrende).' : (st.res.length ? '<b>Stäbchen mit Resten</b> in der Hand. Zum <b>Ausglühen</b> die Flamme anklicken – oder erst in eine neue Probe tauchen (verunreinigt dann die Probe). Zurück ins Glas: Becherglas anklicken.' : '<b>Sauberes Magnesiastäbchen</b> in der Hand. Tauche es in eine Mulde mit gelöster Probe, danach in die Flamme. Zurück ins Glas: Becherglas anklicken.'));
+}
+function clickTube() {
+  const t = state.tool, id = saltOfTool();
+  if (isSp(t)) { const l = curSp().sp.load; if (l) placeSaltTube(l); else say('Der Löffel ist leer. Nimm zuerst Salz aus einem Glas.', 'warn'); }
+  else if (t === 'water') addWater();
+  else if (t === 'agno3') addAgNO3();
+  else if (!t) {
+    const d = state.tube; say(!d.has ? 'Das Reagenzglas ist leer. Nimm mit dem <b>Spatellöffel</b> Salz aus einem Glas und klicke dann hierher.' : (!d.dissolved ? 'Salz im Reagenzglas: <b>' + placeLabel(d.unknown, d.saltId) + '</b>. Als Nächstes: Wasser.' : (!d.ag ? 'Salzlösung bereit. Als Nächstes: AgNO₃.' : 'Fällung beobachtet. Zum Neustart: „Reagenzglas leeren“.')));
+  } else say('Das gehört nicht ins Reagenzglas.', 'warn');
+}
+function clickWell(i) {
+  const t = state.tool, id = saltOfTool();
+  if (isSp(t)) { const l = curSp().sp.load; if (l) placeSaltWell(i, l); else say('Der Löffel ist leer. Nimm zuerst Salz aus einem Glas.', 'warn'); }
+  else if (t === 'hcl') addHcl(i);
+  else if (isMgo(t)) dipStick(i);
+  else if (!t) { const w = state.wells[i]; say(!w.has ? 'Mulde ' + (i + 1) + ' ist leer. Nimm mit dem <b>Spatellöffel</b> Salz und klicke hierher.' : 'Mulde ' + (i + 1) + ': <b>' + placeLabel(w.unknown, w.saltId) + '</b>' + (w.hcl ? ' (mit HCl gelöst).' : '. Als Nächstes: HCl.')); }
+  else say('Das gehört nicht in die Mulde.', 'warn');
+}
+function clickHose() {
+  state.burnerStarted = true;
+  if (state.hoseConnected) { say('Der Schlauch ist bereits angeschlossen.', 'warn'); return; }
+  if (state.tool === 'hose') { selectTool(null); return; }
+  selectTool('hose'); say('<b>Schlauch</b> in der Hand. Klicke jetzt auf den <b>Gasanschluss (Düse)</b> an der Wand hinten rechts.');
+}
+function clickOutlet() {
+  state.burnerStarted = true;
+  if (state.hoseConnected) { say('Der Schlauch steckt bereits am Gasanschluss.', 'warn'); return; }
+  if (state.tool === 'hose') connectHose(); else say('Klicke zuerst auf das lose <b>Schlauchende</b> (rot, rechts auf dem Tisch).', 'warn');
+}
+function clickMatchbox() {
+  state.burnerStarted = true;
+  if (state.tool === 'match') { if (state.matchLit) say('Das Streichholz brennt schon. Zünde damit den Brenner (Rohrende anklicken) – oder öffne zuerst den Gashahn.', 'warn'); else strikeMatch(); return; }
+  if (state.over) return;
+  selectTool('match'); matchObj.position.copy(MATCH_HOLD); matchHead.material.color.setHex(0xc02a1d);
+  say('Streichholz genommen. Klicke <b>nochmal auf die Schachtel</b>, um es an der Reibfläche anzuzünden.');
+}
+function clickBurnerTop() {
+  if (isMgo(state.tool)) { flameTest(); return; }
+  toggleBurner();
+}
+async function toggleBurner() {
+  if (state.busy || state.over) return;
+  if (state.tool && !isMgo(state.tool)) selectTool(null);
+  const on = !state.ignited;
+  setBusy(true);
+  await tween(0.35, e => { gasKnob.rotation.z = on ? lerp(0, Math.PI / 2, e) : lerp(Math.PI / 2, 0, e); });
+  state.ignited = on; state.gasOpen = on; setBusy(false); refreshUI();
+  say(on ? 'Brenner <b>an</b> (blaue Flamme). Für die Flammenprobe: Magnesiastäbchen nehmen, in eine gelöste Probe tauchen, dann die Flamme anklicken.' : 'Brenner <b>aus</b>.', on ? 'ok' : '');
+  log('<span class="muted">Brenner ' + (on ? 'an' : 'aus') + '.</span>');
+}
+$('btn-collapse').onclick = () => { const p = $('ui-panel'); p.classList.toggle('collapsed'); $('btn-collapse').textContent = p.classList.contains('collapsed') ? '▸' : '▾'; };
+$('btn-reset').onclick = () => { if (!state.busy) resetAll(); };
+$('btn-clear-tube').onclick = () => { if (!state.busy) { clearTube(); say('Reagenzglas geleert.'); } };
+$('btn-clear-wells').onclick = () => { if (!state.busy) { clearWells(); say('Mulden geleert.'); } };
+
+
+// ============================================================================
+// 15. ZURÜCKSETZEN
+// ============================================================================
+function clearTube() {
+  state.tube = { has: false, saltId: null, unknown: false, dissolved: false, ag: false, seq: state.tube.seq + 1, contam: [] };
+  tube.liq.visible = false; tube.liq.scale.y = 0.001; tube.precip.visible = false; tube.precip.scale.y = 0.001; tube.grains.visible = false;
+  tube.liqMat.color.setHex(0x6cb2ea); tube.liqMat.opacity = 0.66; updateLabels(); log('<span class="muted">Reagenzglas zurückgesetzt.</span>');
+}
+function clearWells() {
+  state.wells = freshWells();
+  WELLS.forEach(w => { w.grains.visible = false; w.liq.visible = false; }); updateLabels(); log('<span class="muted">Mulden zurückgesetzt.</span>');
+}
+function resetAll() {
+  tweens.length = 0; camLocked = false; setBusy(false);
+  state.tool = null; state.mode = 'learn'; unknownJar.visible = false; state.unknownActual = null; $('inp-guess').value = '';
+  resetBurner(); resetSpatula(); resetSticks();
+  Object.values(TOOLS).forEach(T => { T.anim = false; T.pivot.position.copy(T.pivot.userData.rest); T.pivot.rotation.copy(T.pivot.userData.restRot); });
+  matchObj.visible = false; clearTube(); clearWells(); $('log').innerHTML = '';
+  $('ui-panel').classList.toggle('collapsed', isNarrow()); $('btn-collapse').textContent = isNarrow() ? '▸' : '▾';
+  const p = CAM_PRESETS.view(); cam.theta = p.theta; cam.phi = p.phi; cam.radius = p.radius; cam.target.set(p.tx, p.ty, p.tz); updateCamera();
+  refreshUI();
+  say('<b>Start:</b> Öffne vorn die <b>Schublade</b> und hole den <b>Spatellöffel</b> auf den Tisch. Salz gibt es nur mit dem Löffel – danach am <b>Putzlappen</b> reinigen! <b>Anion:</b> Salz → Reagenzglas → Wasser → AgNO₃. <b>Kation:</b> Salz → Mulde → HCl → MgO-Stäbchen → Flamme. Den <b>Brenner</b> schaltest du durch Anklicken an und aus.');
+  log('<span class="muted">Start bereit.</span>');
+}
+
+// ============================================================================
+// 16. RENDER-SCHLEIFE
+// ============================================================================
+let lastT = performance.now(), timeScale = 1, lastCount = -1;
+function toolObject() {
+  if (!state.tool) return null;
+  if (state.tool === 'hose') return hoseHit;
+  return TOOLS[state.tool] ? TOOLS[state.tool].pivot : null;
+}
+function hintTarget() {
+  return null;
+  if (!state.burnerStarted || !$('chk-hints').checked || state.over) return null;
+  const s = burnerStep(), v = new THREE.Vector3();
+  switch (s) {
+    case 0: return state.tool === 'hose' ? v.copy(OUT_END).add(new THREE.Vector3(0, 0.75, 0)) : v.copy(hosePts[hosePts.length - 1]).add(new THREE.Vector3(0, 0.75, 0));
+    case 1: case 5: return v.set(BUX, TABLE_Y + 1.5, BUZ);
+    case 2: return v.set(BOXX, BOX_TOP + 0.75, BOXZ);
+    case 3: return v.set(KNOB_POS.x, KNOB_POS.y + 1.2, KNOB_POS.z + 0.4);
+    case 4: return v.set(BUX, BARREL_TOP + 0.9, BUZ);
+  }
+  return null;
+}
+function animate(now) {
+  requestAnimationFrame(animate);
+  const dt = Math.min((now - lastT) / 1000, 0.1) * timeScale; lastT = now;
+  const t = now / 1000;
+  for (let i = tweens.length - 1; i >= 0; i--) {
+    const a = tweens[i]; a.t += dt; const p = Math.min(1, a.t / a.dur);
+    a.fn(a.ease ? easeIO(p) : p);
+    if (p >= 1) { tweens.splice(i, 1); a.res(); }
+  }
+  if (camLocked || tweens.length) updateCamera();
+
+  // Werkzeuge schweben zu ihrer Ruhe- bzw. Hand-Position
+  const k = Math.min(1, dt * 7);
+  for (const key in TOOLS) {
+    const T = TOOLS[key]; { const tg = T.pivot.userData.tag; if (tg) tg.visible = !T.anim; }
+    if (key.startsWith('mgo:')) {
+      const k = +key.slice(4), st = state.sticks[k], o = sticks[k], u = T.pivot.userData;
+      if (st.place === 'table') { u.rest.set(1.9, TABLE_Y + 0.035, -1.1 + 0.2 * k); u.restRot.set(0, 0, Math.PI / 2); }
+      else { u.rest.copy(o.home); u.restRot.copy(o.homeRot); }
+    }
+    if (key.startsWith('spatula:')) {
+      const k = +key.slice(8), sp = state.sps[k];
+      if (sp.place === 'drawer') T.pivot.userData.rest.copy(spDrawerPos(k)); else T.pivot.userData.rest.copy(spTable(k));
+      T.pivot.visible = sp.place !== 'drawer' || drawer.open > 0.25;
+      if (sp.place === 'drawer' && !T.anim) { T.pivot.position.copy(T.pivot.userData.rest); T.pivot.rotation.set(0, 0, 0); continue; }
+    }
+    if (T.anim) continue;
+    const sel = state.tool === key;
+    if (key === 'match') { matchObj.visible = sel; if (sel) matchObj.position.lerp(MATCH_HOLD, k); continue; }
+    const home = T.pivot.userData.rest.clone(); if (sel) home.y += T.lift;
+    T.pivot.position.lerp(home, k);
+    const rr = T.pivot.userData.restRot;
+    T.pivot.rotation.x = lerp(T.pivot.rotation.x, (sel && T.pivot.userData.holdRotX !== undefined) ? T.pivot.userData.holdRotX : rr.x, k); T.pivot.rotation.z = lerp(T.pivot.rotation.z, (sel && T.pivot.userData.holdRotZ !== undefined) ? T.pivot.userData.holdRotZ : rr.z, k);
+  }
+  if (matchObj.visible && state.matchLit) { matchFlame.visible = true; const f = 1 + Math.sin(t * 40) * 0.12; matchFlame.scale.set(0.12 * f, 0.42 * (1 + Math.sin(t * 31) * 0.1), 0.12 * f); }
+
+  updateFlameVisual(dt, t);
+
+  // Gas-Countdown
+  if (state.gasOpen && !state.ignited && !state.over) {
+    state.gasTimer -= dt;
+    const c = Math.ceil(Math.max(0, state.gasTimer));
+    if (c !== lastCount) { lastCount = c; if (!state.busy) say('Gas ist offen – <b>zünde jetzt</b> (Rohrende anklicken)! Zeit bis Gefahr: <b>' + c + ' s</b>.', 'warn'); }
+    if (state.gasTimer <= 0) gameOver('Game Over', 'Gas ist länger als 15 Sekunden unverbrannt ausgetreten. Das ist gefährlich.');
+  } else lastCount = -1;
+  refreshBadgeOnly();
+
+  // Marker
+  const tobj = toolObject();
+  if (tobj && !state.busy) { const bx = new THREE.Box3().setFromObject(tobj), c = bx.getCenter(new THREE.Vector3()); markSel.visible = true; markSel.position.set(c.x, bx.max.y + 0.5 + Math.sin(now * 0.006) * 0.08, c.z); } else markSel.visible = false;
+  const h = !state.busy ? hintTarget() : null;
+  if (h) { markHint.visible = true; markHint.position.set(h.x, h.y + Math.sin(now * 0.006) * 0.08, h.z); } else markHint.visible = false;
+
+  renderer.render(scene, camera);
+}
+let _lastBadge = '';
+function refreshBadgeOnly() {
+  const s = state.ignited + '|' + state.airClosed + '|' + state.gasOpen + '|' + state.hoseConnected + '|' + state.matchLit + '|' + state.tool + '|' + state.sps.map(x => x.load + x.dirt.length).join();
+  if (s !== _lastBadge) { _lastBadge = s; refreshUI(); }
+}
+function onResize() {
+  camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  if (!camLocked && !state.busy) { cam.radius = Math.max(cam.radius, 4.2); updateCamera(); }
+}
+window.addEventListener('resize', onResize);
+
+resetAll(); onResize(); requestAnimationFrame(animate);
+
+if (location.hash === '#debug') {
+  window.__sim = { drawer, spatulas, updateLabels, state, TOOLS, WELLS, tube, cam, tweens, flame, fl, hosePts, gasKnob, collar, sticks, matchObj, unknownJar, BUX, BUZ, BARREL_TOP,
+    setScale: s => { timeScale = s; },
+    screen: obj => { const v = (obj.isVector3 ? obj : new THREE.Box3().setFromObject(obj).getCenter(new THREE.Vector3())).clone().project(camera);
+      return { x: (v.x + 1) / 2 * window.innerWidth, y: (1 - v.y) / 2 * window.innerHeight }; },
+    hits: { hoseHit, matchbox, mgoBed }, camera, THREE, scene };
+}
 </script>
-  <a href="/Virtuelles-Chemielabor/impressum.html" style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-family: sans-serif; font-size: 12px; z-index: 9999;">Impressum & Datenschutz</a>
 </body>
 </html>
