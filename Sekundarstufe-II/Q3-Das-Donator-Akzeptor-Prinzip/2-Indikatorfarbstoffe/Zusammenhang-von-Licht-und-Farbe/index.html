@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Virtuelles 3D-Chemielabor: Licht und Farbe</title>
+  <style>
+    * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+    html, body { height: 100%; }
+    body { margin: 0; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; background: #0c1016; color: #f0f4f8; }
+    #canvas-container { position: fixed; inset: 0; }
+    #canvas-container canvas { display: block; touch-action: none; }
+
+    #ui-panel {
+      position: absolute; top: 14px; left: 14px; width: 380px; max-height: calc(100vh - 78px); overflow-y: auto;
+      background: rgba(16, 20, 27, 0.93); backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.14); border-radius: 12px;
+      padding: 12px 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    }
+    #ui-panel.collapsed .collapsible { display: none; }
+    .ui-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+    h1 { font-size: 16px; margin: 0 0 3px 0; color: #64b5f6; }
+    .sub, p.sub { font-size: 11.5px; color: #b0bec5; margin: 0 0 8px 0; line-height: 1.35; }
+    #btn-collapse { flex: 0 0 auto; width: 28px; height: 28px; padding: 0; background: rgba(255,255,255,0.1); font-size: 13px; }
+    #tabs { display: flex; gap: 4px; margin: 6px 0 8px; flex-wrap: wrap; }
+    #tabs button { flex: 1 1 auto; padding: 6px 4px; font-size: 11.5px; background: #2a3441; }
+    #tabs button.on { background: #3949ab; box-shadow: inset 0 -3px 0 #64b5f6; }
+    .theory { background: rgba(255,255,255,0.06); border-left: 3px solid #64b5f6; padding: 8px 10px; border-radius: 4px; font-size: 12px; line-height: 1.45; margin-bottom: 8px; }
+    .theory b { color: #90caf9; } .theory .f { font-family: 'Cambria Math', Georgia, serif; color: #ffe082; }
+    .theory ul { margin: 5px 0 6px 16px; padding: 0; } .theory li { margin-bottom: 2px; }
+    details > summary { cursor: pointer; font-size: 11.5px; color: #90a4ae; margin-bottom: 6px; }
+    .sec { font-size: 10.5px; color: #90a4ae; text-transform: uppercase; letter-spacing: 0.5px; margin: 10px 0 4px; display: flex; justify-content: space-between; align-items: center; }
+    .btn-row { display: flex; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; }
+    button {
+      flex: 1; padding: 7px 9px; border: none; border-radius: 6px; cursor: pointer;
+      background: #3949ab; color: white; font-weight: 600; font-size: 12px; transition: 0.15s; font-family: inherit;
+    }
+    button:hover { background: #5c6bc0; }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    button.green { background: #2e7d32; } button.green:hover { background: #388e3c; }
+    button.grey  { background: #455a64; } button.grey:hover  { background: #546e7a; }
+    button.opt   { background: #34414f; } button.opt:hover { background: #46576a; }
+    button.opt.on { background: #1565c0; box-shadow: inset 0 0 0 2px #90caf9; }
+    .sl { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 2px 8px; font-size: 12px; margin-bottom: 7px; color: #cfd8dc; }
+    .sl input[type=range] { grid-column: 1 / -1; width: 100%; margin: 0; accent-color: #64b5f6; }
+    .sl .v { color: #ffe082; font-weight: 700; font-variant-numeric: tabular-nums; }
+    #graph-box { margin-top: 8px; }
+    #graph { width: 100%; height: auto; background: #0b0f15; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; display: block; }
+    #readout { font-size: 12px; line-height: 1.5; margin-top: 8px; background: rgba(0,0,0,0.35); border-radius: 8px; padding: 7px 10px; font-variant-numeric: tabular-nums; }
+    #readout .k { color: #90a4ae; } #readout b { color: #ffe082; }
+    .task { background: rgba(255,255,255,0.05); border-radius: 8px; padding: 8px; margin-bottom: 7px; font-size: 12px; line-height: 1.4; }
+    .task .q { margin-bottom: 6px; }
+    .task input[type=text] { width: 90px; background: #0e1217; border: 1px solid #475569; border-radius: 6px; color: #fff; padding: 6px; font-size: 13px; user-select: text; -webkit-user-select: text; font-family: inherit; }
+    .task .fb { margin-top: 5px; font-size: 11.5px; }
+    .task .fb.ok { color: #81c784; } .task .fb.bad { color: #ef9a9a; }
+    .task.done { outline: 1px solid rgba(102,187,106,0.55); }
+    .opts { display: flex; flex-wrap: wrap; gap: 5px; }
+    .opts button { flex: 0 1 auto; }
+    .swatch { display: inline-block; width: 38px; height: 16px; border-radius: 4px; vertical-align: middle; border: 1px solid rgba(255,255,255,0.35); margin-right: 6px; }
+
+    #top-badges { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; pointer-events: none; white-space: nowrap; }
+    .badge { background: rgba(16,20,27,0.92); border: 1px solid rgba(255,255,255,0.18); border-radius: 20px; padding: 6px 14px; font-size: 12px; font-weight: 700; color: #90caf9; }
+    #cam-bar { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; background: rgba(16,20,27,0.88); border: 1px solid rgba(255,255,255,0.14); border-radius: 12px; padding: 6px; }
+    #cam-bar button { flex: 0 0 auto; padding: 7px 11px; background: #37474f; font-size: 12px; }
+    #cam-bar button:hover { background: #546e7a; }
+    #tooltip { position: absolute; pointer-events: none; display: none; background: rgba(12,15,20,0.94); color: #fff; padding: 6px 10px; border-radius: 6px; font-size: 12px; border: 1px solid rgba(255,255,255,0.22); transform: translate(-50%, -125%); white-space: nowrap; z-index: 10; }
+    #controls-hint { position: absolute; top: 56px; right: 14px; background: rgba(16,20,27,0.85); padding: 7px 12px; border-radius: 8px; font-size: 11px; color: #90a4ae; border: 1px solid rgba(255,255,255,0.1); }
+    #imp { position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: #fff; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-family: sans-serif; font-size: 12px; z-index: 9999; }
+
+    @media (max-width: 760px) {
+      #ui-panel { top: 8px; left: 8px; right: 8px; width: auto; max-height: 47vh; padding: 9px 11px; }
+      #ui-panel .sub { display: none; }
+      h1 { font-size: 14px; }
+      #top-badges { top: auto; bottom: 56px; font-size: 11px; }
+      .badge { padding: 4px 10px; font-size: 11px; }
+      #cam-bar { bottom: 10px; max-width: calc(100vw - 16px); overflow-x: auto; }
+      #cam-bar button { padding: 7px 9px; font-size: 11.5px; }
+      #controls-hint { display: none; }
+      #imp { bottom: auto; top: 2px; right: 2px; font-size: 10px; padding: 2px 6px; opacity: .6; }
+    }
+  </style>
+  <script src="three.min.js"></script>
+  <script>
+    if (typeof THREE === 'undefined') {
+      window.addEventListener('DOMContentLoaded', function () { document.body.insertAdjacentHTML('afterbegin', '<p style="padding:20px;color:#fff;font-family:sans-serif">Die lokale Datei <b>three.min.js</b> wurde nicht gefunden. Bitte stelle sicher, dass sie im selben Ordner wie diese Seite liegt.</p>'); });
+    }
+  </script>
+</head>
+<body>
+
+<div id="canvas-container"></div>
+<div id="tooltip"></div>
+<div id="top-badges"><div class="badge" id="badge-station">Station</div></div>
+
+<div id="ui-panel">
+  <div class="ui-head">
+    <div>
+      <h1>3D-Labor: Licht &amp; Farbe</h1>
+      <p class="sub">Dispersion · additive und subtraktive Farbmischung · Farbe von Lösungen (Absorption)</p>
+    </div>
+    <button id="btn-collapse" title="Panel ein-/ausklappen">▾</button>
+  </div>
+  <div id="tabs"></div>
+  <div class="collapsible">
+    <div class="theory" id="theory"></div>
+    <div class="sec"><span>Versuch</span></div>
+    <div id="controls"></div>
+    <div id="graph-box">
+      <div class="btn-row" id="graph-modes"></div>
+      <canvas id="graph" width="680" height="320"></canvas>
+    </div>
+    <div id="readout"></div>
+    <div class="sec"><span>Aufgaben</span></div>
+    <div id="tasks"></div>
+  </div>
+</div>
+
+<div id="cam-bar"></div>
+
+<div id="controls-hint">🖱️ <b>Linksklick + Ziehen:</b> Kamera drehen &nbsp;|&nbsp; <b>Rechtsklick + Ziehen:</b> Verschieben &nbsp;|&nbsp; <b>Mausrad:</b> Zoomen</div>
+<a id="imp" href="/Virtuelles-Chemielabor/impressum.html">Impressum &amp; Datenschutz</a>
+
+<script>
+'use strict';
+/* ================= Spektral-Engine ================= */
+const NL = 81, L0 = 380, DL = 5;
+const WL = []; for (let i = 0; i < NL; i++) WL.push(L0 + i * DL);
+const $ = id => document.getElementById(id);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const sig = x => 1 / (1 + Math.exp(-x));
+function gA(x, m, s1, s2) { const t = (x - m) / (x < m ? s1 : s2); return Math.exp(-0.5 * t * t); }
+function gs(x, m, s) { const t = (x - m) / s; return Math.exp(-0.5 * t * t); }
+function cmf(l) {
+  return [
+    1.056 * gA(l, 599.8, 37.9, 31.0) + 0.362 * gA(l, 442.0, 16.0, 26.7) - 0.065 * gA(l, 501.1, 20.4, 26.2),
+    0.821 * gA(l, 568.8, 46.9, 40.5) + 0.286 * gA(l, 530.9, 16.3, 31.1),
+    1.217 * gA(l, 437.0, 11.8, 36.0) + 0.681 * gA(l, 459.0, 26.0, 13.8)];
+}
+function xyz2lin(c) {
+  return [3.2406 * c[0] - 1.5372 * c[1] - 0.4986 * c[2], -0.9689 * c[0] + 1.8758 * c[1] + 0.0415 * c[2], 0.0557 * c[0] - 0.2040 * c[1] + 1.0570 * c[2]];
+}
+/* Pro Wellenlänge linearer RGB-Beitrag; gleichenergetisches Spektrum (S=1) ergibt exakt Weiß (1,1,1) */
+const RGBL = (function () {
+  const t = WL.map(l => xyz2lin(cmf(l)).map(v => Math.max(0, v)));
+  for (let c = 0; c < 3; c++) { let s = 0; t.forEach(r => s += r[c]); t.forEach(r => r[c] /= s); }
+  return t;
+})();
+function gam(v) { v = clamp(v, 0, 1); return v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055; }
+function specLin(S) {
+  let r = 0, g = 0, b = 0;
+  for (let i = 0; i < NL; i++) { const s = S[i], q = RGBL[i]; r += s * q[0]; g += s * q[1]; b += s * q[2]; }
+  return [r, g, b];
+}
+function linRGB255(l) { return l.map(v => Math.round(gam(v) * 255)); }
+function rgbHex(c) { return '#' + c.map(v => ('0' + clamp(Math.round(v), 0, 255).toString(16)).slice(-2)).join(''); }
+function specHex(S, k) { const l = specLin(S); k = k || 1; return rgbHex(linRGB255(l.map(v => v * k))); }
+function lumY(l) { return 0.2126 * l[0] + 0.7152 * l[1] + 0.0722 * l[2]; }
+/* Farbe einer einzelnen Wellenlänge (für Anzeige, normiert auf max. Kanal) */
+function monoRGB(l) {
+  let f = (l - L0) / DL; f = clamp(f, 0, NL - 1.001); const i = Math.floor(f), t = f - i;
+  const a = RGBL[i], b = RGBL[i + 1]; const v = [0, 1, 2].map(c => lerp(a[c], b[c], t));
+  const m = Math.max(v[0], v[1], v[2]) || 1;
+  let k = 1; if (l < 420) k = 0.25 + 0.75 * (l - 380) / 40; if (l > 680) k = 0.25 + 0.75 * clamp((780 - l) / 100, 0, 1);
+  if (l < 380 || l > 780) k = 0;
+  return v.map(x => x / m * k);
+}
+function monoHex(l) { return rgbHex(monoRGB(l).map(v => gam(v) * 255)); }
+function makeSpec(fn) { return WL.map(fn); }
+function specMul(a, b) { return a.map((v, i) => v * b[i]); }
+function lampSpec(kind) {
+  if (kind === 'weiss') return makeSpec(() => 1);
+  const c = { rot: [630, 11], gruen: [535, 11], blau: [460, 11], na: [589, 3] }[kind];
+  const raw = makeSpec(l => gs(l, c[0], c[1]));
+  const k = 0.8 / lumY(specLin(raw)); return raw.map(v => v * k);
+}
+function interp(arr, l) { const f = clamp((l - L0) / DL, 0, NL - 1.001), i = Math.floor(f); return lerp(arr[i], arr[i + 1], f - i); }
+
+/* Komplementärfarben-Tabelle (absorbierte Farbe -> sichtbare Farbe) */
+function complOf(l) {
+  const T = [[380, 'UV (nicht sichtbar)', 'farblos'], [430, 'Violett', 'Gelbgrün'], [480, 'Blau', 'Gelb bis Orange'], [490, 'Grünblau', 'Orange'], [500, 'Blaugrün', 'Rot'],
+    [560, 'Grün', 'Purpur / Magenta'], [580, 'Gelbgrün', 'Violett'], [600, 'Gelb', 'Blau'], [650, 'Orange', 'Blaugrün (Cyan)'], [781, 'Rot', 'Grünblau']];
+  if (l < 380) return { a: T[0][1], o: T[0][2] };
+  for (let i = 1; i < T.length; i++) if (l < T[i][0]) return { a: T[i][1], o: T[i][2] };
+  return { a: 'Rot', o: 'Grünblau' };
+}
+
+/* ================= Diagramm ================= */
+function plot(o) {
+  const cv = $('graph'), c = cv.getContext('2d'), W = cv.width, H = cv.height;
+  c.clearRect(0, 0, W, H); c.fillStyle = '#0b0f15'; c.fillRect(0, 0, W, H);
+  const m = { l: 56, r: 14, t: 14, b: o.bar ? 62 : 44 }, pw = W - m.l - m.r, ph = H - m.t - m.b;
+  const X = x => m.l + (x - o.xmin) / (o.xmax - o.xmin) * pw, Y = y => m.t + ph - (y - o.ymin) / (o.ymax - o.ymin) * ph;
+  (o.bands || []).forEach(b => { c.fillStyle = b.color; const y1 = Y(b.ymax), y2 = Y(b.ymin); c.fillRect(m.l, y1, pw, y2 - y1); });
+  c.font = '13px Segoe UI, sans-serif'; c.lineWidth = 1;
+  const xt = o.xt || (o.xmax - o.xmin) / 5, yt = o.yt || (o.ymax - o.ymin) / 4;
+  c.textAlign = 'center'; c.textBaseline = 'top';
+  for (let x = Math.ceil(o.xmin / xt - 1e-9) * xt; x <= o.xmax + 1e-9; x += xt) {
+    c.strokeStyle = 'rgba(255,255,255,0.08)'; c.beginPath(); c.moveTo(X(x), m.t); c.lineTo(X(x), m.t + ph); c.stroke();
+    c.fillStyle = '#9fb0bd'; c.fillText(+x.toFixed(2) + '', X(x), m.t + ph + 4);
+  }
+  c.textAlign = 'right'; c.textBaseline = 'middle';
+  for (let y = Math.ceil(o.ymin / yt - 1e-9) * yt; y <= o.ymax + 1e-9; y += yt) {
+    c.strokeStyle = 'rgba(255,255,255,0.08)'; c.beginPath(); c.moveTo(m.l, Y(y)); c.lineTo(m.l + pw, Y(y)); c.stroke();
+    c.fillStyle = '#9fb0bd'; c.fillText(+y.toFixed(2) + '', m.l - 6, Y(y));
+  }
+  c.strokeStyle = 'rgba(255,255,255,0.45)'; c.strokeRect(m.l, m.t, pw, ph);
+  if (o.bar) {
+    const by = m.t + ph + 20, bh = 10;
+    for (let px = 0; px < pw; px++) { const l = o.xmin + px / pw * (o.xmax - o.xmin); if (l < 380 || l > 780) continue; c.fillStyle = monoHex(l); c.fillRect(m.l + px, by, 1.5, bh); }
+  }
+  c.save(); c.beginPath(); c.rect(m.l, m.t, pw, ph); c.clip();
+  (o.series || []).forEach(s => {
+    const xs = s.xs, ys = s.ys;
+    if (s.fill) {
+      c.beginPath(); c.moveTo(X(xs[0]), Y(Math.max(o.ymin, 0)));
+      for (let i = 0; i < xs.length; i++) c.lineTo(X(xs[i]), Y(ys[i]));
+      c.lineTo(X(xs[xs.length - 1]), Y(Math.max(o.ymin, 0))); c.closePath(); c.fillStyle = s.fill; c.fill();
+    }
+    if (s.pts) {
+      c.fillStyle = s.color; xs.forEach((x, i) => { c.beginPath(); c.arc(X(x), Y(ys[i]), s.r || 4, 0, 7); c.fill(); });
+    } else {
+      c.beginPath(); xs.forEach((x, i) => i ? c.lineTo(X(x), Y(ys[i])) : c.moveTo(X(x), Y(ys[i])));
+      c.strokeStyle = s.color; c.lineWidth = s.w || 2.2; c.setLineDash(s.dash || []); c.stroke(); c.setLineDash([]);
+    }
+  });
+  (o.vlines || []).forEach(v => {
+    c.strokeStyle = v.color || '#ffe082'; c.lineWidth = 1.5; c.setLineDash([5, 4]); c.beginPath(); c.moveTo(X(v.x), m.t); c.lineTo(X(v.x), m.t + ph); c.stroke(); c.setLineDash([]);
+  });
+  (o.hlines || []).forEach(v => {
+    c.strokeStyle = v.color || '#ffe082'; c.lineWidth = 1.5; c.setLineDash([5, 4]); c.beginPath(); c.moveTo(m.l, Y(v.y)); c.lineTo(m.l + pw, Y(v.y)); c.stroke(); c.setLineDash([]);
+  });
+  c.restore();
+  c.lineWidth = 1;
+  (o.vlines || []).forEach(v => { if (v.label) { c.fillStyle = v.color || '#ffe082'; c.font = '12px Segoe UI'; c.textAlign = v.x > (o.xmin + o.xmax) / 2 ? 'right' : 'left'; c.textBaseline = 'top'; c.fillText(v.label, X(v.x) + (v.x > (o.xmin + o.xmax) / 2 ? -5 : 5), m.t + 3); } });
+  c.fillStyle = '#cfd8dc'; c.font = '13px Segoe UI'; c.textAlign = 'center'; c.textBaseline = 'bottom';
+  c.fillText(o.xlabel || '', m.l + pw / 2, H - 2);
+  c.save(); c.translate(13, m.t + ph / 2); c.rotate(-Math.PI / 2); c.textBaseline = 'top'; c.fillText(o.ylabel || '', 0, 0); c.restore();
+  let ly = m.t + 6; c.textAlign = 'right'; c.textBaseline = 'middle'; c.font = '12px Segoe UI';
+  (o.series || []).forEach(s => { if (!s.label) return; const w = c.measureText(s.label).width; c.fillStyle = 'rgba(11,15,21,0.75)'; c.fillRect(m.l + pw - w - 30, ly - 8, w + 26, 16); c.fillStyle = s.color; c.fillRect(m.l + pw - 22, ly - 2, 16, 4); c.fillStyle = '#e3eaf0'; c.fillText(s.label, m.l + pw - 26, ly); ly += 17; });
+}
+
+/* ================= Szene ================= */
+const container = $('canvas-container');
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+renderer.setSize(innerWidth, innerHeight);
+container.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x0c1016);
+const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 200);
+scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+const dl = new THREE.DirectionalLight(0xffffff, 0.65); dl.position.set(6, 14, 8); scene.add(dl);
+const dl2 = new THREE.DirectionalLight(0x9db4d4, 0.25); dl2.position.set(-8, 6, -6); scene.add(dl2);
+(function () {
+  const t = new THREE.Mesh(new THREE.BoxGeometry(34, 0.4, 24), new THREE.MeshLambertMaterial({ color: 0x1c2430 })); t.position.y = -0.2; scene.add(t);
+  const g = new THREE.GridHelper(34, 34, 0x2f3d50, 0x232e3d); g.position.y = 0.01; scene.add(g);
+})();
+function mat(c, o) { return new THREE.MeshLambertMaterial(Object.assign({ color: c }, o || {})); }
+function box(w, h, d, c, x, y, z, parent) { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(c)); m.position.set(x, y, z); (parent || scene).add(m); return m; }
+function cyl(rt, rb, h, c, x, y, z, parent, seg) { const m = new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, seg || 24), mat(c)); m.position.set(x, y, z); (parent || scene).add(m); return m; }
+/* Lichtstrahl als dünner Zylinder zwischen zwei Punkten */
+const UPV = new THREE.Vector3(0, 1, 0);
+function mkBeam(parent, r) {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(r || 0.035, r || 0.035, 1, 8), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9, toneMapped: false, depthWrite: false }));
+  m.visible = false; parent.add(m); return m;
+}
+function setBeam(m, a, b, hex, op) {
+  const d = new THREE.Vector3().subVectors(b, a), len = d.length();
+  if (len < 1e-4 || op <= 0.01) { m.visible = false; return; }
+  m.visible = true; m.position.copy(a).add(b).multiplyScalar(0.5); m.scale.set(1, len, 1);
+  m.quaternion.setFromUnitVectors(UPV, d.normalize()); m.material.color.set(hex); m.material.opacity = op;
+}
+function labelTex(draw, w, h) {
+  const cv = document.createElement('canvas'); cv.width = w; cv.height = h; const c = cv.getContext('2d'); draw(c, w, h);
+  const t = new THREE.CanvasTexture(cv); t.anisotropy = 4; return { tex: t, cv: cv, ctx: c };
+}
+
+/* Kamera */
+const cam = { th: 0.0, ph: 1.0, r: 16, t: new THREE.Vector3(0, 1, 0) };
+function updateCamera() {
+  const s = Math.sin(cam.ph);
+  const rr = cam.r * (innerWidth < 760 ? 1.25 : 1); camera.position.set(cam.t.x + rr * s * Math.sin(cam.th), cam.t.y + rr * Math.cos(cam.ph), cam.t.z + rr * s * Math.cos(cam.th));
+  camera.lookAt(cam.t);
+}
+function applyViewOffset() {
+  const w = innerWidth, h = innerHeight;
+  if (w < 760) camera.setViewOffset(w, h, 0, -h * 0.2, w, h); else camera.setViewOffset(w, h, -190, 0, w, h);
+}
+let camTw = null;
+function goCam(p, dur) {
+  dur = dur || 700; const f = { th: cam.th, ph: cam.ph, r: cam.r, x: cam.t.x, y: cam.t.y, z: cam.t.z }, t0 = performance.now();
+  camTw = now => {
+    let k = clamp((now - t0) / dur, 0, 1); k = k * k * (3 - 2 * k);
+    cam.th = lerp(f.th, p.th, k); cam.ph = lerp(f.ph, p.ph, k); cam.r = lerp(f.r, p.r, k);
+    cam.t.set(lerp(f.x, p.t[0], k), lerp(f.y, p.t[1], k), lerp(f.z, p.t[2], k)); return k >= 1;
+  };
+}
+(function () {
+  const dom = renderer.domElement, ptrs = new Map();
+  dom.addEventListener('contextmenu', e => e.preventDefault());
+  dom.addEventListener('pointerdown', e => { dom.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY, b: e.button }); camTw = null; });
+  dom.addEventListener('pointerup', e => ptrs.delete(e.pointerId));
+  dom.addEventListener('pointercancel', e => ptrs.delete(e.pointerId));
+  dom.addEventListener('pointermove', e => {
+    const p = ptrs.get(e.pointerId); if (!p) return;
+    const dx = e.clientX - p.x, dy = e.clientY - p.y;
+    if (ptrs.size === 1) {
+      if (p.b === 2 || e.shiftKey) pan(dx, dy);
+      else { cam.th -= dx * 0.006; cam.ph = clamp(cam.ph - dy * 0.006, 0.12, 1.55); }
+      p.x = e.clientX; p.y = e.clientY;
+    } else if (ptrs.size === 2) {
+      const o = [...ptrs.values()], a = o[0], b = o[1];
+      const d0 = Math.hypot(a.x - b.x, a.y - b.y); p.x = e.clientX; p.y = e.clientY;
+      const d1 = Math.hypot(a.x - b.x, a.y - b.y); if (d1 > 5) cam.r = clamp(cam.r * d0 / d1, 4, 40);
+    }
+  });
+  dom.addEventListener('wheel', e => { e.preventDefault(); cam.r = clamp(cam.r * (1 + e.deltaY * 0.001), 4, 40); }, { passive: false });
+  function pan(dx, dy) {
+    const right = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 0), up = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 1), k = cam.r * 0.0016;
+    cam.t.addScaledVector(right, -dx * k).addScaledVector(up, dy * k);
+  }
+})();
+window.addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; applyViewOffset(); camera.updateProjectionMatrix(); });
+
+/* ================= Bedienelemente ================= */
+const C = {
+  clear() { $('controls').innerHTML = ''; },
+  el(tag, cls, html) { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; },
+  slider(label, min, max, step, val, fmt, cb) {
+    const w = C.el('div', 'sl', '<span>' + label + '</span><span class="v"></span><input type="range">');
+    const inp = w.querySelector('input'), out = w.querySelector('.v');
+    inp.min = min; inp.max = max; inp.step = step; inp.value = val;
+    const upd = () => out.textContent = fmt(+inp.value);
+    inp.addEventListener('input', () => { upd(); cb(+inp.value); }); upd(); $('controls').appendChild(w);
+    return { set(v) { inp.value = v; upd(); }, get() { return +inp.value; } };
+  },
+  chips(label, opts, cur, cb) {
+    if (label) $('controls').appendChild(C.el('div', 'sec', '<span>' + label + '</span>'));
+    const row = C.el('div', 'btn-row'), btns = {};
+    opts.forEach(o => {
+      const b = C.el('button', 'opt' + (o.k === cur ? ' on' : ''), o.t); b.dataset.k = o.k;
+      b.onclick = () => { set(o.k); cb(o.k); }; row.appendChild(b); btns[o.k] = b;
+    });
+    function set(k) { Object.keys(btns).forEach(x => btns[x].classList.toggle('on', x === String(k))); }
+    $('controls').appendChild(row); return { set };
+  },
+  buttons(list) {
+    const row = C.el('div', 'btn-row'); const out = {};
+    list.forEach(o => { const b = C.el('button', o.cls || 'grey', o.t); b.onclick = o.cb; row.appendChild(b); if (o.id) out[o.id] = b; });
+    $('controls').appendChild(row); return out;
+  },
+  note(html) { $('controls').appendChild(C.el('div', 'sub', html)); }
+};
+
+/* ================= Stationen, Aufgaben ================= */
+const STATIONS = []; let cur = null, gmode = 0; const DONE = {};
+function registerStation(s) { s.group = new THREE.Group(); s.group.visible = false; scene.add(s.group); STATIONS.push(s); }
+
+function refresh() {
+  if (!cur) return;
+  cur.update();
+  const g = cur.graphs[gmode]; if (g) g.draw();
+  $('readout').innerHTML = cur.readout();
+}
+function renderTabs() {
+  const t = $('tabs'); t.innerHTML = '';
+  STATIONS.forEach((s, i) => {
+    const n = s.tasks.length, d = s.tasks.filter((_, j) => DONE[s.id + j]).length;
+    const b = C.el('button', cur === s ? 'on' : '', (i + 1) + ' ' + s.tab + (d ? ' <span style="color:#a5d6a7">' + d + '/' + n + '</span>' : ''));
+    b.onclick = () => showStation(i); t.appendChild(b);
+  });
+}
+function renderTasks(s) {
+  const box = $('tasks'); box.innerHTML = '';
+  s.tasks.forEach((t, i) => {
+    const key = s.id + i, d = C.el('div', 'task' + (DONE[key] ? ' done' : '')), q = C.el('div', 'q', '<b>' + (i + 1) + '.</b> ' + t.q); d.appendChild(q);
+    const fb = C.el('div', 'fb');
+    const verdict = ok => {
+      if (ok) { DONE[key] = 1; d.classList.add('done'); fb.className = 'fb ok'; fb.innerHTML = '✓ Richtig. ' + (typeof t.expl === 'function' ? t.expl() : t.expl); renderTabs(); }
+      else { fb.className = 'fb bad'; fb.innerHTML = '✗ ' + (t.hint || 'Nicht ganz – probiere es mit dem Experiment aus und versuche es noch einmal.'); }
+    };
+    if (t.type === 'choice') {
+      const o = C.el('div', 'opts');
+      t.opts.forEach((txt, j) => { const b = C.el('button', 'opt', txt); b.onclick = () => verdict(j === t.correct); o.appendChild(b); });
+      d.appendChild(o);
+    } else {
+      const row = C.el('div', 'btn-row'), inp = C.el('input'); inp.type = 'text'; inp.setAttribute('inputmode', 'decimal'); inp.placeholder = t.unit || '';
+      const b = C.el('button', 'green', 'Prüfen'); b.style.flex = '0 0 auto';
+      b.onclick = () => {
+        const v = parseFloat(inp.value.replace(',', '.')); if (isNaN(v)) { fb.className = 'fb bad'; fb.textContent = 'Bitte eine Zahl eingeben.'; return; }
+        const a = t.ans(); verdict(Math.abs(v - a) <= (t.rel ? Math.abs(a) * t.rel : t.tol));
+      };
+      row.appendChild(inp); row.appendChild(C.el('span', '', '&nbsp;' + (t.unit || ''))); row.appendChild(b); row.style.alignItems = 'center'; d.appendChild(row);
+    }
+    d.appendChild(fb); if (DONE[key]) { fb.className = 'fb ok'; fb.innerHTML = '✓ Gelöst. ' + (typeof t.expl === 'function' ? t.expl() : t.expl); }
+    box.appendChild(d);
+  });
+}
+function renderGraphModes(s) {
+  const gm = $('graph-modes'); gm.innerHTML = '';
+  s.graphs.forEach((g, i) => { const b = C.el('button', 'opt' + (i === gmode ? ' on' : ''), g.t); b.onclick = () => { gmode = i; renderGraphModes(s); refresh(); }; gm.appendChild(b); });
+}
+function renderCamBar(s) {
+  const cb = $('cam-bar'); cb.innerHTML = '';
+  Object.keys(s.cams).forEach(k => { const b = C.el('button', '', k); b.onclick = () => goCam(s.cams[k]); cb.appendChild(b); });
+}
+function showStation(i, instant) {
+  const s = STATIONS[i]; if (cur) cur.group.visible = false;
+  cur = s; s.group.visible = true; gmode = 0;
+  $('badge-station').textContent = 'Station ' + (i + 1) + ': ' + s.title;
+  $('theory').innerHTML = '<details' + (innerWidth < 760 ? '' : ' open') + '><summary>📖 Theorie lesen (antippen)</summary>' + s.theory + '</details>';
+  C.clear(); s.setup(); renderTabs(); renderTasks(s); renderGraphModes(s); renderCamBar(s);
+  const first = Object.keys(s.cams)[0]; const p = s.cams[first];
+  if (instant) { cam.th = p.th; cam.ph = p.ph; cam.r = p.r; cam.t.set(p[ 't' ][0], p.t[1], p.t[2]); camTw = null; } else goCam(p);
+  refresh(); $('ui-panel').scrollTop = 0;
+}
+$('btn-collapse').onclick = () => { const p = $('ui-panel'); p.classList.toggle('collapsed'); $('btn-collapse').textContent = p.classList.contains('collapsed') ? '▸' : '▾'; };
+
+/* Hauptschleife */
+const clock = { t: 0 };
+const ticks = [];
+function animate(now) {
+  requestAnimationFrame(animate);
+  if (camTw && camTw(now)) camTw = null;
+  for (let i = 0; i < ticks.length; i++) ticks[i](now);
+  updateCamera(); renderer.render(scene, camera);
+}
+/* ============ Station 1: Prisma – Licht besteht aus Farben ============ */
+(function () {
+  const BANDS = [
+    { k: 'v', n: 'Violett', a: 380, b: 450, c: '#7b2cff' }, { k: 'b', n: 'Blau', a: 450, b: 495, c: '#2a6bff' }, { k: 'g', n: 'Grün', a: 495, b: 570, c: '#27d93b' },
+    { k: 'y', n: 'Gelb', a: 570, b: 590, c: '#f2e11c' }, { k: 'o', n: 'Orange', a: 590, b: 620, c: '#ff9a1a' }, { k: 'r', n: 'Rot', a: 620, b: 781, c: '#f02a2a' }
+  ];
+  const S = { on: { v: true, b: true, g: true, y: true, o: true, r: true } };
+  // feste Anordnung: Flintglas-Prisma, brechender Winkel 60°, Einfallswinkel 60°
+  const MAT = { A: 1.6825, B: 0.0157 }, AP = 60, AL = 60, PX = -1.0, HB = 1.3, LEN = 3.4, DS = 11;
+  const rad = d => d * Math.PI / 180, nOf = l => MAT.A + MAT.B / Math.pow(l / 1000, 2);
+  function exitAngle(l) { const n = nOf(l), r1 = Math.asin(Math.sin(rad(AL)) / n), r2 = rad(AP) - r1; return { r1, be: Math.asin(n * Math.sin(r2)) }; }
+  const W3 = (x, y) => new THREE.Vector3(x, HB, -y);
+  const on = l => BANDS.some(b => S.on[b.k] && l >= b.a && l < b.b);
+  let KS = 1, KSB = 1, ST, screen, stand, scrTex, src, srcBeam, inBeam, beams = [], P1, P2, g, aM, nrm, uu, CC;
+  const NB = 31, LAM = []; for (let i = 0; i < NB; i++) LAM.push(400 + i * 10);
+  function geometry() {
+    const A = rad(AP), w = LEN * Math.sin(A / 2), hh = LEN * Math.cos(A / 2);
+    g = { w, hh, apex: [PX, hh], bl: [PX - w, 0], br: [PX + w, 0] };
+    P1 = [(g.apex[0] + g.bl[0]) / 2, (g.apex[1] + g.bl[1]) / 2];
+    const ang = -A / 2 + exitAngle(550).r1, d = [Math.cos(ang), Math.sin(ang)], a = g.apex, e = [g.br[0] - a[0], g.br[1] - a[1]];
+    const den = d[0] * e[1] - d[1] * e[0], t = ((a[0] - P1[0]) * e[1] - (a[1] - P1[1]) * e[0]) / den; P2 = [P1[0] + d[0] * t, P1[1] + d[1] * t];
+    aM = A / 2 - exitAngle(550).be; nrm = [Math.cos(aM), Math.sin(aM)]; uu = [-Math.sin(aM), Math.cos(aM)]; CC = [P2[0] + nrm[0] * DS, P2[1] + nrm[1] * DS];
+    KS = 4.6 / Math.abs(lat(400) - lat(700)); KSB = 3.4 / Math.abs(lat(400) - lat(700));
+  }
+  function hitScr(a) { const d = [Math.cos(a), Math.sin(a)], t = DS / (d[0] * nrm[0] + d[1] * nrm[1]); const H = [P2[0] + d[0] * t, P2[1] + d[1] * t]; return [H, (H[0] - CC[0]) * uu[0] + (H[1] - CC[1]) * uu[1]]; }
+  
+  function lat(l) { return hitScr(rad(AP) / 2 - exitAngle(l).be)[1]; }
+  function paintScreen() {
+    const c = scrTex.ctx, W = scrTex.cv.width, H = scrTex.cv.height;
+    c.fillStyle = '#0d1117'; c.fillRect(0, 0, W, H); c.strokeStyle = '#2b3442'; c.lineWidth = 4; c.strokeRect(3, 3, W - 6, H - 6);
+    const s4 = lat(400), s7 = lat(700); KS = 4.6 / Math.abs(s4 - s7); const mid = (s4 + s7) / 2;
+    const U = l => (-(lat(l) - mid) * KS + 3) / 6 * W;
+    for (let l = 395; l <= 705; l += 1) if (on(l)) { c.fillStyle = monoHex(l); c.fillRect(U(l) - 3.5, H * 0.52, 7, H * 0.28); }
+    c.strokeStyle = '#2b3442'; c.lineWidth = 2; c.strokeRect(U(705) - 4, H * 0.52, U(395) - U(705) + 8, H * 0.28);
+    c.font = '20px Segoe UI'; c.textAlign = 'center';
+    c.fillStyle = '#ffb74d'; c.font = 'bold 19px Segoe UI'; c.textAlign = 'center'; c.fillText('energiereich', U(430), H * 0.48); c.fillText('energiearm', U(670), H * 0.48); c.font = '20px Segoe UI';
+    BANDS.forEach((b, i) => { const lm = clamp((Math.max(b.a, 395) + Math.min(b.b, 705)) / 2, 395, 705); c.fillStyle = S.on[b.k] ? b.c : '#566170'; c.fillText(S.on[b.k] ? b.n : b.n + ' ✕', U(lm), H * (i % 2 ? 0.97 : 0.88)); });
+    // Mischfarbe
+    const act = BANDS.some(b => S.on[b.k]); c.fillStyle = act ? S._mix : '#05070a'; c.beginPath(); c.arc(W / 2, H * 0.24, H * 0.17, 0, 7); c.fill(); c.strokeStyle = '#2b3442'; c.stroke();
+    c.fillStyle = '#9fb0bd'; c.font = '19px Segoe UI'; c.fillText('Mischfarbe aller sichtbaren Farben', W / 2, H * 0.24 + H * 0.17 + 24);
+    scrTex.tex.needsUpdate = true; S._U = U;
+  }
+  function mixSpec() { return makeSpec(l => on(l) ? 1 : 0); }
+  function mixName() {
+    const act = BANDS.filter(b => S.on[b.k]).length; if (act === 0) return 'kein Licht (dunkel)'; if (act === 6) return 'Weiß';
+    if (act === 1) return BANDS.find(x => S.on[x.k]).n;
+    const hx = S._mix, r = parseInt(hx.slice(1, 3), 16) / 255, g = parseInt(hx.slice(3, 5), 16) / 255, b = parseInt(hx.slice(5, 7), 16) / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+    if ((mx - mn) / (mx || 1) < 0.1) return 'Weiß / Hellgrau';
+    const d = mx - mn; let h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h = (h * 60 + 360) % 360;
+    return h < 15 || h >= 345 ? 'Rot' : h < 42 ? 'Orange' : h < 75 ? 'Gelb' : h < 165 ? 'Grün' : h < 205 ? 'Cyan / Türkis' : h < 262 ? 'Blau' : h < 290 ? 'Violett' : 'Magenta / Purpur';
+  }
+  function update() {
+    geometry();
+    src.position.set(0, HB, 0);
+    const din = -rad(AP) / 2 + rad(AL), back = [P1[0] - Math.cos(din) * 6.5, P1[1] - Math.sin(din) * 6.5];
+    src.position.set(back[0] - 0.4 * Math.cos(din), HB, -(back[1] - 0.4 * Math.sin(din))); src.rotation.y = din;
+    setBeam(srcBeam, W3(back[0], back[1]), W3(P1[0], P1[1]), '#ffffff', 0.95);
+    setBeam(inBeam, W3(P1[0], P1[1]), W3(P2[0], P2[1]), '#e8f4ff', 0.75);
+    screen.position.set(CC[0], HB, -CC[1]); screen.rotation.y = Math.atan2(-nrm[0], nrm[1]); stand.position.set(CC[0], 0.2, -CC[1]);
+    for (let i = 0; i < NB; i++) {
+      const l = LAM[i], sl = (lat(l) - (lat(400) + lat(700)) / 2) * KSB, E = [CC[0] + uu[0] * sl, CC[1] + uu[1] * sl];
+      setBeam(beams[i], W3(P2[0], P2[1]), W3(E[0], E[1]), monoHex(l), on(l) ? 0.95 : 0);
+    }
+    S._mix = specHex(mixSpec()); paintScreen();
+  }
+  function readout() {
+    const act = BANDS.filter(b => S.on[b.k]);
+    let h = '<span class="k">Auf dem Schirm sichtbar:</span> <b>' + (act.length ? act.map(b => b.n).join(', ') : 'nichts') + '</b><br>';
+    h += '<span class="k">Wenn man alle diese Farben wieder zusammenführt, sieht man:</span> <span class="swatch" style="background:' + (act.length ? S._mix : '#000') + ';margin-left:4px"></span><b>' + mixName() + '</b>';
+    return h;
+  }
+  ST = {
+    id: 's1', tab: 'Prisma', title: 'Weißes Licht = viele Farben',
+    theory: '<b>Was ist weißes Licht?</b> Sonnenlicht oder das Licht einer Glühlampe wirkt weiß. In Wirklichkeit ist es ein <b>Gemisch aus Licht vieler Farben</b>: Violett, Blau, Grün, Gelb, Orange und Rot.<br>' +
+      '<b>Was macht das Prisma?</b> Beim Eintritt ins Glas wird das Licht abgelenkt – jede Farbe unterschiedlich stark: <b>Violett am meisten, Rot am wenigsten</b>. So wird das weiße Licht in seine Farben getrennt. Das entstehende Farbband heißt <b>Spektrum</b> (wie beim Regenbogen).<br>' +
+      '<b>Sichtbares und nicht sichtbares Licht:</b> Unser Auge sieht nur einen schmalen Bereich: das <b>sichtbare Spektrum</b> von etwa <b>380 bis 780 nm</b> (Violett bis Rot). Kürzere Wellenlängen sind <b>UV-Licht</b>, längere <b>Infrarot (IR)</b> – beides ist <b>nicht sichtbar</b>, aber vorhanden. Noch weiter außen folgen Röntgenstrahlung bzw. Mikrowellen und Radiowellen.<br>' +
+      '<b>Energiereiches und energiearmes Licht:</b> Jede Lichtfarbe transportiert eine andere Energie. <b>Violett und Blau</b> sind <b>energiereich</b> (kurze Wellenlänge), <b>Rot</b> ist <b>energiearm</b> (lange Wellenlänge). Dahinter liegt nicht sichtbares Licht: <b>UV-Strahlung</b> ist noch energiereicher (Sonnenbrand, schädigt Moleküle), <b>Infrarot</b> energieärmer (Wärmestrahlung). Je energiereicher das Licht, desto stärker kann es Teilchen verändern.<br>' +
+      '<b>Komplementärfarben</b> sind Farbpaare, die sich zu <b>Weiß</b> ergänzen. Im Farbkreis liegen sie sich <b>gegenüber</b>: <b>Rot – Cyan, Grün – Magenta, Blau – Gelb</b>. Nimmt man einer weißen Mischung eine Farbe weg, bleibt ihre Komplementärfarbe übrig.<br>' +
+      '<b>Merke:</b><ul><li>Das Prisma erzeugt keine Farben, es <b>trennt</b> sie nur.</li><li>Alle Farben zusammen ergeben wieder <b>Weiß</b>.</li><li>Fehlt eine Farbe, entsteht eine <b>Mischfarbe</b>: ohne Rot → Cyan, ohne Grün → Magenta, ohne Blau → Gelb.</li></ul>' +
+      '<b>Drei Grundbegriffe – was Licht mit Stoffen machen kann:</b><ul><li><b>Transmission:</b> Das Licht wird <b>durchgelassen</b> (Glas, Filter, klare Lösung).</li><li><b>Absorption:</b> Das Licht wird <b>aufgenommen („verschluckt“)</b>, seine Energie bleibt im Stoff (wird z. B. zu Wärme). Nicht verwechseln mit <i>Adsorption</i> (Anlagerung von Teilchen an einer Oberfläche).</li><li><b>Reflexion:</b> Das Licht wird <b>zurückgeworfen</b> (Spiegel, weißes Papier).</li></ul>' +
+      '<b>Versuch:</b> Klicke auf die Farben, um sie abzudecken, und beobachte Schirm, Strahlen und Mischfarbe.<br>' +
+      '<b>Wozu in der Chemie?</b> Farbstoffe und gefärbte Lösungen „nehmen“ bestimmte Farben aus dem weißen Licht weg. Die Farbe, die wir sehen, ist das, was übrig bleibt (Station 3 und 4).',
+    cams: {
+      'Überblick': { th: 0, ph: 0.9, r: 24, t: [3, 0.5, 3] },
+      'Von oben': { th: 0, ph: 0.3, r: 28, t: [3, 0, 3] },
+      'Schirm': { th: 0, ph: 1.0, r: 14, t: [6, 1, 6] }
+    },
+    build(group) {
+      src = new THREE.Group(); box(1.6, 1.2, 1.2, 0x39424f, 0, 0, 0, src); cyl(0.38, 0.38, 0.5, 0x222831, 0.9, 0, 0, src).rotation.z = Math.PI / 2;
+      const lens = new THREE.Mesh(new THREE.CircleGeometry(0.34, 20), new THREE.MeshBasicMaterial({ color: 0xffffff, toneMapped: false })); lens.position.set(1.16, 0, 0); lens.rotation.y = Math.PI / 2; src.add(lens);
+      group.add(src);
+      geometry();
+      { const th = Math.atan2(-nrm[0], nrm[1]); ST.cams['Überblick'] = { th, ph: 0.85, r: 25, t: [(P1[0] + CC[0]) / 2, 0.5, -(P1[1] + CC[1]) / 2] }; ST.cams['Schirm'] = { th, ph: 1.15, r: 13, t: [CC[0] - nrm[0] * 2, 1, -(CC[1] - nrm[1] * 2)] }; }
+      const sh = new THREE.Shape(); sh.moveTo(g.bl[0], g.bl[1]); sh.lineTo(g.br[0], g.br[1]); sh.lineTo(g.apex[0], g.apex[1]); sh.closePath();
+      const geo = new THREE.ExtrudeGeometry(sh, { depth: 1.5, bevelEnabled: false }); geo.rotateX(-Math.PI / 2);
+      const prism = new THREE.Mesh(geo, new THREE.MeshPhongMaterial({ color: 0xb5c4ff, transparent: true, opacity: 0.32, shininess: 120, specular: 0xffffff, side: THREE.DoubleSide, depthWrite: false }));
+      prism.position.y = HB - 0.75; group.add(prism);
+      const ed = new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({ color: 0xcfe9ff, transparent: true, opacity: 0.8 })); ed.position.copy(prism.position); group.add(ed);
+      scrTex = labelTex(() => { }, 1024, 400);
+      screen = new THREE.Mesh(new THREE.PlaneGeometry(6, 2.34), new THREE.MeshBasicMaterial({ map: scrTex.tex, toneMapped: false })); group.add(screen);
+      stand = box(0.15, 0.4, 0.15, 0x555d68, 0, 0.2, 0, group);
+      srcBeam = mkBeam(group, 0.05); inBeam = mkBeam(group, 0.035); for (let i = 0; i < NB; i++) beams.push(mkBeam(group, 0.03));
+    },
+    setup() {
+      $('controls').appendChild(C.el('div', 'sec', '<span>Farben abdecken / freigeben</span>'));
+      const row = C.el('div', 'btn-row');
+      BANDS.forEach(b => {
+        const btn = C.el('button', 'opt on', b.n); btn.style.boxShadow = 'inset 0 -5px 0 ' + b.c;
+        btn.onclick = () => { S.on[b.k] = !S.on[b.k]; btn.classList.toggle('on', S.on[b.k]); refresh(); }; row.appendChild(btn);
+      });
+      $('controls').appendChild(row);
+      C.buttons([{ t: 'Alle Farben', cb: () => setAll(true) }, { t: 'Alle abdecken', cb: () => setAll(false) }]);
+    },
+    update, readout,
+    graphs: [{
+      t: 'Spektrum', draw() {
+        plot({ xmin: 300, xmax: 900, ymin: 0, ymax: 1.2, xt: 100, yt: 0.5, bands: [{ ymin: 0, ymax: 1.2, color: 'rgba(120,120,140,0.10)' }], xlabel: 'Wellenlänge in nm  (links: energiereich · rechts: energiearm)', ylabel: 'Lichtanteil', bar: true, series: [{ xs: WL, ys: mixSpec(), color: '#ffffff', w: 2.5, fill: 'rgba(255,255,255,0.15)', label: 'durchgelassenes Licht' }], vlines: [{ x: 380, color: '#78909c', label: 'UV (nicht sichtbar) | sichtbar' }, { x: 780, color: '#78909c', label: 'sichtbar | IR (nicht sichtbar)' }] });
+      }
+    }],
+    tasks: [
+      { type: 'choice', q: 'Welchen Wellenlängenbereich nennt man <b>sichtbares Licht</b>?', opts: ['etwa 100–300 nm', 'etwa 380–780 nm', 'etwa 1000–2000 nm'], correct: 1, expl: 'Darunter liegt UV-Strahlung, darüber Infrarot – beides liegt außerhalb des sichtbaren Bereichs.' },
+      { type: 'choice', q: 'Welches Licht ist <b>energiereicher</b>?', opts: ['Rotes Licht', 'Blaues/violettes Licht', 'Beide gleich'], correct: 1, expl: 'Kurze Wellenlänge = viel Energie. Violett und Blau sind energiereich, Rot ist energiearm. UV-Licht ist noch energiereicher als Violett.' },
+      { type: 'choice', q: 'Welche Farbe ist die <b>Komplementärfarbe</b> zu Grün?', opts: ['Cyan', 'Magenta', 'Gelb', 'Blau'], correct: 1, expl: 'Grün + Magenta ergeben zusammen Weiß. Deckst du Grün ab, bleibt Magenta übrig.' },
+      { type: 'choice', q: 'Weißes Licht trifft auf das Prisma. Was siehst du auf dem Schirm?', opts: ['Nur weißes Licht', 'Ein Farbband von Violett bis Rot (Spektrum)', 'Nur Rot und Blau'], correct: 1, expl: 'Das Prisma lenkt jede Farbe unterschiedlich stark ab und trennt sie dadurch.' },
+      { type: 'choice', q: 'Was zeigt dieser Versuch über weißes Licht?', opts: ['Weißes Licht ist ein Gemisch aus farbigem Licht.', 'Das Prisma färbt das Licht ein.', 'Weißes Licht besteht nur aus Rot.'], correct: 0, expl: 'Alle Farben waren schon im weißen Licht enthalten.' },
+      { type: 'choice', q: 'Decke <b>Violett, Blau und Grün</b> ab (nur Gelb, Orange, Rot bleiben). Welche Mischfarbe entsteht?', opts: ['Orange-Rot', 'Blau', 'Grün', 'Weiß'], correct: 0, expl: 'Es bleiben nur die langwelligen Farben – ihre Mischung ist ein warmer Orange-Rot-Ton.' },
+      { type: 'choice', q: 'Decke nur <b>Rot</b> ab. Welche Mischfarbe haben die übrigen Farben zusammen?', opts: ['Gelb', 'Cyan (Türkis)', 'Magenta', 'Weiß'], correct: 1, expl: 'Weiß minus Rot ergibt Cyan – die Komplementärfarbe zu Rot.' },
+      { type: 'choice', q: 'Decke nur <b>Grün</b> ab. Welche Mischfarbe bleibt?', opts: ['Cyan', 'Gelb', 'Magenta (Purpur)', 'Blau'], correct: 2, expl: 'Weiß minus Grün ergibt Magenta – die Komplementärfarbe zu Grün. Das ist die Grundlage, warum Lösungen, die Grün absorbieren, violett aussehen.' }
+    ]
+  };
+  registerStation(ST);
+  function setAll(v) { BANDS.forEach(b => S.on[b.k] = v); C.clear(); cur.setup(); refresh(); }
+})();
+/* ============ Station 2: Additive Farbmischung ============ */
+(function () {
+  const S = { I: [1, 0.0, 0.0], ref: false, ov: 0.0 };
+  S.I = [1, 1, 1];
+  const LED = [{ n: 'Rot', l: 630, s: 14, c: '#ff4a3d' }, { n: 'Grün', l: 535, s: 16, c: '#4cff6a' }, { n: 'Blau', l: 462, s: 12, c: '#4a7dff' }];
+  const spec = LED.map(d => makeSpec(l => gs(l, d.l, d.s)));
+  // Verstärkung so, dass alle drei bei 100 % genau Weiß ergeben
+  const cv = spec.map(s => specLin(s));
+  function solve3(M, b) {
+    const det = m => m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) - m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) + m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
+    const D = det(M), out = [];
+    for (let k = 0; k < 3; k++) { const Mk = M.map((r, i) => r.map((v, j) => j === k ? b[i] : v)); out.push(det(Mk) / D); }
+    return out;
+  }
+  const GAIN = solve3([[cv[0][0], cv[1][0], cv[2][0]], [cv[0][1], cv[1][1], cv[2][1]], [cv[0][2], cv[1][2], cv[2][2]]], [1, 1, 1]).map(g => Math.max(g, 0));
+  const ledLin = i => cv[i].map(v => v * GAIN[i]);
+  const REFSPEC = makeSpec(l => gs(l, 580, 5)); const REFK = (() => { const y = lumY(addLin(ledLin(0), ledLin(1))); return y / lumY(specLin(REFSPEC)); })();
+  function addLin(a, b) { return [a[0] + b[0], a[1] + b[1], a[2] + b[2]]; }
+  function mixLin(I) { let r = [0, 0, 0]; for (let i = 0; i < 3; i++) { const c = ledLin(i); r = [r[0] + I[i] * c[0], r[1] + I[i] * c[1], r[2] + I[i] * c[2]]; } return r; }
+  const refLin = () => specLin(REFSPEC).map(v => v * REFK);
+  const hexOfLin = l => rgbHex(linRGB255(l));
+  function stimulus(I) { return makeSpec((l, i) => 0).map((_, i) => 0 + I[0] * GAIN[0] * spec[0][i] + I[1] * GAIN[1] * spec[1][i] + I[2] * GAIN[2] * spec[2][i]); }
+  // Zapfenempfindlichkeiten (Näherung durch Gauß-Kurven)
+  const CONE = [{ n: 'S (Blau)', m: 420, s: 28, c: '#5c6bff' }, { n: 'M (Grün)', m: 534, s: 42, c: '#4cff6a' }, { n: 'L (Rot)', m: 564, s: 48, c: '#ff5a4a' }];
+  const coneArr = CONE.map(c => makeSpec(l => gs(l, c.m, c.s)));
+  function coneResp(stim) { return coneArr.map(a => { let s = 0; for (let i = 0; i < NL; i++) s += a[i] * stim[i]; return s * DL; }); }
+  let scr, tex, beams = [], lamps = [];
+  const BX0 = [-2.0, 2.0, 0], BY0 = [3.4, 3.4, 1.3], CTR = [0, 2.8], R = 1.45, REFPOS = [3.9, 2.3];
+  const SX = [0, 0, 0], SY = [0, 0, 0];
+  function pos() { for (let k = 0; k < 3; k++) { SX[k] = lerp(BX0[k], CTR[0], S.ov); SY[k] = lerp(BY0[k], CTR[1], S.ov); } } // Mittelpunkte auf dem Schirm (Weltkoordinaten x, y)
+  function paint() {
+    const W = 512, H = 256, c = tex.ctx, img = c.createImageData(W, H), d = img.data, ws = 10, hs = 5; // Schirm 10 x 5
+    const col = [ledLin(0), ledLin(1), ledLin(2)], rl = refLin();
+    for (let py = 0; py < H; py++) for (let px = 0; px < W; px++) {
+      const x = (px / W - 0.5) * ws, y = (1 - py / H) * hs; let r = 0.012, g = 0.014, b = 0.018;
+      for (let k = 0; k < 3; k++) {
+        const dd = Math.hypot(x - SX[k], y - SY[k]), m = clamp((R - dd) / 0.08, 0, 1) * S.I[k];
+        if (m > 0) { r += m * col[k][0]; g += m * col[k][1]; b += m * col[k][2]; }
+      }
+      if (S.ref) { const dd = Math.hypot(x - REFPOS[0], y - REFPOS[1]), m = clamp((1.0 - dd) / 0.08, 0, 1); if (m > 0) { r += m * rl[0]; g += m * rl[1]; b += m * rl[2]; } }
+      const o = (py * W + px) * 4; d[o] = gam(r) * 255; d[o + 1] = gam(g) * 255; d[o + 2] = gam(b) * 255; d[o + 3] = 255;
+    }
+    c.putImageData(img, 0, 0); tex.tex.needsUpdate = true;
+  }
+  function update() {
+    pos(); paint();
+    for (let k = 0; k < 3; k++) {
+      lamps[k].lookAt(SX[k], SY[k], -6); const a = new THREE.Vector3(BX0[k] * 0.55, 1.4, 3.2), b = new THREE.Vector3(SX[k], SY[k], -5.9);
+      setBeam(beams[k], a, b, LED[k].c, 0.05 + 0.16 * S.I[k]);
+      lamps[k].lens.material.color.set(LED[k].c).multiplyScalar(0.25 + 0.75 * S.I[k]);
+    }
+  }
+  function readout() {
+    const lin = mixLin(S.I), hex = hexOfLin(lin), st = stimulus(S.I), cr = coneResp(st), mx = Math.max(...cr) || 1;
+    let h = '<span class="k">Intensitäten:</span> R <b>' + Math.round(S.I[0] * 100) + ' %</b> · G <b>' + Math.round(S.I[1] * 100) + ' %</b> · B <b>' + Math.round(S.I[2] * 100) + ' %</b><br>';
+    h += '<span class="k">Mischfarbe:</span> <span class="swatch" style="background:' + hex + '"></span><b>' + hex + '</b> &nbsp; <span class="k">Name:</span> <b>' + colName(S.I) + '</b><br>';
+    h += '<span class="k">Zapfenerregung (relativ):</span> L <b>' + Math.round(cr[2] / mx * 100) + ' %</b> · M <b>' + Math.round(cr[1] / mx * 100) + ' %</b> · S <b>' + Math.round(cr[0] / mx * 100) + ' %</b>';
+    if (S.ref) { const rc = coneResp(REFSPEC); const m2 = Math.max(...rc); h += '<br><span class="k">Vergleichslicht 580 nm:</span> L <b>' + Math.round(rc[2] / m2 * 100) + ' %</b> · M <b>' + Math.round(rc[1] / m2 * 100) + ' %</b> · S <b>' + Math.round(rc[0] / m2 * 100) + ' %</b> (relativ)'; }
+    return h;
+  }
+  function colName(I) {
+    const mx = Math.max(...I), mn = Math.min(...I); if (mx < 0.05) return 'schwarz (dunkel)';
+    const n = I.map(v => v / mx), hi = n.map(v => v > 0.66), lo = n.map(v => v < 0.34); const cnt = hi.filter(x => x).length;
+    if (mn / mx > 0.8) return mx > 0.7 ? 'Weiß' : 'Grau';
+    if (cnt === 3) return 'Weiß';
+    if (hi[0] && hi[1] && lo[2]) return n[0] > 0.9 && n[1] > 0.9 ? 'Gelb' : (n[1] < n[0] ? 'Orange' : 'Gelbgrün');
+    if (hi[0] && hi[2] && lo[1]) return 'Magenta';
+    if (hi[1] && hi[2] && lo[0]) return 'Cyan';
+    if (hi[0] && lo[1] && lo[2]) return 'Rot'; if (hi[1] && lo[0] && lo[2]) return 'Grün'; if (hi[2] && lo[0] && lo[1]) return 'Blau';
+    return 'Mischton';
+  }
+  // beste Grün-Intensität für Rot = 100 %, damit Mischung dem 580-nm-Licht gleicht
+  function bestGreen() {
+    const rl = refLin(), tg = rl.map(v => v / (lumY(rl) || 1)); let best = 0, bd = 9;
+    for (let g = 0; g <= 100; g++) { const l = mixLin([1, g / 100, 0]); const y = lumY(l) || 1e-9; const n = l.map(v => v / y); const d = Math.hypot(n[0] - tg[0], n[1] - tg[1], n[2] - tg[2]); if (d < bd) { bd = d; best = g; } }
+    return best;
+  }
+  function setup0() { }
+  let sl = [], ovs;
+  function setOv(v) { S.ov = v; ovs.set(v * 100); refresh(); }
+  registerStation({
+    id: 's2', tab: 'Additiv', title: 'Additive Farbmischung',
+    theory: '<b>Additive Mischung</b> gilt für Lichtquellen, die selbst leuchten (Bildschirm, Handy, Beamer, Bühnenlicht). Ihr Licht <b>addiert</b> sich: Je mehr Lichtquellen, desto heller.<ul><li>Rot + Grün = <b>Gelb</b></li><li>Grün + Blau = <b>Cyan</b></li><li>Rot + Blau = <b>Magenta</b></li><li>Rot + Grün + Blau = <b>Weiß</b></li></ul>' +
+      '<b>Warum geht das?</b> Unser Auge hat drei Arten von Farbsinneszellen (Zapfen), die auf rotes, grünes und blaues Licht besonders gut ansprechen. Die Farbe, die wir sehen, entsteht im Gehirn aus dem Verhältnis dieser drei Signale. Rot + Grün regt die „roten“ und „grünen“ Zapfen an – das Gehirn meldet „Gelb“, obwohl keine gelbe Lampe leuchtet.<br>' +
+      '<b>Versuch:</b> Stelle die Helligkeit der drei Lampen ein und schiebe die Lichtkegel übereinander. Im Diagramm siehst du, welche Lichtfarben tatsächlich vorhanden sind und wie stark die Zapfen angeregt werden.',
+    cams: {
+      'Schirm': { th: 0, ph: 1.25, r: 15, t: [0, 2.3, -2] },
+      'Seite': { th: 1.3, ph: 1.15, r: 17, t: [0, 1.8, 0] },
+      'Von oben': { th: 0, ph: 0.4, r: 17, t: [0, 0, 0] }
+    },
+    build(group) {
+      tex = labelTex(() => { }, 512, 256);
+      scr = new THREE.Mesh(new THREE.PlaneGeometry(10, 5), new THREE.MeshBasicMaterial({ map: tex.tex, toneMapped: false })); scr.position.set(0, 2.5, -6); group.add(scr);
+      box(10.3, 0.2, 0.3, 0x39424f, 0, 0.1, -6.05, group);
+      for (let k = 0; k < 3; k++) {
+        const g = new THREE.Group(); box(0.9, 0.9, 1.4, 0x39424f, 0, 0, 0, g);
+        const lens = new THREE.Mesh(new THREE.CircleGeometry(0.3, 20), new THREE.MeshBasicMaterial({ color: LED[k].c, toneMapped: false })); lens.position.set(0, 0, -0.71); g.add(lens); g.lens = lens;
+        g.position.set(BX0[k] * 0.55, 1.4, 3.6); group.add(g); lamps.push(g);
+        box(0.3, 1.2, 0.3, 0x2a313c, BX0[k] * 0.55, 0.6, 3.6, group);
+        beams.push(mkBeam(group, 0.05));
+        beams[k].material.depthWrite = false;
+      }
+      // Beam Zylinder dicker/transparent → Lichtkegel andeuten
+      beams.forEach(b => b.scale.x = 1);
+    },
+    setup() {
+      sl = [];
+      ['Rot', 'Grün', 'Blau'].forEach((n, k) => sl.push(C.slider(n + 'e LED (' + LED[k].l + ' nm)', 0, 100, 1, S.I[k] * 100, v => v + ' %', v => { S.I[k] = v / 100; refresh(); })));
+      C.buttons([
+        { t: 'Alle 100 %', cb: () => setI([1, 1, 1]) }, { t: 'R+G', cb: () => setI([1, 1, 0]) }, { t: 'R+B', cb: () => setI([1, 0, 1]) }, { t: 'G+B', cb: () => setI([0, 1, 1]) }, { t: 'Aus', cb: () => setI([0, 0, 0]) }
+      ]);
+      ovs = C.slider('Lichtkegel übereinander schieben', 0, 100, 1, S.ov * 100, v => v === 0 ? 'getrennt' : (v === 100 ? 'deckungsgleich' : v + ' %'), v => { S.ov = v / 100; refresh(); });
+      C.buttons([{ t: 'Getrennt', cb: () => setOv(0) }, { t: 'Teilweise überlappt', cb: () => setOv(0.6) }, { t: 'Ganz übereinander', cb: () => setOv(1) }]);
+    },
+    update, readout,
+    graphs: [
+      {
+        t: 'Emissionsspektrum', draw() {
+          const st = stimulus(S.I), mx = Math.max(1.2, ...st);
+          const ser = [{ xs: WL, ys: st, color: '#ffffff', w: 2.5, fill: 'rgba(255,255,255,0.12)', label: 'Summenspektrum' }];
+          if (S.ref) ser.push({ xs: WL, ys: REFSPEC.map(v => v * 1.8), color: '#ffe082', dash: [6, 4], label: '580 nm (Vergleich)' });
+          plot({ xmin: 380, xmax: 780, ymin: 0, ymax: mx * 1.1, xt: 50, yt: 0.5, xlabel: 'Wellenlänge λ in nm', ylabel: 'relative Intensität', bar: true, series: ser });
+        }
+      },
+      {
+        t: 'Zapfen & Erregung', draw() {
+          const ser = CONE.map((c, i) => ({ xs: WL, ys: coneArr[i], color: c.c, label: c.n }));
+          ser.push({ xs: WL, ys: stimulus(S.I).map(v => v * 0.8), color: '#ffffff', dash: [4, 3], w: 1.6, label: 'Reiz (skaliert)' });
+          plot({ xmin: 380, xmax: 780, ymin: 0, ymax: 1.3, xt: 50, yt: 0.25, xlabel: 'Wellenlänge λ in nm', ylabel: 'rel. Empfindlichkeit', bar: true, series: ser });
+        }
+      }
+    ],
+    tasks: [
+      { type: 'choice', q: 'Welche Farbe entsteht bei der additiven Mischung von <b>Rot + Grün</b> (je 100 %)?', opts: ['Gelb', 'Cyan', 'Magenta', 'Weiß'], correct: 0, expl: 'L- und M-Zapfen werden angeregt – das Gehirn deutet das als Gelb.' },
+      { type: 'choice', q: 'Und <b>Rot + Blau</b>? (Diese Farbe gibt es im Spektrum nicht!)', opts: ['Gelb', 'Cyan', 'Magenta', 'Grün'], correct: 2, expl: 'Magenta (Purpur) ist eine reine Mischfarbe aus Rot und Blau – im Spektrum des Regenbogens fehlt sie.' },
+      { type: 'choice', q: 'Wie sieht <b>R + G + B</b> bei gleicher Intensität aus?', opts: ['Schwarz', 'Weiß', 'Braun', 'Grau-Gelb'], correct: 1, expl: 'Alle drei Zapfentypen werden etwa gleich stark erregt – das ist der Eindruck „Weiß“ (Bildschirmweiß).' },
+      { type: 'choice', q: 'Schiebe die drei Lichtkegel <b>ganz übereinander</b> (alle 100 %). Welche Farbe entsteht in der Mitte, und warum?', opts: ['Schwarz, weil sich die Farben auslöschen', 'Weiß, weil alle drei Zapfentypen gleich stark erregt werden', 'Grau, weil Licht verloren geht'], correct: 1, expl: 'Additive Mischung: Die Lichtmengen addieren sich. Rot, Grün und Blau zusammen regen alle Zapfen so an wie Tageslicht – Weiß.' },
+      { type: 'choice', q: 'Rot (100 %) und Grün (100 %) liegen übereinander, Blau ist aus. Warum erscheint das Gelb, obwohl keine gelbe Lampe leuchtet?', opts: ['Die beiden Lichtwellen verschmelzen zu einer Welle von 580 nm.', 'Die L- und M-Zapfen werden angeregt, das Gehirn deutet das als Gelb.', 'Die Augenlinse bricht Rot und Grün zu Gelb.'], correct: 1, expl: 'Farbe entsteht erst im Sehsystem. Physikalisch bleiben zwei getrennte Wellenlängen bestehen (siehe Spektrum): Rot 630 nm und Grün 535 nm.' }
+    ]
+  });
+  function setI(a) { S.I = a.slice(); sl.forEach((s, i) => s.set(a[i] * 100)); refresh(); }
+})();
+/* ============ Station 3: Subtraktive Farbmischung & Körperfarben ============ */
+(function () {
+  function darkHex(sp) { const l = specLin(sp), Y = lumY(l), k = clamp(Y / 0.05, 0, 1); return rgbHex(linRGB255(l.map(v => v * k + Y * (1 - k)))); }
+  const FIL = {
+    c: { n: 'Cyan', col: '#00c8d7', T: makeSpec(l => 0.01 + 0.97 * (1 - sig((l - 580) / 3))) },
+    m: { n: 'Magenta', col: '#e0309a', T: makeSpec(l => 0.01 + 0.97 * (1 - (sig((l - 483) / 3) - sig((l - 592) / 3)))) },
+    y: { n: 'Gelb', col: '#f6e11c', T: makeSpec(l => 0.01 + 0.97 * sig((l - 507) / 3)) }
+  };
+  const OBJ = {
+    tomate: { n: 'Tomate (rot)', R: makeSpec(l => 0.01 + 0.9 * sig((l - 590) / 10)), col: 0xd23a2a },
+    blatt: { n: 'Blatt (grün)', R: makeSpec(l => 0.01 + 0.5 * gs(l, 548, 30)), col: 0x3b9a3b },
+    banane: { n: 'Banane (gelb)', R: makeSpec(l => 0.01 + 0.9 * sig((l - 505) / 10)), col: 0xe8d23a },
+    stoff: { n: 'Stoff (blau)', R: makeSpec(l => 0.01 + 0.65 * gs(l, 450, 38)), col: 0x2a4fc0 },
+    papier: { n: 'Papier (weiß)', R: makeSpec(() => 0.9), col: 0xeeeeee },
+    kohle: { n: 'Kohle (schwarz)', R: makeSpec(() => 0.01), col: 0x222222 }
+  };
+  const LAMPS = { weiss: 'Weißlicht', rot: 'Rot 630', gruen: 'Grün 535', blau: 'Blau 460', na: 'Natrium 589' };
+  const S = { mode: 'filter', lamp: 'weiss', on: { c: true, m: false, y: false }, dens: 1.0, obj: 'tomate' };
+  const BX = [-4.2, -1.4, 1.4];
+  let plates = {}, bs = [], objMesh, scrTex, swatch, objSwatch, g3;
+  function filterT(key) { return FIL[key].T.map(v => Math.pow(v, S.dens)); }
+  function chain() {
+    // Liste (Beschriftung, Spektrum) nach jeder Station
+    let s = lampSpec(S.lamp); const out = [{ n: 'Lampe', s: s.slice() }];
+    if (S.mode === 'filter') { ['c', 'm', 'y'].forEach(k => { if (S.on[k]) { s = specMul(s, filterT(k)); out.push({ n: FIL[k].n, s: s.slice() }); } }); }
+    else { s = specMul(s, OBJ[S.obj].R); out.push({ n: OBJ[S.obj].n, s: s.slice() }); }
+    return out;
+  }
+  function result(lamp, mode, on, dens, obj) {
+    const o = { lamp: S.lamp, mode: S.mode, on: S.on, dens: S.dens, obj: S.obj }; Object.assign(S, { lamp, mode, on, dens, obj });
+    const r = chain(); const sp = r[r.length - 1].s, lin = specLin(sp); Object.assign(S, o); return { hex: specHex(sp), lin, Y: lumY(lin) };
+  }
+  function update() {
+    const ch = chain(), rs = ch.map(c => darkHex(c.s)), op = c => clamp(0.15 + 1.1 * lumY(specLin(c.s)), 0.12, 0.95);
+    const filt = S.mode === 'filter';
+    Object.keys(plates).forEach(k => { plates[k].target = (filt && S.on[k]) ? 1.3 : 3.6; });
+    plates.c.group.visible = plates.m.group.visible = plates.y.group.visible = filt;
+    objMesh.group.visible = !filt; swatch.visible = filt; objSwatch.visible = !filt;
+    const z = 0; const pts = [new THREE.Vector3(-9, 1.3, z)];
+    let idx = 0; const active = filt ? ['c', 'm', 'y'].filter(k => S.on[k]) : [];
+    const xs = [-9]; active.forEach(k => { xs.push(BX[['c', 'm', 'y'].indexOf(k)]); });
+    const endX = filt ? 8.2 : (objMesh.group.position.x - 0.9);
+    // Segmente: Lampe → erstes Filter → ... → Schirm/Objekt
+    let sx = -9; for (let i = 0; i < 4; i++) bs[i].visible = false;
+    const stops = active.map(k => BX[['c', 'm', 'y'].indexOf(k)]); stops.push(endX);
+    stops.forEach((ex, i) => { setBeam(bs[i], new THREE.Vector3(sx, 1.3, 0), new THREE.Vector3(ex, 1.3, 0), rs[i], op(ch[i])); sx = ex; });
+    const final = ch[ch.length - 1];
+    if (filt) { swatch.material.color.set(darkHex(final.s.slice())); }
+    else { { const hx = darkHex(final.s.slice()); Object.keys(objMesh.items).forEach(k => { const it = objMesh.items[k]; it.gr.visible = k === S.obj; it.ms.forEach(m => m.material.color.set(hx)); }); } objSwatch.material.color.set(darkHex(final.s.slice())); }
+    paintScreen(darkHex(final.s.slice()), filt);
+    S._res = darkHex(final.s.slice()); S._Y = lumY(specLin(final.s));
+  }
+  function paintScreen(hex, filt) {
+    const c = scrTex.ctx, W = scrTex.cv.width, H = scrTex.cv.height;
+    c.fillStyle = '#10141a'; c.fillRect(0, 0, W, H);
+    if (filt) {
+      const lin = lumY(specLin(chain().pop().s));
+      c.fillStyle = hex; c.beginPath(); c.arc(W / 2, H / 2, H * 0.36, 0, 7); c.fill();
+      c.fillStyle = '#9fb0bd'; c.font = '20px Segoe UI'; c.textAlign = 'center'; c.fillText('Schirm', W / 2, H - 14);
+    } else { c.fillStyle = '#9fb0bd'; c.font = '20px Segoe UI'; c.textAlign = 'center'; c.fillText('Schirm (unbeleuchtet)', W / 2, H / 2); }
+    scrTex.tex.needsUpdate = true;
+  }
+  function readout() {
+    const ch = chain(), last = ch[ch.length - 1], hex = darkHex(last.s), Y = lumY(specLin(last.s));
+    let h = '<span class="k">Lichtquelle:</span> <b>' + LAMPS[S.lamp] + '</b> &nbsp; <span class="k">Anordnung:</span> <b>' + (S.mode === 'filter' ? (['c', 'm', 'y'].filter(k => S.on[k]).map(k => FIL[k].n).join(' + ') || 'kein Filter') : OBJ[S.obj].n) + '</b><br>';
+    h += '<span class="k">Resultierende Farbe:</span> <span class="swatch" style="background:' + hex + '"></span><b>' + hex + '</b> &nbsp; <span class="k">Helligkeit:</span> <b>' + Math.round(Y * 100) + ' %</b>';
+    if (Y < 0.06) h += '<br><b style="color:#ffcc80">Praktisch kein Licht übrig: alles absorbiert → dunkel/schwarz.</b>';
+    return h;
+  }
+  registerStation({
+    id: 's3', tab: 'Subtraktiv', title: 'Subtraktive Mischung',
+    theory: '<b>Subtraktive Mischung</b> gilt für Farbfilter, Farbstoffe und Malfarben. Sie leuchten nicht selbst, sondern <b>nehmen (absorbieren) Farben aus dem Licht weg</b>. Was durchkommt, sehen wir.<ul><li><b>Cyan</b> nimmt Rot weg (lässt Blau und Grün durch)</li><li><b>Magenta</b> nimmt Grün weg (lässt Rot und Blau durch)</li><li><b>Gelb</b> nimmt Blau weg (lässt Rot und Grün durch)</li></ul>' +
+      '<b>Komplementärfarben:</b> Jeder Filter hat die Komplementärfarbe zu der Farbe, die er wegnimmt: Cyan ↔ Rot, Magenta ↔ Grün, Gelb ↔ Blau (im Farbkreis liegen sie gegenüber).<br>' +
+      '<b>Zwei Filter hintereinander:</b> Es kommt nur das durch, was <b>beide</b> durchlassen. Cyan + Magenta → Blau, Cyan + Gelb → Grün, Magenta + Gelb → Rot. Alle drei zusammen lassen fast nichts durch: <b>Schwarz</b>.<br>' +
+      '<b>Absorption und Reflexion:</b> Beim Filter wird ein Teil des Lichts <b>absorbiert</b> (aufgenommen), der Rest <b>durchgelassen</b> (Transmission). Ein Farbstoff auf weißem Papier funktioniert ähnlich, nur dass das nicht absorbierte Licht vom Papier <b>reflektiert</b> wird und so in unser Auge kommt: Ein roter Farbstoff absorbiert Blau und Grün und reflektiert Rot.<br>' +
+      '<b>Merke:</b> Additiv wird es mit jeder Lampe <b>heller</b>, subtraktiv mit jedem Farbstoff <b>dunkler</b>.<br>' +
+      '<b>Wozu in der Chemie?</b> Auch Farbstoffe und Druckfarben wirken so: Ihre Moleküle absorbieren bestimmte Farben des Lichts, den Rest sehen wir.',
+    cams: {
+      'Seite': { th: 0.25, ph: 1.0, r: 23, t: [-0.5, 1.2, 0] },
+      'Von oben': { th: 0, ph: 0.4, r: 19, t: [0, 0, 0] },
+      'Schirm': { th: 0.9, ph: 1.0, r: 10, t: [6, 1.3, 0] }
+    },
+    build(group) {
+      g3 = group;
+      box(1.8, 1.2, 1.2, 0x39424f, -9.5, 1.3, 0, group); const lz = new THREE.Mesh(new THREE.CircleGeometry(0.36, 20), new THREE.MeshBasicMaterial({ color: 0xffffff, toneMapped: false })); lz.position.set(-8.58, 1.3, 0); lz.rotation.y = Math.PI / 2; group.add(lz);
+      box(0.8, 0.7, 0.8, 0x2a313c, -9.5, 0.35, 0, group).position.y = 0.35;
+      ['c', 'm', 'y'].forEach((k, i) => {
+        const gp = new THREE.Group(); gp.position.set(BX[i], 0, 0); group.add(gp);
+        box(0.12, 1.9, 1.9, 0x5a6270, 0, 0, 0, gp).visible = false;
+        const fr = new THREE.Group(); box(0.14, 2.1, 0.12, 0x6b7380, 0, 0, -1.0, fr); box(0.14, 2.1, 0.12, 0x6b7380, 0, 0, 1.0, fr); box(0.14, 0.12, 2.1, 0x6b7380, 0, 1.05, 0, fr); box(0.14, 0.12, 2.1, 0x6b7380, 0, -1.05, 0, fr);
+        const pl = new THREE.Mesh(new THREE.BoxGeometry(0.08, 2.0, 1.9), new THREE.MeshBasicMaterial({ color: FIL[k].col, transparent: true, opacity: 0.62, toneMapped: false, depthWrite: false })); fr.add(pl);
+        const lb = labelTex((c, w, h) => { c.fillStyle = 'rgba(0,0,0,0)'; c.clearRect(0, 0, w, h); c.fillStyle = '#e8eef3'; c.font = 'bold 54px Segoe UI'; c.textAlign = 'center'; c.fillText(FIL[k].n, w / 2, 70); }, 256, 100);
+        const lp = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.6), new THREE.MeshBasicMaterial({ map: lb.tex, transparent: true, toneMapped: false })); lp.position.set(0, 1.5, 0); lp.rotation.y = Math.PI / 2; fr.add(lp);
+        fr.position.y = 3.6; gp.add(fr); gp.fr = fr; plates[k] = { group: gp, fr, target: 3.6 };
+        box(0.5, 0.18, 2.4, 0x2a313c, BX[i], 0.09, 0, group);
+      });
+      ticks.push(() => { Object.keys(plates).forEach(k => { const p = plates[k]; p.fr.position.y += (p.target - p.fr.position.y) * 0.12; }); });
+      scrTex = labelTex(() => { }, 512, 256);
+      const sc = new THREE.Mesh(new THREE.PlaneGeometry(4, 2), new THREE.MeshBasicMaterial({ map: scrTex.tex, toneMapped: false })); sc.position.set(8.4, 1.4, 0); sc.rotation.y = -Math.PI / 2; group.add(sc);
+      box(0.15, 0.4, 0.15, 0x555d68, 8.5, 0.2, 0, group);
+      swatch = new THREE.Mesh(new THREE.PlaneGeometry(0.01, 0.01), new THREE.MeshBasicMaterial({ color: 0 })); swatch.visible = false; group.add(swatch);
+      const og = new THREE.Group(); og.position.set(2.5, 0, 0); group.add(og); const items = {};
+      const M = () => new THREE.MeshLambertMaterial({ color: 0xffffff, side: THREE.DoubleSide });
+      const mk = (key, build) => { const gr = new THREE.Group(), ms = []; const add = (geo, x, y, z, rx, ry, rz, sx, sy, sz) => { const m = new THREE.Mesh(geo, M()); m.position.set(x || 0, y || 0, z || 0); m.rotation.set(rx || 0, ry || 0, rz || 0); m.scale.set(sx || 1, sy || 1, sz || 1); gr.add(m); ms.push(m); return m; }; build(add, gr); og.add(gr); gr.visible = false; items[key] = { gr, ms }; };
+      mk('tomate', add => { add(new THREE.SphereGeometry(0.8, 32, 24), 0, 0.95, 0, 0, 0, 0, 1, 0.88, 1); });
+      mk('blatt', add => { add(new THREE.SphereGeometry(1, 32, 16), 0, 0.9, 0, 0.5, 0, 0, 1.3, 0.05, 0.75); add(new THREE.CylinderGeometry(0.04, 0.04, 0.7, 8), -1.4, 0.75, 0.2, 0, 0, 1.2); });
+      mk('banane', add => { add(new THREE.TorusGeometry(1.0, 0.24, 14, 28, Math.PI * 0.8), 0, 0.3, 0, 0, 0, Math.PI * 0.1 + Math.PI * 1.0 / 1 * 0.0, 1, 1, 1).rotation.set(Math.PI / 2, 0, Math.PI * 0.1); });
+      mk('stoff', add => { add(new THREE.BoxGeometry(2.0, 0.12, 1.5), 0, 0.2, 0, 0, 0.3, 0, 1, 1, 1); add(new THREE.BoxGeometry(1.7, 0.12, 1.3), 0.1, 0.34, 0, 0, -0.2, 0, 1, 1, 1); });
+      mk('papier', add => { add(new THREE.BoxGeometry(1.6, 0.05, 2.1), 0, 0.15, 0, 0, 0.2, 0, 1, 1, 1); add(new THREE.BoxGeometry(1.6, 0.05, 2.1), 0, 0.21, 0.05, 0, 0.35, 0, 1, 1, 1); });
+      mk('kohle', add => { add(new THREE.DodecahedronGeometry(0.75), 0, 0.7, 0, 0.3, 0.2, 0, 1, 0.8, 1); add(new THREE.DodecahedronGeometry(0.45), 0.8, 0.4, 0.3, 0.1, 0.5, 0, 1, 0.8, 1); });
+      objMesh = { group: og, items };
+      objSwatch = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.5, 0.3), new THREE.MeshBasicMaterial({ color: 0x000000, toneMapped: false })); objSwatch.position.set(7.2, 0.25, 1.8); group.add(objSwatch);
+      for (let i = 0; i < 4; i++) bs.push(mkBeam(group, 0.07));
+      // zusätzliches Streulicht für Körperfarbe
+      const pl2 = new THREE.PointLight(0xffffff, 0.0, 12); group.add(pl2);
+    },
+    setup() {
+      const row = C.el('div', 'btn-row'); const fb = {};
+      ['c', 'm', 'y'].forEach(k => { const b = C.el('button', 'opt' + (S.on[k] ? ' on' : ''), FIL[k].n + ' ' + (S.on[k] ? 'in' : 'aus')); b.onclick = () => { S.on[k] = !S.on[k]; S.mode = 'filter'; b.classList.toggle('on', S.on[k]); b.textContent = FIL[k].n + ' ' + (S.on[k] ? 'in' : 'aus'); refresh(); }; row.appendChild(b); fb[k] = b; });
+      $('controls').appendChild(C.el('div', 'sec', '<span>Filter in den Strahl stellen (Weißlicht)</span>')); $('controls').appendChild(row);
+      C.slider('Filterdichte (Pigmentmenge)', 0.3, 2, 0.1, S.dens, v => v.toFixed(1), v => { S.dens = v; refresh(); });
+    },
+    update, readout,
+    graphs: [
+      {
+        t: 'Spektren', draw() {
+          const ch = chain(), ser = [{ xs: WL, ys: ch[0].s, color: '#90a4ae', dash: [5, 4], label: 'Lampe' }];
+          if (S.mode === 'filter') { const act = ['c', 'm', 'y'].filter(k => S.on[k]); if (act.length) { let t = makeSpec(() => 1); act.forEach(k => t = specMul(t, filterT(k))); ser.push({ xs: WL, ys: t, color: '#ffb74d', w: 1.8, label: 'Gesamt-Transmission T' }); } }
+          else ser.push({ xs: WL, ys: OBJ[S.obj].R, color: '#ffb74d', w: 1.8, label: 'Remission R' });
+          const fin = ch[ch.length - 1].s; ser.push({ xs: WL, ys: fin, color: S._res || '#fff', w: 3, fill: 'rgba(255,255,255,0.10)', label: 'resultierendes Licht' });
+          plot({ xmin: 380, xmax: 780, ymin: 0, ymax: Math.max(1.05, ...ch[0].s) * 1.05, xt: 50, yt: 0.25, xlabel: 'Wellenlänge λ in nm', ylabel: 'relative Intensität / T', bar: true, series: ser });
+        }
+      },
+      {
+        t: 'Filterkurven C, M, Y', draw() {
+          plot({ xmin: 380, xmax: 780, ymin: 0, ymax: 1.05, xt: 50, yt: 0.25, xlabel: 'Wellenlänge λ in nm', ylabel: 'Transmission T', bar: true, series: ['c', 'm', 'y'].map(k => ({ xs: WL, ys: FIL[k].T, color: FIL[k].col, label: FIL[k].n, w: S.on[k] ? 4 : 1.8 })) });
+        }
+      }
+    ],
+    tasks: [
+      { type: 'choice', q: 'Weißlicht trifft auf <b>Cyan + Magenta</b> hintereinander. Welche Farbe erscheint auf dem Schirm?', opts: ['Rot', 'Grün', 'Blau', 'Schwarz'], correct: 2, expl: 'Cyan absorbiert Rot, Magenta absorbiert Grün – übrig bleibt Blau.' },
+      { type: 'choice', q: 'Weißlicht durch <b>Cyan + Gelb</b>?', opts: ['Rot', 'Grün', 'Blau', 'Violett'], correct: 1, expl: 'Cyan absorbiert Rot, Gelb absorbiert Blau – übrig bleibt Grün.' },
+      { type: 'choice', q: 'Weißlicht durch <b>Cyan + Magenta + Gelb</b> (Dichte 1,0)?', opts: ['Weiß', 'Schwarz (kein Licht)', 'Grau', 'Orange'], correct: 1, expl: 'Cyan nimmt Rot, Magenta Grün, Gelb Blau weg: Es bleibt kein Licht übrig. Auch beim Malen mit Wasserfarben ergibt die Mischung aller drei Grundfarben ein dunkles Schwarz (praktisch eher dunkles Grau-Braun).' },
+      { type: 'choice', q: 'Weißlicht durch <b>Magenta + Gelb</b>?', opts: ['Rot', 'Grün', 'Blau', 'Schwarz'], correct: 0, expl: 'Magenta absorbiert Grün, Gelb absorbiert Blau – übrig bleibt Rot.' },
+      { type: 'choice', q: 'Warum heißen Cyan, Magenta und Gelb die Grundfarben der <b>subtraktiven</b> Mischung?', opts: ['Jede dieser Farben nimmt (subtrahiert) einen Teil des Lichts weg: Rot, Grün bzw. Blau.', 'Sie leuchten selbst.', 'Sie lassen alles Licht durch.'], correct: 0, expl: 'Cyan nimmt Rot weg, Magenta Grün, Gelb Blau. Je mehr Filter oder Farbstoff, desto dunkler – am Ende Schwarz.' }
+      ,{ type: 'choice', q: 'Ein <b>roter Farbstoff</b> auf weißem Papier erscheint rot. Was passiert mit dem Licht?', opts: ['Er absorbiert Blau und Grün, das Papier reflektiert den Rest (Rot).', 'Er absorbiert Rot und reflektiert Blau und Grün.', 'Er leuchtet selbst rot.'], correct: 0, expl: 'Absorbiert wird, was fehlt; reflektiert wird, was wir sehen.' }
+    ]
+  });
+})();
+/* ============ Station 4: Farbe von Lösungen ============ */
+(function () {
+  const SUB = {
+    kmno4: { n: 'Kaliumpermanganat', f: 'MnO₄⁻', cmax: 0.5, bands: [[545, 17, 2300], [525, 15, 2400], [507, 15, 1500], [350, 25, 1000]] },
+    cu: { n: 'Kupfer(II)-sulfat', f: 'Cu²⁺(aq)', cmax: 250, bands: [[810, 110, 12.5]] },
+    cr: { n: 'Kaliumdichromat', f: 'Cr₂O₇²⁻', cmax: 4, bands: [[350, 45, 3300], [450, 50, 340]] },
+    mb: { n: 'Methylenblau', f: 'MB⁺', cmax: 0.015, bands: [[664, 20, 78000], [612, 22, 37000], [292, 20, 30000]] }
+  };
+  const DT = 2.0;
+  const S = { sub: 'kmno4', frac: 0.5 };
+  const eps = (k, l) => SUB[k].bands.reduce((s, b) => s + b[2] * gs(l, b[0], b[1]), 0);
+  const Aof = (k, l, frac) => eps(k, l) * SUB[k].cmax * frac * 1e-3 * DT;
+  const trans = () => makeSpec(l => Math.pow(10, -Aof(S.sub, l, S.frac)));
+  function centroid(k) { let a = 0, b = 0; for (let l = 380; l <= 780; l += 5) { const e = eps(k, l); a += e * l; b += e; } return a / b; }
+  function hueOf(hex) { const r = parseInt(hex.slice(1, 3), 16) / 255, g = parseInt(hex.slice(3, 5), 16) / 255, b = parseInt(hex.slice(5, 7), 16) / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn; if (d < 1e-6) return 0; const h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return (h * 60 + 360) % 360; }
+  let liq, scrT, beamA, beamB, spot;
+  function paintScreen() {
+    const c = scrT.ctx, W = scrT.cv.width, H = scrT.cv.height, tr = trans();
+    c.fillStyle = '#12161d'; c.fillRect(0, 0, W, H);
+    c.fillStyle = specHex(tr); c.beginPath(); c.arc(W * 0.5, H * 0.3, H * 0.2, 0, 7); c.fill();
+    c.fillStyle = '#9fb0bd'; c.font = '17px Segoe UI'; c.textAlign = 'center'; c.fillText('Licht, das durch die Lösung kommt', W / 2, H * 0.3 + H * 0.2 + 22);
+    const x0 = 24, w = W - 48, y0 = H * 0.68, h = H * 0.2;
+    for (let px = 0; px < w; px++) { const l = 380 + px / w * 400, t = Math.pow(10, -Aof(S.sub, l, S.frac)); const m = monoRGB(l); c.fillStyle = rgbHex(m.map(v => gam(v * t) * 255)); c.fillRect(x0 + px, y0, 1.5, h); }
+    c.strokeStyle = '#475569'; c.strokeRect(x0, y0, w, h); c.fillStyle = '#9fb0bd'; c.fillText('Spektrum hinter der Lösung (dunkel = absorbiert)', W / 2, y0 + h + 22);
+    scrT.tex.needsUpdate = true;
+  }
+  function update() {
+    const tr = trans(), hex = specHex(tr); liq.material.color.set(hex);
+    setBeam(beamA, new THREE.Vector3(-6.2, 1.5, 0), new THREE.Vector3(-1.2, 1.5, 0), '#ffffff', 0.9);
+    setBeam(beamB, new THREE.Vector3(1.2, 1.5, 0), new THREE.Vector3(5.2, 1.5, 0), hex, clamp(0.25 + lumY(specLin(tr)) * 0.9, 0.25, 0.95));
+    paintScreen();
+  }
+  function readout() {
+    const k = SUB[S.sub], lc = centroid(S.sub), co = complOf(lc), hex = specHex(trans());
+    return '<span class="k">Lösung:</span> <b>' + k.n + '</b> (' + k.f + ')<br><span class="k">Absorbiert wird:</span> <b>' + co.a + '</b><br><span class="k">Die Lösung sieht aus:</span> <span class="swatch" style="background:' + hex + '"></span><b>' + co.o + '</b>';
+  }
+  registerStation({
+    id: 's4', tab: 'Lösungen', title: 'Farbe von Lösungen',
+    theory: '<b>Warum ist eine Lösung farbig?</b> Die gelösten Teilchen (Ionen oder Moleküle) <b>nehmen eine Farbe aus dem weißen Licht heraus</b> (Absorption). Die übrigen Farben mischen sich zur Farbe, die wir sehen. Das ist immer die <b>Komplementärfarbe</b> – die Farbe, die im <b>Farbkreis gegenüber</b> liegt.<ul><li>Absorbiert wird Grün → Lösung sieht <b>violett</b> aus (z. B. Kaliumpermanganat)</li><li>Absorbiert wird Rot/Orange → Lösung sieht <b>blau</b> aus (z. B. Kupfer(II)-sulfat)</li><li>Absorbiert wird Blau/Violett → Lösung sieht <b>orange</b> aus (z. B. Kaliumdichromat)</li></ul>' +
+      '<b>Begriffe:</b> Das Licht wird von den Teilchen <b>absorbiert</b> (aufgenommen); was nicht absorbiert wird, wird <b>durchgelassen</b> (Transmission) und trifft unser Auge. Bei klaren Lösungen spielt Reflexion kaum eine Rolle.<br>' +
+      '<b>Wovon hängt die Farbintensität ab?</b> Je <b>mehr gelöste Teilchen</b> im Lichtweg, desto mehr Licht wird absorbiert und desto <b>kräftiger</b> ist die Farbe. Die absorbierte Farbe bleibt dabei gleich. (Dieser Zusammenhang ist die Grundlage der Konzentrationsbestimmung mit dem Photometer.)<br>' +
+      '<b>Energie:</b> Blaues und violettes Licht ist <b>energiereich</b>, rotes Licht <b>energiearm</b>. Ein Stoff, der energiereiches (blaues) Licht absorbiert, erscheint gelb bis orange. Absorbiert er energiearmes (rotes) Licht, erscheint er blau bis grün.<br>' +
+      '<b>Warum nimmt ein Stoff gerade diese Farbe weg?</b> Das hängt vom Aufbau der Teilchen ab: Elektronen nehmen die Energie des Lichts auf. Welche Farbe das ist, klären wir später bei den Farbstoffen.<br>' +
+      '<b>So geht der Versuch:</b> ① Wähle eine Lösung. ② Sieh auf dem Schirm, welche Farbe im Spektrum fehlt (dunkle Stelle). ③ Schau im Diagramm „Farbkreis“, welche Farbe gegenüber liegt. ④ Verändere die Konzentration.',
+    cams: {
+      'Übersicht': { th: -0.85, ph: 1.0, r: 16, t: [0, 1.4, 0] },
+      'Schirm': { th: -0.6, ph: 1.15, r: 9, t: [4, 1.8, 0] },
+      'Von oben': { th: 0, ph: 0.4, r: 15, t: [0, 0, 0] }
+    },
+    build(group) {
+      box(1.6, 1.2, 1.2, 0x39424f, -6.8, 1.5, 0, group); const lz = new THREE.Mesh(new THREE.CircleGeometry(0.34, 20), new THREE.MeshBasicMaterial({ color: 0xffffff, toneMapped: false })); lz.position.set(-5.98, 1.5, 0); lz.rotation.y = Math.PI / 2; group.add(lz);
+      box(0.8, 0.9, 0.8, 0x2a313c, -6.8, 0.45, 0, group).position.y = 0.45;
+      const gl = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 3.0, 32, 1, true), new THREE.MeshPhongMaterial({ color: 0xcfe9ff, transparent: true, opacity: 0.25, side: THREE.DoubleSide, depthWrite: false })); gl.position.set(0, 1.5, 0); group.add(gl);
+      liq = new THREE.Mesh(new THREE.CylinderGeometry(1.14, 1.14, 2.3, 32), new THREE.MeshBasicMaterial({ color: 0xff00ff, toneMapped: false })); liq.position.set(0, 1.3, 0); group.add(liq);
+      scrT = labelTex(() => { }, 768, 384);
+      const sc = new THREE.Mesh(new THREE.PlaneGeometry(5, 2.5), new THREE.MeshBasicMaterial({ map: scrT.tex, toneMapped: false })); sc.position.set(5.5, 2.0, 0); sc.rotation.y = -Math.PI / 2; group.add(sc);
+      box(0.15, 0.8, 0.15, 0x555d68, 5.55, 0.4, 0, group);
+      beamA = mkBeam(group, 0.07); beamB = mkBeam(group, 0.07);
+    },
+    setup() {
+      C.chips('① Lösung wählen', Object.keys(SUB).map(k => ({ k, t: SUB[k].n })), S.sub, k => { S.sub = k; refresh(); });
+      C.slider('④ Konzentration (Menge gelöster Teilchen)', 5, 100, 1, S.frac * 100, v => v + ' %', v => { S.frac = v / 100; refresh(); });
+    },
+    update, readout,
+    graphs: [
+      {
+        t: 'Farbkreis', draw() {
+          const cv = $('graph'), c = cv.getContext('2d'), W = cv.width, H = cv.height, cx = W / 2, cy = H / 2 + 4, R = 120, r0 = 60;
+          c.fillStyle = '#0b0f15'; c.fillRect(0, 0, W, H);
+          for (let a = 0; a < 360; a += 1) { c.beginPath(); c.arc(cx, cy, R, (a - 90.6) * Math.PI / 180, (a - 89.4) * Math.PI / 180); c.arc(cx, cy, r0, (a - 89.4) * Math.PI / 180, (a - 90.6) * Math.PI / 180, true); c.closePath(); c.fillStyle = 'hsl(' + a + ',90%,52%)'; c.fill(); }
+          const lc = centroid(S.sub), hA = hueOf(monoHex(clamp(lc, 400, 700))), hO = (hA + 180) % 360;
+          const mark = (h, txt) => { const t = (h - 90) * Math.PI / 180; c.strokeStyle = '#fff'; c.lineWidth = 3; c.beginPath(); c.moveTo(cx + Math.cos(t) * (r0 - 2), cy + Math.sin(t) * (r0 - 2)); c.lineTo(cx + Math.cos(t) * (R + 8), cy + Math.sin(t) * (R + 8)); c.stroke(); c.fillStyle = '#fff'; c.font = 'bold 15px Segoe UI'; c.textAlign = 'center'; c.fillText(txt, cx + Math.cos(t) * (R + 42), cy + Math.sin(t) * (R + 30) + 4); };
+          c.strokeStyle = 'rgba(255,255,255,0.5)'; c.setLineDash([5, 4]); c.lineWidth = 1.5; const t1 = (hA - 90) * Math.PI / 180, t2 = (hO - 90) * Math.PI / 180; c.beginPath(); c.moveTo(cx + Math.cos(t1) * r0, cy + Math.sin(t1) * r0); c.lineTo(cx + Math.cos(t2) * r0, cy + Math.sin(t2) * r0); c.stroke(); c.setLineDash([]);
+          mark(hA, 'absorbiert'); mark(hO, 'sichtbar');
+          c.fillStyle = specHex(trans()); c.beginPath(); c.arc(cx, cy, r0 - 14, 0, 7); c.fill();
+          c.fillStyle = '#cfd8dc'; c.font = '13px Segoe UI'; c.fillText('Komplementärfarben liegen sich im Farbkreis gegenüber', cx, H - 4);
+        }
+      },
+      {
+        t: 'Absorptionsspektrum', draw() {
+          const ys = WL.map(l => Aof(S.sub, l, S.frac)), mx = Math.max(0.5, ...ys) * 1.15;
+          plot({ xmin: 380, xmax: 780, ymin: 0, ymax: mx, xt: 50, yt: mx > 3 ? 1 : (mx > 1.2 ? 0.5 : 0.25), xlabel: 'Farbe des Lichts (Wellenlänge in nm)', ylabel: 'Absorption', bar: true, series: [{ xs: WL, ys, color: '#ffe082', w: 3, fill: 'rgba(255,224,130,0.12)' }] });
+        }
+      }
+    ],
+    tasks: [
+      { type: 'choice', q: 'Kaliumdichromat sieht orange aus. Wurde dabei energiereiches oder energiearmes Licht absorbiert?', opts: ['Energiereiches (Blau/Violett)', 'Energiearmes (Rot)'], correct: 0, expl: 'Blau und Violett fehlen im Licht; sie sind die energiereichen Farben.' },
+      { type: 'choice', q: 'Kaliumpermanganat-Lösung sieht violett aus. Welche Farbe absorbiert sie?', opts: ['Violett', 'Grün', 'Gelb', 'Rot'], correct: 1, expl: 'Es fehlt Grün im Spektrum (dunkle Stelle auf dem Schirm). Grün und Violett/Magenta liegen im Farbkreis gegenüber.' },
+      { type: 'choice', q: 'Kupfer(II)-sulfat-Lösung ist blau. Welche Farbe wird vor allem absorbiert?', opts: ['Blau', 'Violett', 'Rot / Orange', 'Grün'], correct: 2, expl: 'Rot/Orange fehlt, übrig bleibt Blau(grün) – die Komplementärfarbe.' },
+      { type: 'choice', q: 'Kaliumdichromat-Lösung ist orange. Welche Farbe wird absorbiert?', opts: ['Blau / Violett', 'Orange', 'Rot', 'Grün'], correct: 0, expl: 'Blau und Violett werden aus dem Licht genommen; Gelb/Orange/Rot bleiben übrig.' },
+      { type: 'choice', q: 'Du erhöhst die Konzentration der Lösung. Was passiert?', opts: ['Die Farbe wird blasser.', 'Die Farbe wird intensiver, weil mehr Licht absorbiert wird.', 'Die Farbe ändert sich zur Komplementärfarbe.'], correct: 1, expl: 'Mehr Teilchen im Lichtweg absorbieren mehr Licht (Lambert-Beer). Die absorbierte Farbe bleibt dieselbe.' }
+      ,{ type: 'choice', q: 'Wie nennt man es, wenn Teilchen bestimmte Farben aus dem Licht aufnehmen („verschlucken“)?', opts: ['Reflexion', 'Absorption', 'Transmission', 'Adsorption'], correct: 1, expl: 'Absorption = Aufnahme von Licht. Transmission = Durchlassen, Reflexion = Zurückwerfen. Adsorption ist etwas anderes: Anlagerung von Teilchen an einer Oberfläche.' }
+    ]
+  });
+})();
+
+/* ================= Start ================= */
+STATIONS.forEach(s => s.build(s.group));
+camera.aspect = innerWidth / innerHeight; applyViewOffset(); camera.updateProjectionMatrix();
+if (location.hash === '#debug') window.__sim = { STATIONS, showStation, refresh, S: () => cur, DONE, cam, goCam };
+showStation(0, true);
+requestAnimationFrame(animate);
+</script>
+</body>
+</html>
