@@ -870,9 +870,11 @@ function animate(now) {
   const SEG = [{ n: 'Gelbgrün', c: '#b5d334' }, { n: 'Gelb', c: '#ffe500' }, { n: 'Orange', c: '#ff9a1a' }, { n: 'Rot', c: '#e8272b' }, { n: 'Purpur', c: '#b8237f' },
     { n: 'Violett', c: '#6a2fb3' }, { n: 'Blau', c: '#2358d6' }, { n: 'Grünblau', c: '#12a3c7' }, { n: 'Blaugrün', c: '#0fa68a' }, { n: 'Grün', c: '#2fb344' }];
   function segOfLambda(l) { return l < 430 ? 5 : l < 480 ? 6 : l < 490 ? 7 : l < 500 ? 8 : l < 560 ? 9 : l < 580 ? 0 : l < 600 ? 1 : l < 650 ? 2 : 3; }
-  function absSeg(k) { // bei mittlerer Konzentration: wo wird deutlich absorbiert?
-    const ls = []; let bl = 400, bm = 0; for (let l = 400; l <= 700; l += 5) { const a = Aof(k, l, 0.5); if (a > 0.5) ls.push(l); if (a > bm) { bm = a; bl = l; } }
-    const c = ls.length ? ls.reduce((x, y) => x + y, 0) / ls.length : bl; return segOfLambda(c);
+  function hueRGB(hex) { const r = parseInt(hex.slice(1, 3), 16) / 255, g = parseInt(hex.slice(3, 5), 16) / 255, b = parseInt(hex.slice(5, 7), 16) / 255, mx = Math.max(r, g, b), d = mx - Math.min(r, g, b); if (d < 1e-6) return 0; const h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return (h * 60 + 360) % 360; }
+  function absSeg(k) { // sichtbare Farbe bei höchster Konzentration -> nächstes Farbkreis-Feld; absorbiert = gegenüber
+    const h = hueRGB(specHex(makeSpec(l => Math.pow(10, -Aof(k, l, 1))))); let bi = 0, bd = 999;
+    SEG.forEach((g, i) => { const d = Math.abs(((hueRGB(g.c) - h + 540) % 360) - 180); if (d < bd) { bd = d; bi = i; } });
+    return (bi + 5) % 10;
   }
   function hueOf(hex) { const r = parseInt(hex.slice(1, 3), 16) / 255, g = parseInt(hex.slice(3, 5), 16) / 255, b = parseInt(hex.slice(5, 7), 16) / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn; if (d < 1e-6) return 0; const h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return (h * 60 + 360) % 360; }
   let liq, scrT, beamA, beamB, spot;
@@ -898,7 +900,7 @@ function animate(now) {
   }
   registerStation({
     id: 's4', tab: 'Lösungen', title: 'Farbe von Lösungen',
-    theory: '<b>Warum ist eine Lösung farbig?</b> Die gelösten Teilchen (Ionen oder Moleküle) <b>nehmen eine Farbe aus dem weißen Licht heraus</b> (Absorption). Die übrigen Farben mischen sich zur Farbe, die wir sehen. Das ist immer die <b>Komplementärfarbe</b> – die Farbe, die im <b>Farbkreis gegenüber</b> liegt.<ul><li>Absorbiert wird Grün → Lösung sieht <b>violett</b> aus (z. B. Kaliumpermanganat)</li><li>Absorbiert wird Rot/Orange → Lösung sieht <b>blau</b> aus (z. B. Kupfer(II)-sulfat)</li><li>Absorbiert wird Blau/Violett → Lösung sieht <b>orange</b> aus (z. B. Kaliumdichromat)</li></ul>' +
+    theory: '<b>Warum ist eine Lösung farbig?</b> Die gelösten Teilchen (Ionen oder Moleküle) <b>nehmen eine Farbe aus dem weißen Licht heraus</b> (Absorption). Die übrigen Farben mischen sich zur Farbe, die wir sehen. Das ist immer die <b>Komplementärfarbe</b> – die Farbe, die im <b>Farbkreis gegenüber</b> liegt.<ul><li>Absorbiert wird Grün → Lösung sieht <b>violett</b> aus (z. B. Kaliumpermanganat)</li><li>Absorbiert wird Rot/Orange → Lösung sieht <b>blau</b> aus (z. B. Kupfer(II)-sulfat)</li><li>Absorbiert wird Blau/Grünblau → Lösung sieht <b>orange</b> aus (z. B. Kaliumdichromat)</li></ul>' +
       '<b>Begriffe:</b> Das Licht wird von den Teilchen <b>absorbiert</b> (aufgenommen); was nicht absorbiert wird, wird <b>durchgelassen</b> (Transmission) und trifft unser Auge. Bei klaren Lösungen spielt Reflexion kaum eine Rolle.<br>' +
       '<b>Wovon hängt die Farbintensität ab?</b> Je <b>mehr gelöste Teilchen</b> im Lichtweg, desto mehr Licht wird absorbiert und desto <b>kräftiger</b> ist die Farbe. Die absorbierte Farbe bleibt dabei gleich. (Dieser Zusammenhang ist die Grundlage der Konzentrationsbestimmung mit dem Photometer.)<br>' +
       '<b>Energie:</b> Blaues und violettes Licht ist <b>energiereich</b>, rotes Licht <b>energiearm</b>. Ein Stoff, der energiereiches (blaues) Licht absorbiert, erscheint gelb bis orange. Absorbiert er energiearmes (rotes) Licht, erscheint er blau bis grün.<br>' +
@@ -955,7 +957,7 @@ function animate(now) {
       { type: 'choice', q: 'Kaliumdichromat sieht orange aus. Wurde dabei energiereiches oder energiearmes Licht absorbiert?', opts: ['Energiereiches (Blau/Violett)', 'Energiearmes (Rot)'], correct: 0, expl: 'Blau und Violett fehlen im Licht; sie sind die energiereichen Farben.' },
       { type: 'choice', q: 'Kaliumpermanganat-Lösung sieht violett aus. Welche Farbe absorbiert sie?', opts: ['Violett', 'Grün', 'Gelb', 'Rot'], correct: 1, expl: 'Es fehlt Grün im Spektrum (dunkle Stelle auf dem Schirm). Grün und Violett/Magenta liegen im Farbkreis gegenüber.' },
       { type: 'choice', q: 'Kupfer(II)-sulfat-Lösung ist blau. Welche Farbe wird vor allem absorbiert?', opts: ['Blau', 'Violett', 'Rot / Orange', 'Grün'], correct: 2, expl: 'Rot/Orange fehlt, übrig bleibt Blau(grün) – die Komplementärfarbe.' },
-      { type: 'choice', q: 'Kaliumdichromat-Lösung ist orange. Welche Farbe wird absorbiert?', opts: ['Blau / Violett', 'Orange', 'Rot', 'Grün'], correct: 0, expl: 'Blau und Violett werden aus dem Licht genommen; Gelb/Orange/Rot bleiben übrig.' },
+      { type: 'choice', q: 'Kaliumdichromat-Lösung ist orange. Welche Farbe wird absorbiert?', opts: ['Blau / Grünblau', 'Orange', 'Rot', 'Grün'], correct: 0, expl: 'Blau bis Grünblau wird aus dem Licht genommen; Gelb, Orange und Rot bleiben übrig. Im Farbkreis liegt Grünblau gegenüber von Orange.' },
       { type: 'choice', q: 'Du erhöhst die Konzentration der Lösung. Was passiert?', opts: ['Die Farbe wird blasser.', 'Die Farbe wird intensiver, weil mehr Licht absorbiert wird.', 'Die Farbe ändert sich zur Komplementärfarbe.'], correct: 1, expl: 'Mehr Teilchen im Lichtweg absorbieren mehr Licht (Lambert-Beer). Die absorbierte Farbe bleibt dieselbe.' }
       ,{ type: 'choice', q: 'Wie nennt man es, wenn Teilchen bestimmte Farben aus dem Licht aufnehmen („verschlucken“)?', opts: ['Reflexion', 'Absorption', 'Transmission', 'Adsorption'], correct: 1, expl: 'Absorption = Aufnahme von Licht. Transmission = Durchlassen, Reflexion = Zurückwerfen. Adsorption ist etwas anderes: Anlagerung von Teilchen an einer Oberfläche.' }
     ]
