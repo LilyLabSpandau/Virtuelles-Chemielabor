@@ -143,6 +143,9 @@ function xyz2lin(c) {
 /* Pro Wellenlänge linearer RGB-Beitrag; gleichenergetisches Spektrum (S=1) ergibt exakt Weiß (1,1,1) */
 const RGBL = (function () {
   const t = WL.map(l => xyz2lin(cmf(l)).map(v => Math.max(0, v)));
+  // Tiefrot (> 640 nm): Näherung liefert dort Grünanteile -> reines Rot, Helligkeit nach Hellempfindlichkeit
+  const i640 = (640 - L0) / DL, y640 = cmf(640)[1], r640 = t[i640][0];
+  WL.forEach((l, i) => { if (l > 640) t[i] = [r640 * cmf(l)[1] / y640, 0, 0]; });
   for (let c = 0; c < 3; c++) { let s = 0; t.forEach(r => s += r[c]); t.forEach(r => r[c] /= s); }
   return t;
 })();
