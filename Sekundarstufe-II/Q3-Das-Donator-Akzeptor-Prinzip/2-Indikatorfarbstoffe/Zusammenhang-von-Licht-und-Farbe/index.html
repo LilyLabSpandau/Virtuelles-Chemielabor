@@ -904,14 +904,14 @@ function animate(now) {
     const k = SUB[S.sub], ia = absSeg(S.sub), v = visInfo(), pct = Math.round(absFrac() * 100);
     const hint = pct < 30 ? 'Es wird nur <b>wenig</b> Licht absorbiert. Fast alles kommt durch, die Lösung wirkt hell und blass.'
       : pct < 65 ? 'Es wird <b>ein Teil</b> des Lichts absorbiert. Die Farbe wird kräftiger.'
-      : 'Es wird <b>viel</b> Licht absorbiert, auch an den Rändern der Absorptionsbande. Es fehlen auch Nachbarfarben, deshalb wirkt die Lösung dunkel und der Farbton hat sich verschoben.';
-    return '<span class="k">Lösung:</span> <b>' + k.n + '</b> (' + k.f + ')<br><span class="k">Absorbierte Farbe:</span> <b>' + SEG[ia].n + '</b> <span class="k">(bei jeder Konzentration dieselbe)</span><br><span class="k">Vom sichtbaren Licht wird absorbiert:</span> <b>' + pct + ' %</b><br><span class="k">Die Lösung sieht jetzt aus:</span> <span class="swatch" style="background:' + v.hex + '"></span><b>' + v.name + '</b><br><span class="k">' + hint + '</span>';
+      : 'Es wird <b>viel</b> Licht absorbiert, auch an den Rändern der Absorptionsbande. Die sichtbare Farbe nähert sich der Komplementärfarbe.';
+    return '<span class="k">Lösung:</span> <b>' + k.n + '</b> (' + k.f + ')<br><span class="k">Absorbierte Farbe:</span> <b>' + SEG[ia].n + '</b> <span class="k">(bei jeder Konzentration dieselbe)</span><br><span class="k">Vom sichtbaren Licht wird absorbiert:</span> <b>' + pct + ' %</b><br><span class="k">Komplementärfarbe dazu:</span> <b>' + SEG[(ia + 5) % 10].n + '</b><br><span class="k">Bei dieser Konzentration sichtbar (●):</span> <span class="swatch" style="background:' + v.hex + '"></span><b>' + v.name + '</b><br><span class="k">' + hint + '</span>';
   }
   registerStation({
     id: 's4', tab: 'Lösungen', title: 'Farbe von Lösungen',
     theory: '<b>Warum ist eine Lösung farbig?</b> Die gelösten Teilchen (Ionen oder Moleküle) <b>nehmen eine Farbe aus dem weißen Licht heraus</b> (Absorption). Die übrigen Farben mischen sich zur Farbe, die wir sehen. Das ist immer die <b>Komplementärfarbe</b> – die Farbe, die im <b>Farbkreis gegenüber</b> liegt.<ul><li>Absorbiert wird Grün → Lösung sieht <b>violett</b> aus (z. B. Kaliumpermanganat)</li><li>Absorbiert wird Rot/Orange → Lösung sieht <b>blau</b> aus (z. B. Kupfer(II)-sulfat)</li><li>Absorbiert wird Blau/Grünblau → Lösung sieht <b>orange</b> aus (z. B. Kaliumdichromat)</li></ul>' +
       '<b>Begriffe:</b> Das Licht wird von den Teilchen <b>absorbiert</b> (aufgenommen); was nicht absorbiert wird, wird <b>durchgelassen</b> (Transmission) und trifft unser Auge. Bei klaren Lösungen spielt Reflexion kaum eine Rolle.<br>' +
-      '<b>Wovon hängt die Farbintensität ab?</b> Je <b>mehr gelöste Teilchen</b> im Lichtweg, desto mehr Licht wird absorbiert und desto <b>kräftiger</b> ist die Farbe. Die <b>absorbierte Farbe bleibt dieselbe</b>, aber es wird mehr davon aufgenommen. Bei wenig Teilchen fehlt nur ein schmaler Bereich im Spektrum, die Lösung wirkt hell (z. B. hellgelb). Bei vielen Teilchen werden auch die Ränder der Absorptionsbande aufgenommen, es fehlen mehr Nachbarfarben, und die <b>sichtbare Farbe ändert sich</b> (z. B. Kaliumdichromat: hellgelb → gelb → orange → dunkelorange). (Dieser Zusammenhang ist die Grundlage der Konzentrationsbestimmung mit dem Photometer.)<br>' +
+      '<b>Wovon hängt die Farbintensität ab?</b> Je <b>mehr gelöste Teilchen</b> im Lichtweg, desto mehr Licht wird absorbiert und desto <b>kräftiger</b> ist die Farbe. Die <b>absorbierte Farbe bleibt dieselbe</b>, aber es wird mehr davon aufgenommen. Die <b>Komplementärfarbe</b> zur absorbierten Farbe ist der Farbton, dem die Lösung bei hoher Konzentration am nächsten kommt. Bei wenig Teilchen fehlt nur ein schmaler Bereich im Spektrum, die Lösung wirkt hell und kann noch etwas von dieser Farbe abweichen (z. B. hellgelb). Bei vielen Teilchen werden auch die Ränder der Absorptionsbande aufgenommen, es fehlen mehr Nachbarfarben, und die <b>sichtbare Farbe ändert sich</b> (z. B. Kaliumdichromat: hellgelb → gelb → orange → dunkelorange). (Dieser Zusammenhang ist die Grundlage der Konzentrationsbestimmung mit dem Photometer.)<br>' +
       '<b>Energie:</b> Blaues und violettes Licht ist <b>energiereich</b>, rotes Licht <b>energiearm</b>. Ein Stoff, der energiereiches (blaues) Licht absorbiert, erscheint gelb bis orange. Absorbiert er energiearmes (rotes) Licht, erscheint er blau bis grün.<br>' +
       '<b>Warum nimmt ein Stoff gerade diese Farbe weg?</b> Das hängt vom Aufbau der Teilchen ab: Elektronen nehmen die Energie des Lichts auf. Welche Farbe das ist, klären wir später bei den Farbstoffen.<br>' +
       '<b>So geht der Versuch:</b> ① Wähle eine Lösung. ② Sieh auf dem Schirm, welche Farbe im Spektrum fehlt (dunkle Stelle). ③ Schau im Diagramm „Farbkreis“, welche Farbe gegenüber liegt. ④ Verändere die Konzentration.',
@@ -938,7 +938,7 @@ function animate(now) {
     graphs: [
       {
         t: 'Farbkreis', draw() {
-          const cv = $('graph'), c = cv.getContext('2d'), W = cv.width, H = cv.height, cx = W / 2, cy = H / 2 + 2, R = 122, r0 = 56, ia = absSeg(S.sub), io = visInfo().seg;
+          const cv = $('graph'), c = cv.getContext('2d'), W = cv.width, H = cv.height, cx = W / 2, cy = H / 2 + 2, R = 112, r0 = 52, ia = absSeg(S.sub), io = (ia + 5) % 10, iv = visInfo().seg;
           c.fillStyle = '#0b0f15'; c.fillRect(0, 0, W, H);
           const ang = i => (-90 + i * 36 - 18) * Math.PI / 180;
           SEG.forEach((g, i) => { c.beginPath(); c.arc(cx, cy, R, ang(i), ang(i + 1)); c.arc(cx, cy, r0, ang(i + 1), ang(i), true); c.closePath(); c.fillStyle = g.c; c.fill(); c.strokeStyle = '#0b0f15'; c.lineWidth = 2; c.stroke(); });
@@ -950,9 +950,10 @@ function animate(now) {
           c.setLineDash([5, 4]); c.strokeStyle = 'rgba(255,255,255,0.6)'; c.lineWidth = 1.5; const ta = mid(ia), to = mid(io); c.beginPath(); c.moveTo(cx + Math.cos(ta) * (r0 - 4), cy + Math.sin(ta) * (r0 - 4)); c.lineTo(cx + Math.cos(to) * (r0 - 4), cy + Math.sin(to) * (r0 - 4)); c.stroke(); c.setLineDash([]);
           c.font = 'bold 14px Segoe UI'; c.fillStyle = '#fff';
           const lab = (i, txt) => { const t = mid(i), x = cx + Math.cos(t) * (R + 38), y = cy + Math.sin(t) * (R + 22); c.fillText(txt, Math.max(40, Math.min(W - 40, x)), y); };
-          lab(ia, 'absorbiert'); lab(io, 'sichtbar');
+          lab(ia, 'absorbiert'); lab(io, 'Komplementärfarbe');
+          { const t = mid(iv), rr = R + 12, x = cx + Math.cos(t) * rr, y = cy + Math.sin(t) * rr; c.fillStyle = visInfo().hex; c.beginPath(); c.arc(x, y, 9, 0, 7); c.fill(); c.strokeStyle = '#fff'; c.lineWidth = 3; c.stroke(); }
           c.fillStyle = specHex(trans()); c.beginPath(); c.arc(cx, cy, r0 - 12, 0, 7); c.fill();
-          c.fillStyle = '#cfd8dc'; c.font = '13px Segoe UI'; c.textBaseline = 'alphabetic'; c.fillText('Absorbiert: festes Feld · sichtbar: wandert mit der Konzentration', cx, H - 3);
+          c.fillStyle = '#cfd8dc'; c.font = '13px Segoe UI'; c.textBaseline = 'alphabetic'; c.fillText('● = Farbe, die du bei dieser Konzentration siehst', cx, H - 3);
         }
       },
       {
@@ -982,4 +983,5 @@ requestAnimationFrame(animate);
 </script>
 </body>
 </html>
+
 
