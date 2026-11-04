@@ -52,11 +52,14 @@
       font-size: 11px; color: #90a4ae; border: 1px solid rgba(255,255,255,0.1);
     }
   
+    .hint-touch { display: none; }
+    @media (pointer: coarse) { .hint-mouse { display: none; } .hint-touch { display: inline; } }
     /* Kleine Bildschirme */
     @media (max-width: 700px) {
       #ui-panel { top: 8px; left: 8px; right: 8px; width: auto; max-height: 36vh; overflow-y: auto; padding: 10px 12px; box-sizing: border-box; }
       #ui-panel p.sub { display: none; }
       #ui-panel .tube-list { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; }
+      #controls-hint { left: 8px; right: 8px; bottom: 46px; text-align: center; }
     }
     </style>
   <script src="three.min.js"></script>
@@ -86,7 +89,8 @@
 </div>
 
 <div id="controls-hint">
-  🖱️ <b>Linksklick + Ziehen:</b> Kamera drehen &nbsp;|&nbsp; <b>Rechtsklick + Ziehen:</b> Verschieben &nbsp;|&nbsp; <b>Mausrad:</b> Zoomen
+  <span class="hint-mouse">🖱️ <b>Linksklick + Ziehen:</b> Kamera drehen &nbsp;|&nbsp; <b>Rechtsklick + Ziehen:</b> Verschieben &nbsp;|&nbsp; <b>Mausrad:</b> Zoomen</span>
+  <span class="hint-touch">👆 <b>Ziehen:</b> drehen &nbsp;|&nbsp; <b>2 Finger:</b> zoomen &amp; verschieben &nbsp;|&nbsp; <b>Tippen:</b> auswählen</span>
 </div>
 
 <script>
@@ -154,15 +158,54 @@ function updateCamera() {
 updateCamera();
 
 renderer.domElement.addEventListener('contextmenu', e => e.preventDefault());
+// Touch: aktive Finger merken (1 Finger = drehen, 2 Finger = zoomen und verschieben)
+const touchPts = new Map();
+let touchStartX = 0, touchStartY = 0, pinchDist = 0, pinchMidX = 0, pinchMidY = 0;
+function pinchState() {
+  const pts = Array.from(touchPts.values());
+  const a = pts[0], b = pts[1];
+  return { dist: Math.hypot(a.x - b.x, a.y - b.y) || 1, mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2 };
+}
+function panCamera(dx, dy) {
+  const right = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 0);
+  camState.target.addScaledVector(right, -dx * 0.012);
+  camState.target.y += dy * 0.012;
+}
 renderer.domElement.addEventListener('pointerdown', e => {
+  if (e.pointerType === 'touch') {
+    touchPts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (touchPts.size === 2) {              // zweiter Finger: Zoom-/Verschiebe-Geste beginnt
+      const p = pinchState(); pinchDist = p.dist; pinchMidX = p.mx; pinchMidY = p.my;
+      camState.moved = true;                // kein Tippen beim Loslassen
+      camState.isDown = true;
+      return;
+    }
+    touchStartX = e.clientX; touchStartY = e.clientY;
+  }
   camState.isDown = true; camState.button = e.button;
   camState.prevX = e.clientX; camState.prevY = e.clientY; camState.moved = false;
 });
 window.addEventListener('pointermove', e => {
-  onPointerMoveHover(e);
+  if (e.pointerType === 'touch') {
+    if (!touchPts.has(e.pointerId)) return;
+    touchPts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (touchPts.size >= 2) {
+      const p = pinchState();
+      camState.radius *= pinchDist / p.dist;            // Finger auseinander = näher heran
+      panCamera(p.mx - pinchMidX, p.my - pinchMidY);
+      pinchDist = p.dist; pinchMidX = p.mx; pinchMidY = p.my;
+      updateCamera();
+      return;
+    }
+  } else {
+    onPointerMoveHover(e);
+  }
   if (!camState.isDown) return;
   const dx = e.clientX - camState.prevX, dy = e.clientY - camState.prevY;
-  if (Math.abs(dx) > 3 || Math.abs(dy) > 3) camState.moved = true;
+  if (e.pointerType === 'touch') {
+    // Tippen mit leicht zitterndem Finger zählt noch als Tippen (Gesamtstrecke statt Einzelschritt)
+    if (Math.hypot(e.clientX - touchStartX, e.clientY - touchStartY) > 10) camState.moved = true;
+  } else if (Math.abs(dx) > 3 || Math.abs(dy) > 3) camState.moved = true;
   if (camState.button === 0) {
     camState.theta -= dx * 0.007;
     camState.phi -= dy * 0.007;
@@ -174,11 +217,22 @@ window.addEventListener('pointermove', e => {
   camState.prevX = e.clientX; camState.prevY = e.clientY;
   updateCamera();
 });
+function endTouch(e) {
+  if (e.pointerType !== 'touch') return false;
+  touchPts.delete(e.pointerId);
+  if (touchPts.size > 0) {                   // ein Finger bleibt liegen: ohne Sprung weiter drehen
+    const rest = touchPts.values().next().value;
+    camState.prevX = rest.x; camState.prevY = rest.y;
+    return true;
+  }
+  return false;
+}
 window.addEventListener('pointerup', e => {
+  if (endTouch(e)) return;
   if (camState.isDown && !camState.moved && camState.button === 0) onSceneClick(e);
   camState.isDown = false;
 });
-window.addEventListener('pointercancel', () => { camState.isDown = false; });
+window.addEventListener('pointercancel', e => { if (endTouch(e)) return; camState.isDown = false; });
 renderer.domElement.addEventListener('wheel', e => {
   camState.radius += e.deltaY * 0.006;
   updateCamera();
@@ -1491,9 +1545,26 @@ function animate(now) {
 }
 requestAnimationFrame(animate);
 
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
+// Hochformat (Handy): Sichtfeld und Abstand so wählen, dass der ganze Tisch sichtbar ist
+let fitMode = null;
+function fitViewToScreen() {
+  const aspect = window.innerWidth / window.innerHeight;
+  camera.aspect = aspect;
+  camera.fov = aspect < 1.6
+    ? Math.min(70, 2 * Math.atan(Math.tan(20 * Math.PI / 180) * 1.6 / aspect) * 180 / Math.PI)
+    : 40;
   camera.updateProjectionMatrix();
+  const mode = aspect < 1.1 ? 'hoch' : 'breit';
+  if (mode !== fitMode) {                  // nur beim ersten Start oder beim Drehen des Geräts
+    if (fitMode !== null || mode === 'hoch') camState.radius = mode === 'hoch' ? 22 : 13.6;
+    fitMode = mode;
+    updateCamera();
+  }
+}
+fitViewToScreen();
+
+window.addEventListener('resize', () => {
+  fitViewToScreen();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 </script>
