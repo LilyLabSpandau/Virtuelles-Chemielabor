@@ -211,11 +211,11 @@
         <div class="meter-box">
             <div class="gauge bg-thermo">
                 <span class="display-value" id="val-yield">0%</span>
-                Ausbeute (NH<sub>3</sub>)
+                NH<sub>3</sub>-Anteil im Gleichgewicht
             </div>
             <div class="gauge bg-kinetics">
                 <span class="display-value" id="val-time">unendlich</span>
-                GG-Einstellung
+                Zeit bis zum Gleichgewicht
             </div>
         </div>
 
@@ -254,27 +254,51 @@
 
 <script>
     const R = 8.314;
-    const DELTA_H = -92400; 
-    const EA_OHNE = 250000;  
-    const EA_MIT = 110000;   
+    const DELTA_H = -92400;   // J pro Formelumsatz: N2 + 3 H2 -> 2 NH3
+    const KP_450 = 6.5e-5;    // Gleichgewichtskonstante bei 450 °C in bar^-2 (Näherung, liefert ca. 35 % NH3 bei 450 °C und 300 bar)
+    const EA_OHNE = 250000;   // J/mol
+    const EA_MIT = 120000;    // J/mol (Eisenkatalysator)
+    const LOG_T0 = -10.168;   // Eichung: mit Katalysator dauert die Einstellung bei 450 °C nur Sekunden
+    const N_PARTICLES = 35;
 
     const rTemp = document.getElementById('range-temp');
     const rPress = document.getElementById('range-press');
     const cKat = document.getElementById('check-kat');
     const katSwitch = document.getElementById('kat-switch');
     const containerEl = document.getElementById('particles-container');
-    
+
+    const TYPES = {
+        h2:  { size: 24, html: '<div class="atom-h"></div><div class="atom-h"></div>' },
+        n2:  { size: 36, html: '<div class="atom-n"></div><div class="atom-n"></div>' },
+        nh3: { size: 30, html: '<div class="atom-n"></div><div class="atom-h pos-1"></div><div class="atom-h pos-2"></div><div class="atom-h pos-3"></div>' }
+    };
+
     // Globale Physik-Variablen
     let particlesData = [];
     let animationId = null;
     let globalSimulationSpeed = 0; // Entkoppelt Geschwindigkeit von Richtung
-    
+
     katSwitch.addEventListener('click', () => {
         cKat.checked = !cKat.checked;
         document.getElementById('kat-status').innerText = cKat.checked ? "AKTIVIERT" : "DEAKTIVIERT";
         document.getElementById('kat-led').style.background = cKat.checked ? "#27ae60" : "red";
-        updateFullSimulation();
+        updateAll();
     });
+
+    // Gleichgewichtszusammensetzung für N2 : H2 = 1 : 3 bei Gesamtdruck P.
+    // Umsatzgrad xi: n(N2) = 1-xi, n(H2) = 3-3xi, n(NH3) = 2xi, n(gesamt) = 4-2xi
+    // Kp * P^2 = x(NH3)^2 / (x(N2) * x(H2)^3) = 4 xi^2 (4-2xi)^2 / (27 (1-xi)^4)
+    function gleichgewichtNH3(Kp, P) {
+        const ziel = Kp * P * P;
+        let lo = 0, hi = 0.999999;
+        for (let i = 0; i < 60; i++) {
+            const x = (lo + hi) / 2;
+            const f = 4 * x * x * Math.pow(4 - 2 * x, 2) / (27 * Math.pow(1 - x, 4));
+            if (f < ziel) lo = x; else hi = x;
+        }
+        const xi = (lo + hi) / 2;
+        return 2 * xi / (4 - 2 * xi); // Stoffmengenanteil NH3 im Gemisch
+    }
 
     // Berechnet die aktuellen thermodynamischen und kinetischen Werte
     function calculateParams() {
@@ -283,35 +307,27 @@
         const TKelvin = T + 273.15;
         const mitKat = cKat.checked;
 
-        const Kp_450 = 0.0066; 
-        const Kp = Kp_450 * Math.exp((-DELTA_H / R) * (1 / TKelvin - 1 / 723.15));
-        
-        let yield = (Kp * Math.pow(P, 2)) / (1 + Kp * Math.pow(P, 2));
-        yield = Math.min(0.99, yield) * 100;
+        // Van't-Hoff: Kp(T) aus dem Referenzwert bei 450 °C (723,15 K)
+        const Kp = KP_450 * Math.exp((-DELTA_H / R) * (1 / TKelvin - 1 / 723.15));
+        const yield_ = Math.min(0.99, gleichgewichtNH3(Kp, P)) * 100;
 
+        // Kinetik (Arrhenius): logT = log10 der relativen Zeit bis zur Gleichgewichtseinstellung
         const Ea = mitKat ? EA_MIT : EA_OHNE;
-        const k = Math.exp(-Ea / (R * TKelvin)) * 1e12; 
-        const timeFactor = 1 / k;
+        const logT = LOG_T0 + Ea / (R * Math.LN10 * TKelvin);
 
-        let timeText = "", kinetikText = "", vBase = 0;
+        let timeText, kinetikText, vBase;
+        if (logT > 6)        { timeText = "Äonen";    kinetikText = "Eingefroren";     vBase = 0; }
+        else if (logT > 3)   { timeText = "Jahre";    kinetikText = "Extrem langsam";  vBase = 0.3; }
+        else if (logT > 1)   { timeText = "Tage";     kinetikText = "Langsam";         vBase = 0.8; }
+        else if (logT > -0.3){ timeText = "Stunden";  kinetikText = "Mäßig";           vBase = 1.5; }
+        else if (logT > -1)  { timeText = "Minuten";  kinetikText = "Zügig";           vBase = 2.4; }
+        else                 { timeText = "Sekunden"; kinetikText = "Optimal";         vBase = 3.5; }
 
-        if (timeFactor > 1000000) {
-            timeText = "Äonen"; kinetikText = "Eingefroren"; vBase = 0;
-        } else if (timeFactor > 1000) {
-            timeText = "Jahre"; kinetikText = "Extrem langsam"; vBase = 0.3;
-        } else if (timeFactor > 10) {
-            timeText = "Tage"; kinetikText = "Langsam"; vBase = 0.8;
-        } else if (timeFactor > 0.1) {
-            timeText = "Stunden"; kinetikText = "Mäßig"; vBase = 1.8;
-        } else {
-            timeText = "Sekunden"; kinetikText = "Optimal"; vBase = 3.5;
-        }
-
-        return { T, P, Kp, yield, timeText, kinetikText, vBase };
+        return { T, P, Kp, yield: yield_, timeText, kinetikText, vBase };
     }
 
-    // Aktualisiert NUR das Interface und die Geschwindigkeit (feuert beim Ziehen des Sliders)
-    function updateUIOnly() {
+    // Aktualisiert Anzeige, Geschwindigkeit und Teilchenzusammensetzung (ohne die Teilchen neu zu würfeln)
+    function updateAll() {
         const p = calculateParams();
         document.getElementById('txt-temp').innerText = p.T;
         document.getElementById('txt-press').innerText = p.P;
@@ -320,87 +336,70 @@
         document.getElementById('yield-fill').style.width = p.yield + "%";
         document.getElementById('kinetik-label').innerText = p.kinetikText;
 
-        const log = document.getElementById('log');
-        let statusMsg = "";
-        if (p.yield > 15 && p.timeText === "Sekunden") {
+        const langsam = p.timeText === "Äonen" || p.timeText === "Jahre";
+        const schnell = p.timeText === "Sekunden" || p.timeText === "Minuten";
+        let statusMsg;
+        if (p.yield > 15 && schnell) {
             statusMsg = "<span style='color: #27ae60'>OPTIMALER INDUSTRIE-BEREICH ERREICHT.</span>";
         } else if (p.yield < 5) {
-            statusMsg = "<span style='color: #e74c3c'>WARNUNG: Thermodynamisch ungünstig (T zu hoch).</span>";
-        } else if (p.timeText === "Äonen" || p.timeText === "Jahre") {
-            statusMsg = "<span style='color: #f1c40f'>WARNUNG: Kinetisch tot. Reaktion findet nicht statt.</span>";
+            statusMsg = "<span style='color: #e74c3c'>WARNUNG: Thermodynamisch ungünstig (T zu hoch oder p zu niedrig).</span>";
+        } else if (langsam) {
+            statusMsg = "<span style='color: #f1c40f'>WARNUNG: Kinetisch gehemmt. Das Gleichgewicht stellt sich praktisch nicht ein.</span>";
+        } else if (p.yield <= 15) {
+            statusMsg = "<span style='color: #f1c40f'>Ausbeute noch gering: Druck erhöhen oder Temperatur senken.</span>";
         } else {
-            statusMsg = "System berechnet...";
+            statusMsg = "Ausbeute gut, aber die Einstellung dauert noch lange: Katalysator nutzen oder T erhöhen.";
         }
-        log.innerHTML = `Kp: ${p.Kp.toExponential(2)} | Druckfaktor: ${p.P} bar<br>Nettoreaktion: ${statusMsg}`;
+        document.getElementById('log').innerHTML = `Kp = ${p.Kp.toExponential(2)} bar⁻² | ${p.T} °C, ${p.P} bar<br>Nettoreaktion: ${statusMsg}`;
 
-        // Aktualisiert die globale Geschwindigkeit sofort, ohne die Teilchen zu löschen!
         globalSimulationSpeed = p.vBase;
+        applyComposition(p.yield);
     }
 
-    // Ersetzt die Teilchen, um die neue Ausbeute (Mengenverhältnis) darzustellen (feuert beim Loslassen)
-    function updateFullSimulation() {
-        updateUIOnly();
-        const p = calculateParams();
-        spawnParticles(p.yield);
+    function setType(p, type) {
+        p.type = type;
+        p.size = TYPES[type].size;
+        p.el.className = 'molecule mol-' + type;
+        p.el.innerHTML = TYPES[type].html;
     }
 
-    function spawnParticles(yield) {
-        containerEl.querySelectorAll('.molecule:not(.legend-item .molecule)').forEach(p => p.remove());
-        particlesData = [];
-        
-        const count = 35;
-        const nh3Count = Math.floor((yield / 100) * count);
-        const remaining = count - nh3Count;
-        
-        const n2Count = Math.floor(remaining / 4);
-        const h2Count = remaining - n2Count;
-
-        let types = [];
-        for(let i=0; i<nh3Count; i++) types.push({type: 'nh3', size: 30});
-        for(let i=0; i<n2Count; i++) types.push({type: 'n2', size: 36});
-        for(let i=0; i<h2Count; i++) types.push({type: 'h2', size: 24});
-        
+    function ensureParticles() {
+        if (particlesData.length) return;
         const cWidth = containerEl.clientWidth || 600;
         const cHeight = containerEl.clientHeight || 200;
         const padding = 5;
-
-        types.forEach(t => {
-            const p = document.createElement('div');
-            p.className = `molecule mol-${t.type}`;
-            
-            if (t.type === 'h2') {
-                p.innerHTML = '<div class="atom-h"></div><div class="atom-h"></div>';
-            } else if (t.type === 'n2') {
-                p.innerHTML = '<div class="atom-n"></div><div class="atom-n"></div>';
-            } else if (t.type === 'nh3') {
-                p.innerHTML = '<div class="atom-n"></div><div class="atom-h pos-1"></div><div class="atom-h pos-2"></div><div class="atom-h pos-3"></div>';
-            }
-            
-            containerEl.appendChild(p);
-
+        for (let i = 0; i < N_PARTICLES; i++) {
+            const el = document.createElement('div');
+            containerEl.appendChild(el);
             const angle = Math.random() * Math.PI * 2;
-            
-            // Sichere Spawnpunkte innerhalb der Wände berechnen
-            const minX = padding;
-            const maxX = Math.max(minX + 1, cWidth - t.size - padding);
-            const minY = padding;
-            const maxY = Math.max(minY + 1, cHeight - t.size - padding);
-
-            particlesData.push({
-                el: p,
-                x: minX + Math.random() * (maxX - minX),
-                y: minY + Math.random() * (maxY - minY),
+            const p = {
+                el: el, type: null, size: 24,
+                x: padding + Math.random() * Math.max(1, cWidth - 36 - 2 * padding),
+                y: padding + Math.random() * Math.max(1, cHeight - 36 - 2 * padding),
                 dirX: Math.cos(angle), // Speichert NUR die Richtung (Vektor)
                 dirY: Math.sin(angle),
-                size: t.size,
                 rot: Math.random() * 360,
                 vRot: (Math.random() - 0.5) * 6
-            });
-        });
-
-        if (!animationId) {
-            animationId = requestAnimationFrame(animateParticles);
+            };
+            setType(p, 'h2');
+            particlesData.push(p);
         }
+        if (!animationId) animationId = requestAnimationFrame(animateParticles);
+    }
+
+    // Passt das Mengenverhältnis an: Teilchen wechseln ihren Typ, Position und Richtung bleiben erhalten (kein Flackern)
+    function applyComposition(ausbeute) {
+        ensureParticles();
+        const nh3 = Math.round(ausbeute / 100 * N_PARTICLES);
+        const rest = N_PARTICLES - nh3;
+        const n2 = Math.round(rest / 4);
+        const ziel = { nh3: nh3, n2: n2, h2: rest - n2 };
+
+        const proTyp = { nh3: [], n2: [], h2: [] };
+        particlesData.forEach(p => proTyp[p.type].push(p));
+        const uebrig = [];
+        Object.keys(ziel).forEach(t => { while (proTyp[t].length > ziel[t]) uebrig.push(proTyp[t].pop()); });
+        Object.keys(ziel).forEach(t => { while (proTyp[t].length < ziel[t] && uebrig.length) { const p = uebrig.pop(); setType(p, t); proTyp[t].push(p); } });
     }
 
     function animateParticles() {
@@ -442,17 +441,12 @@
         animationId = requestAnimationFrame(animateParticles);
     }
 
-    // Bei Eingabe (Ziehen des Sliders) nur UI und Speed updaten (kein Flackern!)
-    rTemp.addEventListener('input', updateUIOnly);
-    rPress.addEventListener('input', updateUIOnly);
-    
-    // Beim Loslassen (Change) die Molekül-Verhältnisse thermodynamisch anpassen
-    rTemp.addEventListener('change', updateFullSimulation);
-    rPress.addEventListener('change', updateFullSimulation);
-    window.addEventListener('resize', updateFullSimulation);
-    
+    // Beim Ziehen der Regler sofort alles aktualisieren; bei Größenänderung korrigiert die Animation die Wände selbst
+    rTemp.addEventListener('input', updateAll);
+    rPress.addEventListener('input', updateAll);
+
     // Start initialisieren
-    updateFullSimulation();
+    updateAll();
 </script>
 <a href="/Virtuelles-Chemielabor/impressum.html" style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-family: sans-serif; font-size: 12px; z-index: 9999;">Impressum & Datenschutz</a>
 </body>
