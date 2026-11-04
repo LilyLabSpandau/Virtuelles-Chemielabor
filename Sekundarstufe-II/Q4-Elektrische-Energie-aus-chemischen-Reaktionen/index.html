@@ -3,38 +3,87 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Q4 - Elektrische Energie aus chemischen Reaktionen</title>
+  <title>Elektrische Energie aus chemischen Reaktionen - Chemie</title>
   <style>
-    body { font-family: system-ui, sans-serif; background-color: #f8fafc; padding: 20px; color: #0f172a; }
-    .container { max-width: 800px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; border: 1px solid #e2e8f0; }
-    .nav-btn { display: inline-block; margin-bottom: 20px; color: #b91c1c; text-decoration: none; }
-    h1 { color: #b91c1c; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
-    .content-list { list-style: none; padding: 0; }
-    .content-list li { margin-bottom: 15px; }
-    .content-list a { 
-      display: block; 
-      padding: 15px; 
-      background: #f1f5f9; 
-      border-radius: 8px; 
-      text-decoration: none; 
-      color: #0f172a; 
-      font-weight: 600; 
-      border-left: 4px solid #b91c1c;
+    html, body { margin: 0; padding: 0; background: #000; font-family: system-ui, sans-serif; }
+    body { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; }
+
+    /* Bühne mit festem Seitenverhältnis des Bildes, damit die Klickflächen auf jedem Gerät passen */
+    .stage {
+      --w: min(100vw, calc(100vh * 2576 / 1438));
+      position: relative;
+      width: var(--w);
+      aspect-ratio: 2576 / 1438;
+      margin: 0 auto;
+    }
+    .stage img { display: block; width: 100%; height: 100%; }
+
+    .item {
+      position: absolute;
+      display: block;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .item:hover, .item:focus-visible {
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.25);
+      background: rgba(255, 255, 255, 0.25);
+      outline: none;
+    }
+
+    /* Beschriftung unter dem Gegenstand */
+    .label {
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-top: calc(var(--w) * 0.006);
+      width: max-content;
+      max-width: calc(var(--w) * 0.26);
+      text-align: center;
+      font-weight: 700;
+      line-height: 1.15;
+      color: #8b1a1a;
+      font-size: max(11px, calc(var(--w) * 0.022));
+    }
+
+    /* Klickflächen der Gegenstände */
+    .link-1 { left: 9.0%; top: 29.1%; width: 30.5%; height: 45.2%; }  /* Grundlagen der Elektrochemie */
+    .link-2 { left: 44.4%; top: 26.4%; width: 21.2%; height: 31.3%; }  /* Elektrolyse */
+    .link-3 { left: 72.8%; top: 26.4%; width: 15.0%; height: 37.6%; }  /* Korrosion */
+
+    .back-link {
+      position: absolute;
+      left: 50%;
+      top: 1.2%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      color: white;
+      text-decoration: none;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 0.5em 0.9em;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: max(11px, calc(var(--w) * 0.0105));
+    }
+    .back-link:hover { background: rgba(0, 0, 0, 0.8); }
+
+    /* Hochkant-Bildschirme (Handy): Beschriftung größer, damit sie lesbar bleibt */
+    @media (max-aspect-ratio: 1/1) {
+      .label { font-size: max(11px, calc(var(--w) * 0.04)); }
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <a href="../index.html" class="nav-btn">← Zurück zur Q-Phasen Übersicht</a>
-    
-    <h1>Q4: Elektrische Energie aus chemischen Reaktionen</h1>
-    
-    <ul class="content-list">
-      <li><a href="./1-Grundlagen-Elektrochemie/index.html">1. Grundlagen der Elektrochemie</a></li>
-      <li><a href="./2-Elektrolyse/index.html">2. Elektrolyse</a></li>
-      <li><a href="./3-Korrosion/index.html">3. Korrosion</a></li>
-    </ul>
+  <div class="stage">
+    <img src="lab-table-q4.jpg" alt="Labortisch mit Gegenständen zu Elektrochemie, Elektrolyse und Korrosion">
+
+    <a href="./1-Grundlagen-Elektrochemie/index.html" class="item link-1" title="Grundlagen der Elektrochemie"><span class="label">Grundlagen der Elektrochemie</span></a>
+    <a href="./2-Elektrolyse/index.html" class="item link-2" title="Elektrolyse"><span class="label">Elektrolyse</span></a>
+    <a href="./3-Korrosion/index.html" class="item link-3" title="Korrosion"><span class="label">Korrosion</span></a>
+
+    <a href="../index.html" class="back-link">← Zurück zur Q-Phasen Übersicht</a>
   </div>
 
 <a href="/Virtuelles-Chemielabor/impressum.html" style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-family: sans-serif; font-size: 12px; z-index: 9999;">Impressum & Datenschutz</a>
