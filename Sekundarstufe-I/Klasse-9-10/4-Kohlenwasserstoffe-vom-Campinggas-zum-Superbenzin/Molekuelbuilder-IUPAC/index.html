@@ -95,7 +95,17 @@
       .workspace { grid-template-columns: 1fr; height: auto; }
       .panel-left, .panel-center, .panel-right { height: 580px; }
     }
-  </style>
+  
+    /* Kleine Bildschirme */
+    @media (max-width: 900px) {
+      header { height: auto; flex-wrap: wrap; padding: 8px 12px; row-gap: 8px; }
+      .brand { flex-wrap: wrap; }
+      .course-switch { width: 100%; box-sizing: border-box; }
+      .course-btn { flex: 1; }
+      .header-actions { width: 100%; flex-wrap: wrap; }
+      .header-actions .action-btn { flex: 1 1 auto; }
+    }
+    </style>
 </head>
 <body>
 

@@ -168,6 +168,14 @@
         }
 
         .info-box { font-size: 0.9rem; line-height: 1.4; color: #666; margin-top: 10px; }
+    
+    /* Kleine Bildschirme */
+    @media (max-width: 800px) {
+        body { padding: 10px; }
+        .dashboard { grid-template-columns: 1fr; gap: 12px; }
+        .dashboard > * { min-width: 0; }
+        .panel { padding: 14px; }
+    }
     </style>
 </head>
 <body>

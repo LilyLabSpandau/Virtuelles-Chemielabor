@@ -71,6 +71,17 @@
         
         .help-btn { background: #f39c12; font-size: 0.9em; padding: 6px 12px; margin-top: 15px; display: inline-block; }
         .help-btn:hover { background: #d35400; }
+    
+    /* Kleine Bildschirme */
+    @media (max-width: 800px) {
+        body { padding: 10px; }
+        .container { padding: 14px; box-sizing: border-box; }
+        .app-layout { flex-direction: column; align-items: stretch; }
+        .left-panel { flex: none; width: 100%; }
+        .left-panel canvas { width: 100%; height: auto; display: block; }
+        .right-panel, .right-top, .right-bottom, .chart-container { min-width: 0; }
+        .chart-container { overflow: hidden; }
+    }
     </style>
 </head>
 <body>

@@ -153,6 +153,17 @@
         .btn-sol { background: #2980b9; color: white; }
 
         #feedback { margin-top: 15px; padding: 10px; border-radius: 5px; display: none; }
+    
+    /* Kleine Bildschirme */
+    @media (max-width: 800px) {
+        body { padding: 10px; }
+        .container { grid-template-columns: 1fr; gap: 12px; }
+        .container > * { min-width: 0; }
+        .panel { padding: 14px; }
+        .viz-box { height: auto; gap: 18px; }
+        .equation-display { flex-wrap: wrap; justify-content: center; font-size: 1.05rem; max-width: 100%; gap: 6px; }
+        .arrow-container { width: 56px; }
+    }
     </style>
 </head>
 <body>
