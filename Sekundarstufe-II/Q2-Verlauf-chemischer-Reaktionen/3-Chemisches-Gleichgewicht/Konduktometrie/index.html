@@ -145,7 +145,7 @@
                 
                 <div id="error-screen" class="hidden" style="text-align: center; color: #c0392b; background: #fadbd8; padding: 20px; border-radius: 5px;">
                     <h2>Übertitration!</h2>
-                    <p>Du hast den Äquivalenzpunkt deutlich verpasst. Das Experiment muss wiederholt werden.</p>
+                    <p>Du hast zu weit über den Äquivalenzpunkt hinaus titriert. Das Experiment muss wiederholt werden.</p>
                     <button onclick="location.reload()">Neustart</button>
                 </div>
             </div>
@@ -174,7 +174,13 @@
         let addedVolume = 0; let isTitrating = false; let chart; let lastPlottedVolume = 0; let pointsAfterMin = 0;
         let isReviewMode = false; let reviewVolume = 0;
         
-        const kappa_start = c_ca_true * 1000 * 200; const kappa_min = 50; const slope_after = 40;
+        const kappa_start = c_ca_true * 1000 * 200;
+        // Minimum liegt zufaellig bei 25-45 % des Startwerts, Anstieg danach zufaellig (je mL 4-8 % des Startwerts)
+        const kappa_min = kappa_start * (0.25 + Math.random() * 0.20);
+        const slope_after = kappa_start * (0.04 + Math.random() * 0.04);
+        // Wie weit ueber den Aequivalenzpunkt hinaus titriert werden darf (mL)
+        const MAX_UEBERTITRATION = 1.5;
+        const chartYMax = Math.ceil(kappa_start * 1.1 / 100) * 100;
         function getConductivity(v) { return v <= V_eq_true ? kappa_start - ((kappa_start - kappa_min) * (v / V_eq_true)) : kappa_min + slope_after * (v - V_eq_true); }
 
         const ctxSim = document.getElementById('sim-canvas').getContext('2d');
@@ -311,8 +317,8 @@
                 
                 if (lastPlottedVolume > V_eq_true) {
                     pointsAfterMin++;
-                    // Abbruch nach ca. 2 mL (4 Messpunkte) nach dem ÄP
-                    if (pointsAfterMin > 4) {
+                    // Abbruch, sobald mehr als MAX_UEBERTITRATION mL nach dem ÄP erreicht sind
+                    if (lastPlottedVolume > V_eq_true + MAX_UEBERTITRATION) {
                         isTitrating = false; 
                         document.getElementById('titration-instruments').classList.add('hidden'); 
                         document.getElementById('error-screen').classList.remove('hidden'); 
@@ -378,7 +384,7 @@
                     responsive: true, 
                     maintainAspectRatio: false, 
                     animation: { duration: 0 }, 
-                    scales: { x: { min: 0 }, y: { min: 0 } },
+                    scales: { x: { min: 0 }, y: { min: 0, max: chartYMax } },
                     plugins: {
                         tooltip: {
                             callbacks: {
