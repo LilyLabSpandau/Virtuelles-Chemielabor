@@ -4,43 +4,34 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Alkohole - Chemie</title>
-  <style>
-    body { font-family: system-ui, sans-serif; background-color: #f8fafc; padding: 20px; color: #0f172a; }
-    .container { max-width: 800px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; border: 1px solid #e2e8f0; }
-    .nav-btn { display: inline-block; margin-bottom: 20px; color: #0369a1; text-decoration: none; }
-    h1 { color: #0f766e; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
-    .info-box { background: #f1f5f9; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #0f766e; }
-    .sim-button { 
-      display: inline-block; 
-      padding: 15px 30px; 
-      background-color: #0369a1; 
-      color: white; 
-      text-decoration: none; 
-      border-radius: 8px; 
-      font-weight: 600;
-    }
-  </style>
+  <link rel="stylesheet" href="../../../pinnwand.css">
 </head>
 <body>
 
-  <div class="container">
-    <a href="../index.html" class="nav-btn">← Zurück zur Klasse 9/10</a>
-    
-    <h1>Alkohole – vom Holzgeist zum Glycerin</h1>
-    
-    <div class="info-box">
-      <strong>Lerninhalte:</strong>
+  <div class="stage">
+    <img class="board" src="../../../pinnwand.jpg" alt="">
+
+    <!-- Blatt: Beschreibung des Themas -->
+    <section class="paper">
+      <h1>Alkohole – vom Holzgeist zum Glycerin</h1>
+      <h2>Schwerpunkte</h2>
       <ul>
         <li>Die funktionelle Hydroxylgruppe (-OH)</li>
         <li>Homologe Reihe der Alkanole</li>
         <li>Bedeutung der Wasserstoffbrückenbindungen für die Siedetemperaturen</li>
       </ul>
+    </section>
+
+    <!-- Zettel: erscheinen nur, wenn die Seite existiert (data-optional) -->
+    <div class="notes">
+      <a class="note" data-optional data-tag="Simulation" href="./Simulation-Alkohole/index.html"><b>Alkohol&shy;eigenschaften</b></a>
     </div>
-    
-    <p>Hier kannst du den Einfluss der Hydroxylgruppe auf die physikalischen Eigenschaften der Alkohole simulieren.</p>
-    
+    <p class="leer" hidden>Hier hängen bald Zettel zum Thema.</p>
+
+    <a href="../index.html" class="back-link">← Zurück zur Klasse 9/10</a>
   </div>
 
+  <script src="../../../pinnwand.js"></script>
 <a href="/Virtuelles-Chemielabor/impressum.html" style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-family: sans-serif; font-size: 12px; z-index: 9999;">Impressum & Datenschutz</a>
 </body>
 </html>

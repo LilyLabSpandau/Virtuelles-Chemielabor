@@ -1,51 +1,38 @@
-
 <!doctype html>
 <html lang="de">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Redoxreaktionen - Chemie</title>
-  <style>
-    body { font-family: system-ui, sans-serif; background-color: #f8fafc; padding: 20px; color: #0f172a; }
-    .container { max-width: 800px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; border: 1px solid #e2e8f0; }
-    .nav-btn { display: inline-block; margin-bottom: 20px; color: #b91c1c; text-decoration: none; }
-    h1 { color: #b91c1c; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
-    .info-box { background: #f1f5f9; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #b91c1c; }
-    .sim-button { 
-      display: inline-block; 
-      padding: 15px 30px; 
-      background-color: #b91c1c; 
-      color: white; 
-      text-decoration: none; 
-      border-radius: 8px; 
-      font-weight: 600;
-    }
-    .sim-list { display: flex; flex-wrap: wrap; gap: 12px; }
-  </style>
+  <link rel="stylesheet" href="../../../pinnwand.css">
 </head>
 <body>
 
-  <div class="container">
-    <a href="../index.html" class="nav-btn">← Zurück zu Q3: Donator-Akzeptor</a>
-    
-    <h1>Redoxreaktionen</h1>
-    
-    <div class="info-box">
-      <strong>Lerninhalte:</strong>
+  <div class="stage">
+    <img class="board" src="../../../pinnwand.jpg" alt="">
+
+    <!-- Blatt: Beschreibung des Themas -->
+    <section class="paper">
+      <h1>Redoxreaktionen</h1>
+      <h2>Schwerpunkte</h2>
       <ul>
         <li>Oxidationszahlen als Hilfsmittel zur Elektronenbilanz</li>
         <li>Elektronenübertragungsreaktionen (Redox-Paare)</li>
         <li>Spannungsreihe der Metalle</li>
       </ul>
+    </section>
+
+    <!-- Zettel: erscheinen nur, wenn die Seite existiert (data-optional) -->
+    <div class="notes">
+      <a class="note" data-optional data-tag="3D-Labor" href="./Sulfit-Titration/index.html"><b>Sulfit-Titration</b></a>
+      <a class="note" data-optional data-tag="Simulation" href="./simulation.html"><b>Redox-Reaktionen</b></a>
     </div>
-    
-    <p>Hier kannst du den Elektronenübergang in Redoxreaktionen visualisieren und die Richtung freiwilliger Reaktionen bestimmen.</p>
-    
-    <div class="sim-list">
-      <a href="./Sulfit-Titration/index.html" class="sim-button">3D-Labor: Sulfit-Titration starten</a>
-    </div>
+    <p class="leer" hidden>Hier hängen bald Zettel zum Thema.</p>
+
+    <a href="../index.html" class="back-link">← Zurück zu Q3: Donator-Akzeptor</a>
   </div>
 
+  <script src="../../../pinnwand.js"></script>
 <a href="/Virtuelles-Chemielabor/impressum.html" style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-family: sans-serif; font-size: 12px; z-index: 9999;">Impressum & Datenschutz</a>
 </body>
 </html>

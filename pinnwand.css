@@ -21,7 +21,7 @@ body { min-height: 100vh; display: flex; flex-direction: column; justify-content
   left: 7.5%; top: 11%;
   width: 30.9%; height: 79.1%;
   box-sizing: border-box;
-  padding: 3.4em 1.8em 1.2em;
+  padding: 3em 1.8em 1em;
   overflow: hidden;
 }
 .paper h1 { margin: 0 0 .5em; font-size: 1.55em; line-height: 1.2; color: #0f766e; }
@@ -57,7 +57,7 @@ body { min-height: 100vh; display: flex; flex-direction: column; justify-content
   animation: anpinnen .4s ease;
 }
 .note[hidden] { display: none !important; }
-.note b { display: block; font-size: 1.25em; line-height: 1.2; }
+.note b { display: block; font-size: 1.12em; line-height: 1.2; overflow-wrap: break-word; }
 .note::after {
   content: attr(data-tag);
   display: block;

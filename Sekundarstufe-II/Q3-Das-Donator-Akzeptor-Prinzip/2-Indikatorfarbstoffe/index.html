@@ -4,37 +4,30 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Indikatorfarbstoffe</title>
-  <style>
-    body { font-family: system-ui, sans-serif; background-color: #f8fafc; padding: 20px; color: #0f172a; }
-    .container { max-width: 800px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; border: 1px solid #e2e8f0; }
-    .nav-btn { display: inline-block; margin-bottom: 20px; color: #b91c1c; text-decoration: none; }
-    h1 { color: #b91c1c; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
-    .content-list { list-style: none; padding: 0; }
-    .content-list li { margin-bottom: 15px; }
-    .content-list a { 
-      display: block; 
-      padding: 15px; 
-      background: #f1f5f9; 
-      border-radius: 8px; 
-      text-decoration: none; 
-      color: #0f172a; 
-      font-weight: 600; 
-      border-left: 4px solid #b91c1c;
-    }
-  </style>
+  <link rel="stylesheet" href="../../../pinnwand.css">
 </head>
 <body>
 
-  <div class="container">
-    <a href="../index.html" class="nav-btn">← Zurück zu Q3: Das Donator-Akzeptor-Prinzip</a>
-    
-    <h1>Indikatorfarbstoffe</h1>
-    
-    <ul class="content-list">
-      <li><a href="./Zusammenhang-von-Licht-und-Farbe/index.html">1. Zusammenhang von Licht und Farbe</a></li>
-      <li><a href="./Indikatoren-Grundlagen/index.html">2. Indikatoren-Grundlagen</a></li>
-    </ul>
+  <div class="stage">
+    <img class="board" src="../../../pinnwand.jpg" alt="">
+
+    <!-- Blatt: Beschreibung des Themas -->
+    <section class="paper">
+      <h1>Indikatorfarbstoffe</h1>
+      <p>Warum ändern Indikatoren ihre Farbe? Hier geht es um den Zusammenhang von Licht und Farbe und um die Grundlagen der Indikatoren.</p>
+    </section>
+
+    <!-- Zettel: erscheinen nur, wenn die Seite existiert (data-optional) -->
+    <div class="notes">
+      <a class="note" data-optional data-tag="Thema" href="./Zusammenhang-von-Licht-und-Farbe/index.html"><b>Zusammenhang von Licht und Farbe</b></a>
+      <a class="note" data-optional data-tag="Thema" href="./Indikatoren-Grundlagen/index.html"><b>Indikatoren-Grundlagen</b></a>
+    </div>
+    <p class="leer" hidden>Hier hängen bald Zettel zum Thema.</p>
+
+    <a href="../index.html" class="back-link">← Zurück zu Q3: Das Donator-Akzeptor-Prinzip</a>
   </div>
+
+  <script src="../../../pinnwand.js"></script>
 <a href="/Virtuelles-Chemielabor/impressum.html" style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-family: sans-serif; font-size: 12px; z-index: 9999;">Impressum & Datenschutz</a>
 </body>
 </html>
