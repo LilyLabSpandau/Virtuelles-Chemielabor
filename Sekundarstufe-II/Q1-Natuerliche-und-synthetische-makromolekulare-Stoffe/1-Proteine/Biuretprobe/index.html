@@ -6,8 +6,10 @@
   <title>Virtuelles 3D-Chemielabor: Biuret-Probe</title>
   <style>
     * { box-sizing: border-box; user-select: none; }
+    html, body { height: 100%; }
     body { margin: 0; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; background: #181c22; color: #f0f4f8; }
-    #canvas-container { width: 100vw; height: 100vh; display: block; }
+    #canvas-container { position: fixed; inset: 0; }
+    #canvas-container canvas { display: block; touch-action: none; }
     
     #ui-panel {
       position: absolute; top: 14px; left: 14px; width: 340px;
@@ -98,9 +100,20 @@ scene.fog = new THREE.Fog(0x222832, 18, 38);
 
 const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 100);
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+// Auf hochauflösenden Displays (Handys, Tablets) ist Kantenglättung unnötig und kostet viel Leistung
+const renderer = new THREE.WebGLRenderer({ antialias: (window.devicePixelRatio || 1) < 1.5 });
+
+// Automatische Qualitätsanpassung: Die Auflösung sinkt, wenn das Gerät nicht mitkommt
+const MAX_RATIO = Math.min(window.devicePixelRatio || 1, 2);
+const RATIO_STEPS = [MAX_RATIO].concat([1.5, 1.25, 1, 0.85, 0.7].filter(r => r < MAX_RATIO - 0.01));
+let ratioIdx = RATIO_STEPS.length > 1 && RATIO_STEPS[1] <= 1.5 && MAX_RATIO > 1.5 ? 1 : 0; // Start mit 1,5 statt 2
+let bestIdx = 0;          // höchste erlaubte Auflösung (wird gesperrt, sobald es einmal zu langsam war)
+let shadowsOff = false;
+function applyRatio() {
+  renderer.setPixelRatio(RATIO_STEPS[ratioIdx]);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+applyRatio();
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -165,6 +178,7 @@ window.addEventListener('pointerup', e => {
   if (camState.isDown && !camState.moved && camState.button === 0) onSceneClick(e);
   camState.isDown = false;
 });
+window.addEventListener('pointercancel', () => { camState.isDown = false; });
 renderer.domElement.addEventListener('wheel', e => {
   camState.radius += e.deltaY * 0.006;
   updateCamera();
@@ -1421,9 +1435,35 @@ document.getElementById('btn-reset').addEventListener('click', () => {
 // 13. RENDER-LOOP
 // ============================================================================
 let lastTime = performance.now();
+let qFrames = 0, qTime = 0, qGood = 0;
+const qStart = performance.now() + 3000; // die ersten 3 Sekunden (Laden, Shader) zählen nicht
+function adaptQuality(rawDt, now) {
+  if (now < qStart) return;
+  if (rawDt > 0.5 || document.hidden) { qFrames = 0; qTime = 0; return; } // Tab im Hintergrund o. Ä.
+  qFrames++; qTime += rawDt;
+  if (qTime < 1.5) return;
+  const fps = qFrames / qTime;
+  qFrames = 0; qTime = 0;
+  if (fps < 40) {
+    qGood = 0;
+    if (ratioIdx < RATIO_STEPS.length - 1) {
+      ratioIdx++; bestIdx = ratioIdx; applyRatio();
+    } else if (fps < 25 && !shadowsOff) {
+      shadowsOff = true; renderer.shadowMap.enabled = false;
+      scene.traverse(o => { if (o.material) [].concat(o.material).forEach(m => { m.needsUpdate = true; }); });
+    }
+  } else if (fps > 56 && ratioIdx > bestIdx) {
+    if (++qGood >= 3) { qGood = 0; ratioIdx--; applyRatio(); }
+  } else {
+    qGood = 0;
+  }
+}
+
 function animate(now) {
   requestAnimationFrame(animate);
-  const dt = Math.min((now - lastTime) / 1000, 0.1);
+  const rawDt = (now - lastTime) / 1000;
+  adaptQuality(rawDt, now);
+  const dt = Math.min(rawDt, 0.1);
   lastTime = now;
 
   for (let i = animations.length - 1; i >= 0; i--) {
