@@ -5,32 +5,101 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Klasse 9/10 - Chemie</title>
   <style>
-    body { font-family: system-ui, sans-serif; background-color: #f8fafc; padding: 20px; color: #0f172a; }
-    .container { max-width: 800px; margin: 0 auto; }
-    .nav-btn { display: inline-block; margin-bottom: 20px; color: #0369a1; text-decoration: none; }
-    h1 { border-bottom: 3px solid #0f766e; padding-bottom: 10px; color: #0f766e; }
-    .grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 20px; }
-    .card { background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; text-decoration: none; color: #0f172a; font-weight: 600; display: block; }
-    .card:hover { border-color: #0f766e; }
+    html, body { margin: 0; padding: 0; background: #000; font-family: system-ui, sans-serif; }
+    body { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; }
+
+    /* Bühne mit festem Seitenverhältnis des Bildes, damit die Klickflächen auf jedem Gerät passen */
+    .stage {
+      --w: min(100vw, calc(100vh * 2576 / 1438));
+      position: relative;
+      width: var(--w);
+      aspect-ratio: 2576 / 1438;
+      margin: 0 auto;
+    }
+    .stage img { display: block; width: 100%; height: 100%; }
+
+    .item {
+      position: absolute;
+      display: block;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .item:hover, .item:focus-visible {
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.6);
+      background: rgba(255, 255, 255, 0.1);
+      outline: none;
+    }
+
+    /* Beschriftung: standardmäßig unter dem Gegenstand, mit "above" darüber */
+    .label {
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-top: calc(var(--w) * 0.004);
+      width: max-content;
+      max-width: calc(var(--w) * 0.19);
+      text-align: center;
+      font-weight: 700;
+      line-height: 1.15;
+      color: #8b1a1a;
+      font-size: max(10px, calc(var(--w) * 0.019));
+    }
+    .label.above {
+      top: auto;
+      bottom: 100%;
+      margin-top: 0;
+      margin-bottom: calc(var(--w) * 0.004);
+    }
+
+    /* Klickflächen der Gegenstände */
+    .link-1 { left: 18.8%; top: 29.6%; width: 12.7%; height: 15.9%; }  /* Salz */
+    .link-2 { left: 36.1%; top: 24.6%; width: 12.8%; height: 23.6%; }  /* Waage */
+    .link-3 { left: 56.3%; top: 23.5%; width: 12.8%; height: 27.4%; }  /* Säuren und Laugen */
+    .link-4 { left: 73.3%; top: 25.8%; width: 10.4%; height: 21.2%; }  /* Campinggas */
+    .link-5 { left: 21.1%; top: 59.0%; width: 6.5%;  height: 23.3%; }  /* Apothekerflasche */
+    .link-6 { left: 46.3%; top: 57.0%; width: 7.5%;  height: 26.2%; }  /* Essig */
+    .link-7 { left: 68.7%; top: 62.9%; width: 9.5%;  height: 19.5%; }  /* Duftflakon */
+
+    .back-link {
+      position: absolute;
+      left: 50%;
+      top: 1.2%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      color: white;
+      text-decoration: none;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 0.5em 0.9em;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: max(11px, calc(var(--w) * 0.0105));
+    }
+    .back-link:hover { background: rgba(0, 0, 0, 0.8); }
+
+    /* Hochkant-Bildschirme (Handy): Beschriftung etwas größer, damit sie lesbar bleibt */
+    @media (max-aspect-ratio: 1/1) {
+      .label { font-size: max(9.5px, calc(var(--w) * 0.027)); }
+    }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <a href="../index.html" class="nav-btn">← Zurück zur Übersicht</a>
-    
-    <h1>Klasse 9/10</h1>
-    
-    <div class="grid">
-      <a href="./1-Salze-Gegensätze-ziehen-sich-an/index.html" class="card">1. Salze – Gegensätze ziehen sich an</a>
-      <a href="./2-Klare-Verhältnisse-Quantitative-Betrachtungen/index.html" class="card">2. Quantitative Betrachtungen</a>
-      <a href="./3-Säuren-und-Laugen-echt-ätzend/index.html" class="card">3. Säuren und Laugen – echt ätzend</a>
-      <a href="./4-Kohlenwasserstoffe-vom-Campinggas-zum-Superbenzin/index.html" class="card">4. Kohlenwasserstoffe</a>
-      <a href="./5-Alkohole-vom-Holzgeist-zum-Glycerin/index.html" class="card">5. Alkohole</a>
-      <a href="./6-Organische-Säuren-Salatsauce-Entkalker-&-Co/index.html" class="card">6. Organische Säuren</a>
-      <a href="./7-Ester-Vielfalt-der-Produkte-aus-Alkoholen-und-Säuren/index.html" class="card">7. Ester</a>
-    </div>
+  <div class="stage">
+    <img src="lab-table-klasse-9-10.jpg" alt="Labortisch mit Gegenständen zu den Themen von Klasse 9/10">
+
+    <a href="./1-Salze-Gegensätze-ziehen-sich-an/index.html" class="item link-1" title="Salze – Gegensätze ziehen sich an"><span class="label">Salze</span></a>
+    <a href="./2-Klare-Verhältnisse-Quantitative-Betrachtungen/index.html" class="item link-2" title="Quantitative Betrachtungen"><span class="label above">Quantitative Betrachtungen</span></a>
+    <a href="./3-Säuren-und-Laugen-echt-ätzend/index.html" class="item link-3" title="Säuren und Laugen – echt ätzend"><span class="label">Säuren und Laugen</span></a>
+    <a href="./4-Kohlenwasserstoffe-vom-Campinggas-zum-Superbenzin/index.html" class="item link-4" title="Kohlenwasserstoffe – vom Campinggas zum Superbenzin"><span class="label above">Kohlenwasserstoffe</span></a>
+    <a href="./5-Alkohole-vom-Holzgeist-zum-Glycerin/index.html" class="item link-5" title="Alkohole – vom Holzgeist zum Glycerin"><span class="label">Alkohole</span></a>
+    <a href="./6-Organische-Säuren-Salatsauce-Entkalker-&-Co/index.html" class="item link-6" title="Organische Säuren – Salatsauce, Entkalker &amp; Co"><span class="label">Organische Säuren</span></a>
+    <a href="./7-Ester-Vielfalt-der-Produkte-aus-Alkoholen-und-Säuren/index.html" class="item link-7" title="Ester – Vielfalt der Produkte aus Alkoholen und Säuren"><span class="label">Ester</span></a>
+
+    <a href="../index.html" class="back-link">← Zurück zur Übersicht</a>
   </div>
+
 <a href="/Virtuelles-Chemielabor/impressum.html" style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-family: sans-serif; font-size: 12px; z-index: 9999;">Impressum & Datenschutz</a>
 </body>
 </html>
