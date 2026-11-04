@@ -5,84 +5,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Sekundarstufe II - Chemie</title>
     <style>
-        body, html { 
-            margin: 0; 
-            padding: 0; 
-            height: 100%; 
-            font-family: sans-serif; 
-            background-color: #000; /* Falls das Bild lädt, bleibt der Hintergrund dunkel */
-        }
+        html, body { margin: 0; padding: 0; background: #000; font-family: sans-serif; }
+        body { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; }
 
+        /* Bühne mit festem Seitenverhältnis des Bildes, damit die Klickflächen auf jedem Gerät passen */
         .table-container {
+            --w: min(100vw, calc(100vh * 2758 / 1504));
             position: relative;
-            width: 100%;
-            height: 100vh;
-            /* Hier wird dein Sek II Bild geladen */
-            background: url('Sek II.jpg') no-repeat center center;
-            background-size: cover;
+            width: var(--w);
+            aspect-ratio: 2758 / 1504;
+            margin: 0 auto;
         }
+        .table-container img { display: block; width: 100%; height: 100%; }
 
         .lab-link {
             position: absolute;
             display: block;
-            border-radius: 50%; /* Runde Klick-Bereiche, passend zu deinem Beispiel */
+            border-radius: 14px;
             cursor: pointer;
             transition: all 0.3s ease;
         }
 
-        .lab-link:hover {
+        .lab-link:hover, .lab-link:focus-visible {
             box-shadow: 0 0 30px rgba(255, 255, 255, 0.6);
             background: rgba(255, 255, 255, 0.1);
+            outline: none;
         }
 
-        /* Positionierung für die Gegenstände aus Sek II */
-        .link-q1 { /* Modell */
-            top: 22%; left: 35%;
-            width: 14%; height: 26%;
-        }
-
-        .link-q2 { /* Brenner */
-            top: 16%; left: 56%;
-            width: 12%; height: 32%;
-        }
-
-        .link-q3 { /* Zitrone */
-            top: 52%; left: 35%;
-            width: 14%; height: 22%;
-        }
-
-        .link-q4 { /* Batterie */
-            top: 54%; left: 55%;
-            width: 14%; height: 20%;
-        }
+        /* Klickflächen (Gegenstand samt Beschriftung im Bild) */
+        .link-q1 { left: 36.0%; top: 21.1%; width: 15.8%; height: 29.3%; }  /* Modell */
+        .link-q2 { left: 57.2%; top: 17.0%; width: 8.8%;  height: 33.5%; }  /* Brenner */
+        .link-q3 { left: 37.0%; top: 53.2%; width: 11.2%; height: 24.9%; }  /* Zitrone */
+        .link-q4 { left: 56.8%; top: 53.2%; width: 10.0%; height: 25.3%; }  /* Batterie */
 
         /* Zurück-Link */
         .back-link {
             position: absolute;
-            bottom: 20px;
-            left: 20px;
+            left: 1.2%;
+            bottom: 2%;
             color: white;
             text-decoration: none;
             background: rgba(0,0,0,0.5);
-            padding: 10px 20px;
+            padding: 0.6em 1.2em;
             border-radius: 8px;
             font-weight: bold;
+            font-size: max(11px, calc(var(--w) * 0.0105));
         }
-        
-        .back-link:hover {
-            background: rgba(0,0,0,0.8);
-        }
+        .back-link:hover { background: rgba(0,0,0,0.8); }
     </style>
 </head>
 <body>
 
     <div class="table-container">
+        <img src="Sek%20II.jpg" alt="Labortisch mit Gegenständen für Q1 bis Q4">
+
         <!-- Klickbare Gegenstände -->
         <a href="./Q1-Natuerliche-und-synthetische-makromolekulare-Stoffe/index.html" class="lab-link link-q1" title="Q1: Makromolekulare Stoffe"></a>
         <a href="./Q2-Verlauf-chemischer-Reaktionen/index.html" class="lab-link link-q2" title="Q2: Verlauf chemischer Reaktionen"></a>
         <a href="./Q3-Das-Donator-Akzeptor-Prinzip/index.html" class="lab-link link-q3" title="Q3: Donator-Akzeptor-Prinzip"></a>
         <a href="./Q4-Elektrische-Energie-aus-chemischen-Reaktionen/index.html" class="lab-link link-q4" title="Q4: Elektrische Energie"></a>
-        
+
         <!-- Navigation -->
         <a href="../index.html" class="back-link">← Zurück zur Übersicht</a>
     </div>

@@ -5,42 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Virtuelles Chemielabor</title>
   <style>
-    body, html { margin: 0; padding: 0; height: 100%; font-family: sans-serif; }
+    html, body { margin: 0; padding: 0; background: #000; font-family: sans-serif; }
+    body { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; }
 
+    /* Bühne mit festem Seitenverhältnis des Bildes, damit die Klickflächen auf jedem Gerät passen */
     .table-container {
+      --w: min(100vw, calc(100vh * 1024 / 558));
       position: relative;
-      width: 100%;
-      height: 100vh;
-      background: url('lab-table.jpg') no-repeat center center;
-      background-size: cover;
+      width: var(--w);
+      aspect-ratio: 1024 / 558;
+      margin: 0 auto;
     }
+    .table-container img { display: block; width: 100%; height: 100%; }
 
     .lab-link {
       position: absolute;
       display: block;
-      border-radius: 50%;
+      border-radius: 14px;
       cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
+      transition: all 0.3s ease;
     }
 
-    .lab-link:hover {
+    .lab-link:hover, .lab-link:focus-visible {
       box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
       background: rgba(255, 255, 255, 0.1);
-      transform: scale(1.05);
+      outline: none;
     }
 
-    /* Klickflächen */
-    .link-sek1 { top: 35%; left: 24%; width: 15%; height: 35%; }
-    .link-sek2 { top: 30%; left: 68%; width: 12%; height: 40%; }
-    
-    /* Neue Klickfläche für Schultools (Lineal) */
-    .link-schultools { 
-      top: 15%; 
-      left: 31%; 
-      width: 38%; 
-      height: 12%; 
-      border-radius: 8px; /* Macht die Fläche rechteckig statt rund */
-    }
+    /* Klickflächen (Gegenstand samt Beschriftung im Bild) */
+    .link-schultools { left: 32.5%; top: 16.8%; width: 35.8%; height: 16.5%; }  /* Lineal */
+    .link-sek1       { left: 23.2%; top: 26.9%; width: 12.5%; height: 50.5%; }  /* Erlenmeyerkolben */
+    .link-sek2       { left: 64.5%; top: 18.8%; width: 16.1%; height: 62.9%; }  /* Messkolben */
 
     /* Impressums-Link */
     .impressum-link {
@@ -60,12 +55,13 @@
 <body>
 
   <div class="table-container">
+    <img src="lab-table.jpg" alt="Labortisch mit Gegenständen für Sekundarstufe I, Sekundarstufe II und Schultools">
+
+    <!-- Das Lineal liegt zuerst, damit die Kolben bei Überschneidung Vorrang haben -->
+    <a href="./Schultools/index.html" class="lab-link link-schultools" title="Schultools"></a>
     <a href="./Sekundarstufe-I/index.html" class="lab-link link-sek1" title="Sekundarstufe I"></a>
     <a href="./Sekundarstufe-II/index.html" class="lab-link link-sek2" title="Sekundarstufe II"></a>
-    
-    <!-- Hier ist der neue HTML-Link für das Lineal -->
-    <a href="./Schultools/index.html" class="lab-link link-schultools" title="Schultools"></a>
-    
+
     <a href="./impressum.html" class="impressum-link">Impressum & Datenschutz</a>
   </div>
 
