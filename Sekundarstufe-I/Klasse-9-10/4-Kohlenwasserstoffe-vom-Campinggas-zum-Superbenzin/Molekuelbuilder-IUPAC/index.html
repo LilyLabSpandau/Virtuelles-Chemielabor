@@ -215,14 +215,8 @@
         callback();
         return;
       }
-      // Falls ./three.min.js nicht im Ordner liegt, automatisch per CDN aus dem Internet nachladen:
-      const cdnScript = document.createElement('script');
-      cdnScript.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
-      cdnScript.onload = () => callback();
-      cdnScript.onerror = () => {
-        alert("Three.js konnte weder lokal (./three.min.js) noch aus dem Internet geladen werden. Bitte lege 'three.min.js' in denselben Ordner oder stelle eine Internetverbindung her.");
-      };
-      document.head.appendChild(cdnScript);
+      // three.min.js liegt im selben Ordner; es wird nichts aus dem Internet nachgeladen.
+      alert("Three.js konnte nicht geladen werden. Bitte lege 'three.min.js' in denselben Ordner wie diese Seite.");
     }
 
     ensureThreeLoaded(initMolekuelbuilder);
