@@ -397,17 +397,8 @@
                         if (activeElements.length > 0) {
                             const dataIndex = activeElements[0].index;
                             
-                            // Den tiefsten gemessenen Punkt im Chart finden
-                            const dataArray = chart.data.datasets[0].data;
-                            const minVal = Math.min(...dataArray);
-                            const minIndex = dataArray.indexOf(minVal);
-                            
-                            // Wenn auf den tiefsten 0,5er Punkt geklickt wird -> wahren Wert am Meniskus zeigen
-                            if (dataIndex === minIndex) {
-                                reviewVolume = V_eq_true;
-                            } else {
-                                reviewVolume = parseFloat(chart.data.labels[dataIndex]);
-                            }
+                            // Der Meniskus zeigt immer genau den Wert des angeklickten Punkts
+                            reviewVolume = parseFloat(chart.data.labels[dataIndex]);
                             
                             isReviewMode = true;
                         }
