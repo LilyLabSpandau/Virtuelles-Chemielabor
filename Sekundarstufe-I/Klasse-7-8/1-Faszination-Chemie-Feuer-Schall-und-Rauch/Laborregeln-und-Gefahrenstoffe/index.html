@@ -189,6 +189,28 @@
         .btn-ok:hover { background-color: #2ecc71; transform: scale(1.05); }
         .btn-block { display: block; width: 100%; }
 
+
+        /* Kleine Bildschirme */
+        @media (max-width: 700px) {
+            .container { margin: 14px 8px; padding: 16px 12px; }
+            .shelf-container { padding: 6px; border-width: 8px; margin: 20px auto; }
+            .shelf-row { min-height: 110px; border-bottom-width: 14px; }
+            .shelf-compartment { min-width: 0; padding: 10px 4px; border-right-width: 6px; }
+            .behaelter-wrapper { width: 100%; max-width: 100px; }
+            .quiz-area { flex-direction: column; gap: 16px; }
+            .quiz-area > * { min-width: 0; }
+            .modal-overlay { padding: 10px; box-sizing: border-box; }
+            #modal-content-shelf { flex-direction: column; align-items: center; gap: 14px; padding: 18px; width: 100%; max-width: 420px; box-sizing: border-box; max-height: 92vh; overflow-y: auto; }
+            .modal-img-container img { width: auto; max-width: 100%; max-height: 180px; }
+            .modal-text { font-size: 16px; }
+            .modal-text h2 { font-size: 22px; }
+        }
+        @media (max-height: 500px) and (orientation: landscape) {
+            #modal-content-shelf { box-sizing: border-box; flex-direction: row; align-items: flex-start; max-height: 92vh; overflow-y: auto; padding: 14px; gap: 18px; max-width: 90vw; }
+            .modal-img-container img { width: 130px; max-height: 160px; }
+            .modal-text h2 { font-size: 20px; }
+            .modal-text { font-size: 15px; }
+        }
     </style>
 </head>
 <body>
