@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interaktives Periodensystem</title>
+<style>
+  :root {
+    --bg: #f4f7f6; --ink: #1f2937; --muted: #5b6676; --teal: #0f766e; --line: #cbd5e1;
+    --c: clamp(40px, calc((100vw - 4.5rem) / 19), 66px);   /* Kantenlänge einer Kachel */
+    --zoom: 1;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .wrap { max-width: 1400px; margin: 0 auto; padding: 14px 14px 80px; }
+  .top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 18px; }
+  h1 { margin: 0; font-size: clamp(21px, 3.2vw, 30px); color: var(--teal); }
+  .back { color: #fff; background: #334155; text-decoration: none; padding: 8px 14px; border-radius: 8px; font-weight: 600; font-size: 14px; }
+  .back:hover { background: #1e293b; }
+  .lead { margin: 6px 0 0; color: var(--muted); max-width: 70ch; line-height: 1.45; }
+
+  .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 14px 0 8px; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #fff; }
+  .seg button { border: 0; background: transparent; padding: 9px 13px; font: inherit; font-size: 14px; cursor: pointer; color: var(--ink); }
+  .seg button + button { border-left: 1px solid var(--line); }
+  .seg button[aria-pressed="true"] { background: var(--teal); color: #fff; }
+  .search { flex: 1 1 220px; max-width: 340px; padding: 9px 12px; font: inherit; font-size: 14px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+  .btn { border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 9px 13px; font: inherit; font-size: 14px; cursor: pointer; color: var(--ink); }
+  .btn:hover { background: #eef2f6; }
+  .btn.primary { background: var(--teal); border-color: var(--teal); color: #fff; font-weight: 600; }
+  .btn.primary:hover { background: #0b5f58; }
+  .zoomer { display: none; gap: 6px; align-items: center; }
+
+  .temp { display: none; align-items: center; flex-wrap: wrap; gap: 8px 12px; margin: 4px 0 8px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; }
+  .temp.on { display: flex; }
+  .temp input[type=range] { flex: 1 1 240px; min-width: 160px; accent-color: var(--teal); }
+  .temp output { font-weight: 700; min-width: 7ch; text-align: right; font-variant-numeric: tabular-nums; }
+  .temp .presets { display: flex; flex-wrap: wrap; gap: 6px; }
+  .temp .presets button { border: 1px solid var(--line); background: #f8fafc; border-radius: 999px; padding: 5px 10px; font: inherit; font-size: 12.5px; cursor: pointer; }
+  .temp .presets button:hover { background: #e2e8f0; }
+  .summary { flex: 1 1 100%; font-size: 14px; color: var(--muted); }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 10px; }
+  .legend button { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 5px 11px 5px 7px; font: inherit; font-size: 13px; cursor: pointer; color: var(--ink); }
+  .legend button i { width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(0,0,0,.25); display: inline-block; }
+  .legend button[aria-pressed="true"] { outline: 3px solid var(--teal); outline-offset: 1px; }
+
+  .quizbar { display: none; margin: 8px 0 10px; background: #fff7ed; border: 2px solid #fdba74; border-radius: 12px; padding: 12px 14px; }
+  .quizbar.on { display: block; position: sticky; top: 0; z-index: 40; box-shadow: 0 4px 12px rgba(0,0,0,.15); }
+  .quizbar .q { font-size: clamp(16px, 2.2vw, 20px); font-weight: 600; }
+  .quizbar .meta { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; margin-top: 6px; font-size: 14px; color: var(--muted); }
+  .quizbar .fb { min-height: 1.4em; font-weight: 600; margin-top: 4px; }
+  .quizbar .fb.ok { color: #15803d; } .quizbar .fb.no { color: #b91c1c; }
+  .quizbar .end { margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .table-wrap { overflow-x: auto; padding: 4px 2px 10px; -webkit-overflow-scrolling: touch; }
+  .pt {
+    --zc: calc(var(--c) * var(--zoom));
+    display: grid; position: relative; width: max-content; margin: 0 auto; gap: 3px;
+    grid-template-columns: 1.7rem repeat(var(--cols, 18), var(--zc));
+    grid-template-rows: 1.5rem repeat(7, var(--zc)) calc(var(--zc) * .3) repeat(2, var(--zc));
+  }
+  .gl, .pl { display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--muted); font-weight: 600; }
+  .fl { grid-column: 2 / 4; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; font-size: 12px; color: var(--muted); text-align: right; }
+  .ph { border: 2px dashed #94a3b8; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: calc(var(--zc) * .17); color: var(--muted); text-align: center; line-height: 1.1; }
+
+  .el {
+    position: relative; margin: 0; padding: 0; cursor: pointer; font: inherit; color: #111;
+    border: 1px solid rgba(0,0,0,.2); border-radius: 6px; background: #fff;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1;
+    transition: transform .12s ease, opacity .15s ease, box-shadow .12s ease;
+  }
+  .el:hover { transform: scale(1.1); z-index: 3; box-shadow: 0 4px 12px rgba(0,0,0,.3); }
+  .el:focus-visible { outline: 3px solid #0f172a; outline-offset: 1px; z-index: 3; }
+  .el .z { position: absolute; top: 3px; left: 4px; font-size: calc(var(--zc) * .18); font-style: normal; opacity: .8; }
+  .el .s { font-size: calc(var(--zc) * .38); font-weight: 700; }
+  .el .nm { font-size: calc(var(--zc) * .155); margin-top: 3px; max-width: 94%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .el .st { position: absolute; right: 3px; top: 2px; font-size: calc(var(--zc) * .15); font-style: normal; font-weight: 700; opacity: .8; display: none; }
+  .pt.basic { --c: clamp(58px, calc((100vw - 4.5rem) / 8.8), 112px); grid-template-rows: 1.5rem repeat(7, var(--zc)); }
+  .el .ma, .el .en { position: absolute; bottom: 3px; font-size: calc(var(--zc) * .15); font-style: normal; font-variant-numeric: tabular-nums; opacity: .9; }
+  .el .ma { left: 4px; } .el .en { right: 4px; }
+  .pt.tiny .ma, .pt.tiny .en { display: none; }
+  .pt.compact .nm { display: none; }
+  #main { transition: opacity .3s ease; } #main.out { opacity: 0; pointer-events: none; }
+  .key { margin: 2px 4px 0; font-size: 13px; color: var(--muted); text-align: center; }
+  .detail { animation: fadein .35s ease; } @keyframes fadein { from { opacity: 0; } }
+  .dgrid { display: flex; flex-wrap: wrap; gap: 22px 32px; align-items: flex-start; margin-top: 14px; }
+  .el.bigtile { --zc: 230px; width: var(--zc); height: var(--zc); cursor: default; flex: none; border-radius: 14px; border-width: 2px; animation: pop .45s ease; }
+  .el.bigtile:hover { transform: none; box-shadow: none; }
+  .el.bigtile .z { top: 10px; left: 12px; } .el.bigtile .ma { left: 12px; bottom: 10px; } .el.bigtile .en { right: 12px; bottom: 10px; }
+  @keyframes pop { from { transform: scale(.55); opacity: 0; } }
+  .dright { flex: 1 1 300px; min-width: 0; }
+  .dright .rowtop { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+  .detail svg { width: 190px; height: 190px; flex: none; }
+  .detail .facts { min-width: 220px; }
+  .detail .info { margin: 14px 0 0; font-size: 15px; line-height: 1.5; max-width: 70ch; }
+  .detail h2 { margin: 12px 0 0; font-size: 22px; } .detail .sub { margin: 2px 0 0; color: var(--muted); }
+  @media (max-width: 600px) { .el.bigtile { --zc: 180px; } .detail svg { width: 160px; height: 160px; } }
+  .pt.zustand .st { display: block; }
+  .pt.compact .st { display: none; }
+  .el.sel { outline: 3px solid #0f172a; outline-offset: 1px; z-index: 2; }
+  .el.dim { opacity: .2; }
+  .el.hit { box-shadow: 0 0 0 3px #f59e0b; z-index: 2; }
+  .el.unbekannt { background-image: repeating-linear-gradient(45deg, rgba(0,0,0,.05) 0 5px, transparent 5px 10px); }
+  .el.right { animation: ok .5s ease; } .el.wrong { animation: shake .35s ease; }
+  @keyframes shake { 20%,60% { transform: translateX(-4px); } 40%,80% { transform: translateX(4px); } }
+  @keyframes ok { 40% { transform: scale(1.25); box-shadow: 0 0 0 4px #22c55e; } }
+  .pt.quiz .nm { display: none; }
+
+  /* Karte mit den Einzelheiten zu einem Element */
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 10px 28px rgba(15,23,42,.18); padding: 12px 14px; overflow: auto; }
+  .card header { display: flex; align-items: center; gap: 12px; }
+  .card .tile { width: 54px; height: 54px; border-radius: 8px; border: 1px solid rgba(0,0,0,.25); display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 700; line-height: 1; flex: none; }
+  .card .tile small { font-size: 11px; font-weight: 500; } .card .tile span { font-size: 22px; }
+  .card h2 { margin: 0; font-size: 20px; } .card .sub { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+  .card .x { margin-left: auto; border: 0; background: #e2e8f0; width: 34px; height: 34px; border-radius: 50%; font-size: 18px; cursor: pointer; flex: none; }
+  .card .body { display: flex; gap: 14px; align-items: center; margin-top: 8px; }
+  .card svg { width: 150px; height: 150px; flex: none; }
+  .facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 12px; margin: 0; flex: 1; }
+  .facts div { min-width: 0; }
+  .facts dt { font-size: 11.5px; color: var(--muted); } .facts dd { margin: 1px 0 0; font-size: 14px; font-weight: 600; }
+  .card .info { margin: 8px 0 0; font-size: 13.5px; line-height: 1.4; }
+  .card .hinweis { margin: 6px 0 0; font-size: 12px; color: var(--muted); }
+  .card.intro { background: #ecfeff; border-color: #a5f3fc; box-shadow: none; }
+  .card.intro h2 { color: var(--teal); }
+  .card.intro p { margin: 6px 0 0; font-size: 14px; line-height: 1.45; }
+  .ring { animation: spin var(--d, 12s) linear infinite; transform-origin: 100px 100px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .ring { animation: none; } .el { transition: none; } .el.right, .el.wrong { animation: none; } }
+
+  /* Breit: Karte sitzt in der Lücke der Tabelle (Gruppen 3-12, Perioden 1-3) */
+  @media (min-width: 1180px) {
+    .card { grid-column: 4 / 14; grid-row: 2 / 5; box-shadow: none; z-index: 1; padding: 8px 12px; }
+    .card .tile { width: 44px; height: 44px; } .card .tile span { font-size: 18px; }
+    .card h2 { font-size: 18px; }
+    .card svg { width: 104px; height: 104px; }
+    .card .body { margin-top: 0; }
+    .card header { gap: 10px; } .card .sub { font-size: 12px; }
+    .facts dt { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .facts { gap: 3px 10px; } .facts dt { font-size: 11px; } .facts dd { font-size: 13px; }
+    .card .info { margin-top: 0; font-size: 12px; line-height: 1.25; }
+    .card .x { display: none; }
+  }
+  /* Schmal: Karte als Blatt am unteren Rand */
+  @media (max-width: 1179.98px) {
+    .zoomer { display: inline-flex; }
+    .card { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; border-radius: 16px 16px 0 0; max-height: 62vh; padding: 10px 14px 44px; display: none; }
+    .card.open { display: block; }
+    .card.intro { display: none !important; }
+    .card .body { flex-direction: column; }
+    .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
+    .card svg { width: 112px; height: 112px; }
+    .card .body { gap: 6px; margin-top: 2px; }
+    body.sheet .wrap { padding-bottom: 62vh; }
+  }
+  @media (max-width: 1179.98px) and (min-width: 700px) {
+    .card .body { flex-direction: row; } .facts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+  .impressum { position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,.6); color: #fff; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-family: sans-serif; font-size: 12px; z-index: 9999; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>Interaktives Periodensystem</h1>
+    <a class="back" href="./index.html">← Zurück</a>
+  </div>
+  <p class="lead">Tippe ein Element an: Die Tabelle blendet sich aus und du siehst alle Eigenschaften groß. Du kannst die Färbung wechseln, suchen oder ein Quiz machen.</p>
+
+  <div id="main">
+  <div class="controls">
+    <div class="seg" id="ansichtSeg" role="group" aria-label="Ansicht"><button type="button" data-ansicht="haupt" aria-pressed="true">Hauptgruppen</button><button type="button" data-ansicht="alle" aria-pressed="false">Alle Gruppen</button></div>
+    <div class="seg" id="modusSeg" role="group" aria-label="Färbung">
+      <button type="button" data-modus="kat" aria-pressed="true">Gruppen</button>
+      <button type="button" data-modus="metall" aria-pressed="false">Metall / Nichtmetall</button>
+      <button type="button" data-modus="zustand" aria-pressed="false">Aggregatzustand</button>
+    </div>
+    <input class="search" id="suche" type="search" placeholder="Element suchen: Name, Symbol oder Zahl" aria-label="Element suchen" autocomplete="off">
+    <button class="btn primary" id="quizStart" type="button">Quiz starten</button>
+    <span class="zoomer"><button class="btn" id="zOut" type="button" aria-label="Kacheln kleiner">A−</button><button class="btn" id="zIn" type="button" aria-label="Kacheln größer">A+</button></span>
+  </div>
+
+  <div class="temp" id="temp">
+    <label for="tRange"><b>Temperatur</b></label>
+    <input id="tRange" type="range" min="-273" max="6000" step="1" value="20">
+    <output id="tOut" for="tRange">20 °C</output>
+    <div class="presets" id="presets"></div>
+    <div class="summary" id="summary"></div>
+  </div>
+
+  <div class="legend" id="legend" aria-label="Legende"></div>
+
+  <div class="quizbar" id="quizbar" aria-live="polite">
+    <div class="q" id="qText"></div>
+    <div class="meta"><span id="qNr"></span><span id="qScore"></span></div>
+    <div class="fb" id="qFb"></div>
+    <div class="end"><button class="btn" id="qStop" type="button">Quiz beenden</button><button class="btn primary" id="qAgain" type="button" hidden>Noch einmal</button></div>
+  </div>
+
+  <div class="table-wrap"><div class="pt" id="pt"></div></div>
+  <p class="key">Oben links: Ordnungszahl · unten links: Atommasse in u · unten rechts: Elektronegativität (Pauling-Skala)</p>
+  </div>
+  <section class="detail" id="detail" hidden></section>
+</div>
+<a class="impressum" href="/Virtuelles-Chemielabor/impressum.html">Impressum &amp; Datenschutz</a>
+
+<script>
+const EL = [{"z":1,"s":"H","n":"Wasserstoff","m":1.008,"c":1,"r":1,"k":"nichtmetall","mp":-259.2,"bp":-252.9,"sh":[1],"p":1,"g":1,"i":"Das leichteste und häufigste Element im Weltall. Steckt in Wasser und dient als Brennstoff für Raketen und Brennstoffzellen.","en":2.2},{"z":2,"s":"He","n":"Helium","m":4.003,"c":18,"r":1,"k":"edelgas","mp":null,"bp":-268.9,"sh":[2],"p":1,"g":18,"i":"Brennt nicht und ist leichter als Luft: Füllgas für Ballons. Kühlt die Magnete in Kernspintomographen.","en":null},{"z":3,"s":"Li","n":"Lithium","m":6.94,"c":1,"r":2,"k":"alkali","mp":180.5,"bp":1342.0,"sh":[2,1],"p":2,"g":1,"i":"Das leichteste Metall. Steckt in den Akkus von Handys und Elektroautos.","en":0.98},{"z":4,"s":"Be","n":"Beryllium","m":9.012,"c":2,"r":2,"k":"erdalkali","mp":1287.0,"bp":2468.0,"sh":[2,2],"p":2,"g":2,"i":"Der Edelstein Smaragd enthält Beryllium. Das Metall ist sehr leicht und trotzdem steif.","en":1.57},{"z":5,"s":"B","n":"Bor","m":10.81,"c":13,"r":2,"k":"halbmetall","mp":2077.0,"bp":4000.0,"sh":[2,3],"p":2,"g":13,"i":"Steckt im Laborglas (Borosilicatglas), das hohe Temperaturen aushält.","en":2.04},{"z":6,"s":"C","n":"Kohlenstoff","m":12.011,"c":14,"r":2,"k":"nichtmetall","mp":3550.0,"bp":4827.0,"sh":[2,4],"p":2,"g":14,"alt":"Carbon","i":"Grundbaustein aller Lebewesen. Kommt als Diamant, Graphit und Kohle vor.","en":2.55},{"z":7,"s":"N","n":"Stickstoff","m":14.007,"c":15,"r":2,"k":"nichtmetall","mp":-210.0,"bp":-195.8,"sh":[2,5],"p":2,"g":15,"i":"Hauptbestandteil der Luft (rund 78 %). Wichtig für Dünger.","en":3.04},{"z":8,"s":"O","n":"Sauerstoff","m":15.999,"c":16,"r":2,"k":"nichtmetall","mp":-218.8,"bp":-183.0,"sh":[2,6],"p":2,"g":16,"i":"Wir brauchen es zum Atmen, und Feuer braucht es zum Brennen. Rund 21 % der Luft.","en":3.44},{"z":9,"s":"F","n":"Fluor","m":18.998,"c":17,"r":2,"k":"halogen","mp":-219.7,"bp":-188.1,"sh":[2,7],"p":2,"g":17,"i":"Das reaktionsfreudigste Element. Fluorid in Zahnpasta schützt die Zähne.","en":3.98},{"z":10,"s":"Ne","n":"Neon","m":20.18,"c":18,"r":2,"k":"edelgas","mp":-248.6,"bp":-246.0,"sh":[2,8],"p":2,"g":18,"i":"Edelgas. In Leuchtröhren leuchtet es rot.","en":null},{"z":11,"s":"Na","n":"Natrium","m":22.99,"c":1,"r":3,"k":"alkali","mp":97.8,"bp":882.9,"sh":[2,8,1],"p":3,"g":1,"i":"Weiches Metall, das heftig mit Wasser reagiert. Mit Chlor bildet es Kochsalz.","en":0.93},{"z":12,"s":"Mg","n":"Magnesium","m":24.305,"c":2,"r":3,"k":"erdalkali","mp":650.0,"bp":1090.0,"sh":[2,8,2],"p":3,"g":2,"i":"Brennt mit blendend weißer Flamme. Leichtmetall, zum Beispiel für Felgen.","en":1.31},{"z":13,"s":"Al","n":"Aluminium","m":26.982,"c":13,"r":3,"k":"anderemetall","mp":660.3,"bp":2519.0,"sh":[2,8,3],"p":3,"g":13,"i":"Leichtmetall: Getränkedosen, Alufolie, Flugzeuge.","en":1.61},{"z":14,"s":"Si","n":"Silicium","m":28.085,"c":14,"r":3,"k":"halbmetall","mp":1414.0,"bp":3265.0,"sh":[2,8,4],"p":3,"g":14,"alt":"Silizium","i":"Sand besteht aus Siliciumdioxid. Das Element steckt in Computerchips und Solarzellen.","en":1.9},{"z":15,"s":"P","n":"Phosphor","m":30.974,"c":15,"r":3,"k":"nichtmetall","mp":44.2,"bp":280.5,"sh":[2,8,5],"p":3,"g":15,"i":"Roter Phosphor steckt in der Reibfläche von Streichholzschachteln. Weißer Phosphor ist giftig und leuchtet im Dunkeln.","en":2.19},{"z":16,"s":"S","n":"Schwefel","m":32.06,"c":16,"r":3,"k":"nichtmetall","mp":115.2,"bp":444.6,"sh":[2,8,6],"p":3,"g":16,"i":"Gelbes Pulver, kommt in Vulkanregionen vor. Wichtig für Schwefelsäure.","en":2.58},{"z":17,"s":"Cl","n":"Chlor","m":35.45,"c":17,"r":3,"k":"halogen","mp":-101.5,"bp":-34.0,"sh":[2,8,7],"p":3,"g":17,"i":"Desinfiziert Schwimmbadwasser. Als reines Gas giftig.","en":3.16},{"z":18,"s":"Ar","n":"Argon","m":39.948,"c":18,"r":3,"k":"edelgas","mp":-189.3,"bp":-185.8,"sh":[2,8,8],"p":3,"g":18,"i":"Edelgas. Schutzgas beim Schweißen, weil es mit nichts reagiert.","en":null},{"z":19,"s":"K","n":"Kalium","m":39.098,"c":1,"r":4,"k":"alkali","mp":63.5,"bp":759.0,"sh":[2,8,8,1],"p":4,"g":1,"i":"Weiches Metall, das heftig mit Wasser reagiert. Wichtig für Pflanzen und in Düngern.","en":0.82},{"z":20,"s":"Ca","n":"Calcium","m":40.078,"c":2,"r":4,"k":"erdalkali","mp":842.0,"bp":1484.0,"sh":[2,8,8,2],"p":4,"g":2,"i":"Steckt in Knochen, Zähnen, Kalk und Gips.","en":1.0},{"z":21,"s":"Sc","n":"Scandium","m":44.956,"c":3,"r":4,"k":"uebergang","mp":1541.0,"bp":2836.0,"sh":[2,8,9,2],"p":4,"g":3,"en":1.36},{"z":22,"s":"Ti","n":"Titan","m":47.867,"c":4,"r":4,"k":"uebergang","mp":1670.0,"bp":3287.0,"sh":[2,8,10,2],"p":4,"g":4,"i":"Fest und leicht, rostet nicht: Fahrradrahmen und Implantate.","en":1.54},{"z":23,"s":"V","n":"Vanadium","m":50.941,"c":5,"r":4,"k":"uebergang","mp":1910.0,"bp":3407.0,"sh":[2,8,11,2],"p":4,"g":5,"en":1.63},{"z":24,"s":"Cr","n":"Chrom","m":51.996,"c":6,"r":4,"k":"uebergang","mp":1907.0,"bp":2671.0,"sh":[2,8,13,1],"p":4,"g":6,"i":"Verchromte Oberflächen glänzen und rosten nicht. Wichtiger Bestandteil von Edelstahl.","en":1.66},{"z":25,"s":"Mn","n":"Mangan","m":54.938,"c":7,"r":4,"k":"uebergang","mp":1246.0,"bp":2061.0,"sh":[2,8,13,2],"p":4,"g":7,"i":"Wird dem Stahl zugesetzt, damit er härter wird.","en":1.55},{"z":26,"s":"Fe","n":"Eisen","m":55.845,"c":8,"r":4,"k":"uebergang","mp":1538.0,"bp":2861.0,"sh":[2,8,14,2],"p":4,"g":8,"i":"Das meistgenutzte Metall (Stahl). Rostet an feuchter Luft. Steckt im roten Blutfarbstoff.","en":1.83},{"z":27,"s":"Co","n":"Cobalt","m":58.933,"c":9,"r":4,"k":"uebergang","mp":1495.0,"bp":2927.0,"sh":[2,8,15,2],"p":4,"g":9,"alt":"Kobalt","i":"Ein Cobaltsalz färbt Glas und Keramik tiefblau.","en":1.88},{"z":28,"s":"Ni","n":"Nickel","m":58.693,"c":10,"r":4,"k":"uebergang","mp":1455.0,"bp":2913.0,"sh":[2,8,16,2],"p":4,"g":10,"i":"Steckt in Münzen und Edelstahl.","en":1.91},{"z":29,"s":"Cu","n":"Kupfer","m":63.546,"c":11,"r":4,"k":"uebergang","mp":1084.6,"bp":2560.0,"sh":[2,8,18,1],"p":4,"g":11,"i":"Leitet Strom sehr gut: Kabel und Leitungen. Dächer aus Kupfer werden grün.","en":1.9},{"z":30,"s":"Zn","n":"Zink","m":65.38,"c":12,"r":4,"k":"uebergang","mp":419.5,"bp":907.0,"sh":[2,8,18,2],"p":4,"g":12,"i":"Verzinkter Stahl rostet nicht. Mit Kupfer ergibt es Messing.","en":1.65},{"z":31,"s":"Ga","n":"Gallium","m":69.723,"c":13,"r":4,"k":"anderemetall","mp":29.8,"bp":2229.0,"sh":[2,8,18,3],"p":4,"g":13,"i":"Schmilzt schon bei knapp 30 °C, also in der Hand.","en":1.81},{"z":32,"s":"Ge","n":"Germanium","m":72.63,"c":14,"r":4,"k":"halbmetall","mp":938.3,"bp":2833.0,"sh":[2,8,18,4],"p":4,"g":14,"i":"Halbleiter, früher wichtig für die ersten Transistoren.","en":2.01},{"z":33,"s":"As","n":"Arsen","m":74.922,"c":15,"r":4,"k":"halbmetall","mp":null,"bp":null,"sh":[2,8,18,5],"p":4,"g":15,"i":"Arsen und seine Verbindungen sind giftig.","sub":614.0,"en":2.18},{"z":34,"s":"Se","n":"Selen","m":78.971,"c":16,"r":4,"k":"nichtmetall","mp":221.0,"bp":685.0,"sh":[2,8,18,6],"p":4,"g":16,"en":2.55},{"z":35,"s":"Br","n":"Brom","m":79.904,"c":17,"r":4,"k":"halogen","mp":-7.2,"bp":58.8,"sh":[2,8,18,7],"p":4,"g":17,"i":"Eines von nur zwei Elementen, die bei Raumtemperatur flüssig sind: rotbraun, stechend riechend, giftig.","en":2.96},{"z":36,"s":"Kr","n":"Krypton","m":83.798,"c":18,"r":4,"k":"edelgas","mp":-157.4,"bp":-153.4,"sh":[2,8,18,8],"p":4,"g":18,"i":"Edelgas. Wird in manchen Lampen als Füllgas verwendet.","en":3.0},{"z":37,"s":"Rb","n":"Rubidium","m":85.468,"c":1,"r":5,"k":"alkali","mp":39.3,"bp":688.0,"sh":[2,8,18,8,1],"p":5,"g":1,"en":0.82},{"z":38,"s":"Sr","n":"Strontium","m":87.62,"c":2,"r":5,"k":"erdalkali","mp":777.0,"bp":1377.0,"sh":[2,8,18,8,2],"p":5,"g":2,"i":"Strontiumsalze färben Feuerwerk rot.","en":0.95},{"z":39,"s":"Y","n":"Yttrium","m":88.906,"c":3,"r":5,"k":"uebergang","mp":1522.0,"bp":3345.0,"sh":[2,8,18,9,2],"p":5,"g":3,"en":1.22},{"z":40,"s":"Zr","n":"Zirconium","m":91.224,"c":4,"r":5,"k":"uebergang","mp":1854.0,"bp":4406.0,"sh":[2,8,18,10,2],"p":5,"g":4,"alt":"Zirkonium","en":1.33},{"z":41,"s":"Nb","n":"Niob","m":92.906,"c":5,"r":5,"k":"uebergang","mp":2477.0,"bp":4741.0,"sh":[2,8,18,12,1],"p":5,"g":5,"en":1.6},{"z":42,"s":"Mo","n":"Molybdän","m":95.95,"c":6,"r":5,"k":"uebergang","mp":2622.0,"bp":4639.0,"sh":[2,8,18,13,1],"p":5,"g":6,"en":2.16},{"z":43,"s":"Tc","n":"Technetium","m":97.907,"c":7,"r":5,"k":"uebergang","mp":2157.0,"bp":4262.0,"sh":[2,8,18,13,2],"p":5,"g":7,"en":2.1},{"z":44,"s":"Ru","n":"Ruthenium","m":101.07,"c":8,"r":5,"k":"uebergang","mp":2333.0,"bp":4147.0,"sh":[2,8,18,15,1],"p":5,"g":8,"en":2.2},{"z":45,"s":"Rh","n":"Rhodium","m":102.906,"c":9,"r":5,"k":"uebergang","mp":1963.0,"bp":3695.0,"sh":[2,8,18,16,1],"p":5,"g":9,"en":2.28},{"z":46,"s":"Pd","n":"Palladium","m":106.42,"c":10,"r":5,"k":"uebergang","mp":1554.8,"bp":2963.0,"sh":[2,8,18,18],"p":5,"g":10,"en":2.2},{"z":47,"s":"Ag","n":"Silber","m":107.868,"c":11,"r":5,"k":"uebergang","mp":961.8,"bp":2162.0,"sh":[2,8,18,18,1],"p":5,"g":11,"i":"Leitet Strom und Wärme besser als jedes andere Metall. Schmuck, Besteck, Spiegel.","en":1.93},{"z":48,"s":"Cd","n":"Cadmium","m":112.414,"c":12,"r":5,"k":"uebergang","mp":321.1,"bp":767.0,"sh":[2,8,18,18,2],"p":5,"g":12,"en":1.69},{"z":49,"s":"In","n":"Indium","m":114.818,"c":13,"r":5,"k":"anderemetall","mp":156.6,"bp":2027.0,"sh":[2,8,18,18,3],"p":5,"g":13,"en":1.78},{"z":50,"s":"Sn","n":"Zinn","m":118.71,"c":14,"r":5,"k":"anderemetall","mp":231.9,"bp":2586.0,"sh":[2,8,18,18,4],"p":5,"g":14,"i":"Weißblechdosen sind mit Zinn überzogen. Zinn steckt auch im Lötzinn.","en":1.96},{"z":51,"s":"Sb","n":"Antimon","m":121.76,"c":15,"r":5,"k":"halbmetall","mp":630.6,"bp":1587.0,"sh":[2,8,18,18,5],"p":5,"g":15,"en":2.05},{"z":52,"s":"Te","n":"Tellur","m":127.6,"c":16,"r":5,"k":"halbmetall","mp":449.5,"bp":988.0,"sh":[2,8,18,18,6],"p":5,"g":16,"en":2.1},{"z":53,"s":"I","n":"Iod","m":126.904,"c":17,"r":5,"k":"halogen","mp":113.7,"bp":184.4,"sh":[2,8,18,18,7],"p":5,"g":17,"alt":"Jod","i":"Wichtig für die Schilddrüse. Iodlösung desinfiziert Wunden. Sein Dampf ist violett.","en":2.66},{"z":54,"s":"Xe","n":"Xenon","m":131.293,"c":18,"r":5,"k":"edelgas","mp":-111.8,"bp":-108.1,"sh":[2,8,18,18,8],"p":5,"g":18,"i":"Edelgas. In Autoscheinwerfern (Xenonlicht).","en":2.6},{"z":55,"s":"Cs","n":"Caesium","m":132.905,"c":1,"r":6,"k":"alkali","mp":28.5,"bp":671.0,"sh":[2,8,18,18,8,1],"p":6,"g":1,"alt":"Cäsium","i":"Wird in Atomuhren verwendet. Reagiert mit Wasser extrem heftig.","en":0.79},{"z":56,"s":"Ba","n":"Barium","m":137.327,"c":2,"r":6,"k":"erdalkali","mp":727.0,"bp":1845.0,"sh":[2,8,18,18,8,2],"p":6,"g":2,"i":"Bariumsalze färben Feuerwerk grün. Bariumsulfat dient als Kontrastmittel beim Röntgen.","en":0.89},{"z":57,"s":"La","n":"Lanthan","m":138.905,"c":3,"r":9,"k":"lanthanoid","mp":920.0,"bp":3464.0,"sh":[2,8,18,18,9,2],"p":6,"g":null,"en":1.1},{"z":58,"s":"Ce","n":"Cer","m":140.116,"c":4,"r":9,"k":"lanthanoid","mp":799.0,"bp":3443.0,"sh":[2,8,18,19,9,2],"p":6,"g":null,"en":1.12},{"z":59,"s":"Pr","n":"Praseodym","m":140.908,"c":5,"r":9,"k":"lanthanoid","mp":931.0,"bp":3520.0,"sh":[2,8,18,21,8,2],"p":6,"g":null,"en":1.13},{"z":60,"s":"Nd","n":"Neodym","m":144.242,"c":6,"r":9,"k":"lanthanoid","mp":1016.0,"bp":3074.0,"sh":[2,8,18,22,8,2],"p":6,"g":null,"en":1.14},{"z":61,"s":"Pm","n":"Promethium","m":144.913,"c":7,"r":9,"k":"lanthanoid","mp":1042.0,"bp":null,"sh":[2,8,18,23,8,2],"p":6,"g":null,"en":null},{"z":62,"s":"Sm","n":"Samarium","m":150.36,"c":8,"r":9,"k":"lanthanoid","mp":1072.0,"bp":1794.0,"sh":[2,8,18,24,8,2],"p":6,"g":null,"en":1.17},{"z":63,"s":"Eu","n":"Europium","m":151.964,"c":9,"r":9,"k":"lanthanoid","mp":822.0,"bp":1529.0,"sh":[2,8,18,25,8,2],"p":6,"g":null,"en":null},{"z":64,"s":"Gd","n":"Gadolinium","m":157.25,"c":10,"r":9,"k":"lanthanoid","mp":1313.0,"bp":3273.0,"sh":[2,8,18,25,9,2],"p":6,"g":null,"en":1.2},{"z":65,"s":"Tb","n":"Terbium","m":158.925,"c":11,"r":9,"k":"lanthanoid","mp":1359.0,"bp":3230.0,"sh":[2,8,18,27,8,2],"p":6,"g":null,"en":null},{"z":66,"s":"Dy","n":"Dysprosium","m":162.5,"c":12,"r":9,"k":"lanthanoid","mp":1412.0,"bp":2567.0,"sh":[2,8,18,28,8,2],"p":6,"g":null,"en":1.22},{"z":67,"s":"Ho","n":"Holmium","m":164.93,"c":13,"r":9,"k":"lanthanoid","mp":1472.0,"bp":2700.0,"sh":[2,8,18,29,8,2],"p":6,"g":null,"en":1.23},{"z":68,"s":"Er","n":"Erbium","m":167.259,"c":14,"r":9,"k":"lanthanoid","mp":1529.0,"bp":2868.0,"sh":[2,8,18,30,8,2],"p":6,"g":null,"en":1.24},{"z":69,"s":"Tm","n":"Thulium","m":168.934,"c":15,"r":9,"k":"lanthanoid","mp":1545.0,"bp":1950.0,"sh":[2,8,18,31,8,2],"p":6,"g":null,"en":1.25},{"z":70,"s":"Yb","n":"Ytterbium","m":173.045,"c":16,"r":9,"k":"lanthanoid","mp":824.0,"bp":1196.0,"sh":[2,8,18,32,8,2],"p":6,"g":null,"en":null},{"z":71,"s":"Lu","n":"Lutetium","m":174.967,"c":17,"r":9,"k":"lanthanoid","mp":1663.0,"bp":3402.0,"sh":[2,8,18,32,9,2],"p":6,"g":null,"en":1.0},{"z":72,"s":"Hf","n":"Hafnium","m":178.49,"c":4,"r":6,"k":"uebergang","mp":2233.0,"bp":4600.0,"sh":[2,8,18,32,10,2],"p":6,"g":4,"en":1.3},{"z":73,"s":"Ta","n":"Tantal","m":180.948,"c":5,"r":6,"k":"uebergang","mp":3017.0,"bp":5455.0,"sh":[2,8,18,32,11,2],"p":6,"g":5,"en":1.5},{"z":74,"s":"W","n":"Wolfram","m":183.84,"c":6,"r":6,"k":"uebergang","mp":3422.0,"bp":5555.0,"sh":[2,8,18,32,12,2],"p":6,"g":6,"i":"Hat mit 3422 °C den höchsten Schmelzpunkt aller Metalle: Glühwendel in Glühlampen.","en":1.7},{"z":75,"s":"Re","n":"Rhenium","m":186.207,"c":7,"r":6,"k":"uebergang","mp":3185.0,"bp":5590.0,"sh":[2,8,18,32,13,2],"p":6,"g":7,"en":1.9},{"z":76,"s":"Os","n":"Osmium","m":190.23,"c":8,"r":6,"k":"uebergang","mp":3033.0,"bp":5008.0,"sh":[2,8,18,32,14,2],"p":6,"g":8,"en":2.2},{"z":77,"s":"Ir","n":"Iridium","m":192.217,"c":9,"r":6,"k":"uebergang","mp":2446.0,"bp":4428.0,"sh":[2,8,18,32,15,2],"p":6,"g":9,"en":2.2},{"z":78,"s":"Pt","n":"Platin","m":195.084,"c":10,"r":6,"k":"uebergang","mp":1768.2,"bp":3825.0,"sh":[2,8,18,32,17,1],"p":6,"g":10,"i":"Edelmetall. Im Auto-Katalysator und in Schmuck.","en":2.2},{"z":79,"s":"Au","n":"Gold","m":196.967,"c":11,"r":6,"k":"uebergang","mp":1064.2,"bp":2836.0,"sh":[2,8,18,32,18,1],"p":6,"g":11,"i":"Edelmetall, das nicht rostet und nicht anläuft: Schmuck, Elektronik, Zahnersatz.","en":2.4},{"z":80,"s":"Hg","n":"Quecksilber","m":200.592,"c":12,"r":6,"k":"uebergang","mp":-38.8,"bp":356.6,"sh":[2,8,18,32,18,2],"p":6,"g":12,"i":"Das einzige Metall, das bei Raumtemperatur flüssig ist. Giftig, früher in Thermometern.","en":1.9},{"z":81,"s":"Tl","n":"Thallium","m":204.38,"c":13,"r":6,"k":"anderemetall","mp":304.0,"bp":1473.0,"sh":[2,8,18,32,18,3],"p":6,"g":13,"en":1.8},{"z":82,"s":"Pb","n":"Blei","m":207.2,"c":14,"r":6,"k":"anderemetall","mp":327.5,"bp":1749.0,"sh":[2,8,18,32,18,4],"p":6,"g":14,"i":"Schwer und giftig. Früher in Farben und Wasserrohren, heute vor allem in Autobatterien.","en":1.8},{"z":83,"s":"Bi","n":"Bismut","m":208.98,"c":15,"r":6,"k":"anderemetall","mp":271.4,"bp":1564.0,"sh":[2,8,18,32,18,5],"p":6,"g":15,"en":1.9},{"z":84,"s":"Po","n":"Polonium","m":209.0,"c":16,"r":6,"k":"anderemetall","mp":254.0,"bp":962.0,"sh":[2,8,18,32,18,6],"p":6,"g":16,"i":"Von Marie Curie entdeckt und nach ihrem Heimatland Polen benannt. Radioaktiv.","en":2.0},{"z":85,"s":"At","n":"Astat","m":210.0,"c":17,"r":6,"k":"halogen","mp":302.0,"bp":null,"sh":[2,8,18,32,18,7],"p":6,"g":17,"alt":"Astatin","en":2.2},{"z":86,"s":"Rn","n":"Radon","m":222.0,"c":18,"r":6,"k":"edelgas","mp":-71.0,"bp":-61.7,"sh":[2,8,18,32,18,8],"p":6,"g":18,"i":"Radioaktives Edelgas, das aus dem Boden aufsteigen kann.","en":null},{"z":87,"s":"Fr","n":"Francium","m":223.0,"c":1,"r":7,"k":"alkali","mp":21.0,"bp":null,"sh":[2,8,18,32,18,8,1],"p":7,"g":1,"en":0.7},{"z":88,"s":"Ra","n":"Radium","m":226.0,"c":2,"r":7,"k":"erdalkali","mp":696.0,"bp":null,"sh":[2,8,18,32,18,8,2],"p":7,"g":2,"i":"Von Marie und Pierre Curie entdeckt. Radioaktiv.","en":0.9},{"z":89,"s":"Ac","n":"Actinium","m":227.0,"c":3,"r":10,"k":"actinoid","mp":1050.0,"bp":3200.0,"sh":[2,8,18,32,18,9,2],"p":7,"g":null,"en":1.1},{"z":90,"s":"Th","n":"Thorium","m":232.038,"c":4,"r":10,"k":"actinoid","mp":1750.0,"bp":4785.0,"sh":[2,8,18,32,18,10,2],"p":7,"g":null,"en":1.3},{"z":91,"s":"Pa","n":"Protactinium","m":231.036,"c":5,"r":10,"k":"actinoid","mp":1572.0,"bp":null,"sh":[2,8,18,32,20,9,2],"p":7,"g":null,"en":1.5},{"z":92,"s":"U","n":"Uran","m":238.029,"c":6,"r":10,"k":"actinoid","mp":1135.0,"bp":4131.0,"sh":[2,8,18,32,21,9,2],"p":7,"g":null,"i":"Brennstoff in Kernkraftwerken. Radioaktiv.","en":1.7},{"z":93,"s":"Np","n":"Neptunium","m":237.0,"c":7,"r":10,"k":"actinoid","mp":644.0,"bp":null,"sh":[2,8,18,32,22,9,2],"p":7,"g":null,"en":1.3},{"z":94,"s":"Pu","n":"Plutonium","m":244.0,"c":8,"r":10,"k":"actinoid","mp":640.0,"bp":3228.0,"sh":[2,8,18,32,24,8,2],"p":7,"g":null,"i":"Entsteht in Kernreaktoren. Radioaktiv.","en":1.3},{"z":95,"s":"Am","n":"Americium","m":243.0,"c":9,"r":10,"k":"actinoid","mp":1176.0,"bp":null,"sh":[2,8,18,32,25,8,2],"p":7,"g":null,"en":null},{"z":96,"s":"Cm","n":"Curium","m":247.0,"c":10,"r":10,"k":"actinoid","mp":1345.0,"bp":null,"sh":[2,8,18,32,25,9,2],"p":7,"g":null,"en":null},{"z":97,"s":"Bk","n":"Berkelium","m":247.0,"c":11,"r":10,"k":"actinoid","mp":986.0,"bp":null,"sh":[2,8,18,32,27,8,2],"p":7,"g":null,"en":null},{"z":98,"s":"Cf","n":"Californium","m":251.0,"c":12,"r":10,"k":"actinoid","mp":900.0,"bp":null,"sh":[2,8,18,32,28,8,2],"p":7,"g":null,"en":null},{"z":99,"s":"Es","n":"Einsteinium","m":252.0,"c":13,"r":10,"k":"actinoid","mp":860.0,"bp":null,"sh":[2,8,18,32,29,8,2],"p":7,"g":null,"en":null},{"z":100,"s":"Fm","n":"Fermium","m":257.0,"c":14,"r":10,"k":"actinoid","mp":1527.0,"bp":null,"sh":[2,8,18,32,30,8,2],"p":7,"g":null,"en":null},{"z":101,"s":"Md","n":"Mendelevium","m":258.0,"c":15,"r":10,"k":"actinoid","mp":827.0,"bp":null,"sh":[2,8,18,32,31,8,2],"p":7,"g":null,"en":null},{"z":102,"s":"No","n":"Nobelium","m":259.0,"c":16,"r":10,"k":"actinoid","mp":827.0,"bp":null,"sh":[2,8,18,32,32,8,2],"p":7,"g":null,"en":null},{"z":103,"s":"Lr","n":"Lawrencium","m":262.0,"c":17,"r":10,"k":"actinoid","mp":1627.0,"bp":null,"sh":[2,8,18,32,32,8,3],"p":7,"g":null,"en":null},{"z":104,"s":"Rf","n":"Rutherfordium","m":267.0,"c":4,"r":7,"k":"uebergang","mp":null,"bp":null,"sh":[2,8,18,32,32,10,2],"p":7,"g":4,"en":null},{"z":105,"s":"Db","n":"Dubnium","m":268.0,"c":5,"r":7,"k":"uebergang","mp":null,"bp":null,"sh":[2,8,18,32,32,11,2],"p":7,"g":5,"en":null},{"z":106,"s":"Sg","n":"Seaborgium","m":271.0,"c":6,"r":7,"k":"uebergang","mp":null,"bp":null,"sh":[2,8,18,32,32,12,2],"p":7,"g":6,"en":null},{"z":107,"s":"Bh","n":"Bohrium","m":274.0,"c":7,"r":7,"k":"uebergang","mp":null,"bp":null,"sh":[2,8,18,32,32,13,2],"p":7,"g":7,"en":null},{"z":108,"s":"Hs","n":"Hassium","m":269.0,"c":8,"r":7,"k":"uebergang","mp":null,"bp":null,"sh":[2,8,18,32,32,14,2],"p":7,"g":8,"en":null},{"z":109,"s":"Mt","n":"Meitnerium","m":276.0,"c":9,"r":7,"k":"uebergang","mp":null,"bp":null,"sh":[2,8,18,32,32,15,2],"p":7,"g":9,"en":null},{"z":110,"s":"Ds","n":"Darmstadtium","m":281.0,"c":10,"r":7,"k":"uebergang","mp":null,"bp":null,"sh":[2,8,18,32,32,17,1],"p":7,"g":10,"en":null},{"z":111,"s":"Rg","n":"Roentgenium","m":281.0,"c":11,"r":7,"k":"uebergang","mp":null,"bp":null,"sh":[2,8,18,32,32,18,1],"p":7,"g":11,"en":null},{"z":112,"s":"Cn","n":"Copernicium","m":285.0,"c":12,"r":7,"k":"uebergang","mp":null,"bp":null,"sh":[2,8,18,32,32,18,2],"p":7,"g":12,"en":null},{"z":113,"s":"Nh","n":"Nihonium","m":286.0,"c":13,"r":7,"k":"anderemetall","mp":null,"bp":null,"sh":[2,8,18,32,32,18,3],"p":7,"g":13,"en":null},{"z":114,"s":"Fl","n":"Flerovium","m":289.0,"c":14,"r":7,"k":"anderemetall","mp":null,"bp":null,"sh":[2,8,18,32,32,18,4],"p":7,"g":14,"en":null},{"z":115,"s":"Mc","n":"Moscovium","m":288.0,"c":15,"r":7,"k":"anderemetall","mp":null,"bp":null,"sh":[2,8,18,32,32,18,5],"p":7,"g":15,"en":null},{"z":116,"s":"Lv","n":"Livermorium","m":293.0,"c":16,"r":7,"k":"anderemetall","mp":null,"bp":null,"sh":[2,8,18,32,32,18,6],"p":7,"g":16,"en":null},{"z":117,"s":"Ts","n":"Tenness","m":294.0,"c":17,"r":7,"k":"halogen","mp":null,"bp":null,"sh":[2,8,18,32,32,18,7],"p":7,"g":17,"en":null},{"z":118,"s":"Og","n":"Oganesson","m":294.0,"c":18,"r":7,"k":"edelgas","mp":null,"bp":null,"sh":[2,8,18,32,32,18,8],"p":7,"g":18,"en":null}];
+
+const KAT = {
+  alkali:       { n: 'Alkalimetalle',      c: '#f9a8a8' },
+  erdalkali:    { n: 'Erdalkalimetalle',   c: '#fbc08a' },
+  uebergang:    { n: 'Übergangsmetalle',   c: '#f6e58d' },
+  anderemetall: { n: 'Andere Metalle',     c: '#b9e3a1' },
+  halbmetall:   { n: 'Halbmetalle',        c: '#8fd9c4' },
+  nichtmetall:  { n: 'Nichtmetalle',       c: '#9fd0f5' },
+  halogen:      { n: 'Halogene',           c: '#c4b5f5' },
+  edelgas:      { n: 'Edelgase',           c: '#f3b3e0' },
+  lanthanoid:   { n: 'Lanthanoide',        c: '#d9c9a3' },
+  actinoid:     { n: 'Actinoide',          c: '#c9bfd6' }
+};
+const KATNAME1 = { alkali: 'Alkalimetall', erdalkali: 'Erdalkalimetall', uebergang: 'Übergangsmetall', anderemetall: 'Metall', halbmetall: 'Halbmetall', nichtmetall: 'Nichtmetall', halogen: 'Halogen', edelgas: 'Edelgas', lanthanoid: 'Lanthanoid', actinoid: 'Actinoid' };
+const METALLE = new Set(['alkali', 'erdalkali', 'uebergang', 'anderemetall', 'lanthanoid', 'actinoid']);
+function typ(e) { return METALLE.has(e.k) ? 'metall' : (e.k === 'halbmetall' ? 'halbmetall' : 'nichtmetall'); }
+const TYP = {
+  metall:      { n: 'Metalle',      c: '#f4c27a' },
+  halbmetall:  { n: 'Halbmetalle',  c: '#8fd9c4' },
+  nichtmetall: { n: 'Nichtmetalle', c: '#9fd0f5' }
+};
+const ZU = {
+  fest:      { n: 'fest',        c: '#e2e8f0', k: 'f' },
+  fluessig:  { n: 'flüssig',     c: '#60a5fa', k: 'fl' },
+  gas:       { n: 'gasförmig',   c: '#fb923c', k: 'g' },
+  unbekannt: { n: 'unbekannt',   c: '#ffffff', k: '?' }
+};
+const SCHALEN = ['K', 'L', 'M', 'N', 'O', 'P', 'Q'];
+const nf = (x, d = 1) => x.toLocaleString('de-DE', { maximumFractionDigits: d });
+
+// Aggregatzustand bei Temperatur T (°C, Normaldruck)
+function zustand(e, T) {
+  if (e.sub != null) return T < e.sub ? 'fest' : 'gas';              // sublimiert (Arsen)
+  if (e.bp != null && T >= e.bp) return 'gas';
+  if (e.mp != null) { if (T < e.mp) return 'fest'; return e.bp != null ? 'fluessig' : 'unbekannt'; }
+  if (e.bp != null) return 'fluessig';                                // Helium: bei Normaldruck nie fest
+  return 'unbekannt';
+}
+
+let modus = 'kat', temp = 20, auswahl = null, filter = null, suche = '';
+const pt = document.getElementById('pt');
+
+const cells = {};
+
+/* ---------- Tabelle aufbauen ---------- */
+let ansicht = 'haupt';   // 'haupt' = nur Hauptgruppen, 'alle' = komplettes PSE
+const istHaupt = e => e.g != null && (e.g <= 2 || e.g >= 13);
+const sichtbar = () => ansicht === 'haupt' ? EL.filter(istHaupt) : EL;
+const spalte = e => ansicht === 'haupt' ? (e.g <= 2 ? e.g : e.g - 10) : e.c;
+const enText = e => e.en != null ? nf(e.en, 2) : '–';
+const main = document.getElementById('main'), detail = document.getElementById('detail');
+function bauen() {
+  for (const k in cells) delete cells[k];
+  pt.innerHTML = '';
+  const haupt = ansicht === 'haupt';
+  pt.classList.toggle('basic', haupt);
+  pt.style.setProperty('--cols', haupt ? 8 : 18);
+  const frag = document.createDocumentFragment();
+  const gruppen = haupt ? [1, 2, 13, 14, 15, 16, 17, 18] : Array.from({ length: 18 }, (_, i) => i + 1);
+  gruppen.forEach((g, i) => { const d = document.createElement('div'); d.className = 'gl'; d.style.gridColumn = i + 2; d.style.gridRow = 1; d.textContent = g; frag.appendChild(d); });
+  for (let p = 1; p <= 7; p++) { const d = document.createElement('div'); d.className = 'pl'; d.style.gridColumn = 1; d.style.gridRow = p + 1; d.textContent = p; frag.appendChild(d); }
+  if (!haupt) {
+    [['57–71', 6], ['89–103', 7]].forEach(([tx, r]) => { const d = document.createElement('div'); d.className = 'ph'; d.style.gridColumn = 4; d.style.gridRow = r + 1; d.textContent = tx; d.setAttribute('aria-hidden', 'true'); frag.appendChild(d); });
+    [['Lanthanoide', 10], ['Actinoide', 11]].forEach(([tx, r]) => { const d = document.createElement('div'); d.className = 'fl'; d.style.gridRow = r; d.textContent = tx; frag.appendChild(d); });
+  }
+  sichtbar().forEach(e => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'el';
+    b.style.gridColumn = spalte(e) + 1; b.style.gridRow = e.r + 1;
+    b.dataset.z = e.z; b.setAttribute('aria-label', e.n + ', Symbol ' + e.s + ', Ordnungszahl ' + e.z);
+    b.innerHTML = '<i class="z">' + e.z + '</i><b class="s">' + e.s + '</b><span class="nm">' + e.n + '</span><i class="ma">' + nf(e.m, haupt ? 2 : 1) + '</i><i class="en">' + enText(e) + '</i><i class="st"></i>';
+    b.addEventListener('click', () => klick(e));
+    cells[e.z] = b; frag.appendChild(b);
+  });
+  pt.appendChild(frag);
+  kompakt(); aktualisieren();
+}
+
+/* ---------- Färbung, Legende, Filter ---------- */
+function farbe(e) {
+  if (modus === 'kat') return KAT[e.k].c;
+  if (modus === 'metall') return TYP[typ(e)].c;
+  return ZU[zustand(e, temp)].c;
+}
+function schluessel(e) {
+  if (modus === 'kat') return e.k;
+  if (modus === 'metall') return typ(e);
+  return zustand(e, temp);
+}
+function aktualisieren() {
+  const q = suche.trim().toLowerCase();
+  const treffer = new Set();
+  if (q) EL.forEach(e => { if (e.n.toLowerCase().includes(q) || e.s.toLowerCase() === q || String(e.z) === q || (e.alt && e.alt.toLowerCase().includes(q))) treffer.add(e.z); });
+  const zeig = modus === 'zustand';
+  pt.classList.toggle('zustand', zeig);
+  const zaehl = { fest: 0, fluessig: 0, gas: 0, unbekannt: 0 };
+  sichtbar().forEach(e => {
+    const b = cells[e.z]; if (!b) return;
+    const key = schluessel(e);
+    b.style.background = farbe(e);
+    b.classList.toggle('unbekannt', zeig && key === 'unbekannt');
+    const dim = (filter && key !== filter) || (q && !treffer.has(e.z));
+    b.classList.toggle('dim', !!dim && !quiz.aktiv);
+    b.classList.toggle('hit', !!q && treffer.has(e.z));
+    if (zeig) { const z = zustand(e, temp); zaehl[z]++; b.querySelector('.st').textContent = ZU[z].k; }
+  });
+  if (zeig) {
+    document.getElementById('summary').textContent =
+      'Bei ' + nf(temp, 0) + ' °C: ' + zaehl.fest + ' Feststoffe, ' + zaehl.fluessig + ' Flüssigkeiten, ' + zaehl.gas + ' Gase' + (zaehl.unbekannt ? ', ' + zaehl.unbekannt + ' unbekannt' : '') + '.';
+  }
+  legende();
+}
+function legende() {
+  const L = document.getElementById('legend');
+  const da = new Set(sichtbar().map(schluessel));
+  const eintraege = (modus === 'kat' ? Object.entries(KAT) : modus === 'metall' ? Object.entries(TYP) : Object.entries(ZU).map(([k, v]) => [k, { n: v.n, c: v.c }])).filter(([k]) => da.has(k));
+  L.innerHTML = '';
+  eintraege.forEach(([k, v]) => {
+    const b = document.createElement('button'); b.type = 'button';
+    b.setAttribute('aria-pressed', filter === k ? 'true' : 'false');
+    b.innerHTML = '<i style="background:' + v.c + '"></i>' + v.n;
+    b.addEventListener('click', () => { filter = filter === k ? null : k; aktualisieren(); });
+    L.appendChild(b);
+  });
+}
+document.querySelectorAll('#modusSeg button').forEach(b => b.addEventListener('click', () => {
+  modus = b.dataset.modus; filter = null;
+  document.querySelectorAll('#modusSeg button').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+  document.getElementById('temp').classList.toggle('on', modus === 'zustand');
+  aktualisieren();
+}));
+function setAnsicht(a) {
+  if (quiz.aktiv) quizStop();
+  ansicht = a; filter = null;
+  document.querySelectorAll('#ansichtSeg button').forEach(x => x.setAttribute('aria-pressed', x.dataset.ansicht === a ? 'true' : 'false'));
+  bauen();
+}
+document.querySelectorAll('#ansichtSeg button').forEach(b => b.addEventListener('click', () => setAnsicht(b.dataset.ansicht)));
+
+/* ---------- Temperatur ---------- */
+const tRange = document.getElementById('tRange'), tOut = document.getElementById('tOut');
+function setTemp(t) { temp = t; tRange.value = t; tOut.textContent = nf(t, 0) + ' °C'; aktualisieren(); }
+tRange.addEventListener('input', () => setTemp(+tRange.value));
+[['−196 °C: flüssiger Stickstoff', -196], ['20 °C: Raumtemperatur', 20], ['100 °C: Wasser siedet', 100], ['1000 °C', 1000], ['3500 °C', 3500]].forEach(([t, v]) => {
+  const b = document.createElement('button'); b.type = 'button'; b.textContent = t; b.addEventListener('click', () => setTemp(v));
+  document.getElementById('presets').appendChild(b);
+});
+
+/* ---------- Suche ---------- */
+const sucheEl = document.getElementById('suche');
+sucheEl.addEventListener('input', () => { suche = sucheEl.value; aktualisieren(); });
+sucheEl.addEventListener('keydown', ev => {
+  if (ev.key !== 'Enter') return;
+  const q = suche.trim().toLowerCase(); if (!q) return;
+  const e = EL.find(x => x.n.toLowerCase().startsWith(q) || x.s.toLowerCase() === q || String(x.z) === q || (x.alt && x.alt.toLowerCase().startsWith(q))) || EL.find(x => x.n.toLowerCase().includes(q));
+  if (e) { if (!cells[e.z]) setAnsicht('alle'); klick(e); }
+});
+
+/* ---------- Detailansicht ---------- */
+function bohr(e) {
+  const sh = e.sh, n = sh.length;
+  const N = Math.max(0, Math.round(e.m) - e.z);
+  let s = '<svg viewBox="0 0 200 200" role="img" aria-label="Schalenmodell von ' + e.n + ': ' + sh.join(', ') + ' Elektronen auf den Schalen">';
+  const rad = i => n === 1 ? 52 : 30 + i * (66 / (n - 1));
+  sh.forEach((cnt, i) => { s += '<circle cx="100" cy="100" r="' + rad(i).toFixed(1) + '" fill="none" stroke="#94a3b8" stroke-width="1.2"/>'; });
+  s += '<circle cx="100" cy="100" r="19" fill="#fde68a" stroke="#b45309" stroke-width="1.5"/>';
+  s += '<text x="100" y="97" text-anchor="middle" font-size="9" font-weight="700" fill="#7c2d12">' + e.z + 'p⁺</text>';
+  s += '<text x="100" y="108" text-anchor="middle" font-size="9" fill="#7c2d12">' + N + 'n</text>';
+  sh.forEach((cnt, i) => {
+    const r = rad(i), außen = i === n - 1;
+    const dir = i % 2 ? -1 : 1, dur = (10 + i * 5) + 's';
+    s += '<g class="ring" style="--d:' + dur + ';animation-direction:' + (dir > 0 ? 'normal' : 'reverse') + '">';
+    for (let k = 0; k < cnt; k++) {
+      const a = -Math.PI / 2 + k * 2 * Math.PI / cnt;
+      s += '<circle cx="' + (100 + r * Math.cos(a)).toFixed(1) + '" cy="' + (100 + r * Math.sin(a)).toFixed(1) + '" r="4" fill="' + (außen ? '#f97316' : '#2563eb') + '" stroke="#fff" stroke-width=".8"/>';
+    }
+    s += '</g>';
+  });
+  return s + '</svg>';
+}
+let detailE = null, scrollMerk = 0;
+const weniger = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function fuelleDetail(e) {
+  const N = Math.max(0, Math.round(e.m) - e.z);
+  const z = ZU[zustand(e, 20)].n;
+  const smp = e.sub != null ? '–' : (e.mp != null ? nf(e.mp, 1) + ' °C' : (e.z === 2 ? 'nur unter hohem Druck' : 'unbekannt'));
+  const sdp = e.sub != null ? 'sublimiert bei ' + nf(e.sub, 0) + ' °C' : (e.bp != null ? nf(e.bp, 1) + ' °C' : 'unbekannt');
+  const aussen = e.sh[e.sh.length - 1];
+  detail.innerHTML =
+    '<button class="btn" id="dBack" type="button">← Zur Tabelle</button>' +
+    '<h2>' + e.n + '</h2><p class="sub">' + KATNAME1[e.k] + ' · ' + (e.g ? 'Gruppe ' + e.g + ' · ' : '') + 'Periode ' + e.p + '</p>' +
+    '<div class="dgrid"><div class="el bigtile" style="background:' + KAT[e.k].c + '"><i class="z">' + e.z + '</i><b class="s">' + e.s + '</b><span class="nm">' + e.n + '</span><i class="ma">' + nf(e.m, 2) + '</i><i class="en">' + enText(e) + '</i></div>' +
+    '<div class="dright"><div class="rowtop">' + bohr(e) + '<dl class="facts">' +
+    '<div><dt>Aggregatzustand bei 20 °C</dt><dd>' + z + '</dd></div>' +
+    '<div><dt>Schmelzpunkt</dt><dd>' + smp + '</dd></div>' +
+    '<div><dt>Siedepunkt</dt><dd>' + sdp + '</dd></div>' +
+    '<div><dt>Protonen</dt><dd>' + e.z + '</dd></div>' +
+    '<div><dt>Neutronen (ca.)</dt><dd>' + N + '</dd></div>' +
+    '<div><dt>Elektronen</dt><dd>' + e.z + '</dd></div>' +
+    '<div><dt>Elektronen je Schale (' + SCHALEN.slice(0, e.sh.length).join(' · ') + ')</dt><dd>' + e.sh.join(' | ') + '</dd></div>' +
+    '<div><dt>Außenelektronen</dt><dd>' + aussen + '</dd></div>' +
+    '<div><dt>Metallcharakter</dt><dd>' + TYP[typ(e)].n.replace(/e$/, '') + '</dd></div>' +
+    '</dl></div>' +
+    (e.i ? '<p class="info">' + e.i + '</p>' : '') +
+    (e.z > 103 ? '<p class="info">Dieses Element wurde nur künstlich in winzigen Mengen hergestellt. Seine Eigenschaften sind kaum untersucht.</p>' : '') +
+    '</div></div>';
+  document.getElementById('dBack').addEventListener('click', schliesseDetail);
+}
+function oeffneDetail(e) {
+  detailE = e; scrollMerk = window.scrollY;
+  fuelleDetail(e);
+  main.classList.add('out');
+  setTimeout(() => { main.hidden = true; detail.hidden = false; window.scrollTo(0, 0); document.getElementById('dBack').focus({ preventScroll: true }); }, weniger ? 0 : 300);
+}
+function schliesseDetail() {
+  if (detail.hidden) return;
+  detail.hidden = true; main.hidden = false; kompakt();
+  void main.offsetWidth; main.classList.remove('out');
+  window.scrollTo(0, scrollMerk);
+  const b = detailE && cells[detailE.z]; if (b) b.focus({ preventScroll: true });
+}
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape') schliesseDetail(); });
+function klick(e) {
+  if (quiz.aktiv) { antwort(e); return; }
+  oeffneDetail(e);
+}
+
+/* ---------- Quiz ---------- */
+const quiz = { aktiv: false, fragen: [], i: 0, richtig: 0, fehler: 0, gesperrt: false };
+const POOL = EL.filter(e => e.z <= 36 || [47, 50, 53, 54, 56, 74, 78, 79, 80, 82, 92].includes(e.z));
+const mischen = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+function frageBauen(art) {
+  const PV = POOL.filter(x => sichtbar().includes(x)); const e = PV[Math.floor(Math.random() * PV.length)];
+  if (art === 'name') return { t: 'Wo steht <b>' + e.n + '</b>?', ok: x => x.z === e.z, tipp: e };
+  if (art === 'z') return { t: 'Welches Element hat die Ordnungszahl <b>' + e.z + '</b>?', ok: x => x.z === e.z, tipp: e };
+  if (art === 'aussen') {
+    const gr = EL.filter(x => x.g && (x.g <= 2 || x.g >= 13) && x.z !== 2);
+    const x0 = gr[Math.floor(Math.random() * gr.length)]; const n = x0.sh[x0.sh.length - 1];
+    return { t: 'Klicke ein Element der Hauptgruppen 1, 2 oder 13–18 mit <b>' + n + ' Außenelektron' + (n > 1 ? 'en' : '') + '</b> an.', ok: x => x.g && (x.g <= 2 || x.g >= 13) && x.sh[x.sh.length - 1] === n && x.z !== 2, tipp: x0 };
+  }
+  if (art === 'kat') {
+    const ks = ['alkali', 'erdalkali', 'halogen', 'edelgas', 'halbmetall'];
+    const k = ks[Math.floor(Math.random() * ks.length)];
+    return { t: 'Klicke ein <b>' + KATNAME1[k] + '</b> an.', ok: x => x.k === k, tipp: EL.find(x => x.k === k) };
+  }
+  const fl = Math.random() < .5;
+  return fl ? { t: 'Klicke ein Element an, das bei <b>20 °C flüssig</b> ist.', ok: x => zustand(x, 20) === 'fluessig', tipp: EL[34] }
+            : { t: 'Klicke ein Element an, das bei <b>20 °C gasförmig</b> ist.', ok: x => zustand(x, 20) === 'gas', tipp: EL[0] };
+}
+function quizStart() {
+  quiz.aktiv = true; quiz.i = 0; quiz.richtig = 0; quiz.fehler = 0; quiz.gesperrt = false;
+  const arten = mischen(['name', 'name', 'name', 'name', 'kat', 'kat', 'kat', 'aussen', 'aussen', 'fz']);
+  quiz.fragen = arten.map(frageBauen);
+  document.getElementById('quizbar').classList.add('on');
+  document.getElementById('qAgain').hidden = true; document.getElementById('qStop').hidden = false;
+  pt.classList.add('quiz'); frage();
+}
+function frage() {
+  const f = quiz.fragen[quiz.i];
+  document.getElementById('qText').innerHTML = f.t;
+  document.getElementById('qNr').textContent = 'Frage ' + (quiz.i + 1) + ' von ' + quiz.fragen.length;
+  document.getElementById('qScore').textContent = 'Richtig: ' + quiz.richtig;
+  const fb = document.getElementById('qFb'); fb.textContent = ''; fb.className = 'fb'; quiz.versuche = 0; quiz.gesperrt = false;
+  aktualisieren();
+}
+function antwort(e) {
+  if (quiz.gesperrt) return;
+  const f = quiz.fragen[quiz.i], b = cells[e.z], fb = document.getElementById('qFb');
+  if (f.ok(e)) {
+    quiz.gesperrt = true; if (quiz.versuche === 0) quiz.richtig++;
+    b.classList.remove('wrong'); void b.offsetWidth; b.classList.add('right');
+    fb.textContent = '✔ Richtig: ' + e.n + ' (' + e.s + ')'; fb.className = 'fb ok';
+    setTimeout(() => { b.classList.remove('right'); quiz.i++; quiz.i < quiz.fragen.length ? frage() : quizEnde(); }, 1100);
+  } else {
+    quiz.versuche++; b.classList.remove('wrong'); void b.offsetWidth; b.classList.add('wrong');
+    fb.textContent = '✘ Das war ' + e.n + ' (' + e.s + '). Versuch es noch einmal.'; fb.className = 'fb no';
+  }
+}
+function quizEnde() {
+  document.getElementById('qText').innerHTML = 'Geschafft! Du hast <b>' + quiz.richtig + ' von ' + quiz.fragen.length + '</b> Fragen gleich beim ersten Versuch richtig beantwortet.';
+  document.getElementById('qNr').textContent = ''; document.getElementById('qScore').textContent = '';
+  document.getElementById('qFb').textContent = '';
+  document.getElementById('qAgain').hidden = false; document.getElementById('qStop').hidden = true; quiz.gesperrt = true;
+}
+function quizStop() { quiz.aktiv = false; document.getElementById('quizbar').classList.remove('on'); pt.classList.remove('quiz'); aktualisieren(); }
+document.getElementById('quizStart').addEventListener('click', () => quiz.aktiv ? quizStop() : quizStart());
+document.getElementById('qStop').addEventListener('click', quizStop);
+document.getElementById('qAgain').addEventListener('click', quizStart);
+
+/* ---------- Größe der Kacheln ---------- */
+let zoom = 1;
+function zoomSetzen(z) { zoom = Math.max(.7, Math.min(1.6, z)); pt.style.setProperty('--zoom', zoom); kompakt(); }
+document.getElementById('zIn').addEventListener('click', () => zoomSetzen(zoom + .15));
+document.getElementById('zOut').addEventListener('click', () => zoomSetzen(zoom - .15));
+function kompakt() { const b = cells[1]; if (!b) return; const w = b.getBoundingClientRect().width; if (!w) return; pt.classList.toggle('compact', w < (ansicht === 'haupt' ? 62 : 48)); pt.classList.toggle('tiny', w < 54); }
+window.addEventListener('resize', kompakt);
+
+/* ---------- Start ---------- */
+bauen();
+</script>
+</body>
+</html>
