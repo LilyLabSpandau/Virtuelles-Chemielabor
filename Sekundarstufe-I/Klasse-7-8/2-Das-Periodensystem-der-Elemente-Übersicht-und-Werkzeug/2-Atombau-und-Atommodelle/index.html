@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atomwerkstatt – vom Periodensystem zum Atom</title>
+<style>
+  :root { --ink:#eaf0ff; --muted:#9fb0d6; --cy:#4fd1ff; --vi:#9b7bff; --red:#ff5d73; --gry:#9db0cf; --ok:#5ee6a8; --bad:#ff7d7d; --warn:#ffd166; --line:rgba(150,170,255,.24); }
+  * { box-sizing:border-box; }
+  html { -webkit-text-size-adjust:100%; }
+  body { margin:0; min-height:100vh; color:var(--ink); font-family:'Segoe UI',system-ui,-apple-system,Roboto,sans-serif; line-height:1.5;
+    background: radial-gradient(ellipse at 15% -5%, #3a1f7a 0%, rgba(58,31,122,0) 55%), radial-gradient(ellipse at 95% 25%, #0a4a6e 0%, rgba(10,74,110,0) 50%), radial-gradient(ellipse at 50% 110%, #5b1d5e 0%, rgba(91,29,94,0) 45%), #070a1c; background-attachment:fixed; }
+  body::before { content:''; position:fixed; inset:0; pointer-events:none; opacity:.7;
+    background-image: radial-gradient(1.3px 1.3px at 8% 12%, #fff, transparent), radial-gradient(1px 1px at 22% 38%, #cfe3ff, transparent), radial-gradient(1.4px 1.4px at 37% 8%, #fff, transparent), radial-gradient(1px 1px at 51% 27%, #ffe9c7, transparent), radial-gradient(1.2px 1.2px at 66% 14%, #fff, transparent), radial-gradient(1px 1px at 79% 41%, #cfe3ff, transparent), radial-gradient(1.5px 1.5px at 91% 9%, #fff, transparent), radial-gradient(1px 1px at 14% 66%, #fff, transparent), radial-gradient(1.2px 1.2px at 33% 83%, #cfe3ff, transparent), radial-gradient(1px 1px at 58% 72%, #fff, transparent), radial-gradient(1.4px 1.4px at 73% 88%, #ffe9c7, transparent), radial-gradient(1px 1px at 88% 63%, #fff, transparent), radial-gradient(1px 1px at 4% 91%, #fff, transparent), radial-gradient(1.2px 1.2px at 45% 55%, #cfe3ff, transparent); }
+  .wrap { position:relative; max-width:1100px; margin:0 auto; padding:12px 12px 90px; }
+  .top { display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; }
+  .back { color:#fff; background:rgba(255,255,255,.12); border:1px solid var(--line); text-decoration:none; font-weight:700; font-size:14px; padding:8px 14px; border-radius:999px; }
+  h1 { margin:8px 0 0; font-size:clamp(24px,5.4vw,36px); line-height:1.15; letter-spacing:.3px; background:linear-gradient(90deg,#7df9ff,#b69cff 60%,#ff9bd5); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .sub { color:var(--muted); margin:4px 0 6px; font-size:15px; }
+  .glass { background:linear-gradient(160deg, rgba(40,46,96,.72), rgba(14,18,44,.8)); border:1px solid var(--line); border-radius:18px; padding:14px; box-shadow:0 10px 34px rgba(0,0,0,.35); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); }
+  h2 { margin:0 0 6px; font-size:19px; } h3 { margin:0 0 4px; font-size:16.5px; }
+  .muted { color:var(--muted); }
+  b.p { color:#ff8da0; } b.n { color:#c6d4ea; } b.e { color:#7df9ff; }
+
+  .btn { border:0; border-radius:11px; padding:11px 16px; font:inherit; font-size:15.5px; font-weight:700; color:#fff; cursor:pointer; background:linear-gradient(135deg,#1fb6ff,#7a5cff); box-shadow:0 4px 14px rgba(80,120,255,.35); }
+  .btn:disabled { opacity:.4; cursor:not-allowed; box-shadow:none; }
+  .btn.sec { background:rgba(255,255,255,.1); border:1px solid var(--line); box-shadow:none; color:var(--ink); }
+  .btn.go { background:linear-gradient(135deg,#19c98a,#1fb6ff); }
+  .row { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; align-items:center; }
+
+  /* Atomkarte */
+  .stage { text-align:center; padding:10px; position:relative; }
+  .stage svg { width:100%; max-width:440px; height:auto; display:block; margin:0 auto; }
+  .stage.win { box-shadow:0 0 0 2px var(--ok), 0 0 46px rgba(94,230,168,.4); }
+  .chips { display:flex; flex-wrap:wrap; justify-content:center; gap:6px; margin-top:6px; }
+  .chip { display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,.08); border:1px solid var(--line); border-radius:999px; padding:4px 11px; font-size:14px; font-weight:700; }
+  .chip i { width:12px; height:12px; border-radius:50%; display:inline-block; }
+  .chip i.p { background:#ff5d73; } .chip i.n { background:#9db0cf; } .chip i.e { background:#4fe3ff; }
+  .chip.ladung.ok { border-color:var(--ok); color:var(--ok); } .chip.ladung.no { border-color:var(--warn); color:var(--warn); }
+
+  /* Elementkachel */
+  .tile { --kc:#4fd1ff; display:grid; grid-template-columns:auto 1fr; gap:2px 14px; align-items:center; padding:12px 14px; border-radius:16px; border:2px solid var(--kc); background:linear-gradient(150deg, rgba(255,255,255,.1), rgba(0,0,0,.25)); box-shadow:0 0 26px -6px var(--kc); }
+  .tile .sym { font-size:50px; font-weight:800; line-height:1; text-align:center; min-width:76px; }
+  .tile .nm { font-size:19px; font-weight:700; }
+  .tile .f { border-radius:8px; padding:2px 8px; display:inline-block; border:1px dashed transparent; transition:.2s; }
+  .tile .f.hl { border-color:var(--warn); background:rgba(255,209,102,.18); box-shadow:0 0 14px rgba(255,209,102,.45); }
+  .tile .fz { font-size:22px; font-weight:800; } .tile .fl { font-size:12px; color:var(--muted); display:block; line-height:1.1; }
+  .tile .fg { display:flex; flex-wrap:wrap; gap:6px; grid-column:1 / -1; margin-top:6px; }
+  .tile .fg .f { background:rgba(0,0,0,.25); font-size:15px; }
+  .k-alkali { --kc:#ff7a59; } .k-erdalkali { --kc:#ffb347; } .k-halbmetall { --kc:#7bd88f; } .k-nichtmetall { --kc:#4fd1ff; } .k-halogen { --kc:#c792ea; } .k-edelgas { --kc:#ff8fb8; } .k-anderemetall { --kc:#9aa8c7; }
+
+  .dots { display:flex; gap:5px; margin:2px 0 8px; } .dots i { flex:1; height:6px; border-radius:4px; background:rgba(255,255,255,.14); } .dots i.on { background:var(--cy); } .dots i.done { background:var(--ok); }
+  .stepbox p { margin:6px 0; font-size:16.5px; } .stepbox .calc { background:rgba(255,255,255,.07); border-left:4px solid var(--cy); border-radius:8px; padding:7px 11px; margin:8px 0; }
+  .opts { display:flex; flex-wrap:wrap; gap:8px; margin:8px 0; }
+  .opt { min-width:64px; border:2px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-size:18px; font-weight:800; border-radius:12px; padding:10px 18px; cursor:pointer; }
+  .opt:hover { border-color:var(--cy); } .opt.good { border-color:var(--ok); background:rgba(94,230,168,.18); } .opt.bad { border-color:var(--bad); background:rgba(255,125,125,.16); animation:shake .3s; }
+  @keyframes shake { 25% { transform:translateX(-4px); } 75% { transform:translateX(4px); } }
+  .fb { margin-top:8px; padding:9px 12px; border-radius:10px; font-size:15px; display:none; } .fb.show { display:block; }
+  .fb.ok { background:rgba(94,230,168,.14); border:1px solid rgba(94,230,168,.5); } .fb.no { background:rgba(255,125,125,.13); border:1px solid rgba(255,125,125,.5); } .fb.info { background:rgba(255,255,255,.07); border:1px solid var(--line); }
+  .rules { margin:6px 0 0; padding:0; list-style:none; counter-reset:r; } .rules li { counter-increment:r; display:flex; gap:10px; margin:7px 0; align-items:flex-start; }
+  .rules li::before { content:counter(r); flex:none; width:26px; height:26px; border-radius:50%; background:linear-gradient(135deg,#1fb6ff,#7a5cff); font-weight:800; font-size:14px; display:flex; align-items:center; justify-content:center; margin-top:1px; }
+
+  /* Werkstatt */
+  .seg { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+  .seg button { flex:1 1 auto; border:1px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-weight:700; font-size:14.5px; padding:9px 12px; border-radius:999px; cursor:pointer; }
+  .seg button.on { background:rgba(79,209,255,.22); border-color:var(--cy); color:#fff; }
+  .werk { display:grid; gap:14px; grid-template-columns:1fr; grid-template-areas:'task' 'stage' 'bench' 'pick'; }
+  @media (min-width:900px) { .werk { grid-template-columns:minmax(0,1fr) minmax(0,1fr); grid-template-areas:'stage task' 'stage bench' 'stage pick'; align-items:start; } }
+  #aTask { grid-area:task; } #aStage { grid-area:stage; } #aBench { grid-area:bench; } #aPick { grid-area:pick; }
+  .bench .grp { margin:6px 0 10px; } .bench .grp > b { display:block; font-size:13px; letter-spacing:.8px; text-transform:uppercase; color:var(--muted); margin-bottom:5px; }
+  .step { display:flex; align-items:center; justify-content:space-between; gap:8px; background:rgba(255,255,255,.06); border:1px solid var(--line); border-radius:12px; padding:5px 6px 5px 12px; margin:6px 0; }
+  .step .lab { font-weight:700; font-size:15px; } .step .lab small { color:var(--muted); font-weight:500; }
+  .step .ctl { display:flex; align-items:center; gap:6px; } .step .val { min-width:30px; text-align:center; font-size:19px; font-weight:800; }
+  .step button { width:44px; height:44px; border-radius:11px; border:1px solid var(--line); background:rgba(255,255,255,.1); color:#fff; font-size:24px; font-weight:700; cursor:pointer; }
+  .step button:active { background:rgba(79,209,255,.35); }
+  .step.p .lab { color:#ff8da0; } .step.e .lab { color:#7df9ff; }
+  .msg { min-height:22px; font-size:14.5px; color:var(--warn); margin:2px 0 0; }
+  .tips .tip { background:rgba(255,209,102,.12); border:1px dashed rgba(255,209,102,.55); border-radius:10px; padding:7px 11px; margin-top:7px; font-size:15px; }
+  .pse { display:grid; grid-template-columns:20px repeat(8,minmax(0,1fr)); gap:4px; align-items:stretch; }
+  .pse .hd { font-size:12px; text-align:center; color:var(--muted); align-self:end; font-weight:700; }
+  .pse .rl { font-size:12px; color:var(--muted); align-self:center; text-align:center; font-weight:700; }
+  .pse .em { visibility:hidden; }
+  .ptile { --kc:#4fd1ff; aspect-ratio:1/1; min-height:38px; border-radius:9px; border:1.5px solid var(--kc); background:linear-gradient(150deg, rgba(255,255,255,.1), rgba(0,0,0,.28)); color:var(--ink); font:inherit; cursor:pointer; padding:0; display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1.05; position:relative; }
+  .ptile small { font-size:9.5px; color:var(--muted); } .ptile b { font-size:16px; }
+  .ptile.sel { background:linear-gradient(150deg, var(--kc), rgba(0,0,0,.35)); box-shadow:0 0 16px var(--kc); transform:scale(1.06); z-index:2; } .ptile.sel small { color:#fff; }
+  .ptile.ok { border-color:var(--ok); box-shadow:0 0 14px rgba(94,230,168,.6); } .ptile.bad { border-color:var(--bad); animation:shake .3s; opacity:.55; }
+  .ptile.free { cursor:default; }
+  .res { list-style:none; margin:8px 0 0; padding:0; } .res li { padding:6px 10px; border-radius:9px; margin:5px 0; font-size:15px; } .res li.ok { background:rgba(94,230,168,.13); } .res li.no { background:rgba(255,125,125,.13); }
+  .big { font-size:17px; font-weight:700; }
+  .impressum { position:fixed; bottom:10px; right:10px; background:rgba(0,0,0,.6); color:#fff; padding:5px 10px; text-decoration:none; border-radius:5px; font-family:sans-serif; font-size:12px; z-index:9999; }
+  details.regel { margin:0 0 12px; } details.regel summary { cursor:pointer; font-weight:700; padding:10px 14px; border-radius:14px; border:1px solid var(--line); background:rgba(255,255,255,.07); }
+  details.regel .glass { margin-top:8px; }
+  @media (max-width:480px) { .glass { padding:12px; } .tile .sym { font-size:42px; min-width:62px; } }
+
+  /* ===== Werkstatt 2.0 ===== */
+  .orbs { position:fixed; inset:0; pointer-events:none; overflow:hidden; z-index:0; }
+  .orbs i { position:absolute; border-radius:50%; filter:blur(60px); opacity:.35; animation:drift 22s ease-in-out infinite alternate; }
+  .orbs i:nth-child(1) { width:340px; height:340px; background:#7a5cff; left:-90px; top:12%; }
+  .orbs i:nth-child(2) { width:300px; height:300px; background:#1fb6ff; right:-80px; top:48%; animation-duration:28s; }
+  .orbs i:nth-child(3) { width:260px; height:260px; background:#ff5d9e; left:30%; bottom:-90px; animation-duration:25s; opacity:.25; }
+  @keyframes drift { to { transform:translate(60px,-50px) scale(1.15); } }
+  .wrap { z-index:1; }
+  .logo { display:inline-block; vertical-align:-6px; margin-right:6px; }
+  .view.enter { animation:viewin .45s ease; } @keyframes viewin { from { opacity:0; transform:perspective(900px) rotateX(-8deg) scale(.94); } }
+  .wtop { display:flex; flex-wrap:wrap; gap:8px 12px; align-items:center; margin-bottom:12px; } .wtop .btn { padding:9px 14px; }
+  .prog { height:9px; border-radius:6px; background:rgba(255,255,255,.12); overflow:hidden; } .prog i { display:block; height:100%; background:linear-gradient(90deg,#1fb6ff,#9b7bff,#ff8da0); transition:width .4s; }
+  .tafelwrap { perspective:1200px; margin:16px 0 8px; }
+  .tafel { display:grid; grid-template-columns:22px repeat(8,minmax(0,1fr)); gap:7px; max-width:940px; margin:0 auto; padding:16px 14px 18px 8px; border-radius:20px; transform:rotateX(11deg); transform-origin:50% 100%; transition:transform .25s ease-out;
+    background:linear-gradient(160deg,#1c2250,#0d1130 60%,#191247); border:5px solid #3a4285; box-shadow:0 0 0 2px #0a0d26, 0 40px 60px -20px rgba(0,0,0,.75), 0 0 60px -10px rgba(122,92,255,.55), inset 0 0 40px rgba(79,209,255,.12); }
+  .tafel .hd, .tafel .rl { color:#9fb0ff; font-weight:800; font-size:13px; text-align:center; align-self:center; text-shadow:0 0 8px rgba(122,150,255,.7); }
+  .bt { --kc:#4fd1ff; position:relative; aspect-ratio:1/1.12; border:2px solid var(--kc); border-radius:11px; color:var(--ink); font:inherit; cursor:pointer; padding:0; display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1.1;
+    background:linear-gradient(155deg, rgba(255,255,255,.16), rgba(0,0,0,.35)); box-shadow:0 5px 0 rgba(0,0,0,.55), 0 10px 16px -4px var(--kc); transition:transform .15s, box-shadow .15s; }
+  .bt:hover { transform:translateY(-4px); box-shadow:0 9px 0 rgba(0,0,0,.55), 0 16px 24px -4px var(--kc); } .bt:active { transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,.55); }
+  .bt.em { visibility:hidden; pointer-events:none; }
+  .bt .z { position:absolute; top:4px; left:7px; font-size:11px; color:#cfd8ff; font-weight:700; } .bt b { font-size:clamp(18px,3.6vw,31px); text-shadow:0 0 14px var(--kc); }
+  .bt .nm { font-size:clamp(8px,1.3vw,12.5px); color:#dfe6ff; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .bt .ms { font-size:clamp(7.5px,1.1vw,11px); color:#9fb0d6; }
+  .bt .ok { display:none; position:absolute; top:3px; right:6px; color:var(--ok); font-weight:800; font-size:13px; } .bt.built .ok { display:block; } .bt.built { box-shadow:0 5px 0 rgba(0,0,0,.55), 0 0 22px rgba(94,230,168,.55); }
+  .bt.zoom { transition:transform .26s ease-in, opacity .26s; transform:scale(1.6) translateY(-6px); z-index:5; opacity:.2; }
+  @media (max-width:520px) { .tafel { gap:4px; padding:10px 6px 12px 2px; grid-template-columns:16px repeat(8,minmax(0,1fr)); border-width:4px; } .bt { border-radius:8px; border-width:1.5px; } .bt .nm, .bt .ms { display:none; } .bt .z { font-size:9px; left:4px; top:2px; } .bt .ok { font-size:10px; right:3px; } .tafel .hd, .tafel .rl { font-size:10.5px; } .bt b { font-size:17px; } }
+  .werk { display:grid; gap:14px; grid-template-columns:1fr; grid-template-areas:'task' 'stage' 'bench'; }
+  .werk.quiz { grid-template-areas:'task' 'stage' 'pick'; }
+  @media (min-width:900px) { .werk { grid-template-columns:minmax(0,1fr) minmax(0,1fr); grid-template-areas:'stage task' 'stage bench'; align-items:start; } .werk.quiz { grid-template-areas:'stage task' 'stage pick'; } }
+  #aTask, #qTask { grid-area:task; } #aStage, #qStage { grid-area:stage; } #aBench { grid-area:bench; } #qPick { grid-area:pick; }
+  .bench .grp { margin:6px 0 10px; } .bench .grp > b { display:block; font-size:13px; letter-spacing:.8px; text-transform:uppercase; color:var(--muted); margin-bottom:5px; }
+  .step { display:flex; align-items:center; justify-content:space-between; gap:8px; background:rgba(255,255,255,.06); border:1px solid var(--line); border-radius:12px; padding:5px 6px 5px 12px; margin:6px 0; }
+  .step .lab { font-weight:700; font-size:15px; } .step .lab small { color:var(--muted); font-weight:500; }
+  .step .ctl { display:flex; align-items:center; gap:6px; } .step .val { min-width:30px; text-align:center; font-size:19px; font-weight:800; }
+  .step button { width:44px; height:44px; border-radius:11px; border:1px solid var(--line); background:rgba(255,255,255,.1); color:#fff; font-size:24px; font-weight:700; cursor:pointer; } .step button:active { background:rgba(79,209,255,.35); }
+  .step.p .lab { color:#ff8da0; } .step.e .lab { color:#7df9ff; }
+  .msg { min-height:22px; font-size:14.5px; color:var(--warn); margin:2px 0 0; }
+  .tips .tip { background:rgba(255,209,102,.12); border:1px dashed rgba(255,209,102,.55); border-radius:10px; padding:7px 11px; margin-top:7px; font-size:15px; }
+  .seg { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+  .seg button { flex:1 1 auto; border:1px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-weight:700; font-size:14.5px; padding:9px 12px; border-radius:999px; cursor:pointer; } .seg button.on { background:rgba(79,209,255,.22); border-color:var(--cy); color:#fff; }
+  .seg.small { margin-bottom:8px; } .seg.small button { padding:8px 6px; font-size:14px; }
+  .btn.small { padding:8px 12px; font-size:14px; }
+  .pse { display:grid; grid-template-columns:20px repeat(8,minmax(0,1fr)); gap:4px; align-items:stretch; }
+  .pse .hd { font-size:12px; text-align:center; color:var(--muted); align-self:end; font-weight:700; } .pse .rl { font-size:12px; color:var(--muted); align-self:center; text-align:center; font-weight:700; } .pse .em { visibility:hidden; }
+  .ptile { --kc:#4fd1ff; aspect-ratio:1/1; min-height:38px; border-radius:9px; border:1.5px solid var(--kc); background:linear-gradient(150deg, rgba(255,255,255,.1), rgba(0,0,0,.28)); color:var(--ink); font:inherit; cursor:pointer; padding:0; display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1.05; }
+  .ptile small { font-size:9.5px; color:var(--muted); } .ptile b { font-size:16px; } .ptile:hover { box-shadow:0 0 12px var(--kc); }
+  .ptile.ok { border-color:var(--ok); box-shadow:0 0 14px rgba(94,230,168,.6); } .ptile.bad { border-color:var(--bad); animation:shake .3s; opacity:.5; }
+  .res { list-style:none; margin:8px 0 0; padding:0; } .res li { padding:6px 10px; border-radius:9px; margin:5px 0; font-size:15px; } .res li.ok { background:rgba(94,230,168,.13); } .res li.no { background:rgba(255,125,125,.13); }
+  .big { font-size:17px; font-weight:700; }
+  .clues { list-style:none; margin:6px 0 0; padding:0; } .clues li { display:flex; gap:10px; align-items:flex-start; background:rgba(255,255,255,.07); border:1px solid var(--line); border-left:4px solid var(--vi); border-radius:10px; padding:8px 11px; margin:7px 0; font-size:16px; }
+  .clues li span { flex:none; width:24px; height:24px; border-radius:50%; background:var(--vi); font-weight:800; font-size:13px; display:flex; align-items:center; justify-content:center; margin-top:1px; }
+  .mystery { padding:30px 10px; } .qm { font-size:110px; font-weight:800; line-height:1; background:linear-gradient(135deg,#7df9ff,#b69cff,#ff9bd5); -webkit-background-clip:text; background-clip:text; color:transparent; animation:float 3s ease-in-out infinite; } @keyframes float { 50% { transform:translateY(-8px); } }
+  #stHeft .paper { max-width:440px; margin:0 auto; transform:rotate(-1.2deg); filter:drop-shadow(0 12px 16px rgba(0,0,0,.5)); } #stHeft svg { width:100%; height:auto; display:block; }
+  #stHeft .step-text { background:rgba(255,255,255,.07); border-left:4px solid var(--warn); border-radius:8px; padding:8px 12px; margin:12px 0 0; text-align:left; font-size:15.5px; }
+  #stHeft .draw circle { stroke-dasharray:1; stroke-dashoffset:1; animation:dr .9s ease forwards; } #stHeft .draw circle[r="4.6"] { stroke-dasharray:none; stroke-dashoffset:0; animation:pop .5s ease; }
+  @keyframes dr { to { stroke-dashoffset:0; } } @keyframes pop { from { transform:scale(0); } } #stHeft .draw circle[r="4.6"] { transform-box:fill-box; transform-origin:center; }
+  #cv3 { display:block; margin:0 auto; touch-action:none; border-radius:14px; background:radial-gradient(circle at 50% 50%, rgba(60,40,120,.45), rgba(5,8,25,.5)); border:1px solid var(--line); cursor:grab; }
+  .flashring { animation:rf .7s ease-out; } @keyframes rf { 0% { stroke:#fff; stroke-opacity:1; stroke-width:7; } }
+  .flashnuc { animation:nf .7s ease-out; } @keyframes nf { 0% { stroke:#fff; stroke-width:9; } }
+  .burst { position:fixed; width:0; height:0; z-index:10000; pointer-events:none; } .burst i { position:absolute; left:-4px; top:-4px; width:8px; height:8px; border-radius:50%; animation:bu .9s ease-out forwards; }
+  @keyframes bu { to { transform:translate(var(--dx),var(--dy)) scale(.2); opacity:0; } }
+  details.regel { margin:12px 0; } details.regel summary { cursor:pointer; font-weight:700; padding:10px 14px; border-radius:14px; border:1px solid var(--line); background:rgba(255,255,255,.07); } details.regel .glass { margin-top:8px; }
+  .hint { color:var(--muted); font-size:13.5px; margin:6px 0 0; }
+  .werk.quiz.who { grid-template-areas:'task' 'ref' 'pick' 'stage'; } #qRef { grid-area:ref; } #qPick { grid-area:pick; }
+  @media (min-width:900px) { .werk.quiz.who { grid-template-columns:minmax(0,1fr) minmax(0,1.3fr); grid-template-areas:'task stage' 'pick ref'; } }
+  #qPick.ans { background:linear-gradient(160deg, rgba(120,70,220,.5), rgba(40,14,80,.85)); border:2px solid #b69cff; box-shadow:0 0 34px -4px rgba(155,123,255,.6); }
+  #qPick.ans h3 { color:#e6dcff; }
+  #qPick.ans .ptile { border-radius:50%; border-width:2px; background:radial-gradient(circle at 35% 30%, rgba(255,255,255,.3), rgba(60,20,120,.8)); box-shadow:0 3px 0 rgba(0,0,0,.45); } #qPick.ans .ptile b { font-size:17px; } #qPick.ans .ptile:hover { transform:translateY(-2px); box-shadow:0 6px 0 rgba(0,0,0,.45), 0 0 14px var(--kc); }
+  #qRef { background:linear-gradient(160deg, rgba(10,60,90,.6), rgba(6,16,36,.85)); border-color:rgba(79,209,255,.4); }
+  #qRef .ptile.rtile { border-radius:5px; border-width:0; border-top:4px solid var(--kc); background:rgba(255,255,255,.07); box-shadow:none; }
+  .ptile.rtile { cursor:default; aspect-ratio:auto; min-height:46px; padding:3px 0; } .ptile.rtile:hover { box-shadow:none; } .ptile.rtile .rm { font-size:8.5px; }
+
+  /* ===== Hugo-Tutorial ===== */
+  .coach { position:sticky; top:6px; z-index:60; margin:8px 0 10px; padding:10px 40px 10px 12px; border-radius:18px; border:1px solid rgba(125,249,255,.55);
+    background:linear-gradient(135deg, rgba(31,182,255,.30), rgba(122,92,255,.40)), rgba(10,14,40,.94); box-shadow:0 10px 30px rgba(0,0,0,.55), 0 0 26px rgba(79,209,255,.25); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); animation:coachin .4s ease; }
+  .coach[hidden] { display:none; } .coach::after { content:''; display:block; clear:both; }
+  @keyframes coachin { from { opacity:0; transform:translateY(-12px); } }
+  .mascot { float:left; width:56px; height:56px; margin:0 10px 2px 0; animation:hugofloat 3.2s ease-in-out infinite; }
+  .mascot svg { width:100%; height:100%; display:block; overflow:visible; }
+  .mascot.hop { animation:hugohop .6s ease; }
+  @keyframes hugofloat { 50% { transform:translateY(-4px); } } @keyframes hugohop { 30% { transform:translateY(-14px) scale(1.1); } 60% { transform:translateY(0) scale(.96); } }
+  .mascot .eye { transform-box:fill-box; transform-origin:center; animation:blink 4.2s infinite; } @keyframes blink { 0%,92%,100% { transform:scaleY(1); } 95% { transform:scaleY(.1); } }
+  .mascot .mo { display:none; } .mascot.cheer .mo { display:block; } .mascot.cheer .ms { display:none; }
+  #cText { font-size:15.5px; line-height:1.4; } .cbad { color:var(--warn); font-size:14px; margin-top:4px; }
+  .crow { clear:both; display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; align-items:center; } .crow .btn { padding:8px 13px; font-size:14.5px; }
+  .coach .cx { position:absolute; top:6px; right:8px; width:34px; height:34px; border-radius:50%; border:1px solid var(--line); background:rgba(255,255,255,.1); color:#fff; font:inherit; font-size:15px; cursor:pointer; }
+  .coach-hl { outline:3px dashed #ffd166; outline-offset:3px; animation:hlp 1.2s ease-in-out infinite; scroll-margin-top:150px; }
+  @keyframes hlp { 50% { outline-color:rgba(255,209,102,.25); outline-offset:7px; } }
+  .hit.coach-hl { outline:none; stroke:#ffd166; stroke-opacity:.85; stroke-width:9; animation:hlsvg 1.2s ease-in-out infinite; } @keyframes hlsvg { 50% { stroke-opacity:.25; } }
+  @media (max-width:480px) { .coach { padding:8px 36px 8px 10px; } .mascot { width:44px; height:44px; } #cText { font-size:14.5px; } .crow .btn { padding:7px 11px; font-size:14px; } }
+</style>
+</head>
+<body>
+<div class="orbs"><i></i><i></i><i></i></div>
+<div class="wrap">
+  <div class="top"><a class="back" href="../index.html">← Zur Übersicht</a></div>
+  <h1><svg class="logo" width="38" height="38" viewBox="0 0 40 40"><circle cx="20" cy="20" r="4" fill="#ff8da0"/><ellipse cx="20" cy="20" rx="17" ry="6.5" fill="none" stroke="#7df9ff" stroke-width="1.6"/><ellipse cx="20" cy="20" rx="17" ry="6.5" fill="none" stroke="#b69cff" stroke-width="1.6" transform="rotate(60 20 20)"/><ellipse cx="20" cy="20" rx="17" ry="6.5" fill="none" stroke="#ff9bd5" stroke-width="1.6" transform="rotate(120 20 20)"/><circle r="2.2" fill="#fff"><animateMotion dur="3s" repeatCount="indefinite" path="M3,20 a17,6.5 0 1,0 34,0 a17,6.5 0 1,0 -34,0"/></circle></svg>Atomwerkstatt</h1>
+  <p class="sub">Vom Periodensystem zum Atom: Was verraten die Angaben einer Kachel über den Aufbau?</p>
+  <div class="coach" id="coach" hidden role="region" aria-label="Tutorial mit Hugo">
+    <button type="button" class="cx" id="cX" aria-label="Tutorial beenden" title="Tutorial beenden">✕</button>
+    <div class="mascot" id="hugo"><svg viewBox="0 0 80 80" aria-hidden="true">
+      <defs><radialGradient id="hg" cx="35%" cy="30%"><stop offset="0" stop-color="#ffc1cb"/><stop offset="1" stop-color="#e0334f"/></radialGradient></defs>
+      <circle cx="40" cy="40" r="35" fill="none" stroke="#7df9ff" stroke-opacity=".7" stroke-width="1.8"/>
+      <circle cx="40" cy="40" r="24" fill="url(#hg)" stroke="#ffd0d8" stroke-opacity=".6" stroke-width="1.2"/>
+      <g class="eye"><ellipse cx="32" cy="37" rx="4.6" ry="5.2" fill="#fff"/><circle cx="33" cy="38" r="2.4" fill="#3a1030"/></g>
+      <g class="eye"><ellipse cx="48" cy="37" rx="4.6" ry="5.2" fill="#fff"/><circle cx="49" cy="38" r="2.4" fill="#3a1030"/></g>
+      <circle cx="26" cy="46" r="3.2" fill="#ff8da0" fill-opacity=".55"/><circle cx="54" cy="46" r="3.2" fill="#ff8da0" fill-opacity=".55"/>
+      <path class="ms" d="M32 47 Q40 55 48 47" fill="none" stroke="#5a1020" stroke-width="2.2" stroke-linecap="round"/>
+      <path class="mo" d="M31 46 Q40 60 49 46 Z" fill="#5a1020"/>
+      <text x="40" y="27" text-anchor="middle" font-size="9" font-weight="800" fill="#fff" fill-opacity=".9">+</text>
+      <circle r="4.6" fill="#4fe3ff"><animateMotion dur="3.4s" repeatCount="indefinite" path="M5,40 a35,35 0 1,0 70,0 a35,35 0 1,0 -70,0"/></circle>
+    </svg></div>
+    <div id="cText"></div>
+    <div class="crow" id="cBtns"></div>
+  </div>
+
+  <section id="pWerk">
+    <div class="view" id="vBoard">
+      <div class="glass" id="bHero"></div>
+      <div class="tafelwrap" id="tafelWrap"><div class="tafel" id="tafel"></div></div>
+      <details class="regel"><summary>📖 Regelkarte (zum Nachschlagen)</summary><div class="glass" id="regelkarte"></div></details>
+    </div>
+    <div class="view" id="vWork" hidden>
+      <div class="wtop" id="wTop"></div>
+      <div class="werk">
+        <div class="glass" id="aTask"></div>
+        <div class="glass stage" id="aStage">
+          <div class="seg small" id="stTabs"></div>
+          <div id="stFlat"></div>
+          <div id="stHeft" hidden></div>
+          <div id="st3d" hidden><canvas id="cv3" aria-label="3D-Modell des Atoms"></canvas><div class="row" id="st3dCtl" style="justify-content:center"></div><p class="hint">Ziehe mit Finger oder Maus, um das Modell zu drehen. Die Bahnen sind ein Modell, damit man sich die Schalen räumlich vorstellen kann.</p></div>
+        </div>
+        <div class="glass bench" id="aBench"></div>
+      </div>
+    </div>
+    <div class="view" id="vQuiz" hidden>
+      <div class="wtop" id="qTop"></div>
+      <div class="werk quiz">
+        <div class="glass" id="qTask"></div>
+        <div class="glass stage" id="qStage"></div>
+        <div class="glass" id="qRef" hidden></div>
+        <div class="glass" id="qPick"></div>
+      </div>
+    </div>
+  </section>
+</div>
+<a class="impressum" href="/Virtuelles-Chemielabor/impressum.html">Impressum &amp; Datenschutz</a>
+<script>
+'use strict';
+/* ---------- Daten ---------- */
+var RAW = [[1,'H','Wasserstoff',1.008,1,1,'nichtmetall'],[2,'He','Helium',4.003,18,1,'edelgas'],[3,'Li','Lithium',6.94,1,2,'alkali'],[4,'Be','Beryllium',9.012,2,2,'erdalkali'],[5,'B','Bor',10.81,13,2,'halbmetall'],[6,'C','Kohlenstoff',12.011,14,2,'nichtmetall'],[7,'N','Stickstoff',14.007,15,2,'nichtmetall'],[8,'O','Sauerstoff',15.999,16,2,'nichtmetall'],[9,'F','Fluor',18.998,17,2,'halogen'],[10,'Ne','Neon',20.18,18,2,'edelgas'],[11,'Na','Natrium',22.99,1,3,'alkali'],[12,'Mg','Magnesium',24.305,2,3,'erdalkali'],[13,'Al','Aluminium',26.982,13,3,'anderemetall'],[14,'Si','Silicium',28.085,14,3,'halbmetall'],[15,'P','Phosphor',30.974,15,3,'nichtmetall'],[16,'S','Schwefel',32.06,16,3,'nichtmetall'],[17,'Cl','Chlor',35.45,17,3,'halogen'],[18,'Ar','Argon',39.948,18,3,'edelgas'],[19,'K','Kalium',39.098,1,4,'alkali'],[20,'Ca','Calcium',40.078,2,4,'erdalkali']];
+var EL = RAW.map(function (r) { return { z: r[0], s: r[1], n: r[2], m: r[3], c: r[4], r: r[5], k: r[6] }; });
+var ROM = { 1: 'I', 2: 'II', 13: 'III', 14: 'IV', 15: 'V', 16: 'VI', 17: 'VII', 18: 'VIII' };
+var COL = { 1: 0, 2: 1, 13: 2, 14: 3, 15: 4, 16: 5, 17: 6, 18: 7 };
+var CAP = [2, 8, 8, 2], SCH = ['K', 'L', 'M', 'N'];
+function neutr(e) { return Math.round(e.m) - e.z; }
+function aussen(e) { return e.z === 2 ? 2 : (e.c <= 2 ? e.c : e.c - 10); }
+function fillE(n) { var r = [], i, t; for (i = 0; i < 4; i++) { t = Math.min(CAP[i], n); r.push(t); n -= t; } return r; }
+function fmt(x) { return String(x).replace('.', ','); }
+function mk(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; }
+function sum(a) { return a.reduce(function (x, y) { return x + y; }, 0); }
+function occupied(sh) { var n = 0; sh.forEach(function (v) { if (v > 0) n++; }); return n; }
+
+/* ---------- Atom zeichnen ---------- */
+var svgId = 0, T0 = Date.now();
+function nucleusPos(N, pr) {
+  /* Dichte Kugelpackung (sechseckig), die kleinste runde Auswahl wird gewählt */
+  var d = pr * 2.0, h = d * 0.8660254, offs = [[0, 0], [d / 2, h / 3], [d / 2, 0], [0, h / 3]], best = null, bestR = 1e9, o, i, j, k;
+  if (N < 1) return [];
+  for (o = 0; o < offs.length; o++) {
+    var L = [];
+    for (j = -9; j <= 9; j++) for (i = -9; i <= 9; i++) { var x = d * (i + j / 2) - offs[o][0], y = h * j - offs[o][1]; L.push([x, y, x * x + y * y]); }
+    L.sort(function (u, v) { return u[2] - v[2]; });
+    var sel = L.slice(0, N), r = sel[N - 1][2];
+    if (r < bestR - 1e-6) { bestR = r; best = sel; }
+  }
+  var mx = 0, my = 0; for (k = 0; k < N; k++) { mx += best[k][0]; my += best[k][1]; } mx /= N; my /= N;
+  return best.map(function (q) { return [q[0] - mx, q[1] - my]; });
+}
+function atomSVG(o) {
+  var id = 'a' + (++svgId), C = 180, R = [78, 110, 140, 166], p = o.p || 0, n = o.n || 0, sh = o.sh || [0, 0, 0, 0], rings = o.rings, i, j, s = '';
+  var tot = p + n, pr = tot > 24 ? 6.4 : tot > 12 ? 7.6 : tot > 4 ? 9 : 11, c = pr * 1.06;
+  s += '<svg viewBox="0 0 360 360" role="img" aria-label="Atommodell mit ' + p + ' Protonen, ' + n + ' Neutronen und ' + sum(sh) + ' Elektronen">';
+  s += '<defs><radialGradient id="' + id + 'p" cx="35%" cy="30%"><stop offset="0" stop-color="#ffb3be"/><stop offset="1" stop-color="#e0334f"/></radialGradient>' +
+       '<radialGradient id="' + id + 'n" cx="35%" cy="30%"><stop offset="0" stop-color="#f2f6fc"/><stop offset="1" stop-color="#7f93b5"/></radialGradient>' +
+       '<radialGradient id="' + id + 'e" cx="35%" cy="30%"><stop offset="0" stop-color="#e9fdff"/><stop offset="1" stop-color="#27c4e8"/></radialGradient>' +
+       '<radialGradient id="' + id + 's" cx="40%" cy="35%" r="75%"><stop offset="0" stop-color="#6a3a6e" stop-opacity=".9"/><stop offset="1" stop-color="#2b1736" stop-opacity=".95"/></radialGradient><radialGradient id="' + id + 'g"><stop offset="0" stop-color="#ff8aa0" stop-opacity=".55"/><stop offset="1" stop-color="#ff8aa0" stop-opacity="0"/></radialGradient></defs>';
+  s += '<circle cx="' + C + '" cy="' + C + '" r="95" fill="url(#' + id + 'g)"/>';
+  for (i = 0; i < rings; i++) {
+    var full = sh[i] === CAP[i], used = sh[i] > 0;
+    s += '<circle' + (o.flash === 'e' + i ? ' class="flashring"' : '') + ' cx="' + C + '" cy="' + C + '" r="' + R[i] + '" fill="none" stroke="' + (full ? '#5ee6a8' : used ? '#78c8ff' : '#9aaaff') + '" stroke-opacity="' + (used ? .6 : .32) + '" stroke-width="' + (used ? 1.8 : 1.4) + '"' + (used ? '' : ' stroke-dasharray="5 6"') + '/>';
+    var lx = C + R[i] * 0.66, ly = C - R[i] * 0.75;
+    s += '<text x="' + lx.toFixed(1) + '" y="' + ly.toFixed(1) + '" font-size="12" font-weight="700" fill="#b9c6ff" fill-opacity=".85">' + SCH[i] + (o.caps ? ' · max ' + CAP[i] : '') + '</text>';
+  }
+  if (p + n === 0) { s += '<circle cx="' + C + '" cy="' + C + '" r="20" fill="none" stroke="#ff8aa0" stroke-dasharray="4 4" stroke-opacity=".6"/><text x="' + C + '" y="' + (C + 6) + '" text-anchor="middle" font-size="18" fill="#ff8aa0" fill-opacity=".8">Kern</text>'; }
+  var parts = [], a = 0, b = 0; while (a < p || b < n) { if (a < p) { parts.push('p'); a++; } if (b < n) { parts.push('n'); b++; } }
+  var pos = nucleusPos(parts.length, pr);
+  var rs = 0; for (i = 0; i < pos.length; i++) rs = Math.max(rs, Math.sqrt(pos[i][0] * pos[i][0] + pos[i][1] * pos[i][1]));
+  if (pos.length) s += '<circle' + ((o.flash === 'p' || o.flash === 'n') ? ' class="flashnuc"' : '') + ' cx="' + C + '" cy="' + C + '" r="' + (rs + pr + 3).toFixed(1) + '" fill="url(#' + id + 's)" stroke="#ffb3c0" stroke-opacity=".55" stroke-width="1.4"/>';
+  var order = []; for (i = 0; i < parts.length; i++) order.push(i);
+  order.sort(function (u, v) { return (pos[v][0] * pos[v][0] + pos[v][1] * pos[v][1]) - (pos[u][0] * pos[u][0] + pos[u][1] * pos[u][1]); });
+  for (var oi = 0; oi < order.length; oi++) {
+    i = order[oi]; var x = C + pos[i][0], y = C + pos[i][1], tp = parts[i];
+    s += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + pr + '" fill="url(#' + id + tp + ')" stroke="rgba(0,0,0,.35)" stroke-width=".6"/>';
+    if (tp === 'p') s += '<text x="' + x.toFixed(1) + '" y="' + (y + pr * 0.42).toFixed(1) + '" text-anchor="middle" font-size="' + (pr * 1.3).toFixed(1) + '" font-weight="800" fill="#fff">+</text>';
+  }
+  for (i = 0; i < rings; i++) {
+    var cnt = sh[i]; if (!cnt) continue;
+    var dur = [8, 13, 19, 26][i], dir = i % 2 ? -1 : 1, ph = ((Date.now() - T0) / 1000) % dur;
+    s += '<g pointer-events="none"><animateTransform attributeName="transform" type="rotate" from="0 ' + C + ' ' + C + '" to="' + (360 * dir) + ' ' + C + ' ' + C + '" dur="' + dur + 's" begin="-' + ph.toFixed(2) + 's" repeatCount="indefinite"/>';
+    for (j = 0; j < cnt; j++) {
+      var ang = -Math.PI / 2 + i * 0.6 + 2 * Math.PI * j / cnt, ex = C + R[i] * Math.cos(ang), ey = C + R[i] * Math.sin(ang);
+      s += '<circle cx="' + ex.toFixed(1) + '" cy="' + ey.toFixed(1) + '" r="11" fill="#4fe3ff" fill-opacity=".22"/><circle cx="' + ex.toFixed(1) + '" cy="' + ey.toFixed(1) + '" r="6.2" fill="url(#' + id + 'e)"/>';
+    }
+    s += '</g>';
+  }
+  if (o.hit) for (i = 0; i < rings; i++) s += '<circle class="hit" data-ring="' + i + '" cx="' + C + '" cy="' + C + '" r="' + R[i] + '" fill="none" stroke="#000" stroke-opacity="0.001" stroke-width="30" pointer-events="stroke" style="cursor:pointer"><title>' + SCH[i] + '-Schale: Elektron setzen</title></circle>';
+  return s + '</svg>';
+}
+function chips(p, n, e, noLadung) {
+  var l = p - e, lt = l === 0 ? 'neutral' : (l > 0 ? '+' + l : '−' + Math.abs(l));
+  return '<div class="chips"><span class="chip"><i class="p"></i>Protonen ' + p + '</span><span class="chip"><i class="n"></i>Neutronen ' + n + '</span><span class="chip"><i class="e"></i>Elektronen ' + e + '</span>' +
+    (noLadung ? '' : '<span class="chip ladung ' + (l === 0 ? 'ok' : 'no') + '">Ladung: ' + lt + '</span>') + '</div>';
+}
+function tileHTML(el, hl) {
+  hl = hl || '';
+  function f(k, h) { return 'f' + (hl.indexOf(k) >= 0 ? ' hl' : ''); }
+  return '<div class="tile k-' + el.k + '"><div class="sym">' + el.s + '</div><div><div class="nm">' + el.n + '</div>' +
+    '<span data-f="z" class="' + f('z') + ' fz" title="Ordnungszahl">' + el.z + '<span class="fl">Ordnungszahl</span></span> ' +
+    '<span data-f="m" class="' + f('m') + '"><b>' + fmt(el.m) + ' u</b><span class="fl">Atommasse</span></span></div>' +
+    '<div class="fg"><span data-f="r" class="' + f('r') + '">Periode <b>' + el.r + '</b></span><span data-f="g" class="' + f('g') + '">Hauptgruppe <b>' + ROM[el.c] + '</b></span></div></div>';
+}
+function regelHTML() {
+  return '<ol class="rules"><li><div><b>Ordnungszahl = Protonenzahl.</b> Ein neutrales Atom hat genauso viele <b class="e">Elektronen</b> wie <b class="p">Protonen</b>.</div></li>' +
+    '<li><div><b>Neutronen = gerundete Atommasse − Ordnungszahl.</b> Die Atommasse zählt Protonen und <b class="n">Neutronen</b> im Kern zusammen.</div></li>' +
+    '<li><div><b>Periode = Anzahl der Elektronenschalen.</b></div></li>' +
+    '<li><div><b>Hauptgruppe = Anzahl der Außenelektronen.</b> (Ausnahme Helium: Gruppe VIII, aber nur 2 Elektronen, weil die erste Schale nur 2 fasst.)</div></li>' +
+    '<li><div><b>Die Schalen werden von innen nach außen gefüllt:</b> K höchstens 2, L höchstens 8, M höchstens 8 (bis Calcium), dann N.</div></li></ol>' +
+    '<p class="muted" style="margin:8px 0 0">Das gilt für die Hauptgruppenelemente bis Calcium (Ordnungszahl 20).</p>';
+}
+
+/* ---------- Teil 2: Werkstatt ---------- */
+var G = { view: 'board', z: null, mode: 'build', tab: 'flat', p: 0, n: 0, sh: [0, 0, 0, 0], tips: 0, checked: false, win: false, fb: '', msg: '', built: {}, faults: 0, flash: '', hs: 99, hsTimer: null,
+  q: { type: 'recog', z: 0, tips: 0, bad: {}, done: false, fb: '', score: 0, clues: [], shown: 2 } };
+var BTIPS = ['Lies die Kachel: Ordnungszahl, Atommasse, Periode und Hauptgruppe sind deine Bauanleitung.',
+  'Protonen = Ordnungszahl. Elektronen = Protonen (das Atom ist neutral). Neutronen = gerundete Atommasse − Ordnungszahl.',
+  'Die Schalen füllst du von innen nach außen (K bis 2, L bis 8, M bis 8). Die Periode sagt dir, wie viele Schalen besetzt sind. Die Hauptgruppe sagt dir, wie viele Elektronen außen sitzen.'];
+var RTIPS = ['Zähle die roten Protonen im Kern. Ich blende dir die Zahlen unter dem Atom ein.',
+  'Die Zahl der Protonen ist die Ordnungszahl. Suche sie im Periodensystem unten.',
+  'Zur Kontrolle: Die Zahl der besetzten Schalen ist die Periode, die Zahl der Außenelektronen die Hauptgruppe.'];
+function rnd(prev) { var z; do { z = 1 + Math.floor(Math.random() * 20); } while (z === prev); return z; }
+function pickOne(a) { return a[Math.floor(Math.random() * a.length)]; }
+function btn(label, cls, fn, dis) { var b = mk('button', 'btn ' + (cls || ''), label); b.type = 'button'; if (dis) b.disabled = true; b.addEventListener('click', fn); return b; }
+function burst(host) {
+  var r = host.getBoundingClientRect(), box = mk('div', 'burst'), i, cols = ['#7df9ff', '#ff8da0', '#ffd166', '#b69cff', '#5ee6a8'];
+  box.style.left = (r.left + r.width / 2) + 'px'; box.style.top = (r.top + Math.min(r.height / 2, 90)) + 'px';
+  for (i = 0; i < 18; i++) { var s = mk('i'), a = i / 18 * 6.283 + Math.random() * .3, d = 60 + Math.random() * 70; s.style.setProperty('--dx', Math.cos(a) * d + 'px'); s.style.setProperty('--dy', Math.sin(a) * d + 'px'); s.style.background = cols[i % cols.length]; box.appendChild(s); }
+  document.body.appendChild(box); setTimeout(function () { if (box.parentNode) box.parentNode.removeChild(box); }, 1000);
+}
+
+/* ----- Atomzustand (Werkbank) ----- */
+function clearAtom() { G.p = 0; G.n = 0; G.sh = [0, 0, 0, 0]; }
+function elNow() { return G.mode === 'free' ? (G.p > 0 ? EL[G.p - 1] : null) : EL[G.z - 1]; }
+function afterChange(flash) { G.win = false; G.fb = ''; G.flash = flash || ''; G.msg = ''; renderWork(); }
+function stepP(d) { var o = G.p; G.p = Math.max(0, Math.min(20, G.p + d)); afterChange(G.p !== o ? 'p' : ''); }
+function stepN(d) { var o = G.n; G.n = Math.max(0, Math.min(24, G.n + d)); afterChange(G.n !== o ? 'n' : ''); }
+function stepE(i, d) {
+  var j;
+  if (d > 0) {
+    if (G.sh[i] >= CAP[i]) { G.msg = 'Die ' + SCH[i] + '-Schale ist voll (höchstens ' + CAP[i] + ').'; G.flash = ''; renderWork(); return; }
+    for (j = 0; j < i; j++) if (G.sh[j] < CAP[j]) { G.msg = 'Die Schalen werden von innen nach außen gefüllt: Erst die ' + SCH[j] + '-Schale auffüllen.'; G.flash = ''; renderWork(); return; }
+    G.sh[i]++;
+  } else {
+    if (G.sh[i] <= 0) return;
+    for (j = i + 1; j < 4; j++) if (G.sh[j] > 0) { G.msg = 'Nimm zuerst Elektronen von der äußeren ' + SCH[j] + '-Schale weg.'; G.flash = ''; renderWork(); return; }
+    G.sh[i]--;
+  }
+  afterChange('e' + i);
+}
+function evalBuild(el) {
+  var e = sum(G.sh), good = fillE(el.z), same = true, i, items = [];
+  for (i = 0; i < 4; i++) if (G.sh[i] !== good[i]) same = false;
+  items.push({ ok: G.p === el.z, y: 'Protonen: ' + G.p + ' (= Ordnungszahl)', n: 'Protonen: Die Ordnungszahl oben links auf der Kachel gibt die Zahl der Protonen an.' });
+  items.push({ ok: G.n === neutr(el), y: 'Neutronen: ' + G.n + ' (gerundete Atommasse − Ordnungszahl)', n: 'Neutronen: Rechne gerundete Atommasse minus Ordnungszahl.' });
+  items.push({ ok: e === el.z, y: 'Elektronen: ' + e + ' (= Protonen, das Atom ist neutral)', n: 'Elektronen: Ein neutrales Atom hat genauso viele Elektronen wie Protonen.' });
+  items.push({ ok: occupied(G.sh) === el.r, y: 'Schalen: ' + occupied(G.sh) + ' besetzt (= Periode ' + el.r + ')', n: 'Schalen: Die Periode gibt die Zahl der besetzten Schalen an.' });
+  var out = 0; for (i = 3; i >= 0; i--) if (G.sh[i] > 0) { out = G.sh[i]; break; }
+  items.push({ ok: out === aussen(el) && same, y: 'Außenelektronen: ' + out + ' (= Hauptgruppe ' + ROM[el.c] + ')', n: 'Schalenbesetzung: Die äußerste Schale trägt so viele Elektronen wie die Hauptgruppe angibt, und die inneren Schalen sind voll.' });
+  return { items: items, all: items.every(function (x) { return x.ok; }) && same };
+}
+function resList(items) { return '<ul class="res">' + items.map(function (x) { return '<li class="' + (x.ok ? 'ok' : 'no') + '">' + (x.ok ? '✔ ' + x.y : '✘ ' + x.n) + '</li>'; }).join('') + '</ul>'; }
+function corrupt(el) {
+  var base = { p: el.z, n: neutr(el), sh: fillE(el.z) }, types = ['n', 'e', 'shell', 'p'], k = Math.random() < 0.45 ? 1 : 2, used = [], t, i, j;
+  var order = types.slice().sort(function () { return Math.random() - .5; });
+  for (i = 0; i < order.length && used.length < k; i++) {
+    t = order[i];
+    if (t === 'n') { var d = pickOne([-2, -1, 1, 2]); if (base.n + d < 0) d = Math.abs(d); base.n += d; used.push(t); }
+    else if (t === 'e') { var ne = sum(base.sh) + (el.z < 20 && Math.random() < .6 ? 1 : -1); if (ne < 1) ne = 2; base.sh = fillE(ne); used.push(t); }
+    else if (t === 'p') { var np = base.p + (base.p < 20 && Math.random() < .5 ? 1 : -1); if (np < 1) np = 2; base.p = np; used.push(t); }
+    else if (t === 'shell' && base.sh[0] === 2 && occupied(base.sh) >= 1 && el.z > 2) {
+      for (j = 1; j < 4; j++) if (base.sh[j] < CAP[j] && (j === 1 || base.sh[j - 1] > 0)) { base.sh[0]--; base.sh[j]++; used.push(t); break; }
+    }
+  }
+  if (!used.length) { base.n += 1; used.push('n'); }
+  G.faults = used.length; return base;
+}
+function openWork(z, mode) {
+  G.z = z; G.mode = mode || 'build'; G.tips = 0; G.checked = false; G.win = false; G.fb = ''; G.msg = ''; G.flash = ''; G.tab = 'flat'; G.hs = 99;
+  clearAtom();
+  if (G.mode === 'repair') { var c = corrupt(EL[z - 1]); G.p = c.p; G.n = c.n; G.sh = c.sh; }
+  showView('work'); renderWork();
+}
+
+/* ----- Arbeitsfläche ----- */
+function renderWork() {
+  var el = elNow(), top = document.getElementById('wTop'), task = document.getElementById('aTask'), bench = document.getElementById('aBench');
+  top.innerHTML = ''; task.innerHTML = ''; bench.innerHTML = '';
+  top.appendChild(btn('← Zur Tafel', 'sec', function () { showView('board'); }));
+  var seg = mk('div', 'seg'); seg.style.margin = '0';
+  [['build', '🔧 Bauen'], ['repair', '🕵 Fehlersuche'], ['free', '🧪 Frei bauen']].forEach(function (m) {
+    var b = mk('button', G.mode === m[0] ? 'on' : '', m[1]); b.type = 'button';
+    b.addEventListener('click', function () { if (m[0] === 'free') { G.z = null; G.mode = 'free'; G.tips = 0; G.checked = false; G.win = false; G.fb = ''; G.flash = ''; clearAtom(); renderWork(); } else openWork(G.z || rnd(0), m[0]); });
+    seg.appendChild(b);
+  });
+  top.appendChild(seg);
+  /* Aufgabe */
+  if (G.mode === 'build' || G.mode === 'repair') {
+    task.appendChild(mk('div', '', tileHTML(el, '')));
+    var h = mk('h2', '', (G.mode === 'build' ? 'Baue das Atom von ' + el.n : 'Fehlersuche: ' + el.n)); h.style.marginTop = '12px'; task.appendChild(h);
+    task.appendChild(mk('p', 'muted', G.mode === 'build' ? 'Lies die Angaben der Kachel ab. Setze Protonen und Neutronen in den Kern und tippe im Modell auf eine Schale, um ein Elektron zu setzen.' : 'Dieses Atom wurde falsch gebaut: Es steckt' + (G.faults > 1 ? 'en <b>' + G.faults + ' Fehler</b>' : ' <b>ein Fehler</b>') + ' drin. Vergleiche es mit der Kachel und repariere es.'));
+    var r1 = mk('div', 'row');
+    var bCheck = btn('Prüfen', 'go', function () {
+      var ev = evalBuild(el); G.checked = true; G.win = ev.all;
+      if (ev.all) { G.built[el.z] = true; G.fb = '<div class="fb show ok"><b>✔ Geschafft!</b> ' + (G.mode === 'repair' ? 'Alle Fehler repariert.' : 'Dein ' + el.n + '-Atom stimmt in allen Punkten.') + '</div>' + resList(ev.items); }
+      else G.fb = '<div class="fb show no">Noch nicht ganz. Das passt noch nicht:</div>' + resList(ev.items);
+      renderWork(); if (ev.all) burst(document.getElementById('aStage'));
+    }); bCheck.id = 'btnCheck'; r1.appendChild(bCheck);
+    r1.appendChild(btn('💡 Tipp', 'sec', function () { if (G.tips < BTIPS.length) G.tips++; renderWork(); }, G.tips >= BTIPS.length));
+    r1.appendChild(btn('Lösung zeigen', 'sec', function () {
+      G.p = el.z; G.n = neutr(el); G.sh = fillE(el.z); G.win = false; G.flash = '';
+      G.fb = '<div class="fb show info"><b>Lösung für ' + el.n + ':</b><br>Protonen: ' + el.z + ' (Ordnungszahl)<br>Neutronen: ' + Math.round(el.m) + ' − ' + el.z + ' = ' + neutr(el) + '<br>Elektronen: ' + el.z + ', verteilt auf die Schalen: ' + G.sh.filter(function (x) { return x > 0; }).join(' | ') + '<br>' + occupied(G.sh) + ' Schalen = Periode ' + el.r + ', ' + aussen(el) + ' Außenelektronen = Hauptgruppe ' + ROM[el.c] + '</div>'; renderWork();
+    }, !G.checked));
+    r1.appendChild(btn(G.mode === 'build' ? 'Alles entfernen' : 'Neues kaputtes Atom', 'sec', function () { if (G.mode === 'build') { clearAtom(); G.fb = ''; G.win = false; G.flash = ''; renderWork(); } else openWork(G.z, 'repair'); }));
+    task.appendChild(r1);
+    var tp = mk('div', 'tips'); for (var q = 0; q < G.tips; q++) tp.appendChild(mk('div', 'tip', '<b>Tipp ' + (q + 1) + ':</b> ' + BTIPS[q])); task.appendChild(tp);
+    task.appendChild(mk('div', '', G.fb));
+    if (G.win) {
+      var r2 = mk('div', 'row');
+      r2.appendChild(btn('📓 So zeichnest du es ins Heft', '', function () { G.tab = 'heft'; G.hs = 0; renderWork(); heftPlay(); }));
+      r2.appendChild(btn('🪐 In 3D ansehen', 'sec', function () { G.tab = '3d'; renderWork(); }));
+      r2.appendChild(btn(G.mode === 'build' ? '🕵 Fehlersuche zu ' + el.n : '🔧 ' + el.n + ' selbst bauen', 'sec', function () { openWork(el.z, G.mode === 'build' ? 'repair' : 'build'); }));
+      r2.appendChild(btn('Nächstes Element →', '', function () { openWork(rnd(G.z), G.mode); }));
+      task.appendChild(r2);
+    }
+  } else {
+    task.appendChild(mk('h2', '', 'Frei bauen'));
+    task.appendChild(mk('p', 'muted', 'Baue ein beliebiges Atom. Die Werkstatt erkennt, welches Element du gebaut hast, und prüft, ob es zu den Regeln passt.'));
+    if (el) {
+      task.appendChild(mk('div', '', tileHTML(el, '')));
+      var ev2 = evalBuild(el), e2 = sum(G.sh), l = G.p - e2, st = mk('ul', 'res');
+      st.innerHTML = '<li class="' + (l === 0 ? 'ok' : 'no') + '">' + (l === 0 ? '✔ Neutral: so viele Elektronen wie Protonen' : '✘ Nicht neutral: Elektronen und Protonen sind nicht gleich viele') + '</li>' +
+        '<li class="' + (ev2.items[1].ok ? 'ok' : 'no') + '">' + (ev2.items[1].ok ? '✔ Neutronen passen zur Atommasse (' + fmt(el.m) + ' u)' : '✘ Neutronen passen nicht zur Atommasse (' + fmt(el.m) + ' u): gerundete Masse − Ordnungszahl') + '</li>' +
+        '<li class="' + (l === 0 && ev2.items[3].ok ? 'ok' : 'no') + '">' + (l === 0 && ev2.items[3].ok ? '✔ ' + occupied(G.sh) + ' Schalen = Periode ' + el.r : '✘ Die Zahl der besetzten Schalen passt nicht zur Periode ' + el.r) + '</li>' +
+        '<li class="' + (l === 0 && ev2.items[4].ok ? 'ok' : 'no') + '">' + (l === 0 && ev2.items[4].ok ? '✔ Außenelektronen = Hauptgruppe ' + ROM[el.c] : '✘ Die Außenelektronen passen nicht zur Hauptgruppe ' + ROM[el.c]) + '</li>';
+      task.appendChild(st);
+    } else task.appendChild(mk('p', 'big', 'Setze mindestens ein Proton in den Kern.'));
+    var r5 = mk('div', 'row'); r5.appendChild(btn('Alles entfernen', 'sec', function () { clearAtom(); G.flash = ''; renderWork(); })); task.appendChild(r5);
+  }
+  /* Werkbank */
+  bench.appendChild(mk('h3', '', '🛠 Werkbank'));
+  var g1 = mk('div', 'grp', '<b>Teilchenkiste</b>');
+  g1.appendChild(stepper('p', 'Protonen', '', G.p, function () { stepP(-1); }, function () { stepP(1); }));
+  g1.appendChild(stepper('n', 'Neutronen', '', G.n, function () { stepN(-1); }, function () { stepN(1); }));
+  bench.appendChild(g1);
+  var g2 = mk('div', 'grp', '<b>Elektronenhülle</b> <span class="muted" style="font-weight:500;text-transform:none;letter-spacing:0">· oder tippe im Modell auf eine Schale</span>');
+  for (var i = 0; i < 4; i++) (function (i2) { g2.appendChild(stepper('e', SCH[i2] + '-Schale', '(max. ' + CAP[i2] + ')', G.sh[i2], function () { stepE(i2, -1); }, function () { stepE(i2, 1); })); })(i);
+  bench.appendChild(g2); bench.appendChild(mk('div', 'msg', G.msg));
+  renderStage();
+}
+function stepper(cls, label, sub, val, fnMinus, fnPlus) {
+  var d = mk('div', 'step ' + cls, '<div class="lab">' + label + (sub ? ' <small>' + sub + '</small>' : '') + '</div>'), c = mk('div', 'ctl');
+  var m = mk('button', '', '−'), v = mk('span', 'val', String(val)), p = mk('button', '', '+'); m.type = p.type = 'button';
+  m.setAttribute('aria-label', label + ' verringern'); p.setAttribute('aria-label', label + ' erhöhen');
+  m.addEventListener('click', fnMinus); p.addEventListener('click', fnPlus); c.appendChild(m); c.appendChild(v); c.appendChild(p); d.appendChild(c); return d;
+}
+
+/* ----- Bühne: Modell / Heft / 3D ----- */
+function renderStage() {
+  var stage = document.getElementById('aStage'), tabs = document.getElementById('stTabs'), ok = G.win;
+  tabs.innerHTML = '';
+  [['flat', '⚛ Modell'], ['heft', '📓 Heft'], ['3d', '🪐 3D']].forEach(function (t) {
+    var b = mk('button', G.tab === t[0] ? 'on' : '', t[1]); b.type = 'button';
+    b.addEventListener('click', function () { G.tab = t[0]; if (t[0] === 'heft' && G.hs === 99) { /* alles zeigen */ } renderStage(); }); tabs.appendChild(b);
+  });
+  stage.className = 'glass stage' + (ok ? ' win' : '');
+  document.getElementById('stFlat').hidden = G.tab !== 'flat'; document.getElementById('stHeft').hidden = G.tab !== 'heft'; document.getElementById('st3d').hidden = G.tab !== '3d';
+  if (G.tab === 'flat') document.getElementById('stFlat').innerHTML = atomSVG({ p: G.p, n: G.n, sh: G.sh, rings: 4, caps: true, hit: true, flash: G.flash }) + chips(G.p, G.n, sum(G.sh)) + '<p class="hint">Tippe auf eine Schale, um ein Elektron zu setzen.</p>';
+  if (G.tab === 'heft') renderHeft(); else if (G.hsTimer) { clearInterval(G.hsTimer); G.hsTimer = null; }
+  if (G.tab === '3d') { a3Set(G.p, G.n, G.sh); a3Start(); } else a3Stop();
+  tutCheck();
+}
+function stepsOf(sh) { var k = 0, i, st = [{ t: 'kern' }]; for (i = 0; i < 4; i++) if (sh[i] > 0) k = i + 1; for (i = 0; i < k; i++) { st.push({ t: 'ring', i: i }); if (sh[i] > 0) st.push({ t: 'e', i: i }); } return st; }
+function heftSVG(p, n, sh, vis, name) {
+  var id = 'h' + (++svgId), C = 180, CY = 185, R = [62, 92, 122, 152], steps = stepsOf(sh), i, s = '', ink = '#1c3fb0';
+  vis = Math.min(vis, steps.length);
+  s += '<svg viewBox="0 0 360 400" role="img" aria-label="Zeichnung im Heft"><defs><filter id="' + id + 'w"><feTurbulence type="fractalNoise" baseFrequency=".03" numOctaves="2" seed="4"/><feDisplacementMap in="SourceGraphic" scale="2.6"/></filter></defs>';
+  s += '<rect x="2" y="2" width="356" height="396" rx="6" fill="#f6f0dc"/>';
+  for (i = 20; i < 400; i += 20) s += '<line x1="2" y1="' + i + '" x2="358" y2="' + i + '" stroke="#a9c3dc" stroke-opacity=".55" stroke-width=".8"/>';
+  for (i = 20; i < 360; i += 20) s += '<line x1="' + i + '" y1="2" x2="' + i + '" y2="398" stroke="#a9c3dc" stroke-opacity=".55" stroke-width=".8"/>';
+  s += '<line x1="26" y1="2" x2="26" y2="398" stroke="#e07a7a" stroke-width="1.4"/>';
+  s += '<g filter="url(#' + id + 'w)" font-family="\'Segoe Print\',\'Bradley Hand\',\'Comic Sans MS\',cursive" fill="' + ink + '" stroke="' + ink + '">';
+  if (name) s += '<text x="40" y="30" font-size="20" stroke="none">' + name + '</text><line x1="40" y1="35" x2="' + (46 + name.length * 10.5) + '" y2="35" stroke-width="1.6"/>';
+  steps.forEach(function (st, k) {
+    if (k >= vis) return; var fresh = (k === vis - 1 && vis < 99) ? ' class="draw"' : '';
+    if (st.t === 'kern') {
+      s += '<g' + fresh + '><circle cx="' + C + '" cy="' + CY + '" r="34" fill="none" stroke-width="2.2" pathLength="1"/>' + (p + n > 0 ? '<text x="' + C + '" y="' + (CY - 3) + '" text-anchor="middle" font-size="14" stroke="none">' + p + ' p⁺</text><text x="' + C + '" y="' + (CY + 14) + '" text-anchor="middle" font-size="14" stroke="none">' + n + ' n⁰</text>' : '') + '</g>';
+    } else if (st.t === 'ring') {
+      s += '<g' + fresh + '><circle cx="' + C + '" cy="' + CY + '" r="' + R[st.i] + '" fill="none" stroke-width="1.9" pathLength="1"/><text x="' + (C + R[st.i] * .72 + 4) + '" y="' + (CY + R[st.i] * .72 + 12) + '" font-size="13" stroke="none">' + SCH[st.i] + '</text></g>';
+    } else {
+      var cnt = sh[st.i], j, a, off = st.i * 0.5; s += '<g' + fresh + '>';
+      for (j = 0; j < cnt; j++) { a = -Math.PI / 2 + off + 2 * Math.PI * j / cnt; s += '<circle cx="' + (C + R[st.i] * Math.cos(a)).toFixed(1) + '" cy="' + (CY + R[st.i] * Math.sin(a)).toFixed(1) + '" r="4.6" fill="' + ink + '" stroke="none"/>'; }
+      s += '</g>';
+    }
+  });
+  s += '</g>';
+  if (vis >= steps.length && p + n > 0) s += '<g font-family="\'Segoe Print\',\'Bradley Hand\',\'Comic Sans MS\',cursive" fill="' + ink + '" font-size="12.5"><text x="40" y="384">Kern: ' + p + ' p⁺, ' + n + ' n⁰ · Hülle: ' + sh.filter(function (x) { return x > 0; }).join(' | ') + '</text></g>';
+  return s + '</svg>';
+}
+function heftText(sh, vis) {
+  var st = stepsOf(sh), cur = st[Math.min(vis, st.length) - 1];
+  if (vis <= 0) return 'Das Blatt ist noch leer. Drücke „Zeichnen lassen“ oder „Nächster Schritt“.';
+  if (!cur) return '';
+  if (cur.t === 'kern') return '<b>1 · Kern:</b> Zeichne einen Kreis in die Mitte und schreibe die Zahl der Protonen (p⁺) und Neutronen (n⁰) hinein.';
+  if (cur.t === 'ring') return '<b>Schale:</b> Zeichne einen Kreis um den Kern: die ' + SCH[cur.i] + '-Schale. Die Schalen liegen von innen nach außen K, L, M …';
+  return '<b>Elektronen:</b> Setze ' + sh[cur.i] + ' Punkt' + (sh[cur.i] > 1 ? 'e' : '') + ' auf die ' + SCH[cur.i] + '-Schale.';
+}
+function renderHeft() {
+  var h = document.getElementById('stHeft'), tot = stepsOf(G.sh).length, vis = Math.min(G.hs, tot), el = elNow(), name = el ? el.n + ' (' + el.s + ')' : '';
+  if (G.p + G.n + sum(G.sh) === 0) { h.innerHTML = '<p class="muted" style="padding:20px">Baue zuerst ein Atom, dann zeigt dir das Heft, wie du es zeichnest.</p>'; return; }
+  h.innerHTML = '<div class="paper">' + heftSVG(G.p, G.n, G.sh, vis, name) + '</div><p class="step-text">' + heftText(G.sh, vis) + '</p>';
+  var r = mk('div', 'row'); r.style.justifyContent = 'center';
+  r.appendChild(btn('▶ Zeichnen lassen', '', function () { G.hs = 0; renderHeft(); heftPlay(); }));
+  r.appendChild(btn('Nächster Schritt', 'sec', function () { if (G.hsTimer) { clearInterval(G.hsTimer); G.hsTimer = null; } G.hs = Math.min(vis + 1, tot); renderHeft(); }, vis >= tot));
+  r.appendChild(btn('Alles zeigen', 'sec', function () { if (G.hsTimer) { clearInterval(G.hsTimer); G.hsTimer = null; } G.hs = 99; renderHeft(); }, vis >= tot));
+  h.appendChild(r);
+  tutCheck();
+}
+function heftPlay() {
+  if (G.hsTimer) clearInterval(G.hsTimer); G.hs = 0; renderHeft();
+  G.hsTimer = setInterval(function () { var tot = stepsOf(G.sh).length; if (G.hs >= tot || G.tab !== 'heft') { clearInterval(G.hsTimer); G.hsTimer = null; return; } G.hs++; renderHeft(); }, 1100);
+}
+
+/* ----- 3D-Planetenmodell (Canvas) ----- */
+var A3 = { cv: null, ctx: null, W: 0, H: 0, dpr: 1, rx: -0.5, ry: 0.6, auto: true, raf: 0, run: false, p: 0, n: 0, sh: [0, 0, 0, 0], nuc: [], drag: null, t0: Date.now(), inited: false };
+var OR = [1.0, 1.42, 1.84, 2.26], OA = [0.0, 0.95, 0.95, 0.95], OG = [0, 0, 2.094, 4.189];
+function fib(m, R) { var a = [], i, y, r, th; for (i = 0; i < m; i++) { y = 1 - 2 * (i + .5) / m; r = Math.sqrt(1 - y * y); th = i * 2.399963; a.push([Math.cos(th) * r * R, y * R, Math.sin(th) * r * R]); } return a; }
+function nuc3D(p, n) {
+  var N = p + n, parts = [], a = 0, b = 0, pts = [], pr, d, i;
+  if (N < 1) return [];
+  while (a < p || b < n) { if (a < p) { parts.push('p'); a++; } if (b < n) { parts.push('n'); b++; } }
+  pr = N <= 4 ? 0.17 : N <= 13 ? 0.13 : 0.105; d = pr * 2.02;
+  pts.push([0, 0, 0]);
+  if (N > 1) { var m1 = Math.min(12, N - 1); fib(m1, d).forEach(function (q) { pts.push(q); }); }
+  if (N > 13) { fib(N - 13, d * 2).forEach(function (q) { pts.push(q); }); }
+  var st = N * 53 + 11, k, r2, t; for (k = parts.length - 1; k > 0; k--) { st = (st * 1103515245 + 12345) % 2147483648; r2 = Math.floor(st / 2147483648 * (k + 1)); t = parts[k]; parts[k] = parts[r2]; parts[r2] = t; }
+  return pts.map(function (q, j) { return { x: q[0], y: q[1], z: q[2], t: parts[j], r: pr }; });
+}
+function a3Set(p, n, sh) { if (A3.p !== p || A3.n !== n || !A3.nuc.length && p + n > 0) A3.nuc = nuc3D(p, n); A3.p = p; A3.n = n; A3.sh = sh.slice(); }
+function a3Size() {
+  var cv = A3.cv, w = Math.min(480, cv.parentNode.clientWidth || 340), h = Math.round(w * 0.82), dpr = window.devicePixelRatio || 1;
+  if (A3.W === w && A3.dpr === dpr) return; A3.W = w; A3.H = h; A3.dpr = dpr; cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); cv.style.width = w + 'px'; cv.style.height = h + 'px';
+}
+function a3Init() {
+  if (A3.inited) return; A3.inited = true; var cv = document.getElementById('cv3'); A3.cv = cv; A3.ctx = cv.getContext('2d');
+  cv.addEventListener('pointerdown', function (e) { A3.drag = { x: e.clientX, y: e.clientY, id: e.pointerId }; A3.auto = false; try { cv.setPointerCapture(e.pointerId); } catch (x) { } a3Btns(); });
+  cv.addEventListener('pointermove', function (e) { if (!A3.drag) return; A3.ry += (e.clientX - A3.drag.x) * 0.012; A3.rx = Math.max(-1.55, Math.min(1.55, A3.rx + (e.clientY - A3.drag.y) * 0.012)); A3.drag.x = e.clientX; A3.drag.y = e.clientY; });
+  var up = function () { A3.drag = null; }; cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+  var ctl = document.getElementById('st3dCtl');
+  function add(label, fn) { var b = btn(label, 'sec', fn); b.className += ' small'; ctl.appendChild(b); return b; }
+  A3.bAuto = add('⏸ Drehung', function () { A3.auto = !A3.auto; a3Btns(); });
+  add('Von oben', function () { A3.rx = -1.5; A3.ry = 0; A3.auto = false; a3Btns(); });
+  add('Von der Seite', function () { A3.rx = 0; A3.ry = 0.2; A3.auto = false; a3Btns(); });
+  add('Schräg', function () { A3.rx = -0.5; A3.ry = 0.6; A3.auto = true; a3Btns(); });
+}
+function a3Btns() { if (A3.bAuto) A3.bAuto.textContent = A3.auto ? '⏸ Drehung anhalten' : '▶ Drehen'; }
+function a3Start() { a3Init(); a3Btns(); a3Size(); if (A3.run) return; A3.run = true; (function loop() { if (!A3.run) return; a3Draw(); A3.raf = requestAnimationFrame(loop); })(); }
+function a3Stop() { A3.run = false; if (A3.raf) cancelAnimationFrame(A3.raf); }
+function a3Draw() {
+  var c = A3.ctx, W = A3.W, H = A3.H, t = (Date.now() - A3.t0) / 1000, i, j, k;
+  if (!W) return; a3Size();
+  c.setTransform(A3.dpr, 0, 0, A3.dpr, 0, 0); c.clearRect(0, 0, W, H);
+  if (A3.auto && !A3.drag) A3.ry += 0.006;
+  var nR = 1; for (i = 0; i < 4; i++) if (A3.sh[i] > 0) nR = i + 1; if (A3.p + A3.n + sum(A3.sh) === 0) nR = 4;
+  var S = Math.min(W, H) / 2 / (OR[nR - 1] + 0.35) * 0.95, cx = W / 2, cy = H / 2, F = 7, cyR = Math.cos(A3.ry), syR = Math.sin(A3.ry), cxR = Math.cos(A3.rx), sxR = Math.sin(A3.rx);
+  function view(x, y, z) { var x1 = x * cyR + z * syR, z1 = -x * syR + z * cyR, y2 = y * cxR - z1 * sxR, z2 = y * sxR + z1 * cxR, s = F / (F - z2); return { x: cx + x1 * S * s, y: cy + y2 * S * s, z: z2, s: s }; }
+  function orbit(ii, th) {
+    var r = OR[ii], x = r * Math.cos(th), y = r * Math.sin(th), z = 0, ca = Math.cos(OA[ii]), sa = Math.sin(OA[ii]), cg = Math.cos(OG[ii]), sg = Math.sin(OG[ii]), y1 = y * ca - z * sa, z1 = y * sa + z * ca, x2 = x * cg - y1 * sg, y2 = x * sg + y1 * cg;
+    return [x2, y2, z1];
+  }
+  var g = c.createRadialGradient(cx, cy, 0, cx, cy, S * 0.9); g.addColorStop(0, 'rgba(255,120,150,.35)'); g.addColorStop(1, 'rgba(255,120,150,0)'); c.fillStyle = g; c.fillRect(0, 0, W, H);
+  var front = [];
+  for (i = 0; i < nR; i++) {
+    var occ = A3.sh[i] > 0, segs = 96, prev = null;
+    for (j = 0; j <= segs; j++) {
+      var q = orbit(i, j / segs * 6.2832), v = view(q[0], q[1], q[2]);
+      if (prev) { var back = (v.z + prev.z) / 2 <= 0; var seg = { a: prev, b: v, occ: occ, d: (v.z + prev.z) / 2, full: A3.sh[i] === CAP[i] }; if (back) drawSeg(c, seg); else front.push(seg); }
+      prev = v;
+    }
+  }
+  var items = [], pr3;
+  A3.nuc.forEach(function (q) { var v = view(q.x, q.y, q.z); items.push({ z: v.z, k: q.t, x: v.x, y: v.y, r: q.r * S * v.s }); });
+  for (i = 0; i < 4; i++) { var cnt = A3.sh[i]; for (j = 0; j < cnt; j++) { var th = 2 * Math.PI * j / cnt + (i % 2 ? -1 : 1) * t * (1.5 / (1 + i * 0.55)) + i; var q2 = orbit(i, th), v2 = view(q2[0], q2[1], q2[2]); items.push({ z: v2.z, k: 'e', x: v2.x, y: v2.y, r: 0.085 * S * v2.s }); } }
+  items.sort(function (a, b) { return a.z - b.z; });
+  items.forEach(function (it) {
+    var col = it.k === 'p' ? ['#ffc1cb', '#e0334f'] : it.k === 'n' ? ['#f2f6fc', '#7f93b5'] : ['#eafdff', '#27c4e8'];
+    if (it.k === 'e') { c.fillStyle = 'rgba(79,227,255,.22)'; c.beginPath(); c.arc(it.x, it.y, it.r * 1.9, 0, 6.2832); c.fill(); }
+    var gr = c.createRadialGradient(it.x - it.r * .35, it.y - it.r * .4, it.r * .1, it.x, it.y, it.r); gr.addColorStop(0, col[0]); gr.addColorStop(1, col[1]); c.fillStyle = gr; c.beginPath(); c.arc(it.x, it.y, it.r, 0, 6.2832); c.fill();
+    if (it.k === 'p' && it.r > 5) { c.fillStyle = '#fff'; c.font = 'bold ' + Math.round(it.r * 1.25) + 'px sans-serif'; c.textAlign = 'center'; c.fillText('+', it.x, it.y + it.r * .42); }
+  });
+  front.forEach(function (sg) { drawSeg(c, sg); });
+}
+function drawSeg(c, sg) {
+  var a = 0.35 + 0.35 * Math.max(-1, Math.min(1, sg.d)) * 0.5; c.strokeStyle = sg.full ? 'rgba(94,230,168,' + (a + .2) + ')' : sg.occ ? 'rgba(120,200,255,' + (a + .2) + ')' : 'rgba(160,175,255,' + (a * .5) + ')'; c.lineWidth = sg.occ ? 2.2 : 1.3;
+  c.beginPath(); c.moveTo(sg.a.x, sg.a.y); c.lineTo(sg.b.x, sg.b.y); c.stroke();
+}
+
+/* ----- Tafel ----- */
+function buildTafel() {
+  var t = document.getElementById('tafel'), r, c, k, el;
+  t.innerHTML = '<div class="hd"></div>';
+  [1, 2, 13, 14, 15, 16, 17, 18].forEach(function (cc) { t.appendChild(mk('div', 'hd', ROM[cc])); });
+  for (r = 1; r <= 4; r++) {
+    t.appendChild(mk('div', 'rl', String(r)));
+    for (c = 0; c < 8; c++) {
+      el = null; for (k = 0; k < EL.length; k++) if (EL[k].r === r && COL[EL[k].c] === c) el = EL[k];
+      if (!el) { t.appendChild(mk('div', 'bt em', '')); continue; }
+      var b = mk('button', 'bt k-' + el.k, '<span class="z">' + el.z + '</span><span class="ok">✔</span><b>' + el.s + '</b><span class="nm">' + el.n + '</span><span class="ms">' + fmt(el.m) + '</span>');
+      b.type = 'button'; b.setAttribute('data-z', el.z); b.setAttribute('aria-label', el.n + ', Ordnungszahl ' + el.z);
+      (function (e2, b2) { b2.addEventListener('click', function () { b2.className += ' zoom'; setTimeout(function () { openWork(e2.z, 'build'); }, 260); }); })(el, b);
+      t.appendChild(b);
+    }
+  }
+}
+function renderBoard() {
+  var cnt = Object.keys(G.built).length, hero = document.getElementById('bHero');
+  hero.innerHTML = '<h2>🧭 Die Element-Tafel</h2><p class="muted" style="margin:2px 0 8px">Tippe ein Element an: Die Werkbank öffnet sich und du baust das Atom nach. Oder starte eine Herausforderung.</p>' +
+    '<div class="prog"><i style="width:' + (cnt * 5) + '%"></i></div><p class="hint" style="margin:4px 0 8px">⭐ ' + cnt + ' von 20 Elementen gebaut</p>';
+  var row = mk('div', 'row'); row.style.marginTop = '4px';
+  row.appendChild(btn('🎲 Zufallsauftrag', '', function () { openWork(rnd(0), 'build'); }));
+  row.appendChild(btn('🕵 Fehlersuche', 'sec', function () { openWork(rnd(0), 'repair'); }));
+  row.appendChild(btn('🔍 Atom erkennen', 'sec', function () { openQuiz('recog'); }));
+  row.appendChild(btn('🧩 Wer bin ich?', 'sec', function () { openQuiz('who'); }));
+  row.appendChild(btn('🧪 Frei bauen', 'sec', function () { G.z = null; G.mode = 'free'; G.tab = 'flat'; G.tips = 0; G.fb = ''; G.win = false; G.flash = ''; clearAtom(); showView('work'); renderWork(); }));
+  row.appendChild(btn('❓ Tutorial mit Hugo', 'sec', function () { tutStart(); }));
+  hero.appendChild(row);
+  Array.prototype.forEach.call(document.querySelectorAll('#tafel .bt[data-z]'), function (b) { var z = +b.getAttribute('data-z'); b.className = b.className.replace(' zoom', '').replace(' built', '') + (G.built[z] ? ' built' : ''); });
+}
+
+/* ----- Quiz: Erkennen & Wer bin ich ----- */
+function facts(e) { return { schalen: e.r, aussen: aussen(e), neutronen: neutr(e), masse: Math.round(e.m), elektronen: e.z }; }
+var CLUES = { schalen: function (v) { return 'Ich habe <b>' + v + '</b> Elektronenschale' + (v > 1 ? 'n' : '') + '.'; }, aussen: function (v) { return 'Auf meiner äußersten Schale sitzen <b>' + v + '</b> Elektron' + (v > 1 ? 'en' : '') + '.'; }, neutronen: function (v) { return 'In meinem Kern stecken <b>' + v + '</b> Neutron' + (v > 1 ? 'en' : '') + '.'; }, masse: function (v) { return 'Meine Atommasse ist gerundet <b>' + v + '</b> u.'; }, elektronen: function (v) { return 'Insgesamt habe ich <b>' + v + '</b> Elektron' + (v > 1 ? 'en' : '') + '.'; } };
+var CNAME = { schalen: 'Schalen', aussen: 'Außenelektronen', neutronen: 'Neutronen', masse: 'gerundete Atommasse', elektronen: 'Elektronen' };
+function openQuiz(type) {
+  var q = G.q; q.type = type; q.z = rnd(q.z); q.tips = 0; q.bad = {}; q.done = false; q.fb = ''; q.shown = 2;
+  if (type === 'who') { q.clues = ['schalen', 'aussen', 'neutronen', 'masse', 'elektronen'].sort(function () { return Math.random() - .5; }); }
+  showView('quiz'); renderQuiz();
+}
+function renderQuiz() {
+  var q = G.q, el = EL[q.z - 1], top = document.getElementById('qTop'), task = document.getElementById('qTask'), stage = document.getElementById('qStage'), pick = document.getElementById('qPick'), ref = document.getElementById('qRef');
+  top.innerHTML = ''; task.innerHTML = ''; pick.innerHTML = ''; ref.innerHTML = '';
+  top.appendChild(btn('← Zur Tafel', 'sec', function () { showView('board'); }));
+  var seg = mk('div', 'seg'); seg.style.margin = '0';
+  [['recog', '🔍 Atom erkennen'], ['who', '🧩 Wer bin ich?']].forEach(function (m) { var b = mk('button', q.type === m[0] ? 'on' : '', m[1]); b.type = 'button'; b.addEventListener('click', function () { openQuiz(m[0]); }); seg.appendChild(b); });
+  top.appendChild(seg);
+  var sc = q.score ? ' <span class="chip" style="font-size:13px">⭐ ' + q.score + '</span>' : '';
+  if (q.type === 'recog') {
+    task.appendChild(mk('h2', '', 'Welches Element ist das?' + sc));
+    task.appendChild(mk('p', 'muted', 'Untersuche das Atom und tippe unten im Periodensystem auf das passende Element.'));
+    var r = mk('div', 'row'); r.appendChild(btn('💡 Tipp', 'sec', function () { if (q.tips < RTIPS.length) q.tips++; renderQuiz(); }, q.tips >= RTIPS.length)); r.appendChild(btn('Anderes Atom', 'sec', function () { openQuiz('recog'); })); task.appendChild(r);
+    var tp = mk('div', 'tips'); for (var i = 0; i < q.tips; i++) tp.appendChild(mk('div', 'tip', '<b>Tipp ' + (i + 1) + ':</b> ' + RTIPS[i])); task.appendChild(tp);
+    var sh = fillE(el.z);
+    stage.innerHTML = atomSVG({ p: el.z, n: neutr(el), sh: sh, rings: occupied(sh) }) + (q.tips >= 1 || q.done ? chips(el.z, neutr(el), el.z) : '');
+  } else {
+    task.appendChild(mk('h2', '', 'Wer bin ich?' + sc));
+    task.appendChild(mk('p', 'muted', 'Finde das Element aus den Hinweisen. Mit zwei Hinweisen lässt es sich schon eingrenzen. Tippe dein Element unten an.'));
+    var ul = mk('ul', 'clues'); q.clues.slice(0, q.shown).forEach(function (k, idx) { ul.appendChild(mk('li', '', '<span>' + (idx + 1) + '</span><div>' + CLUES[k](facts(el)[k]) + '</div>')); }); task.appendChild(ul);
+    var r2 = mk('div', 'row'); r2.appendChild(btn('Weiterer Hinweis', 'sec', function () { if (q.shown < q.clues.length) q.shown++; renderQuiz(); }, q.shown >= q.clues.length || q.done)); r2.appendChild(btn('Anderes Rätsel', 'sec', function () { openQuiz('who'); })); task.appendChild(r2);
+    if (q.done) { var sh2 = fillE(el.z); stage.innerHTML = atomSVG({ p: el.z, n: neutr(el), sh: sh2, rings: occupied(sh2) }) + chips(el.z, neutr(el), el.z); }
+    else stage.innerHTML = '<div class="mystery"><div class="qm">?</div><p class="muted">Das Atom erscheint, sobald du das Element gefunden hast.</p></div>';
+  }
+  stage.className = 'glass stage' + (q.done ? ' win' : '');
+  task.appendChild(mk('div', '', q.fb));
+  if (q.done) { var r3 = mk('div', 'row'); r3.appendChild(btn('Weiter →', '', function () { openQuiz(q.type); })); r3.appendChild(btn('🔧 ' + el.n + ' selbst bauen', 'sec', function () { openWork(el.z, 'build'); })); task.appendChild(r3); }
+  pick.appendChild(mk('h3', '', q.type === 'who' ? 'Tippe auf dein Element (Lösung)' : 'Tippe das passende Element an'));
+  pick.appendChild(miniPSE({ sel: 0, free: false, mark: q.bad, pick: quizAnswer, noZ: q.type === 'who' }));
+  if (q.type === 'who') {
+    ref.appendChild(mk('h3', '', '📖 Periodensystem zum Nachschauen')); ref.appendChild(refPSE());
+    ref.appendChild(mk('p', 'hint', 'Oben links: Ordnungszahl · Mitte: Symbol · unten: Atommasse in u'));
+  }
+  ref.hidden = q.type !== 'who'; document.querySelector('.werk.quiz').className = 'werk quiz' + (q.type === 'who' ? ' who' : '');
+  pick.className = 'glass' + (q.type === 'who' ? ' ans' : '');
+}
+function miniPSE(opts) {
+  var g = mk('div', 'pse'), r, c, k;
+  g.appendChild(mk('div', 'hd', ''));
+  [1, 2, 13, 14, 15, 16, 17, 18].forEach(function (cc) { g.appendChild(mk('div', 'hd', ROM[cc])); });
+  for (r = 1; r <= 4; r++) {
+    g.appendChild(mk('div', 'rl', String(r)));
+    for (c = 0; c < 8; c++) {
+      var el = null; for (k = 0; k < EL.length; k++) if (EL[k].r === r && COL[EL[k].c] === c) el = EL[k];
+      if (!el) { g.appendChild(mk('div', 'em', '')); continue; }
+      var t = mk('button', 'ptile k-' + el.k + (opts.mark && opts.mark[el.z] ? ' ' + opts.mark[el.z] : ''), (opts.noZ ? '' : '<small>' + el.z + '</small>') + '<b>' + el.s + '</b>');
+      t.type = 'button'; t.setAttribute('aria-label', el.n + ', Ordnungszahl ' + el.z);
+      (function (e2) { t.addEventListener('click', function () { opts.pick(e2); }); })(el);
+      g.appendChild(t);
+    }
+  }
+  return g;
+}
+function refPSE() {
+  var g = mk('div', 'pse'), r, c, k;
+  g.appendChild(mk('div', 'hd', ''));
+  [1, 2, 13, 14, 15, 16, 17, 18].forEach(function (cc) { g.appendChild(mk('div', 'hd', ROM[cc])); });
+  for (r = 1; r <= 4; r++) {
+    g.appendChild(mk('div', 'rl', String(r)));
+    for (c = 0; c < 8; c++) {
+      var el = null; for (k = 0; k < EL.length; k++) if (EL[k].r === r && COL[EL[k].c] === c) el = EL[k];
+      if (!el) { g.appendChild(mk('div', 'em', '')); continue; }
+      g.appendChild(mk('div', 'ptile rtile k-' + el.k, '<small>' + el.z + '</small><b>' + el.s + '</b><small class="rm">' + fmt(el.m) + '</small>'));
+    }
+  }
+  return g;
+}
+function quizAnswer(e) {
+  var q = G.q, t = EL[q.z - 1], f;
+  if (q.done) return;
+  if (e.z === t.z) {
+    q.done = true; q.score++; q.bad = {}; q.bad[t.z] = 'ok'; if (q.type === 'who') q.shown = q.clues.length;
+    q.fb = '<div class="fb show ok"><b>✔ Richtig: ' + t.n + '!</b><br>' + (q.type === 'recog' ? 'Im Kern sitzen ' + t.z + ' Protonen = Ordnungszahl ' + t.z + '. ' : '') + 'Kontrolle: ' + occupied(fillE(t.z)) + ' besetzte Schalen = Periode ' + t.r + ', ' + aussen(t) + ' Außenelektronen = Hauptgruppe ' + ROM[t.c] + '.</div>';
+    renderQuiz(); burst(document.getElementById('qStage')); return;
+  }
+  q.bad[e.z] = 'bad';
+  if (q.type === 'recog') {
+    var extra = ''; if (e.r === t.r && e.c !== t.c) extra = ' Die Zahl der Schalen passt zu ' + e.n + ' (gleiche Periode), aber nicht die Zahl der Protonen.'; else if (e.c === t.c) extra = ' Die Außenelektronen passen zu ' + e.n + ' (gleiche Hauptgruppe), aber nicht Protonen und Schalen.';
+    q.fb = '<div class="fb show no">✘ ' + e.n + ' hat die Ordnungszahl ' + e.z + '. Das passt nicht zu den Protonen im Kern.' + extra + ' Zähle noch einmal nach.</div>';
+  } else {
+    var bad = null, fe = facts(e), ft = facts(t); q.clues.slice(0, q.shown).forEach(function (k) { if (!bad && fe[k] !== ft[k]) bad = k; });
+    if (bad) q.fb = '<div class="fb show no">✘ ' + e.n + ' passt nicht zu einem Hinweis: ' + e.n + ' hat ' + fe[bad] + ' (' + CNAME[bad] + '), im Hinweis steht aber ' + ft[bad] + '.</div>';
+    else { if (q.shown < q.clues.length) q.shown++; q.fb = '<div class="fb show info">' + e.n + ' passt zu allen bisherigen Hinweisen, aber nicht zum gesuchten Element. Ich habe einen weiteren Hinweis freigeschaltet.</div>'; }
+  }
+  renderQuiz();
+}
+
+/* ----- Ansichten & Navigation ----- */
+function showView(v) {
+  G.view = v;
+  ['board', 'work', 'quiz'].forEach(function (k) { var e = document.getElementById('v' + k.charAt(0).toUpperCase() + k.slice(1)); e.hidden = k !== v; if (k === v) { e.className = 'view enter'; } });
+  if (v !== 'work') { a3Stop(); if (G.hsTimer) { clearInterval(G.hsTimer); G.hsTimer = null; } }
+  if (v === 'board') renderBoard();
+  window.scrollTo(0, 0);
+  tutCheck();
+}
+document.getElementById('regelkarte').innerHTML = regelHTML();
+document.getElementById('stFlat').addEventListener('click', function (e) { var t = e.target, r = t && t.getAttribute ? t.getAttribute('data-ring') : null; if (r !== null && r !== undefined) stepE(+r, 1); });
+(function tafelTilt() {
+  var wrap = document.getElementById('tafelWrap'), t = document.getElementById('tafel');
+  wrap.addEventListener('pointermove', function (e) { if (e.pointerType !== 'mouse') return; var r = wrap.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5; t.style.transform = 'rotateX(' + (12 - y * 10).toFixed(1) + 'deg) rotateY(' + (x * 12).toFixed(1) + 'deg)'; });
+  wrap.addEventListener('pointerleave', function () { t.style.transform = ''; });
+})();
+
+/* ---------- Tutorial mit Hugo ---------- */
+var TKEY = 'atomwerkstatt-tutorial-gesehen';
+var T = { on: false, i: 0, key: '', armed: true, ready: false, pending: 0, scrolled: '' };
+function needH() { return G.view === 'work' && G.z === 1 && G.mode === 'build'; }
+function needHe() { return G.view === 'work' && G.z === 2 && G.mode === 'build'; }
+function fixH() { openWork(1, 'build'); }
+function fixHe() { openWork(2, 'build'); }
+var NOCH = 'Noch nicht ganz – die Liste unter den Knöpfen zeigt, was nicht passt.';
+var TS = [
+  { t: 'Hallo! Ich bin <b>Hugo</b>, ein Wasserstoffatom. Ich zeige dir die Werkstatt – und du baust mich dabei nach.', btn: 'Los geht\'s', cheer: true },
+  { t: 'Das ist die <b>Element-Tafel</b>, wie ein Periodensystem. Ich sitze oben links. Tippe auf <b>H</b>.', hl: '#tafel .bt[data-z="1"]', wait: function () { return G.view === 'work' && G.z === 1; } },
+  { t: 'Das ist die Arbeitsfläche. Die <b>Kachel</b> ist deine Bauanleitung. Die <b>Ordnungszahl 1</b> verrät: Ich habe <b class="p">1 Proton</b> im Kern.', hl: '#aTask .tile [data-f="z"]', btn: 'Weiter', need: needH, fix: fixH, fixTo: 2 },
+  { t: 'Baue mein Proton: Tippe bei <b>Protonen</b> auf <b>+</b>.', hl: '#aBench .step.p .ctl button:last-child', wait: function () { return G.p === 1; }, bad: function () { return G.p > 1 ? 'Ich habe nur ein Proton. Mit − nimmst du eins weg.' : ''; }, need: needH, fix: fixH, fixTo: 2 },
+  { t: 'Atommasse 1,008 u, gerundet <b>1</b>. Neutronen = 1 − 1 = <b>0</b>. Ich habe keine <b class="n">Neutronen</b>, der Zähler bleibt auf 0.', hl: '#aTask .tile [data-f="m"], #aBench .step.n', btn: 'Weiter', bad: function () { return G.n !== 0 ? 'Die Neutronen sollen auf 0 stehen.' : ''; }, need: needH, fix: fixH, fixTo: 2 },
+  { t: '<b>Periode 1</b> = eine Schale (K). Neutral heißt: so viele <b class="e">Elektronen</b> wie Protonen, also <b>1</b>. Tippe im Modell auf die gestrichelte Schale.', hl: '#aTask .tile [data-f="r"], #stFlat .hit[data-ring="0"]', foc: '#stFlat .hit[data-ring="0"]', wait: function () { return G.sh[0] === 1 && sum(G.sh) === 1; }, bad: function () { return sum(G.sh) > 1 ? 'Ich habe nur ein Elektron. Mit − bei der K-Schale nimmst du eins weg.' : ''; }, need: needH, fix: fixH, fixTo: 2 },
+  { t: '<b>Hauptgruppe I</b> = 1 Außenelektron. Passt! Prüfe jetzt, ob du mich richtig gebaut hast: Tippe auf <b>Prüfen</b>.', hl: '#aTask .tile [data-f="g"], #btnCheck', wait: function () { return G.win; }, bad: function () { return G.checked && !G.win ? NOCH : ''; }, need: needH, fix: fixH, fixTo: 2 },
+  { t: 'Das bin ich! 🎉 Und wie zeichnet man mich ins Heft? Tippe auf den Reiter <b>Heft</b>.', hl: '#stTabs button:nth-child(2)', wait: function () { return G.tab === 'heft'; }, cheer: true, need: needH, fix: fixH, fixTo: 2 },
+  { t: 'Das Heft zeigt Schritt für Schritt: Kern, Schale, Elektron. Drücke <b>Zeichnen lassen</b>.', hl: '#stHeft .row .btn:first-child', wait: function () { return G.hs !== 99; }, need: needH, fix: fixH, fixTo: 2 },
+  { t: 'Und räumlich? Tippe auf <b>3D</b>.', hl: '#stTabs button:nth-child(3)', wait: function () { return G.tab === '3d'; }, need: needH, fix: fixH, fixTo: 2 },
+  { t: 'Ziehe mit Finger oder Maus, um mich zu drehen. Bei größeren Atomen liegen die Bahnen schräg zueinander.', hl: '#cv3', btn: 'Weiter', need: needH, fix: fixH, fixTo: 2 },
+  { t: 'Jetzt bist du dran! Baue meinen Nachbarn <b>Helium</b>. Geh dazu mit <b>← Zur Tafel</b> zurück.', hl: '#wTop > .btn:first-child', wait: function () { return G.view === 'board'; } },
+  { t: 'Tippe auf <b>He</b>.', hl: '#tafel .bt[data-z="2"]', wait: function () { return needHe(); } },
+  { t: 'Lies die Kachel und baue Helium selbst. Bei Fragen hilft <b>💡 Tipp</b>. Am Ende: <b>Prüfen</b>.', hl: '#aTask .tile', wait: function () { return G.win && G.z === 2; }, bad: function () { return G.checked && !G.win ? NOCH : ''; }, need: needHe, fix: fixHe, fixTo: 13 },
+  { t: 'Stark! Die K-Schale fasst höchstens 2 Elektronen, bei Helium ist sie <b>voll</b>. Darum steht es in Gruppe <b>VIII</b>, obwohl es nur 2 Außenelektronen hat – typisch für Edelgase.', btn: 'Weiter', cheer: true, need: needHe, fix: fixHe, fixTo: 13 },
+  { t: 'Das war\'s! Jetzt warten 🎲 Zufallsaufträge, 🕵 Fehlersuche, 🔍 Atom erkennen, 🧩 Wer bin ich? und 🧪 Frei bauen. Die Regeln stehen in der <b>Regelkarte</b>.', btn: 'Tutorial beenden', end: true, cheer: true }
+];
+function tutSeen() { try { localStorage.setItem(TKEY, '1'); } catch (e) { } }
+function tutClearHl() { Array.prototype.forEach.call(document.querySelectorAll('.coach-hl'), function (e) { e.classList.remove('coach-hl'); }); }
+function tutStart() {
+  T.on = true; T.i = 0; document.getElementById('coach').hidden = false; tutShowStep(); showView('board');
+}
+function tutEnd() {
+  T.on = false; T.key = ''; if (T.pending) { clearTimeout(T.pending); T.pending = 0; } document.getElementById('coach').hidden = true; tutClearHl(); tutSeen();
+}
+function tutNext() {
+  if (T.pending) { clearTimeout(T.pending); T.pending = 0; }
+  if (TS[T.i] && TS[T.i].end) { tutEnd(); showView('board'); return; }
+  T.i++; if (T.i >= TS.length) { tutEnd(); return; }
+  burst(document.getElementById('hugo')); tutShowStep(); tutCheck();
+}
+function tutShowStep() {
+  var S = TS[T.i], h = document.getElementById('hugo');
+  T.key = ''; T.ready = false; T.armed = !(S.wait && S.wait()); T.scrolled = '';
+  h.className = 'mascot hop' + (S.cheer ? ' cheer' : ''); setTimeout(function () { h.className = 'mascot' + (S.cheer ? ' cheer' : ''); }, 700);
+  tutRender(false);
+}
+function tutRender(lost) {
+  var S = TS[T.i], tx = document.getElementById('cText'), bt = document.getElementById('cBtns');
+  T.key = T.i + (lost ? 'L' : '');
+  tx.innerHTML = (lost ? 'Hoppla, wir sind woanders gelandet. Ich warte an der Werkbank auf dich.' : S.t) + '<div class="cbad" id="cBad"></div>';
+  bt.innerHTML = '';
+  if (lost) { bt.appendChild(btn('Zurück zu Hugo', 'go', function () { var s = TS[T.i]; if (s.fixTo !== undefined) T.i = s.fixTo; s = TS[T.i]; s.fix(); tutShowStep(); tutCheck(); })); }
+  else if (S.btn || (S.wait && T.ready)) bt.appendChild(btn(S.btn || 'Weiter', 'go', tutNext));
+  if (!lost && S.wait && !S.end) bt.appendChild(btn('Schritt überspringen', 'sec', tutNext));
+}
+function tutCheck() {
+  if (!T.on || !T.key && T.key !== 0) return;
+  var S = TS[T.i], i = T.i, bad, hits, first;
+  if (S.need && !S.need()) { if (T.key !== i + 'L') { tutClearHl(); tutRender(true); } return; }
+  if (T.key === i + 'L') { tutShowStep(); }
+  bad = S.bad ? S.bad() : ''; var cb = document.getElementById('cBad'); if (cb && cb.textContent !== bad) cb.textContent = bad;
+  tutClearHl();
+  if (S.hl) {
+    hits = document.querySelectorAll(S.hl); Array.prototype.forEach.call(hits, function (e) { if (e.offsetParent !== null || e.ownerSVGElement) e.classList.add('coach-hl'); });
+    first = (S.foc && document.querySelector(S.foc + '.coach-hl')) || document.querySelector('.coach-hl');
+    if (first && T.scrolled !== String(i)) { T.scrolled = String(i); try { first.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { first.scrollIntoView(); } }
+  }
+  if (S.wait && S.wait()) {
+    if (T.armed) { if (!T.pending) T.pending = setTimeout(function () { T.pending = 0; if (T.on && T.i === i) tutNext(); }, 650); }
+    else if (!T.ready) { T.ready = true; tutRender(false); tutCheck(); }
+  }
+}
+function tutAutoStart() { var seen = false; try { seen = localStorage.getItem(TKEY) === '1'; } catch (e) { } if (!seen) tutStart(); }
+document.getElementById('cX').addEventListener('click', function () { tutEnd(); });
+buildTafel();
+showView('board');
+tutAutoStart();
+</script>
+</body>
+</html>
