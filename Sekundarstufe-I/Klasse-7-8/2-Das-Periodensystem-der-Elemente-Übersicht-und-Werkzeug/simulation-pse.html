@@ -127,7 +127,7 @@
   .card.intro p { margin: 6px 0 0; font-size: 14px; line-height: 1.45; }
   .ring { animation: spin var(--d, 12s) linear infinite; transform-origin: 100px 100px; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  @media (prefers-reduced-motion: reduce) { .ring { animation: none; } .el { transition: none; } .el.right, .el.wrong { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { .el { transition: none; } .el.right, .el.wrong { animation: none; } }
 
   /* Breit: Karte sitzt in der Lücke der Tabelle (Gruppen 3-12, Perioden 1-3) */
   @media (min-width: 1180px) {
