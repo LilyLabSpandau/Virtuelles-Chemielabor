@@ -224,7 +224,7 @@ function drawP(c, p) {
 }
 
 /* ====== Szenen ====== */
-function box(x, y, z, w, h, d, c) { return { t: 'box', x: x, y: y, z: z, w: w, h: h, d: d, c: c }; }
+function box(x, y, z, w, h, d, c, hot) { return { t: 'box', x: x, y: y, z: z, w: w, h: h, d: d, c: c, hot: hot }; }
 function cyl(x, y, z, r1, r2, h, c, o) { var b = { t: 'cyl', x: x, y: y, z: z, r1: r1, r2: r2, h: h, c: c }, k; if (o) for (k in o) b[k] = o[k]; return b; }
 function disc(x, y, z, rx, rz, c) { return { t: 'disc', x: x, y: y, z: z, rx: rx, rz: rz, c: c }; }
 var PLATFORM = box(0, -14, 0, 350, 14, 270, '#2b3445');
@@ -246,15 +246,15 @@ function buildScenes() {
       sand: ['ok', 'Der Sand erstickt das Feuer. Im Klassenzimmer hast du aber selten Sand griffbereit, und der Papierkorb ist danach unbrauchbar.'] } };
   SC.fett = { name: 'Fettbrand', loc: 'Küche', cls: 'F: Speisefette und -öle',
     intro: 'In der Küche brennt Fett in einer Pfanne auf dem Herd.',
-    prims: [box(0, 0, 0, 200, 72, 120, '#aeb6c2'), box(0, 72, 62, 200, 70, 6, '#66798a'), cyl(55, 72, -20, 22, 22, 2, '#2a2a30'), cyl(-55, 72, 28, 22, 22, 2, '#2a2a30'), cyl(55, 72, 28, 22, 22, 2, '#2a2a30'), cyl(-55, 74, -20, 30, 34, 9, '#1e1e24', { open: true, fill: '#d9a62e' }), box(-9, 78, -20, 50, 4, 8, '#1e1e24'), cyl(80, 72, 38, 6, 6, 28, '#c9a227')],
+    prims: [box(0, 0, 0, 200, 72, 120, '#aeb6c2'), box(0, 72, 62, 200, 70, 6, '#66798a'), cyl(55, 72, -20, 22, 22, 2, '#2a2a30'), cyl(-55, 72, 28, 22, 22, 2, '#2a2a30'), cyl(55, 72, 28, 22, 22, 2, '#2a2a30'), cyl(-55, 74, -20, 30, 34, 9, '#1e1e24', { open: true, fill: '#d9a62e' }), box(-9, 78, -20, 50, 4, 8, '#1e1e24'), cyl(80, 72, 38, 6, 6, 28, '#c9a227'), box(135, 0, 0, 64, 60, 104, '#8a6d4b'), cyl(135, 60, -5, 30, 24, 6, '#9aa5b1', { hot: 'lid' }), cyl(135, 66, -5, 5, 5, 7, '#22242a', { hot: 'lid' }), box(-55, 36, -64, 14, 14, 8, '#d8453a', 'knob'), box(0, 36, -64, 14, 14, 8, '#d8453a', 'knob'), box(55, 36, -64, 14, 14, 8, '#d8453a', 'knob')],
     em: [{ x: -55, y: 84, z: -20, r: 22, rate: 50, sc: 1, pal: 'fat' }], tgt: { x: -55, y: 86, z: -20 }, cover: { w: 78, d: 78, h: 6, y: 86 }, sandY: 84,
-    tip: 'Fett wird weit über 200 °C heiß. Wasser ist dichter als Fett (Fett schwimmt darauf).',
+    tip: 'Fett wird weit über 200 °C heiß. Schau dich in der Küche um: Was läuft noch, und was liegt griffbereit? Gegenstände im Bild lassen sich antippen.',
     r: {
       water: ['explosion', 'Wasser ist schwerer als Fett und sinkt in das über 300 °C heiße Fett. Dort verdampft es schlagartig, das Volumen wächst auf das Tausendfache und reißt brennende Fetttröpfchen mit: eine Fettexplosion.'],
       foam: ['spread', 'Der Schaum besteht überwiegend aus Wasser. Er spritzt im heißen Fett, und brennendes Fett wird über den ganzen Herd verteilt.'],
       powder: ['reignite', 'Das Pulver erstickt die Flammen kurz. Das Fett bleibt aber weit über seiner Zündtemperatur, wird nicht gekühlt und entzündet sich sofort wieder.'],
       co2: ['reignite', 'Das CO₂ verdrängt den Sauerstoff, aber das Fett bleibt sehr heiß. Sobald das Gas weg ist, zündet es erneut.'],
-      blanket: ['good', 'Die Decke (oder ein Deckel) schneidet die Pfanne vom Sauerstoff ab. Danach die Decke liegen lassen, bis das Fett abgekühlt ist.'],
+      blanket: ['ok', 'Die Löschdecke erstickt das Feuer, wenn du sie sicher über die Pfanne legen kannst. Das ist aber umständlich: In der Küche liegt meist ein passender Deckel viel näher, und der Herd sollte dabei aus sein.'],
       sand: ['ok', 'Der Sand erstickt das Fett. In der Küche hat man ihn selten griffbereit, und die Pfanne ist danach unbrauchbar.'] } };
   SC.benzin = { name: 'Benzin-Lache', loc: 'Werkstatt', cls: 'B: flüssige Stoffe',
     intro: 'In der Werkstatt ist Benzin ausgelaufen und brennt als große Lache.',
@@ -308,7 +308,7 @@ function buildScenes() {
 }
 var SCN = buildScenes(), ORDER = ['papier', 'fett', 'benzin', 'elektro', 'metall', 'person'];
 var TOOLS = [['water', '💧', 'Wasser'], ['foam', '🫧', 'Schaum'], ['powder', '🌫️', 'Pulver'], ['co2', '❄️', 'CO₂'], ['blanket', '🧣', 'Löschdecke'], ['sand', '🟫', 'Sand']];
-var TNAME = { water: 'Wasser', foam: 'Schaum', powder: 'Pulver', co2: 'CO₂', blanket: 'Löschdecke', sand: 'Sand' };
+var TNAME = { lid: 'Deckel', water: 'Wasser', foam: 'Schaum', powder: 'Pulver', co2: 'CO₂', blanket: 'Löschdecke', sand: 'Sand' };
 var OUTT = { good: '✔ Gelöscht', ok: '✔ Gelöscht, aber mit Nachteilen', reignite: '🔥 Es flammt wieder auf', explosion: '💥 Explosion!', spread: '🔥 Der Brand breitet sich aus', shock: '⚡ Stromschlag!', burn: '🔥 Das Feuer brennt weiter', harm: '⚠ Die Person wird verletzt' };
 var TFACTS = {
   water: ['Wasser', ['Nimmt sehr viel Wärme auf und verdampft dabei: starke <b>Kühlwirkung</b>.', 'Dichte 1 g/cm³: schwerer als Speiseöl und Benzin, die auf Wasser schwimmen.', 'Beim Verdampfen wächst das Volumen auf das 1700-Fache.', 'Leitet den elektrischen Strom (gelöste Ionen).', 'Reagiert mit sehr unedlen Metallen unter Bildung von Wasserstoff.']],
@@ -326,7 +326,7 @@ function loadScene(id) {
   var sc = SCN[id]; S.scId = id; S.sc = sc;
   S.prims = [PLATFORM].concat(sc.prims.map(function (p) { return Object.assign({}, p); }));
   S.em = sc.em.map(function (e) { return Object.assign({}, e); });
-  PS.length = 0; DECO.length = 0; S.fire = { I: 1 }; S.spread = 1; S.run = null; S.blanket = null; S.sandN = 0; S.smokeT = 0; S.flash = null; S.shake = 0; S.res = null;
+  PS.length = 0; DECO.length = 0; S.fire = { I: 1 }; S.spread = 1; S.run = null; S.blanket = null; S.sandN = 0; S.smokeT = 0; S.flash = null; S.shake = 0; S.res = null; S.fx = {};
   cam.S = sc.cs || 1.3;
 }
 function origin() { return unrot(-215, 80, -165); }
@@ -352,13 +352,17 @@ function toolEmit(R, dt) {
 }
 function startRun(tool, out, cb) {
   if (S.run) return;
-  S.run = { tool: tool, out: out, t: 0, cb: cb, th: tool === 'blanket' ? 1.15 : 0.85, hit: false, acc: 0 };
+  S.run = { tool: tool, out: out, t: 0, cb: cb, th: (tool === 'blanket' || tool === 'lid') ? 1.15 : 0.85, hit: false, acc: 0 };
   if (tool === 'blanket') S.blanket = { p: 0 };
 }
 function finishRun(R) { S.run = null; if (R.out === 'demo') { S.blanket = null; S.sandN = 0; DECO.length = 0; S.fire.I = 1; } if (R.cb) R.cb(R.out); }
 function runStep(dt) {
   var R = S.run, F = S.fire, t, th, o, u, i, n, k;
   if (!R) return; R.t += dt; t = R.t; th = R.th; o = R.out; toolEmit(R, dt);
+  if (R.tool === 'lid') {
+    var e2 = clamp((t - 0.15) / 1.0, 0, 1); e2 = e2 * e2 * (3 - 2 * e2); var sl = clamp((t - th - 0.9) / 1.0, 0, 1) * (o === 'reignite' ? 1 : 0);
+    S.prims.forEach(function (b) { if (b.hot !== 'lid') return; var hh = b.r1 === 5 ? 6 : 0; b.x = lerp(135, -55, e2) + 45 * sl; b.z = lerp(-5, -20, e2); b.y = lerp(60, 84, e2) + 46 * Math.sin(Math.PI * e2) + hh + 5 * sl; if (b.r1 !== 5) b.r1 = lerp(30, 36, e2), b.r2 = lerp(24, 30, e2); });
+  }
   if (S.blanket && R.tool === 'blanket') S.blanket.p = clamp((t - 0.15) / 1.0, 0, 1);
   if (o === 'fuel') {
     n = S.sc.logs.length; k = Math.floor(t / 0.6);
@@ -473,8 +477,8 @@ function pStep2(p) {
     mcq(p, q[1], 0, function () { p.appendChild(mk('div', 'fb ok', '✔ Richtig. ' + q[2])); var r = mk('div', 'row'); r.appendChild(btn('Weiter', '', function () { Q.i++; panel(); })); p.appendChild(r); });
   }
 }
-function use3(tool) {
-  var id = S.scId, r = S.sc.r[tool], out = r[0]; if (S.run || S.res) return; showBanner('');
+function use3(tool, ro) {
+  var id = S.scId, r = ro || S.sc.r[tool], out = r[0]; if (S.run || S.res) return; showBanner('');
   startRun(tool, out, function () {
     var okk = out === 'good' || out === 'ok'; (S.tr.tried[id] = S.tr.tried[id] || {})[tool] = out;
     if (okk) { S.tr.solved[id] = tool; burst($('cvwrap')); }
@@ -528,9 +532,19 @@ function panel() { var p = $('panel'); p.innerHTML = ''; renderSteps(); renderTo
 
 /* ====== Eingabe & Schleife ====== */
 var cv = $('cv'), ctx = cv.getContext('2d'), PT = null, lastW = 0, userRot = false;
-cv.addEventListener('pointerdown', function (e) { PT = { lx: e.clientX }; userRot = true; try { cv.setPointerCapture(e.pointerId); } catch (x) { } });
+cv.addEventListener('pointerdown', function (e) { PT = { lx: e.clientX, x0: e.clientX, y0: e.clientY }; userRot = true; try { cv.setPointerCapture(e.pointerId); } catch (x) { } });
 cv.addEventListener('pointermove', function (e) { if (!PT) return; cam.yaw += (e.clientX - PT.lx) * 0.012; PT.lx = e.clientX; });
-cv.addEventListener('pointerup', function () { PT = null; }); cv.addEventListener('pointercancel', function () { PT = null; });
+cv.addEventListener('pointerup', function (e) {
+  var d = PT && Math.hypot(e.clientX - PT.x0, e.clientY - PT.y0); PT = null;
+  if (d === null || d === undefined || d > 8 || S.step !== 3 || S.run || S.res) return;
+  var r = cv.getBoundingClientRect(), mx = (e.clientX - r.left) / r.width * CW, my = (e.clientY - r.top) / r.height * CH, hit = null, best = 1e9;
+  S.prims.forEach(function (b) { if (!b.hot) return; var q = proj(b.x, b.y + 4, b.z), dd = Math.hypot(q.x - mx, q.y - my); if (dd < 26 * cam.S / 1.3 + 8 && dd < best) { best = dd; hit = b.hot; } });
+  if (hit === 'knob' && !S.fx.off) {
+    S.fx.off = true; S.prims.forEach(function (b) { if (b.hot === 'knob') { b.c = '#6b707a'; b.rgb = null; } }); showBanner('Herd ausgeschaltet', 2400);
+  } else if (hit === 'lid') {
+    use3('lid', S.fx.off ? ['good', 'Herd aus und Deckel drauf: Dem Feuer fehlt der Sauerstoff, es erstickt. Den Deckel geschlossen lassen, bis das Fett abgekühlt ist, sonst flammt es wieder auf.'] : ['reignite', 'Der Deckel erstickt die Flammen, aber die Herdplatte heizt weiter. Das Fett bleibt über der Zündtemperatur und entzündet sich sofort wieder, sobald Luft herankommt. Zuerst den Herd ausschalten.']);
+  }
+}); cv.addEventListener('pointercancel', function () { PT = null; });
 function checkResize() { var w = cv.clientWidth; if (w === lastW && w) return; lastW = w; var dpr = window.devicePixelRatio || 1; cv.width = Math.round(w * dpr); cv.height = Math.round(w * CH / CW * dpr); VS = w / CW * dpr; }
 var last = performance.now(), tt = 0, baseYaw = cam.yaw;
 function frame(now) {
