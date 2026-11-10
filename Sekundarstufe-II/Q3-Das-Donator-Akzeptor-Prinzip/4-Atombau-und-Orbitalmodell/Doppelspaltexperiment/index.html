@@ -99,6 +99,10 @@
   .btn.on { outline:2px solid var(--amb); }
   .bar2 { display:none; }
   .fb.conflict { border-color:#ffd166; background:rgba(255,209,102,.12); }
+  .cfg { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .cbox { background:rgba(255,255,255,.05); border:1px solid var(--line); border-radius:12px; padding:7px; display:flex; flex-direction:column; gap:6px; }
+  .cbox .ct { font-size:12px; letter-spacing:.6px; text-transform:uppercase; color:var(--muted); }
+  .cbox .btn { width:100%; text-align:left; }
 </style>
 </head>
 <body>
@@ -162,7 +166,7 @@ function numQ(host, o, onOk) {
 
 /* ====== Physik der Simulation ====== */
 var ZM = 13, YM = 4.5, XS = -17, XP = 0, XE = 17, SLZ = 1.5, DA = 5; /* Schirmhalbbreite, Schirmhalbhöhe, Quelle, Platte, Schirm, Spaltposition (±), Verhältnis Spaltabstand/Spaltbreite */
-var S = { wa: 0, step: 1, unlocked: 1, src: 'e', slits: 'AB', det: false, U: 200, lam: 550, N: 0, run: false, acc: 0, hits: {}, ti: 0, tdone: {}, tprog: {}, cls: {}, fz: {}, fx: {} };
+var S = { bh: {}, bs: 0, snapped: {}, wdone: false, wa: 0, step: 1, unlocked: 1, src: 'e', slits: 'AB', det: false, U: 200, lam: 550, N: 0, run: false, acc: 0, hits: {}, ti: 0, tdone: {}, tprog: {}, cls: {}, fz: {}, fx: {} };
 var CFG = { e: { name: 'Elektronen' }, p: { name: 'Photonen' } };
 function period() { return S.src === 'e' ? 1.6 * Math.sqrt(200 / S.U) : S.src === 'p' ? 1.6 * S.lam / 550 : 1.6; }
 function gauss() { return (Math.random() + Math.random() + Math.random() + Math.random() - 2) * 1.7; }
@@ -202,7 +206,7 @@ function rgbs(c, a) { return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (a
 var R3 = null, scene, cam3, hostEl, WW = 640, HH = 460, ok3D = false;
 var view = { az: -0.95, el: 0.45, d: 40, tx: 0 }, want = { az: -0.95, el: 0.45, d: 40, tx: 0 }, drag = null;
 var VIEWS = { over: { az: -0.95, el: 0.45, d: 40, tx: 0 }, scr: { az: -1.3, el: 0.22, d: 25, tx: 9 }, top: { az: 0, el: 1.47, d: 47, tx: 0 } };
-var G = {}, hitC, hitX, hitTex, HW = 1040, HHh = 360, particles = [], rings = [], flashes = [], dirty = false;
+var srings = [], G = {}, hitC, hitX, hitTex, HW = 1040, HHh = 360, particles = [], rings = [], flashes = [], dirty = false;
 var bins = new Array(104).fill(0);
 
 function labelSprite(txt, sc) {
@@ -265,6 +269,8 @@ function init3D() {
   /* Pool für Teilchen */
   var sg = new THREE.SphereGeometry(0.36, 14, 10);
   for (var i = 0; i < 40; i++) { var m = new THREE.Mesh(sg, new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true })); m.visible = false; scene.add(m); particles.push({ m: m, act: false }); }
+  var sg2 = new THREE.RingGeometry(0.965, 1, 56, 1, -1.22, 2.44);
+  for (i = 0; i < 24; i++) { var q = new THREE.Mesh(sg2, new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, side: THREE.DoubleSide, depthWrite: false })); q.rotation.x = -Math.PI / 2; q.visible = false; scene.add(q); srings.push({ m: q, act: false }); }
   var rg = new THREE.RingGeometry(0.965, 1, 56, 1, -Math.PI / 2, Math.PI);
   for (i = 0; i < 70; i++) { var r = new THREE.Mesh(rg, new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, side: THREE.DoubleSide, depthWrite: false })); r.rotation.x = -Math.PI / 2; r.visible = false; scene.add(r); rings.push({ m: r, act: false }); }
   var fg = new THREE.SphereGeometry(0.5, 10, 8);
@@ -291,7 +297,7 @@ function addHit(z, y, col) {
   var bi = clamp(Math.floor((z + ZM) / (2 * ZM) * bins.length), 0, bins.length - 1); bins[bi]++;
   S.N++; var k = cfgKey(); S.hits[k] = (S.hits[k] || 0) + 1; dirty = true;
 }
-function resetScreen() { clearHits(); bins.fill(0); S.N = 0; S.wa = 0; S.hits = S.hits || {}; S.hits = S.hits || {}; dirty = true; rebuildUI(); }
+function resetScreen() { clearHits(); bins.fill(0); S.N = 0; S.wa = 0; S.wdone = false; S.hits = S.hits || {}; S.hits = S.hits || {}; dirty = true; rebuildUI(); }
 function launch(vis) {
   var kk = S.src === 'k' ? sampleK() : null, z = kk ? kk.z : sampleZ(), y = clamp(rnd(-1, 1) * (YM - 0.8) * 0.9, -YM + 0.5, YM - 0.5);
   if (!vis || !ok3D) { addHit(z, y); return; }
@@ -304,6 +310,9 @@ function launch(vis) {
 }
 function spawnRing(z0, col) {
   for (var i = 0; i < rings.length; i++) if (!rings[i].act) { var r = rings[i]; r.act = true; r.t = 0; r.z0 = z0; r.m.visible = true; r.m.material.color.setRGB(col[0] / 255, col[1] / 255, col[2] / 255); r.m.position.set(XP + 0.4, -YM + 0.06, z0); r.m.scale.set(0.1, 0.1, 0.1); return; }
+}
+function spawnSrc(col) {
+  for (var i = 0; i < srings.length; i++) if (!srings[i].act) { var r = srings[i]; r.act = true; r.t = 0; r.m.visible = true; r.m.material.color.setRGB(col[0] / 255, col[1] / 255, col[2] / 255); r.m.position.set(XS + 1.5, -YM + 0.06, 0); r.m.scale.set(0.1, 0.1, 0.1); return; }
 }
 function spawnFlash(x, y, z, col, s) {
   for (var i = 0; i < flashes.length; i++) if (!flashes[i].act) { var f = flashes[i]; f.act = true; f.t = 0; f.s = s || 1; f.m.visible = true; f.m.material.color.setRGB(col[0] / 255, col[1] / 255, col[2] / 255); f.m.position.set(x, y, z); return; }
@@ -325,6 +334,7 @@ function stepParticles(dt) {
     }
     if (p.t >= FLY + WAVE) { p.act = false; p.m.visible = false; addHit(p.z, p.y); spawnFlash(XE - 0.1, p.y, p.z, p.col, 1.1); }
   }
+  for (i = 0; i < srings.length; i++) { r = srings[i]; if (!r.act) continue; r.t += dt; u = r.t / 0.91; if (u >= 1) { r.act = false; r.m.visible = false; if (S.src === 'w') { if (S.slits !== 'B') spawnRing(-SLZ, srcColor()); if (S.slits !== 'A') spawnRing(SLZ, srcColor()); } continue; } var s0 = 0.4 + u * (XP - XS - 1.5); r.m.scale.set(s0, s0, 1); r.m.material.opacity = 0.6; }
   for (i = 0; i < rings.length; i++) { r = rings[i]; if (!r.act) continue; r.t += dt; u = r.t / WAVE; if (u >= 1) { r.act = false; r.m.visible = false; continue; } var s = 0.5 + u * (XE - XP - 0.4); r.m.scale.set(s, s, 1); r.m.material.opacity = 0.65 * (1 - u * 0.85); }
   for (i = 0; i < flashes.length; i++) { f = flashes[i]; if (!f.act) continue; f.t += dt; u = f.t / 0.35; if (u >= 1) { f.act = false; f.m.visible = false; continue; } f.m.scale.setScalar(f.s * (0.5 + u * 1.6)); f.m.material.opacity = 0.9 * (1 - u); }
   ['A', 'B'].forEach(function (k) { var e = G.eye[k]; var t = e.userData.t || 0; if (t > 0) { e.userData.t = t - dt; e.material.color.setHex(0xffd166); e.scale.setScalar(1.25); } else { e.material.color.setHex(0x2f7d55); e.scale.setScalar(1); } });
@@ -347,8 +357,8 @@ function drawWave() {
 }
 function waveStep(dt) {
   if (!S.run) return; S.wa = Math.min(1, S.wa + dt / 2.5); waveT += dt;
-  if (waveT > 0.45) { waveT = 0; if (S.slits !== 'B') spawnRing(-SLZ, srcColor()); if (S.slits !== 'A') spawnRing(SLZ, srcColor()); }
-  drawWave(); if (S.wa >= 1) { S.hits[cfgKey()] = 1; taskTick(); }
+  if (waveT > 0.45) { waveT = 0; spawnSrc(srcColor()); }
+  drawWave(); if (S.wa >= 1 && !S.wdone) { S.wdone = true; S.hits[cfgKey()] = (S.hits[cfgKey()] || 0) + 1; taskTick(); }
 }
 function checkResize() {
   if (!ok3D) return; var w = hostEl.clientWidth; if (!w || w === WW) return; WW = w; HH = Math.round(w * 0.74);
@@ -391,6 +401,7 @@ function renderSteps() {
 }
 function goStep(i) {
   S.step = i; S.run = false; renderSteps(); var st = i <= 2; document.querySelector('.main').className = 'main' + (st ? '' : ' solo'); $('stagecol').style.display = st ? '' : 'none';
+  if (st && !S.snapped[i]) { S.snapped[i] = 1; snap(); }
   if (st) { if (i === 1 && 'kw'.indexOf(S.src) < 0) S.src = 'k'; if (i === 2 && 'ep'.indexOf(S.src) < 0) S.src = 'e'; S.slits = 'AB'; S.det = false; resetScreen(); applyScene(); rebuildUI(); checkResize(); }
   panel(); window.scrollTo(0, 0);
 }
@@ -399,11 +410,13 @@ function nextBtn(label, to) { var r = mk('div', 'row'); r.appendChild(btn(label,
 /* --- Werkzeugleiste unter der 3D-Szene --- */
 function rebuildUI() {
   var t = $('cvtools'); if (!t) return; t.innerHTML = '';
-  var g1 = mk('div', 'grp'), g2 = mk('div', 'grp'), g3 = mk('div', 'grp'), cl = S.step === 1;
-  var srcs = cl ? [['k', '⚪ Kugeln (Teilchenmodell)'], ['w', '🌊 Wasserwellen (Wellenmodell)']] : [['e', '⚡ Elektronen'], ['p', '💡 Photonen']];
-  srcs.forEach(function (a) { g1.appendChild(btn(a[1], 'sec small' + (S.src === a[0] ? ' on' : ''), function () { S.src = a[0]; S.run = false; resetScreen(); applyScene(); })); });
-  [['AB', 'Beide Spalte'], ['A', 'Nur A'], ['B', 'Nur B']].forEach(function (a) { g1.appendChild(btn(a[1], 'sec small' + (S.slits === a[0] ? ' on' : ''), function () { S.slits = a[0]; if (S.slits !== 'AB') S.det = false; S.run = false; resetScreen(); applyScene(); })); });
-  if (!cl) g1.appendChild(btn('🔍 Weg-Detektor: ' + (S.det ? 'an' : 'aus'), 'sec small' + (S.det ? ' on' : ''), function () { if (S.slits !== 'AB') S.slits = 'AB'; S.det = !S.det; S.run = false; resetScreen(); applyScene(); }));
+  var g2 = mk('div', 'grp'), g3 = mk('div', 'grp'), cl = S.step === 1, cfg = mk('div', 'cfg'), bq = mk('div', 'cbox'), bs = mk('div', 'cbox');
+  bq.appendChild(mk('div', 'ct', 'Quelle')); bs.appendChild(mk('div', 'ct', 'Spalte'));
+  var srcs = cl ? [['k', '⚪ Kugeln'], ['w', '🌊 Wasserwellen']] : [['e', '⚡ Elektronen'], ['p', '💡 Photonen']];
+  srcs.forEach(function (a) { bq.appendChild(btn(a[1], 'sec small' + (S.src === a[0] ? ' on' : ''), function () { S.src = a[0]; S.run = false; resetScreen(); applyScene(); })); });
+  [['AB', 'Beide offen'], ['A', 'Nur A'], ['B', 'Nur B']].forEach(function (a) { bs.appendChild(btn(a[1], 'sec small' + (S.slits === a[0] ? ' on' : ''), function () { S.slits = a[0]; if (S.slits !== 'AB') S.det = false; S.run = false; resetScreen(); applyScene(); })); });
+  if (!cl) bs.appendChild(btn('🔍 Weg-Detektor: ' + (S.det ? 'an' : 'aus'), 'sec small' + (S.det ? ' on' : ''), function () { if (S.slits !== 'AB') S.slits = 'AB'; S.det = !S.det; S.run = false; resetScreen(); applyScene(); }));
+  cfg.appendChild(bq); cfg.appendChild(bs);
   var sl = null;
   if (!cl) {
     sl = mk('div', 'sl'); var lab = mk('label'), inp = mk('input'); inp.type = 'range';
@@ -422,32 +435,35 @@ function rebuildUI() {
   }
   g3.appendChild(mk('span', 'muted', 'Ansicht:'));
   [['over', 'Überblick'], ['scr', 'Schirm'], ['top', 'Von oben']].forEach(function (a) { g3.appendChild(btn(a[1], 'sec small', function () { Object.assign(want, VIEWS[a[0]]); })); });
-  t.appendChild(g1); if (sl) t.appendChild(sl); t.appendChild(g2); t.appendChild(g3);
+  t.appendChild(cfg); if (sl) t.appendChild(sl); t.appendChild(g2); t.appendChild(g3);
   var cn = mk('div', 'muted', (S.src === 'w' ? '' : 'Treffer auf dem Schirm: <b id="cnt">' + S.N + '</b> · ') + '<span style="font-size:13px">Bild ziehen = drehen</span>'); cn.style.fontSize = '14px'; t.appendChild(cn);
 }
-function resetScreenKeepUI() { clearHits(); bins.fill(0); S.N = 0; S.wa = 0; dirty = true; var n = $('cnt'); if (n) n.textContent = 0; }
+function resetScreenKeepUI() { clearHits(); bins.fill(0); S.N = 0; S.wa = 0; S.wdone = false; dirty = true; var n = $('cnt'); if (n) n.textContent = 0; }
 function tmark(k) { S.fx[k] = (S.fx[k] || 0) + 1; taskTick(); }
 
 /* --- Aufgaben Schritt 1 --- */
+function H(k) { return (S.hits[k] || 0) - (S.bh[k] || 0); }
+function SL() { return (S.fx.slide || 0) - S.bs; }
+function snap() { S.bh = Object.assign({}, S.hits); S.bs = S.fx.slide || 0; }
 var TASKS_E = [
-  { id: 'k1', title: 'Teilchenmodell: Kugeln am Doppelspalt', need: function () { return S.src === 'k' && S.slits === 'AB' && (S.hits['k|AB|-'] || 0) >= 150; },
+  { id: 'k1', title: 'Teilchenmodell: Kugeln am Doppelspalt', need: function () { return S.src === 'k' && S.slits === 'AB' && H('k|AB|-') >= 150; },
     goal: 'Bis ins 19. Jahrhundert stellte man sich Materie als kleine, harte Teilchen vor. Wähle oben <b>Kugeln</b>, beide Spalte, und sende mindestens 150 Kugeln. Beobachte, wo sie auftreffen.',
-    prog: function () { return (S.hits['k|AB|-'] || 0) + ' / 150 Kugeln'; },
+    prog: function () { return H('k|AB|-') + ' / 150 Kugeln'; },
     qs: [ ['Welches Muster entsteht auf dem Schirm?', ['Zwei getrennte Streifen genau hinter den Spalten', 'Viele helle und dunkle Streifen', 'Ein einziger breiter Fleck in der Mitte']],
           ['Wie kommen die Kugeln am Schirm an?', ['Einzeln, jede an genau einem Ort', 'Gleichmäßig verteilt über den ganzen Schirm', 'Alle gleichzeitig als Welle']] ] },
-  { id: 'k2', title: 'Teilchenmodell: Ein Spalt', need: function () { return S.src === 'k' && (S.hits['k|A|-'] || 0) >= 100 && (S.hits['k|B|-'] || 0) >= 100; },
+  { id: 'k2', title: 'Teilchenmodell: Ein Spalt', need: function () { return S.src === 'k' && H('k|A|-') >= 100 && H('k|B|-') >= 100; },
     goal: 'Schließe nacheinander Spalt B („Nur A“) und Spalt A („Nur B“) und sende jeweils mindestens 100 Kugeln.',
-    prog: function () { return 'A: ' + (S.hits['k|A|-'] || 0) + ' · B: ' + (S.hits['k|B|-'] || 0) + ' (je 100 nötig)'; },
+    prog: function () { return 'A: ' + H('k|A|-') + ' · B: ' + H('k|B|-') + ' (je 100 nötig)'; },
     qs: [ ['Wie hängen das Bild mit beiden Spalten und die Bilder mit je einem Spalt zusammen?', ['Das Bild mit beiden Spalten ist die Summe der beiden Einzelbilder', 'Mit beiden Spalten entsteht ein ganz anderes Muster', 'Mit einem Spalt entsteht kein Bild']] ] },
-  { id: 'w1', title: 'Wellenmodell: Wasserwellen am Doppelspalt', need: function () { return S.src === 'w' && S.slits === 'AB' && (S.hits['w|AB|-'] || 0) >= 1; },
+  { id: 'w1', title: 'Wellenmodell: Wasserwellen am Doppelspalt', need: function () { return S.src === 'w' && S.slits === 'AB' && H('w|AB|-') >= 1; },
     goal: 'Im 19. Jahrhundert galt Licht als Welle. Wähle oben <b>Wasserwellen</b>, beide Spalte, und starte die Wellen. Warte, bis sich das Bild am Schirm aufgebaut hat. Drehe die Ansicht auch „Von oben“.',
     prog: function () { return S.wa >= 1 ? 'Muster vollständig' : 'Aufbau: ' + Math.round(S.wa * 100) + ' %'; },
     qs: [ ['Welches Muster zeigt der Schirm?', ['Viele helle und dunkle Streifen (Interferenz)', 'Zwei Streifen hinter den Spalten', 'Einzelne Punkte']],
           ['Wie kommt die Welle am Schirm an?', ['Überall gleichzeitig, als stetige (kontinuierliche) Intensität', 'Einzeln, in punktförmigen Treffern', 'Nur in der Mitte']],
           ['Warum gibt es dunkle Stellen?', ['Dort trifft Wellenberg auf Wellental, die Wellen löschen sich aus', 'Dort kommen keine Wellen an, weil die Spalte zu eng sind', 'Dort werden die Wellen verschluckt']] ] },
-  { id: 'w2', title: 'Wellenmodell: Ein Spalt', need: function () { return S.src === 'w' && S.hits['w|A|-'] >= 1 && S.hits['w|B|-'] >= 1; },
+  { id: 'w2', title: 'Wellenmodell: Ein Spalt', need: function () { return S.src === 'w' && H('w|A|-') >= 1 && H('w|B|-') >= 1; },
     goal: 'Starte die Wellen nacheinander mit „Nur A“ und „Nur B“.',
-    prog: function () { return 'A: ' + (S.hits['w|A|-'] ? '✔' : '–') + ' · B: ' + (S.hits['w|B|-'] ? '✔' : '–'); },
+    prog: function () { return 'A: ' + (H('w|A|-') ? '✔' : '–') + ' · B: ' + (H('w|B|-') ? '✔' : '–'); },
     qs: [ ['Entsteht das Bild mit beiden Spalten durch Addition der beiden Einzelbilder?', ['Nein, mit beiden Spalten gibt es Stellen, an denen weniger ankommt als mit einem Spalt allein', 'Ja, die Einzelbilder liegen einfach übereinander', 'Ja, nur die Helligkeit ist verdoppelt']] ] },
   { id: 'erw', title: 'Deine Erwartung für das Experiment', need: function () { return true; },
     goal: 'Im 19. und frühen 20. Jahrhundert gilt: <b>Elektronen sind Teilchen</b> (Thomson: Masse, Ladung, Ablenkung im Feld). <b>Licht ist eine Welle</b> (Young: Interferenz). Beide werden nun einzeln durch einen Doppelspalt geschickt.',
@@ -456,26 +472,26 @@ var TASKS_E = [
     conflict: '<b>Deine Erwartungen:</b><ul class="rules"><li>Elektronen (Teilchen): einzelne Treffer, <b>zwei Streifen</b></li><li>Licht (Welle): <b>Interferenzstreifen</b> mit stetiger Intensität</li></ul>Prüfe jetzt im Experiment, ob die Natur sich daran hält.' }
 ];
 var TASKS = [
-  { id: 'e1', title: 'Doppelspalt mit Elektronen', need: function () { return S.src === 'e' && S.slits === 'AB' && !S.det && (S.hits['e|AB|-'] || 0) >= 400; }, goal: 'Quelle <b>Elektronen</b>, <b>beide Spalte</b>, Detektor aus. Starte „Einzelteilchen“ und beobachte, wie die Treffer entstehen. Sende dann mindestens 400 Elektronen (mit +100 und +1000 geht es schneller). Vergleiche mit deiner Erwartung aus Schritt 1.',
-    prog: function () { return (S.hits['e|AB|-'] || 0) + ' / 400 Elektronen'; },
+  { id: 'e1', title: 'Doppelspalt mit Elektronen', need: function () { return S.src === 'e' && S.slits === 'AB' && !S.det && H('e|AB|-') >= 400; }, goal: 'Quelle <b>Elektronen</b>, <b>beide Spalte</b>, Detektor aus. Starte „Einzelteilchen“ und beobachte, wie die Treffer entstehen. Sende dann mindestens 400 Elektronen (mit +100 und +1000 geht es schneller). Vergleiche mit deiner Erwartung aus Schritt 1.',
+    prog: function () { return H('e|AB|-') + ' / 400 Elektronen'; },
     qs: [ ['Wie trifft ein einzelnes Elektron auf den Schirm?', ['Als punktförmiger Treffer an genau einer Stelle', 'Als ganzes Streifenmuster', 'Als breiter, verwaschener Fleck']],
           ['Wie sieht das Bild nach vielen hundert Elektronen aus?', ['Viele helle und dunkle Streifen', 'Zwei Streifen hinter den Spalten', 'Gleichmäßig verteilte Punkte']],
           ['Wie passt das zur Erwartung aus dem Teilchenmodell (zwei Streifen)?', ['Es widerspricht ihr: Elektronen erzeugen ein Interferenzmuster, das nur Wellen erzeugen', 'Es passt genau', 'Es passt, wenn man genauer hinschaut']] ],
     conflict: '<b>Widerspruch zum Teilchenmodell:</b> Erwartet waren zwei Streifen, beobachtet wird ein Interferenzmuster. Das Elektron trifft zwar als Punkt auf, die Verteilung vieler Treffer zeigt aber Wellenverhalten.' },
-  { id: 'e2', title: 'Ein Spalt', need: function () { return S.src === 'e' && S.hits['e|A|-'] >= 150 && S.hits['e|B|-'] >= 150; }, goal: 'Schließe nacheinander Spalt B („Nur A“) und Spalt A („Nur B“) und sende jeweils mindestens 150 Elektronen.',
-    prog: function () { return 'A: ' + (S.hits['e|A|-'] || 0) + ' · B: ' + (S.hits['e|B|-'] || 0) + ' (je 150 nötig)'; },
+  { id: 'e2', title: 'Ein Spalt', need: function () { return S.src === 'e' && H('e|A|-') >= 120 && H('e|B|-') >= 120; }, goal: 'Schließe nacheinander Spalt B („Nur A“) und Spalt A („Nur B“) und sende jeweils mindestens 120 Elektronen.',
+    prog: function () { return 'A: ' + H('e|A|-') + ' · B: ' + H('e|B|-') + ' (je 120 nötig)'; },
     qs: [ ['Was zeigt der Schirm, wenn nur ein Spalt offen ist?', ['Einen breiten, zur Mitte heller werdenden Streifen ohne Interferenzstreifen', 'Dasselbe Streifenmuster wie bei zwei Spalten', 'Gar keine Treffer']],
           ['Entsteht das Bild mit beiden Spalten, indem sich die Bilder von „Nur A“ und „Nur B“ einfach addieren?', ['Nein, mit beiden Spalten bleiben Stellen dunkel, die mit nur einem offenen Spalt getroffen werden', 'Ja, die beiden Bilder liegen einfach übereinander', 'Ja, nur die Helligkeit ist verdoppelt']] ] },
-  { id: 'e3', title: 'Weg-Detektor', need: function () { return S.src === 'e' && S.det && (S.hits['e|AB|D'] || 0) >= 300; }, goal: 'Schalte beide Spalte frei und aktiviere den <b>Weg-Detektor</b>. Er zeigt für jedes Elektron an, durch welchen Spalt es geflogen ist. Sende mindestens 300 Elektronen.',
-    prog: function () { return (S.hits['e|AB|D'] || 0) + ' / 300 Elektronen'; },
+  { id: 'e3', title: 'Weg-Detektor', need: function () { return S.src === 'e' && S.det && H('e|AB|D') >= 300; }, goal: 'Schalte beide Spalte frei und aktiviere den <b>Weg-Detektor</b>. Er zeigt für jedes Elektron an, durch welchen Spalt es geflogen ist. Sende mindestens 300 Elektronen.',
+    prog: function () { return H('e|AB|D') + ' / 300 Elektronen'; },
     qs: [ ['Was geschieht mit dem Streifenmuster, wenn der Weg jedes Elektrons bestimmt wird?', ['Es verschwindet', 'Es wird schärfer', 'Es bleibt unverändert']],
           ['Welche Aussage passt zur Beobachtung?', ['Interferenz tritt nur auf, wenn der Weg durch den Doppelspalt unbestimmt bleibt', 'Der Detektor bremst die Elektronen so stark, dass sie nicht mehr interferieren können', 'Der Detektor macht die Spalte breiter']] ] },
-  { id: 'e4', title: 'Beschleunigungsspannung', need: function () { return S.src === 'e' && !S.det && S.slits === 'AB' && (S.fx.slide || 0) >= 2 && (S.hits['e|AB|-'] || 0) >= 300; }, goal: 'Erzeuge das Doppelspalt-Muster mit Elektronen (Detektor aus, beide Spalte, mindestens 300 Treffer) und verschiebe dabei den Regler für die Beschleunigungsspannung mindestens zweimal. Beobachte den Abstand der Streifen bei kleiner und bei großer Spannung.',
-    prog: function () { return (S.hits['e|AB|-'] || 0) + ' Treffer · Reglerbewegungen: ' + Math.min(S.fx.slide || 0, 2) + ' / 2'; },
+  { id: 'e4', title: 'Beschleunigungsspannung', need: function () { return S.src === 'e' && !S.det && S.slits === 'AB' && SL() >= 2 && H('e|AB|-') >= 300; }, goal: 'Erzeuge das Doppelspalt-Muster mit Elektronen (Detektor aus, beide Spalte, mindestens 300 Treffer) und verschiebe dabei den Regler für die Beschleunigungsspannung mindestens zweimal. Beobachte den Abstand der Streifen bei kleiner und bei großer Spannung.',
+    prog: function () { return H('e|AB|-') + ' Treffer · Reglerbewegungen: ' + Math.min(SL(), 2) + ' / 2'; },
     qs: [ ['Wie ändert sich der Abstand der Streifen, wenn die Beschleunigungsspannung steigt?', ['Er wird kleiner', 'Er wird größer', 'Er bleibt gleich']],
-          ['Warum?', ['Schnellere Elektronen haben einen größeren Impuls und damit eine kleinere de-Broglie-Wellenlänge', 'Schnellere Elektronen haben eine größere Wellenlänge', 'Der Abstand der Spalte ändert sich']] ] },
-  { id: 'p1', title: 'Photonen', need: function () { return S.src === 'p' && S.slits === 'AB' && !S.det && (S.hits['p|AB|-'] || 0) >= 400 && (S.fx.slide || 0) >= 3; }, goal: 'Wechsle zu <b>Photonen</b> (Laserlicht), beide Spalte, Detektor aus, mindestens 400 Treffer. Verändere dabei die Wellenlänge (Farbe) mit dem Regler. Vergleiche mit deiner Erwartung für Licht aus Schritt 1.',
-    prog: function () { return (S.hits['p|AB|-'] || 0) + ' / 400 Photonen'; },
+          ['Warum?', ['Schnellere Elektronen haben eine kleinere Wellenlänge (λ = h/p)', 'Schnellere Elektronen haben eine größere Wellenlänge', 'Der Abstand der Spalte ändert sich']] ] },
+  { id: 'p1', title: 'Photonen', need: function () { return S.src === 'p' && S.slits === 'AB' && !S.det && H('p|AB|-') >= 400 && SL() >= 3; }, goal: 'Wechsle zu <b>Photonen</b> (Laserlicht), beide Spalte, Detektor aus, mindestens 400 Treffer. Verändere dabei die Wellenlänge (Farbe) mit dem Regler. Vergleiche mit deiner Erwartung für Licht aus Schritt 1.',
+    prog: function () { return H('p|AB|-') + ' / 400 Photonen'; },
     qs: [ ['Wie erscheint das Licht auf dem Schirm, wenn nur einzelne Photonen unterwegs sind?', ['In einzelnen punktförmigen Treffern, die sich erst nach und nach zum Streifenmuster aufbauen', 'Als gleichmäßig helle, stetige Streifen', 'Gar nicht']],
           ['Wie vergleichen sich Photonen und Elektronen am Doppelspalt?', ['Beide treffen einzeln punktförmig auf und bauen zusammen ein Streifenmuster auf', 'Photonen erzeugen kein Streifenmuster', 'Photonen erzeugen zwei Streifen, Elektronen Interferenzstreifen']],
           ['Wie ändert sich der Streifenabstand bei längerer Wellenlänge?', ['Er wird größer', 'Er wird kleiner', 'Er bleibt gleich']] ],
@@ -501,7 +517,7 @@ function panelTasks(p) {
       var qi = S.tprog[t.id] || 0, last = i === list.length - 1;
       if (qi >= t.qs.length) {
         if (t.conflict) box.appendChild(mk('div', 'fb info conflict', t.conflict));
-        var r = mk('div', 'row'); r.appendChild(btn(last ? (first ? 'Weiter zum Experiment →' : 'Alle Experimente geschafft →') : 'Weiter →', 'go', (function (l) { return function () { if (l) { S.unlocked = Math.max(S.unlocked, first ? 2 : 3); S[key]++; goStep(first ? 2 : 3); } else { S[key]++; panel(); } }; })(last))); box.appendChild(r);
+        var r = mk('div', 'row'); r.appendChild(btn(last ? (first ? 'Weiter zum Experiment →' : 'Alle Experimente geschafft →') : 'Weiter →', 'go', (function (l) { return function () { if (l) { S.unlocked = Math.max(S.unlocked, first ? 2 : 3); S[key]++; goStep(first ? 2 : 3); } else { S[key]++; snap(); panel(); } }; })(last))); box.appendChild(r);
       } else { box.appendChild(mk('p', '', '<b>Frage ' + (qi + 1) + ' von ' + t.qs.length + ':</b> ' + t.qs[qi][0])); (function (tt, q, idx) { mcq(box, q[1], function () { S.tprog[tt.id] = idx + 1; setTimeout(panel, 650); }); })(t, t.qs[qi], qi); }
     }
     p.appendChild(box);
@@ -542,52 +558,54 @@ function panelStep2(p) {
 
 /* --- Schritt 3: Fachtext --- */
 var TXT = [
-  { h: 'Licht: von der Welle zum Photon', body: '<p>Im 17. Jahrhundert stellte sich <b>Isaac Newton</b> Licht als Strom kleinster Teilchen vor, <b>Christiaan Huygens</b> dagegen als Welle. Die Frage entschied zunächst 1801 der <b>Doppelspaltversuch von Thomas Young</b>: Fällt Licht durch zwei dicht beieinander liegende Spalte, erscheinen auf einem Schirm abwechselnd helle und dunkle Streifen. Solche Interferenzmuster entstehen, wenn sich Wellen überlagern: An manchen Orten verstärken sie sich (Wellenberg trifft Wellenberg), an anderen löschen sie sich aus (Wellenberg trifft Wellental). Licht schien damit eindeutig eine Welle zu sein, beschrieben durch Wellenlänge λ und Frequenz f mit c = λ·f.</p>'
-    + '<p>Anfang des 20. Jahrhunderts zeigte der <b>lichtelektrische Effekt</b> (Photoeffekt) ein anderes Gesicht: Trifft Licht auf eine Metallplatte, werden Elektronen herausgelöst, aber nur, wenn die Frequenz des Lichts größer als eine Grenzfrequenz ist. Oberhalb dieser Frequenz geschieht es sofort, auch bei sehr schwachem Licht; unterhalb gelingt es mit keiner noch so großen Lichtintensität. Mit der Wellenvorstellung ließ sich das nicht erklären. <b>Albert Einstein</b> deutete den Effekt 1905 so: Licht besteht aus Energiepaketen, den <b>Photonen</b>. Ein Photon der Frequenz f hat die Energie</p>'
-    + '<p class="fm">E = h · f &nbsp; mit h = 6,626·10⁻³⁴ J·s (plancksches Wirkungsquantum)</p>'
-    + '<p>und überträgt seine Energie vollständig auf ein einzelnes Elektron. Dieses verlässt das Metall mit der kinetischen Energie E<sub>kin</sub> = h·f − W<sub>A</sub> (W<sub>A</sub>: Austrittsarbeit des Metalls). Photonen haben außerdem einen Impuls p = h/λ. Licht zeigt also beim Doppelspalt Wellen-, beim Photoeffekt Teilchencharakter.</p>',
+  { h: 'Licht: von der Welle zum Photon', body: '<p>Im 17. Jahrhundert stellte sich <b>Isaac Newton</b> Licht als Strom kleinster Teilchen vor, <b>Christiaan Huygens</b> dagegen als Welle. Entschieden schien der Streit 1801 durch den <b>Doppelspaltversuch von Thomas Young</b>: Fällt Licht durch zwei dicht beieinander liegende Spalte, erscheinen auf einem Schirm abwechselnd helle und dunkle Streifen. Solche Interferenzmuster entstehen, wenn sich Wellen überlagern: An manchen Orten verstärken sie sich (Wellenberg trifft Wellenberg), an anderen löschen sie sich aus (Wellenberg trifft Wellental). Licht ist also eine Welle mit der Wellenlänge λ und der Frequenz f, es gilt c = λ·f.</p>'
+    + '<p>Anfang des 20. Jahrhunderts zeigte der <b>Photoeffekt</b> ein anderes Gesicht: Trifft Licht auf eine Metallplatte, werden Elektronen herausgelöst, aber nur, wenn die Frequenz des Lichts groß genug ist. Wie hell das Licht ist, spielt dafür keine Rolle. Mit der Wellenvorstellung ließ sich das nicht erklären. <b>Albert Einstein</b> deutete es 1905 so: Licht besteht aus Energiepaketen, den <b>Photonen</b>. Ein Photon der Frequenz f hat die Energie</p>'
+    + '<p class="fm">E = h · f &nbsp; (h = 6,626·10⁻³⁴ J·s, plancksches Wirkungsquantum)</p>'
+    + '<p>und gibt diese Energie an genau ein Elektron ab. Das ist auch die Grundlage dafür, dass Licht chemische Reaktionen auslösen kann (Fotosynthese, Fotografie, Bleichen von Farbstoffen): Nur Photonen mit genug Energie bewirken etwas. Licht zeigt also beim Doppelspalt Wellen-, beim Photoeffekt Teilchencharakter.</p>',
     tasks: function (h) {
       h.appendChild(mk('p', '', '<b>Aufgabe A1:</b> Welche Beobachtung spricht für die Wellennatur des Lichts?'));
       mcq(h, ['Interferenzstreifen hinter einem Doppelspalt', 'Das Auslösen von Elektronen aus einer Metallplatte', 'Die Existenz einer Grenzfrequenz', 'Die Energie E = h·f'], null);
       h.appendChild(mk('p', '', '<b>Aufgabe A2:</b> Warum konnte die Wellenvorstellung den Photoeffekt nicht erklären?'));
-      mcq(h, ['Elektronen werden nur oberhalb einer Grenzfrequenz ausgelöst, unabhängig von der Intensität des Lichts', 'Licht kann sich nicht durch Metalle ausbreiten', 'Elektronen sind zu schwer, um von Licht bewegt zu werden', 'Licht hat keine Energie'], null);
-      h.appendChild(mk('p', '', '<b>Aufgabe A3:</b> Berechne die Energie eines Photons von grünem Licht (λ = 500 nm) in Elektronenvolt. Nutze c = 3,00·10⁸ m/s, h = 6,626·10⁻³⁴ J·s und 1 eV = 1,602·10⁻¹⁹ J.'));
+      mcq(h, ['Elektronen werden nur oberhalb einer Grenzfrequenz ausgelöst, unabhängig von der Helligkeit des Lichts', 'Licht kann sich nicht durch Metalle ausbreiten', 'Elektronen sind zu schwer, um von Licht bewegt zu werden', 'Licht hat keine Energie'], null);
+      h.appendChild(mk('p', '', '<b>Aufgabe A3:</b> Berechne die Energie eines Photons von grünem Licht (λ = 500 nm) in Elektronenvolt. Nutze E = h·f, c = λ·f, c = 3,00·10⁸ m/s, h = 6,626·10⁻³⁴ J·s und 1 eV = 1,602·10⁻¹⁹ J.'));
       numQ(h, { ans: 2.48, tol: 0.02, unit: 'eV', ok: 'E = h·c/λ ≈ 3,98·10⁻¹⁹ J ≈ 2,48 eV.' });
     } },
-  { h: 'Elektronen: vom Teilchen zur Welle', body: '<p>Elektronen galten lange als Teilchen. <b>J. J. Thomson</b> wies 1897 in Kathodenstrahlen Teilchen mit fester Masse (m<sub>e</sub> = 9,109·10⁻³¹ kg) und fester Ladung (−e) nach; sie lassen sich in elektrischen und magnetischen Feldern ablenken. 1924 schlug <b>Louis de Broglie</b> vor, auch Teilchen eine Welle zuzuordnen. Ein Teilchen mit dem Impuls p verhält sich dann wie eine Welle mit der <b>de-Broglie-Wellenlänge</b></p>'
-    + '<p class="fm">λ = h / p = h / (m · v)</p>'
-    + '<p>Wird ein Elektron durch die Spannung U beschleunigt, gilt e·U = ½·m<sub>e</sub>·v² und damit p = √(2·m<sub>e</sub>·e·U), also λ ≈ 1,226 nm / √(U/V). Bei U = 100 V ergibt sich λ ≈ 0,12 nm, die Größenordnung der Atomabstände in Kristallen. Alltägliche Körper haben dagegen verschwindend kleine Wellenlängen, deshalb bemerken wir ihre Wellennatur nie.</p>'
-    + '<p>1927 ließen <b>Clinton Davisson und Lester Germer</b> Elektronen an einem Nickelkristall streuen und beobachteten Beugungsmaxima wie bei Röntgenstrahlung. Damit war die Wellennatur der Elektronen nachgewiesen. 1961 führte <b>Claus Jönsson</b> den Doppelspaltversuch mit Elektronen aus (beschleunigt mit 50 kV, λ ≈ 5 pm) und erhielt Interferenzstreifen. 1989 gelang <b>Akira Tonomura</b> mit seinem Team ein Versuch, bei dem sich stets nur einzelne Elektronen im Gerät befanden: Jedes Elektron erzeugte einen punktförmigen Treffer, doch nach und nach entstand daraus das Interferenzmuster.</p>',
+  { h: 'Elektronen: vom Teilchen zur Welle', body: '<p>Elektronen galten lange als Teilchen. <b>J. J. Thomson</b> wies 1897 in Kathodenstrahlen Teilchen mit fester Masse und fester Ladung nach; sie lassen sich in elektrischen und magnetischen Feldern ablenken. 1924 schlug <b>Louis de Broglie</b> vor, auch Teilchen eine Welle zuzuordnen. Ein Teilchen mit Masse m und Geschwindigkeit v hat dann die <b>de-Broglie-Wellenlänge</b></p>'
+    + '<p class="fm">λ = h / (m · v)</p>'
+    + '<p>Je schneller das Teilchen, desto kleiner die Wellenlänge. Elektronen, die mit 100 V beschleunigt wurden, haben λ ≈ 0,12 nm, das ist etwa der Abstand benachbarter Atome in einem Kristall. Gegenstände aus dem Alltag haben verschwindend kleine Wellenlängen, deshalb bemerken wir ihre Wellennatur nie.</p>'
+    + '<p>1927 ließen <b>Clinton Davisson und Lester Germer</b> Elektronen an einem Nickelkristall streuen und beobachteten Beugungsmaxima, wie man sie von Röntgenstrahlung kennt. Damit war die Wellennatur der Elektronen nachgewiesen. 1961 führte <b>Claus Jönsson</b> den Doppelspaltversuch mit Elektronen aus und erhielt Interferenzstreifen. 1989 gelang <b>Akira Tonomura</b> mit seinem Team ein Versuch mit einzelnen Elektronen nacheinander: Jedes Elektron erzeugte einen punktförmigen Treffer, doch nach und nach entstand daraus das Interferenzmuster.</p>',
     tasks: function (h) {
       h.appendChild(mk('p', '', '<b>Aufgabe B1:</b> Wer wies mit Elektronenbeugung an einem Kristall die Wellennatur der Elektronen nach?'));
       mcq(h, ['Davisson und Germer', 'Thomson', 'Einstein', 'Young'], null);
-      h.appendChild(mk('p', '', '<b>Aufgabe B2:</b> Berechne die de-Broglie-Wellenlänge von Elektronen, die mit U = 150 V beschleunigt wurden. Nutze λ ≈ 1,226 nm / √(U/V).'));
-      numQ(h, { ans: 100.1, tol: 0.02, unit: 'pm', ok: 'λ = 1,226 nm / √150 ≈ 0,100 nm = 100 pm.' });
-      h.appendChild(mk('p', '', '<b>Aufgabe B3:</b> Warum eignet sich ein Kristall als Beugungsgitter für Elektronen von 100 V?'));
-      mcq(h, ['Die Atomabstände im Kristall sind etwa so groß wie die de-Broglie-Wellenlänge der Elektronen', 'Elektronen haben in Kristallen eine größere Masse', 'Kristalle sind elektrisch neutral', 'Elektronen sind kleiner als Atome'], null);
+      h.appendChild(mk('p', '', '<b>Aufgabe B2:</b> Warum eignet sich ein Kristall als Beugungsgitter für Elektronen von 100 V?'));
+      mcq(h, ['Die Atomabstände im Kristall sind etwa so groß wie die Wellenlänge der Elektronen', 'Elektronen haben in Kristallen eine größere Masse', 'Kristalle sind elektrisch neutral', 'Elektronen sind kleiner als Atome'], null);
+      h.appendChild(mk('p', '', '<b>Aufgabe B3:</b> Elektronen werden schneller. Was passiert mit ihrer Wellenlänge?'));
+      mcq(h, ['Sie wird kleiner', 'Sie wird größer', 'Sie bleibt gleich', 'Sie hängt nur von der Ladung ab'], null);
     } },
-  { h: 'Der Wellen-Teilchen-Dualismus', body: '<p>Für Licht und für Elektronen gilt dasselbe: Beim <b>Nachweis</b> erscheint das Objekt an genau einem Ort (ein Fleck auf dem Schirm, ein Klick im Detektor), bei der <b>Ausbreitung</b> durch den Doppelspalt verhält es sich wie eine Welle, die beide Spalte erfasst. Photonen und Elektronen (ebenso Atome und Moleküle) sind <b>Quantenobjekte</b>. Sie sind weder „kleine Kugeln“ noch „ausgedehnte Wellen“; je nach Experiment tritt der eine oder der andere Aspekt hervor. Man nennt das den <b>Wellen-Teilchen-Dualismus</b>.</p>'
-    + '<p><b>Max Born</b> gab der Materiewelle 1926 eine Deutung: Die Welle (Wellenfunktion ψ) ist keine Schwingung von Materie im Raum. Ihr Betragsquadrat |ψ|² gibt die <b>Wahrscheinlichkeitsdichte</b> an, das Quantenobjekt an einem bestimmten Ort zu finden. Wo |ψ|² groß ist, treffen viele Elektronen auf, wo es null ist, keines. Der Auftreffpunkt eines einzelnen Elektrons ist zufällig, die Verteilung vieler Treffer dagegen nicht. Das erklärt, warum sich aus einzelnen Punkten das Streifenmuster aufbaut.</p>'
-    + '<p>Kann man feststellen, <b>durch welchen Spalt</b> ein Quantenobjekt gegangen ist (Weginformation), verschwindet das Interferenzmuster. Schon die Möglichkeit, den Weg zu bestimmen, genügt. <b>Niels Bohr</b> fasste das als <b>Komplementarität</b> zusammen: Wellen- und Teilchenbild schließen sich im selben Versuch gegenseitig aus, und sie ergänzen sich, um das Verhalten der Quantenobjekte vollständig zu beschreiben.</p>'
-    + '<p>Für die Chemie ist das folgenreich: Auch das Elektron in einer Atomhülle ist ein Quantenobjekt. Es bewegt sich nicht auf einer Bahn wie ein Planet. Stattdessen beschreibt eine stehende Welle, wo man es mit welcher Wahrscheinlichkeit findet. Ein Raumbereich hoher Aufenthaltswahrscheinlichkeit heißt <b>Orbital</b>. Im nächsten Modul erkundest du Orbitale.</p>',
+  { h: 'Der Wellen-Teilchen-Dualismus und die Chemie', body: '<p>Für Licht und für Elektronen gilt dasselbe: Beim <b>Nachweis</b> erscheint das Objekt an genau einem Ort (ein Fleck auf dem Schirm, ein Klick im Detektor). Bei der <b>Ausbreitung</b> durch den Doppelspalt verhält es sich wie eine Welle, die beide Spalte erfasst. Photonen und Elektronen (ebenso Atome und Moleküle) heißen <b>Quantenobjekte</b>. Sie sind weder „kleine Kugeln“ noch „ausgedehnte Wellen“, je nach Experiment tritt der eine oder der andere Aspekt hervor. Das nennt man den <b>Wellen-Teilchen-Dualismus</b>.</p>'
+    + '<p>Wie kommen dann die Streifen zustande? <b>Max Born</b> gab der Welle 1926 eine Deutung: Sie sagt nicht, wo das Elektron ist, sondern <b>wie wahrscheinlich</b> man es an einem Ort findet. Wo die Welle stark ist, treffen viele Elektronen auf, wo sie sich auslöscht, keines. Der Auftreffpunkt eines einzelnen Elektrons ist Zufall, die Verteilung vieler Treffer nicht. So baut sich aus einzelnen Punkten das Streifenmuster auf.</p>'
+    + '<p>Kann man feststellen, <b>durch welchen Spalt</b> ein Quantenobjekt gegangen ist, verschwindet das Interferenzmuster. Schon die Möglichkeit, den Weg zu bestimmen, genügt.</p>'
+    + '<p>Für die Chemie ist das folgenreich: Auch das Elektron in der Atomhülle ist ein Quantenobjekt. Es kreist nicht auf einer Bahn wie ein Planet um den Kern. Stattdessen gibt eine Welle an, wo man es mit welcher Wahrscheinlichkeit findet. Einen Raumbereich, in dem man ein Elektron mit hoher Wahrscheinlichkeit antrifft, nennt man <b>Orbital</b>. Form und Energie der Orbitale bestimmen den Bau des Periodensystems und wie Atome Bindungen eingehen. Im nächsten Modul erkundest du Orbitale.</p>',
     tasks: function (h) {
       h.appendChild(mk('p', '', '<b>Aufgabe C1:</b> Wähle für jede Lücke den passenden Begriff.'));
       var wrap = mk('div', 'luecke'), items = [
-        ['Das Betragsquadrat |ψ|² der Wellenfunktion gibt die ', ['Wahrscheinlichkeitsdichte', 'Geschwindigkeit', 'Masse', 'Ladung'], 0, ' an, ein Elektron an einem Ort zu finden.'],
-        ['Verschwindet das Streifenmuster, sobald der ', ['Weg', 'Druck', 'Schirm', 'Strom'], 0, ' durch den Doppelspalt bestimmt wird?'],
+        ['Die Welle gibt an, mit welcher ', ['Wahrscheinlichkeit', 'Geschwindigkeit', 'Masse', 'Ladung'], 0, ' ein Elektron an einem Ort gefunden wird.'],
+        ['Das Streifenmuster verschwindet, sobald der ', ['Weg', 'Druck', 'Schirm', 'Strom'], 0, ' durch den Doppelspalt bestimmt wird.'],
         ['Photonen und Elektronen heißen ', ['Quantenobjekte', 'Wellenpakete', 'Kugeln', 'Ionen'], 0, ', weil sie Teilchen- und Welleneigenschaften zeigen.'],
         ['Der Auftreffort eines einzelnen Elektrons ist ', ['zufällig', 'vorhersagbar', 'immer in der Mitte', 'abhängig von der Farbe'], 0, ', die Verteilung vieler Treffer nicht.']
       ], sels = [];
       items.forEach(function (it) {
-        var line = mk('p', 'lz'), s = mk('select'); s.appendChild(new Option('wählen …', ''));
-        shuffle(it[1].map(function (t, i) { return { t: t, i: i }; })).forEach(function (o) { var op = new Option(o.t, o.i); s.appendChild(op); });
-        line.appendChild(document.createTextNode(it[0])); line.appendChild(s); line.appendChild(document.createTextNode(it[3])); wrap.appendChild(line); sels.push(s);
+        var line = mk('p', 'lz'), sel = mk('select'); sel.appendChild(new Option('wählen …', ''));
+        shuffle(it[1].map(function (t, i) { return { t: t, i: i }; })).forEach(function (o) { sel.appendChild(new Option(o.t, o.i)); });
+        line.appendChild(document.createTextNode(it[0])); line.appendChild(sel); line.appendChild(document.createTextNode(it[3])); wrap.appendChild(line); sels.push(sel);
       });
       var fb = mk('div'); h.appendChild(wrap);
-      h.appendChild(btn('Prüfen', 'small', function () { var n = 0; sels.forEach(function (s) { var good = s.value === '0'; s.className = s.value === '' ? '' : (good ? 'good' : 'bad'); if (good) n++; }); fb.className = n === sels.length ? 'fb ok' : 'fb no'; fb.textContent = n === sels.length ? '✔ Alles richtig.' : n + ' von ' + sels.length + ' Lücken richtig. Prüfe die rot markierten noch einmal.'; if (n === sels.length) burst(wrap); }));
+      h.appendChild(btn('Prüfen', 'small', function () { var n = 0; sels.forEach(function (sl) { var good = sl.value === '0'; sl.className = sl.value === '' ? '' : (good ? 'good' : 'bad'); if (good) n++; }); fb.className = n === sels.length ? 'fb ok' : 'fb no'; fb.textContent = n === sels.length ? '✔ Alles richtig.' : n + ' von ' + sels.length + ' Lücken richtig. Prüfe die rot markierten noch einmal.'; if (n === sels.length) burst(wrap); }));
       h.appendChild(fb);
       h.appendChild(mk('p', '', '<b>Aufgabe C2:</b> Ein einzelnes Elektron trifft in einem Doppelspaltexperiment auf den Schirm. Was lässt sich vorhersagen?'));
       mcq(h, ['Nur die Wahrscheinlichkeit, mit der es in einem bestimmten Bereich auftrifft', 'Der genaue Auftreffpunkt', 'Der Spalt, durch den es sicher geflogen ist', 'Dass es immer in einem Interferenzmaximum landet'], null);
+      h.appendChild(mk('p', '', '<b>Aufgabe C3:</b> Was bedeutet das für das Elektron in der Atomhülle?'));
+      mcq(h, ['Man kann nur angeben, mit welcher Wahrscheinlichkeit es sich wo aufhält (Orbital)', 'Es bewegt sich auf einer festen Kreisbahn um den Kern', 'Es ruht an einem festen Ort im Atom', 'Es verlässt das Atom, sobald man es beobachtet'], null);
     } }
 ];
 function panelStep3(p) {
@@ -605,10 +623,10 @@ function panelStep3(p) {
 /* --- Schritt 4: Fazit --- */
 var FZ = [
   ['Ein einzelnes Elektron erzeugt auf dem Schirm das komplette Streifenmuster.', false, 'Ein einzelnes Elektron erzeugt einen einzigen Punkt. Das Muster entsteht erst aus vielen Treffern.'],
-  ['Das Streifenmuster entsteht auch dann, wenn die Elektronen einzeln nacheinander durch den Doppelspalt geschickt werden.', true, 'Jedes Elektron interferiert gewissermaßen mit sich selbst; die Verteilung der Treffer folgt |ψ|².'],
+  ['Das Streifenmuster entsteht auch dann, wenn die Elektronen einzeln nacheinander durch den Doppelspalt geschickt werden.', true, 'Jedes Elektron verhält sich wie eine Welle, die beide Spalte erfasst; die Verteilung der Treffer folgt der Wahrscheinlichkeit.'],
   ['Mit eingeschaltetem Weg-Detektor bleibt das Streifenmuster erhalten.', false, 'Wenn der Weg bestimmt wird, verschwindet die Interferenz.'],
   ['Photonen zeigen am Doppelspalt keine Interferenz, weil sie Teilchen sind.', false, 'Auch Photonen bauen ein Interferenzmuster auf. Beide Aspekte gehören zu Quantenobjekten.'],
-  ['Je größer der Impuls eines Elektrons, desto kleiner ist seine de-Broglie-Wellenlänge.', true, 'λ = h/p. Größerer Impuls bedeutet kleineres λ und damit enger liegende Streifen.'],
+  ['Je schneller ein Elektron ist, desto kleiner ist seine Wellenlänge.', true, 'λ = h/(m·v). Eine kleinere Wellenlänge bedeutet enger liegende Streifen.'],
   ['Der Auftreffpunkt eines einzelnen Elektrons lässt sich vorhersagen.', false, 'Nur die Wahrscheinlichkeitsverteilung ist festgelegt, der einzelne Treffer ist zufällig.']
 ];
 function panelStep4(p) {
@@ -622,7 +640,7 @@ function panelStep4(p) {
     p.appendChild(row);
   });
   if (n === FZ.length) {
-    p.appendChild(mk('div', 'fb ok', '<b>Geschafft.</b> Merke dir:<ul class="rules"><li>Quantenobjekte werden einzeln und punktförmig nachgewiesen und breiten sich wie Wellen aus.</li><li>Die Wellenlänge ist λ = h/p. Ein größerer Impuls bedeutet eine kleinere Wellenlänge.</li><li>|ψ|² gibt die Wahrscheinlichkeitsdichte an. Einzelne Treffer sind zufällig, ihre Verteilung nicht.</li><li>Ist der Weg bestimmbar, entsteht keine Interferenz.</li><li>Das Elektron im Atom wird durch eine Wahrscheinlichkeitsverteilung beschrieben: das Orbital (nächstes Modul).</li></ul>'));
+    p.appendChild(mk('div', 'fb ok', '<b>Geschafft.</b> Merke dir:<ul class="rules"><li>Quantenobjekte werden einzeln und punktförmig nachgewiesen und breiten sich wie Wellen aus.</li><li>Je schneller ein Elektron ist, desto kleiner ist seine Wellenlänge (λ = h/(m·v)).</li><li>Die Welle gibt die Wahrscheinlichkeit an. Einzelne Treffer sind zufällig, ihre Verteilung nicht.</li><li>Ist der Weg bestimmbar, entsteht keine Interferenz.</li><li>Das Elektron im Atom hat keine Bahn, sondern eine Aufenthaltswahrscheinlichkeit: das Orbital (nächstes Modul).</li></ul>'));
     var r = mk('div', 'row'); var a = mk('a', 'btn go', 'Zurück zur Übersicht'); a.href = '../index.html'; a.style.textDecoration = 'none'; r.appendChild(a); p.appendChild(r);
   }
 }
