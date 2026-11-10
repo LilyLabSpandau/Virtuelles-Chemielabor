@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brandbekämpfung – das richtige Löschmittel</title>
+<style>
+  :root { --ink:#f6eee8; --muted:#c9b9ad; --org:#ff8a3d; --amb:#ffd166; --cy:#7df9ff; --ok:#5ee6a8; --bad:#ff7d7d; --line:rgba(255,176,120,.28); }
+  * { box-sizing:border-box; }
+  html { -webkit-text-size-adjust:100%; }
+  body { margin:0; min-height:100vh; color:var(--ink); font-family:'Segoe UI',system-ui,-apple-system,Roboto,sans-serif; line-height:1.5;
+    background: radial-gradient(ellipse at 12% -8%, #6a2212 0%, rgba(106,34,18,0) 55%), radial-gradient(ellipse at 100% 28%, #12365a 0%, rgba(18,54,90,0) 50%), radial-gradient(ellipse at 40% 115%, #4a1840 0%, rgba(74,24,64,0) 45%), #0b0c14; background-attachment:fixed; }
+  body::before { content:''; position:fixed; inset:0; pointer-events:none; opacity:.65;
+    background-image: radial-gradient(1.6px 1.6px at 9% 82%, #ffb36b, transparent), radial-gradient(1.2px 1.2px at 21% 64%, #ff8a3d, transparent), radial-gradient(1.5px 1.5px at 38% 91%, #ffd166, transparent), radial-gradient(1px 1px at 52% 72%, #ff9e5e, transparent), radial-gradient(1.4px 1.4px at 67% 88%, #ffb36b, transparent), radial-gradient(1px 1px at 81% 69%, #ff8a3d, transparent), radial-gradient(1.5px 1.5px at 93% 84%, #ffd166, transparent), radial-gradient(1px 1px at 14% 22%, #cfe3ff, transparent), radial-gradient(1.2px 1.2px at 47% 12%, #cfe3ff, transparent), radial-gradient(1px 1px at 76% 18%, #cfe3ff, transparent); }
+  .wrap { position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:12px 12px 90px; }
+  .back { display:inline-block; color:#fff; background:rgba(255,255,255,.12); border:1px solid var(--line); text-decoration:none; font-weight:700; font-size:14px; padding:8px 14px; border-radius:999px; }
+  h1 { margin:8px 0 0; font-size:clamp(24px,5.4vw,36px); line-height:1.15; background:linear-gradient(90deg,#ffd166,#ff8a3d 55%,#ff5d73); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .sub { color:var(--muted); margin:4px 0 8px; font-size:15px; }
+  nav.steps { position:sticky; top:0; z-index:40; display:flex; gap:6px; padding:8px 0; overflow-x:auto; background:linear-gradient(#0b0c14 75%, rgba(11,12,20,0)); -webkit-overflow-scrolling:touch; }
+  nav.steps button { flex:1 0 auto; border:1px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-weight:700; font-size:14px; padding:9px 12px; border-radius:12px; cursor:pointer; white-space:nowrap; }
+  nav.steps button.on { background:linear-gradient(135deg,#ff8a3d,#e0334f); border-color:transparent; box-shadow:0 4px 18px rgba(255,100,60,.4); }
+  nav.steps button.done::after { content:' ✔'; color:var(--ok); } nav.steps button.on.done::after { color:#fff; }
+  nav.steps button:disabled { opacity:.4; cursor:not-allowed; }
+  .glass { background:linear-gradient(160deg, rgba(60,40,48,.74), rgba(18,16,30,.82)); border:1px solid var(--line); border-radius:18px; padding:14px; box-shadow:0 10px 34px rgba(0,0,0,.4); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); }
+  h2 { margin:0 0 6px; font-size:19px; } h3 { margin:0 0 4px; font-size:16.5px; }
+  .muted { color:var(--muted); }
+  .main { display:grid; gap:14px; grid-template-columns:1fr; }
+  @media (min-width:900px) { .main { grid-template-columns:minmax(0,520px) minmax(0,1fr); align-items:start; } .stagecol { position:sticky; top:62px; } }
+  .cvwrap { position:relative; padding:8px; }
+  #cv { -webkit-tap-highlight-color:transparent; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; display:block; width:100%; height:auto; border-radius:14px; touch-action:pan-y; cursor:pointer; background:radial-gradient(ellipse at 50% 60%, rgba(120,50,30,.35), rgba(8,8,16,.6)); }
+  .banner { position:absolute; left:14px; right:14px; top:14px; background:rgba(10,10,18,.82); border:1px solid var(--line); border-radius:12px; padding:7px 11px; font-size:14px; pointer-events:none; opacity:0; transition:opacity .25s; }
+  .banner.show { opacity:1; }
+  .cvtools { display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; align-items:center; }
+  .legend { display:flex; flex-wrap:wrap; gap:4px 10px; margin-top:8px; font-size:12.5px; color:var(--muted); }
+  .legend i { display:inline-block; width:11px; height:11px; border-radius:50%; margin-right:4px; vertical-align:-1px; }
+  .btn { border:0; border-radius:11px; padding:11px 16px; font:inherit; font-size:15.5px; font-weight:700; color:#fff; cursor:pointer; background:linear-gradient(135deg,#ff8a3d,#e0334f); box-shadow:0 4px 14px rgba(255,100,60,.35); }
+  .btn:disabled { opacity:.4; cursor:not-allowed; box-shadow:none; }
+  .btn.sec { background:rgba(255,255,255,.1); border:1px solid var(--line); box-shadow:none; color:var(--ink); }
+  .btn.go { background:linear-gradient(135deg,#19c98a,#1fb6ff); box-shadow:0 4px 14px rgba(30,180,200,.35); }
+  .btn.small { padding:7px 11px; font-size:14px; }
+  .btn.on { outline:2px solid var(--amb); }
+  .row { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; align-items:center; }
+  .cap { background:rgba(255,255,255,.07); border-left:4px solid var(--amb); border-radius:8px; padding:8px 12px; margin:8px 0; font-size:15.5px; }
+  .cap small { display:block; color:var(--muted); font-size:12.5px; letter-spacing:.6px; text-transform:uppercase; margin-bottom:2px; }
+  .fb { margin-top:8px; padding:9px 12px; border-radius:10px; font-size:15px; } .fb.ok { background:rgba(94,230,168,.14); border:1px solid rgba(94,230,168,.5); } .fb.no { background:rgba(255,125,125,.13); border:1px solid rgba(255,125,125,.5); } .fb.info { background:rgba(255,255,255,.07); border:1px solid var(--line); }
+  .tip { background:rgba(255,209,102,.12); border:1px dashed rgba(255,209,102,.55); border-radius:10px; padding:7px 11px; margin-top:7px; font-size:15px; }
+  .layers { display:flex; flex-direction:column-reverse; gap:3px; margin:8px 0; }
+  .layers span { display:block; border-radius:6px; padding:3px 10px; font-size:13.5px; font-weight:700; color:#111; }
+  .layers .k { background:#8a8f9c; } .layers .e { background:#c4623f; } .layers .c { background:#efe8d6; } .layers .empty { background:rgba(255,255,255,.07); color:var(--muted); font-weight:500; }
+  .chg { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:8px; }
+  .chg button { border:2px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-weight:700; font-size:14.5px; border-radius:14px; padding:10px 6px; cursor:pointer; }
+  .chg button small { display:block; font-weight:500; color:var(--muted); font-size:12px; }
+  .chg button:disabled { opacity:.4; cursor:not-allowed; }
+  .zlist { display:flex; flex-wrap:wrap; gap:6px; margin:8px 0; }
+  .zlist button { border:1px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-size:14px; font-weight:700; padding:7px 11px; border-radius:999px; cursor:pointer; }
+  .zlist button.on { background:rgba(255,138,61,.3); border-color:var(--org); } .zlist button.ok::after { content:' ✔'; color:var(--ok); }
+  .eq { display:flex; flex-wrap:wrap; align-items:center; gap:6px 4px; margin:8px 0; font-size:20px; font-weight:700; }
+  .eq .term { display:inline-flex; align-items:center; gap:4px; background:rgba(255,255,255,.07); border:1px solid var(--line); border-radius:12px; padding:3px 5px; }
+  .eq .term .st { display:flex; flex-direction:column; } .eq .term .st button { width:30px; height:19px; line-height:1; border:0; border-radius:6px; background:rgba(255,255,255,.14); color:#fff; font-weight:800; font-size:14px; cursor:pointer; padding:0; margin:1px 0; }
+  .eq .term .n { min-width:18px; text-align:center; font-size:20px; } .eq .op { color:var(--muted); padding:0 3px; }
+  .eq sub { font-size:.65em; }
+  .atoms { display:flex; flex-wrap:wrap; gap:6px; margin:6px 0; font-size:14px; } .atoms span { border-radius:9px; padding:2px 9px; background:rgba(255,255,255,.07); border:1px solid var(--line); } .atoms span.ok { border-color:var(--ok); color:var(--ok); } .atoms span.no { border-color:var(--bad); color:var(--bad); }
+  #cvR { display:block; width:100%; max-width:340px; height:auto; border-radius:12px; background:rgba(0,0,0,.3); border:1px solid var(--line); margin:6px 0; }
+  .bar { margin:7px 0; } .bar .lab { display:flex; justify-content:space-between; font-size:14.5px; font-weight:700; } .bar .tr { position:relative; height:12px; border-radius:7px; background:rgba(255,255,255,.12); overflow:hidden; } .bar .tr i { display:block; height:100%; border-radius:7px; background:linear-gradient(90deg,#ffd166,#ff8a3d); transition:width .15s; } .bar .tr b { position:absolute; top:0; bottom:0; width:2px; background:#fff; opacity:.8; }
+  .prog { height:10px; border-radius:6px; background:rgba(255,255,255,.12); overflow:hidden; margin:6px 0; } .prog i { display:block; height:100%; background:linear-gradient(90deg,#ff8a3d,#ffd166); transition:width .2s; }
+  .opts { display:flex; flex-direction:column; gap:7px; margin:8px 0; }
+  .opt { text-align:left; border:2px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-size:15.5px; border-radius:12px; padding:10px 14px; cursor:pointer; }
+  .opt:hover { border-color:var(--org); } .opt.good { border-color:var(--ok); background:rgba(94,230,168,.18); } .opt.bad { border-color:var(--bad); background:rgba(255,125,125,.16); animation:shake .3s; }
+  @keyframes shake { 25% { transform:translateX(-4px); } 75% { transform:translateX(4px); } }
+  .flow { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin:8px 0; } .flow b { background:rgba(255,255,255,.09); border:1px solid var(--line); border-radius:10px; padding:5px 10px; font-size:14px; } .flow span { color:var(--amb); font-weight:800; }
+  .rules { margin:6px 0 0; padding:0; list-style:none; } .rules li { margin:7px 0; padding-left:14px; border-left:3px solid var(--org); }
+  details.log summary { cursor:pointer; color:var(--muted); font-size:14px; margin-top:6px; } details.log p { margin:6px 0; font-size:14.5px; }
+  .burst { position:fixed; width:0; height:0; z-index:10000; pointer-events:none; } .burst i { position:absolute; left:-4px; top:-4px; width:8px; height:8px; border-radius:50%; animation:bu .9s ease-out forwards; } @keyframes bu { to { transform:translate(var(--dx),var(--dy)) scale(.2); opacity:0; } }
+  .impressum { position:fixed; bottom:10px; right:10px; background:rgba(0,0,0,.6); color:#fff; padding:5px 10px; text-decoration:none; border-radius:5px; font-family:sans-serif; font-size:12px; z-index:9999; }
+  @media (max-width:480px) { .glass { padding:12px; } .eq { font-size:18px; } }
+  .bar .tr u { position:absolute; top:0; bottom:0; background:rgba(94,230,168,.55); }
+
+  :root { --org:#ff5a36; --amb:#ffc247; }
+  nav.steps button.on { background:linear-gradient(135deg,#ff5a36,#d11f3f); box-shadow:0 4px 18px rgba(255,70,50,.45); }
+  h1 { background:linear-gradient(90deg,#ffc247,#ff5a36 55%,#ff2d55); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  #cv { cursor:grab; background:radial-gradient(ellipse at 50% 70%, rgba(120,40,30,.45), rgba(6,8,16,.85)); }
+  .tools { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; margin-top:8px; width:100%; }
+  .tools button { border:2px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-weight:700; font-size:14.5px; border-radius:13px; padding:9px 4px; cursor:pointer; line-height:1.2; }
+  .tools button b { display:block; font-size:22px; line-height:1.1; }
+  .tools button:disabled { opacity:.4; cursor:not-allowed; }
+  .tools button.on { border-color:var(--amb); background:rgba(255,194,71,.16); }
+  .tools button.ok::after { content:' ✔'; color:var(--ok); } .tools button.no::after { content:' ✘'; color:var(--bad); }
+  .scn { display:flex; flex-wrap:wrap; gap:6px; margin:8px 0; } .scn button { border:1px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-size:14px; font-weight:700; padding:7px 11px; border-radius:999px; cursor:pointer; } .scn button.on { background:rgba(255,90,54,.3); border-color:var(--org); } .scn button.ok::after { content:' ✔'; color:var(--ok); }
+  .tri { display:block; width:100%; max-width:300px; margin:8px auto; }
+  .tri .c { fill:rgba(255,255,255,.08); stroke:rgba(255,255,255,.5); stroke-width:2; } .tri .c.ok { fill:rgba(94,230,168,.25); stroke:var(--ok); } .tri text { fill:#f6eee8; font-size:13px; font-weight:700; text-anchor:middle; }
+  .cards { display:grid; gap:7px; margin:8px 0; } .cards button { text-align:left; border:2px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-size:15px; border-radius:12px; padding:9px 13px; cursor:pointer; } .cards button.on { border-color:var(--amb); } .cards button.seen::after { content:' ✔'; color:var(--ok); }
+  table.mx { border-collapse:collapse; width:100%; font-size:13.5px; margin:8px 0; } table.mx th, table.mx td { border:1px solid var(--line); padding:5px 6px; text-align:center; } table.mx th:first-child, table.mx td:first-child { text-align:left; } table.mx td.g { background:rgba(94,230,168,.2); } table.mx td.b { background:rgba(255,125,125,.2); }
+  .tip { background:rgba(255,209,102,.12); border:1px dashed rgba(255,209,102,.55); border-radius:10px; padding:7px 11px; margin-top:7px; font-size:15px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← Zur Übersicht</a>
+  <h1>🧯 Brandbekämpfung</h1>
+  <p class="sub">Ein Feuer, viele Löschmittel: Finde heraus, was bei welchem Brand hilft und was alles schlimmer macht.</p>
+  <nav class="steps" id="steps"></nav>
+  <div class="main">
+    <div class="stagecol">
+      <div class="glass cvwrap" id="cvwrap">
+        <canvas id="cv" width="640" height="520" aria-label="Brandszene in 3D"></canvas>
+        <div class="banner" id="banner"></div>
+        <div class="cvtools" id="cvtools"></div>
+      </div>
+    </div>
+    <div class="glass" id="panel"></div>
+  </div>
+</div>
+<a class="impressum" href="/Virtuelles-Chemielabor/impressum.html">Impressum &amp; Datenschutz</a>
+<script>
+'use strict';
+/* ====== Hilfen ====== */
+function $(id) { return document.getElementById(id); }
+function mk(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; }
+function btn(label, cls, fn, dis) { var b = mk('button', 'btn ' + (cls || ''), label); b.type = 'button'; if (dis) b.disabled = true; b.addEventListener('click', fn); return b; }
+function lerp(a, b, t) { return a + (b - a) * t; }
+function clamp(x, a, b) { return x < a ? a : x > b ? b : x; }
+function rnd(a, b) { return a + Math.random() * (b - a); }
+function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+function burst(host) {
+  var r = host.getBoundingClientRect(), b = mk('div', 'burst'), i, p;
+  b.style.left = (r.left + r.width / 2) + 'px'; b.style.top = (r.top + Math.min(r.height / 2, 200)) + 'px';
+  for (i = 0; i < 18; i++) { p = mk('i'); p.style.background = ['#ffc247', '#ff5a36', '#5ee6a8', '#7df9ff'][i % 4]; p.style.setProperty('--dx', Math.round(rnd(-120, 120)) + 'px'); p.style.setProperty('--dy', Math.round(rnd(-120, 60)) + 'px'); b.appendChild(p); }
+  document.body.appendChild(b); setTimeout(function () { b.remove(); }, 1000);
+}
+function hex(h) { var n = parseInt(h.slice(1), 16); return [n >> 16, (n >> 8) & 255, n & 255]; }
+function shade(rgb, f) { return 'rgb(' + Math.round(clamp(rgb[0] * f, 0, 255)) + ',' + Math.round(clamp(rgb[1] * f, 0, 255)) + ',' + Math.round(clamp(rgb[2] * f, 0, 255)) + ')'; }
+
+/* ====== Mini-3D ====== */
+var CW = 640, CH = 520, VS = 1, cam = { yaw: 0.65, pitch: 0.55, S: 1.0, cx: 320, cy: 385, sx: 0, sy: 0 };
+var LX = -0.42, LY = 0.78, LZ = -0.46;
+function rot(x, y, z) { var c = Math.cos(cam.yaw), s = Math.sin(cam.yaw); return [x * c + z * s, y, -x * s + z * c]; }
+function unrot(x, y, z) { var c = Math.cos(cam.yaw), s = Math.sin(cam.yaw); return [x * c - z * s, y, x * s + z * c]; }
+function proj(x, y, z) { var r = rot(x, y, z), cp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch); return { x: cam.cx + cam.sx + cam.S * r[0], y: cam.cy + cam.sy - cam.S * (r[1] * cp + r[2] * sp), d: r[2] * cp - r[1] * sp }; }
+function visN(nx, ny, nz) { var r = rot(nx, ny, nz); return r[1] * Math.sin(cam.pitch) - r[2] * Math.cos(cam.pitch); }
+function lit(nx, ny, nz) { var r = rot(nx, ny, nz); return 0.4 + 0.6 * Math.max(0, r[0] * LX + r[1] * LY + r[2] * LZ); }
+function poly(c, pts, fill, stroke) { var i; c.beginPath(); c.moveTo(pts[0].x, pts[0].y); for (i = 1; i < pts.length; i++) c.lineTo(pts[i].x, pts[i].y); c.closePath(); c.fillStyle = fill; c.fill(); if (stroke) { c.strokeStyle = stroke; c.lineWidth = 1; c.stroke(); } }
+var BF = [[0, 1, 0, 'top'], [1, 0, 0, 'px'], [-1, 0, 0, 'nx'], [0, 0, 1, 'pz'], [0, 0, -1, 'nz']];
+function drawBox(c, b) {
+  var w = b.w / 2, d = b.d / 2, x = b.x, y = b.y, z = b.z, h = b.h, rgb = b.rgb || (b.rgb = hex(b.c)), i, P;
+  var V = { top: [[x - w, y + h, z - d], [x + w, y + h, z - d], [x + w, y + h, z + d], [x - w, y + h, z + d]],
+    px: [[x + w, y, z - d], [x + w, y, z + d], [x + w, y + h, z + d], [x + w, y + h, z - d]],
+    nx: [[x - w, y, z - d], [x - w, y, z + d], [x - w, y + h, z + d], [x - w, y + h, z - d]],
+    pz: [[x - w, y, z + d], [x + w, y, z + d], [x + w, y + h, z + d], [x - w, y + h, z + d]],
+    nz: [[x - w, y, z - d], [x + w, y, z - d], [x + w, y + h, z - d], [x - w, y + h, z - d]] };
+  for (i = 0; i < BF.length; i++) {
+    var f = BF[i]; if (visN(f[0], f[1], f[2]) <= 0) continue;
+    P = V[f[3]].map(function (q) { return proj(q[0], q[1], q[2]); });
+    poly(c, P, shade(rgb, lit(f[0], f[1], f[2])), 'rgba(0,0,0,.25)');
+  }
+}
+function drawCyl(c, b) {
+  var n = b.seg || 14, i, a0, a1, am, rgb = b.rgb || (b.rgb = hex(b.c)), r1 = b.r1, r2 = b.r2 === undefined ? b.r1 : b.r2, faces = [], P;
+  for (i = 0; i < n; i++) {
+    a0 = i / n * 6.2832; a1 = (i + 1) / n * 6.2832; am = (a0 + a1) / 2;
+    var nx = Math.cos(am), nz = Math.sin(am);
+    if (visN(nx, 0.2, nz) <= 0) continue;
+    P = [proj(b.x + Math.cos(a0) * r1, b.y, b.z + Math.sin(a0) * r1), proj(b.x + Math.cos(a1) * r1, b.y, b.z + Math.sin(a1) * r1), proj(b.x + Math.cos(a1) * r2, b.y + b.h, b.z + Math.sin(a1) * r2), proj(b.x + Math.cos(a0) * r2, b.y + b.h, b.z + Math.sin(a0) * r2)];
+    faces.push({ P: P, f: lit(nx, 0.2, nz), d: (P[0].d + P[2].d) / 2 });
+  }
+  faces.sort(function (p, q) { return q.d - p.d; });
+  faces.forEach(function (f) { poly(c, f.P, shade(rgb, f.f), 'rgba(0,0,0,.12)'); });
+  P = []; for (i = 0; i < n; i++) { a0 = i / n * 6.2832; P.push(proj(b.x + Math.cos(a0) * r2, b.y + b.h, b.z + Math.sin(a0) * r2)); }
+  poly(c, P, b.open ? 'rgb(24,18,16)' : shade(rgb, lit(0, 1, 0)), b.open ? shade(rgb, 1.15) : 'rgba(0,0,0,.2)');
+  if (b.fill) { P = []; for (i = 0; i < n; i++) { a0 = i / n * 6.2832; P.push(proj(b.x + Math.cos(a0) * (r2 - 3), b.y + b.h - 3, b.z + Math.sin(a0) * (r2 - 3))); } poly(c, P, b.fill); }
+}
+function drawDisc(c, b) {
+  var i, P = [], n = 22, a; for (i = 0; i < n; i++) { a = i / n * 6.2832; P.push(proj(b.x + Math.cos(a) * b.rx, b.y + 0.4, b.z + Math.sin(a) * b.rz)); }
+  poly(c, P, b.c, b.edge || 'rgba(255,255,255,.12)');
+}
+function primDepth(b) { return proj(b.x, b.y + (b.h || 0) / 2, b.z).d; }
+function drawPrim(c, b) { if (b.hide) return; if (b.t === 'box') drawBox(c, b); else if (b.t === 'cyl') drawCyl(c, b); else if (b.t === 'disc') drawDisc(c, b); }
+function shadowOf(c, b) {
+  if (b.hide || b.y > 30 || b.t === 'disc') return;
+  var P, r, i, a; c.fillStyle = 'rgba(0,0,0,.28)';
+  if (b.t === 'box') { var w = b.w / 2 + 5, d = b.d / 2 + 5; P = [proj(b.x - w, 0.3, b.z - d), proj(b.x + w, 0.3, b.z - d), proj(b.x + w, 0.3, b.z + d), proj(b.x - w, 0.3, b.z + d)]; }
+  else { r = Math.max(b.r1, b.r2 || 0) + 6; P = []; for (i = 0; i < 14; i++) { a = i / 14 * 6.2832; P.push(proj(b.x + Math.cos(a) * r, 0.3, b.z + Math.sin(a) * r)); } }
+  c.beginPath(); c.moveTo(P[0].x, P[0].y); for (i = 1; i < P.length; i++) c.lineTo(P[i].x, P[i].y); c.closePath(); c.fill();
+}
+
+/* ====== Sprites ====== */
+function mkSprite(rgb, a0) { var s = document.createElement('canvas'); s.width = s.height = 64; var g = s.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, 'rgba(' + rgb + ',' + a0 + ')'); gr.addColorStop(0.45, 'rgba(' + rgb + ',' + a0 * 0.55 + ')'); gr.addColorStop(1, 'rgba(' + rgb + ',0)'); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); return s; }
+var SP = { y: mkSprite('255,236,150', 1), o: mkSprite('255,140,40', 1), r: mkSprite('200,40,20', 0.9), w: mkSprite('255,255,255', 1), b: mkSprite('140,180,255', 1), smoke: mkSprite('70,70,80', 0.7), steam: mkSprite('235,240,245', 0.6), puff: mkSprite('225,225,230', 0.8), co: mkSprite('200,230,255', 0.7), glow: mkSprite('255,120,40', 0.5), foam: mkSprite('250,250,255', 1), red: mkSprite('255,60,40', 0.8) };
+
+/* ====== Partikel ====== */
+var PS = [], DECO = [];
+function addP(p) { if (PS.length < 420) PS.push(p); }
+function fireP(em, I, dt) {
+  var sc = em.sc || 1, n = em.rate * I * dt + (em.acc || 0), pal = em.pal || 'std';
+  while (n >= 1) {
+    n -= 1; var a = rnd(0, 6.2832), rr = Math.sqrt(Math.random());
+    addP({ k: 'f', pal: pal, x: em.x + Math.cos(a) * (em.rx || em.r) * rr * (S.spread || 1), y: em.y, z: em.z + Math.sin(a) * (em.rz || em.r) * rr * (S.spread || 1), vx: rnd(-8, 8), vy: rnd(60, 110) * (0.7 + 0.5 * I), vz: rnd(-8, 8), life: rnd(0.55, 1.0), age: 0, size: rnd(15, 26) * sc * (0.75 + 0.25 * I) });
+  }
+  em.acc = n;
+  if (I > 0.2 && Math.random() < dt * 3 * I) addP({ k: 'sm', x: em.x + rnd(-em.r, em.r) * 0.5, y: em.y + 40 * sc, z: em.z + rnd(-em.r, em.r) * 0.5, vx: rnd(-6, 6), vy: rnd(28, 46), vz: rnd(-6, 6), life: rnd(1.6, 2.6), age: 0, size: rnd(18, 28) });
+}
+function stepP(dt) {
+  var i, p; for (i = PS.length - 1; i >= 0; i--) {
+    p = PS[i]; p.age += dt; if (p.age >= p.life) { if (p.land) p.land(p); PS.splice(i, 1); continue; }
+    if (p.drag && p.age > p.t1) { var f = Math.max(0, 1 - p.drag * dt); p.vx *= f; p.vy *= f; p.vz *= f; }
+    p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt; if (p.g) p.vy += p.g * dt;
+    if (p.k === 'w' && p.y < 1) { if (p.land) p.land(p); PS.splice(i, 1); }
+  }
+}
+function drawP(c, p) {
+  var q = proj(p.x, p.y, p.z), a = p.age / p.life, s, spr, al;
+  if (p.k === 'f') {
+    s = p.size * (1 - a * 0.55) * cam.S * 1.5; spr = p.pal === 'mg' ? (a < 0.5 ? SP.w : SP.b) : p.pal === 'fat' ? (a < 0.3 ? SP.y : a < 0.65 ? SP.o : SP.r) : (a < 0.25 ? SP.y : a < 0.6 ? SP.o : SP.r); al = (1 - a) * 0.9;
+    c.globalCompositeOperation = 'lighter'; c.globalAlpha = clamp(al, 0, 1); c.drawImage(spr, q.x - s / 2, q.y - s / 2, s, s); c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; return;
+  }
+  if (p.k === 'sm') { s = p.size * (1 + a * 1.4) * cam.S; c.globalAlpha = (1 - a) * 0.5; c.drawImage(SP.smoke, q.x - s / 2, q.y - s / 2, s, s); c.globalAlpha = 1; return; }
+  if (p.k === 'w') { c.fillStyle = 'rgba(120,190,255,.85)'; c.beginPath(); c.arc(q.x, q.y, 2.6 * cam.S, 0, 6.283); c.fill(); return; }
+  if (p.k === 'sg') { c.fillStyle = '#c9a36a'; c.fillRect(q.x - 1.5, q.y - 1.5, 3.4, 3.4); return; }
+  if (p.k === 'fm') { s = p.size * cam.S * 1.5; c.globalAlpha = 0.95; c.drawImage(SP.foam, q.x - s / 2, q.y - s / 2, s, s); c.globalAlpha = 1; return; }
+  if (p.k === 'st' || p.k === 'pw' || p.k === 'co') {
+    s = p.size * (1 + a * (p.k === 'st' ? 1.6 : 2.2)) * cam.S; spr = p.k === 'st' ? SP.steam : p.k === 'pw' ? SP.puff : SP.co; c.globalAlpha = (1 - a) * (p.k === 'pw' ? 0.85 : 0.8); c.drawImage(spr, q.x - s / 2, q.y - s / 2, s, s); c.globalAlpha = 1; return;
+  }
+  if (p.k === 'fb') { s = p.size * (0.4 + a * 1.4) * cam.S * 1.6; c.globalCompositeOperation = 'lighter'; c.globalAlpha = (1 - a) * 0.95; c.drawImage(SP.y, q.x - s / 2, q.y - s / 2, s, s); c.drawImage(SP.o, q.x - s / 2, q.y - s / 2, s, s); c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; return; }
+  if (p.k === 'sp') { c.globalCompositeOperation = 'lighter'; c.fillStyle = p.col || '#9fd0ff'; c.globalAlpha = 1 - a; c.fillRect(q.x - 1.5, q.y - 1.5, 3, 3); c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; }
+}
+
+/* ====== Szenen ====== */
+function box(x, y, z, w, h, d, c) { return { t: 'box', x: x, y: y, z: z, w: w, h: h, d: d, c: c }; }
+function cyl(x, y, z, r1, r2, h, c, o) { var b = { t: 'cyl', x: x, y: y, z: z, r1: r1, r2: r2, h: h, c: c }, k; if (o) for (k in o) b[k] = o[k]; return b; }
+function disc(x, y, z, rx, rz, c) { return { t: 'disc', x: x, y: y, z: z, rx: rx, rz: rz, c: c }; }
+var PLATFORM = box(0, -14, 0, 350, 14, 270, '#2b3445');
+function buildScenes() {
+  var L = [box(0, 0, -14, 72, 11, 11, '#6b4a2f'), box(0, 0, 14, 72, 11, 11, '#5e4129'), box(-14, 11, 0, 11, 11, 72, '#76533a'), box(14, 11, 0, 11, 11, 72, '#6b4a2f'), box(0, 22, -8, 62, 11, 11, '#76533a'), box(0, 22, 8, 62, 11, 11, '#5e4129')];
+  var SC = {};
+  SC.holz = { prims: L.concat([cyl(62, 0, 40, 11, 12, 9, '#7a7f89'), cyl(-62, 0, 40, 11, 12, 9, '#7a7f89'), cyl(62, 0, -40, 11, 12, 9, '#7a7f89'), cyl(-62, 0, -40, 11, 12, 9, '#7a7f89')]), logs: [4, 5, 2, 3, 0, 1], em: [{ x: 0, y: 28, z: 0, r: 22, rate: 52, sc: 1 }], tgt: { x: 0, y: 32, z: 0 }, cover: { w: 84, d: 84, h: 8, y: 36 }, sandY: 0, cs: 1.75 };
+  SC.papier = { name: 'Papierkorb', loc: 'Klassenzimmer', cls: 'A: feste Stoffe',
+    intro: 'Im Klassenzimmer brennt der Papierkorb. Es ist noch ein kleiner Brand.',
+    prims: [box(-125, 66, 40, 140, 6, 74, '#8a6a45'), box(-189, 0, 14, 6, 66, 6, '#6f5538'), box(-61, 0, 14, 6, 66, 6, '#6f5538'), box(-189, 0, 66, 6, 66, 6, '#6f5538'), box(-61, 0, 66, 6, 66, 6, '#6f5538'), box(-110, 72, 40, 22, 3, 30, '#f2f2f2'), box(-150, 72, 30, 18, 3, 24, '#e9e3cf'), cyl(60, 0, 10, 22, 28, 56, '#6b7684', { open: true }), box(-30, 0, 100, 44, 40, 44, '#3b5f8f'), box(-30, 40, 118, 44, 44, 6, '#33527c')],
+    em: [{ x: 60, y: 48, z: 10, r: 14, rate: 46, sc: 1 }], tgt: { x: 60, y: 48, z: 10 }, cover: { w: 68, d: 68, h: 8, y: 58 }, sandY: 56,
+    tip: 'Der Papierkorb brennt: feste Stoffe, die auch glühen. Welches Löschmittel nimmt besonders viel Wärme auf?',
+    r: {
+      water: ['good', 'Das Wasser kühlt das Papier unter die Zündtemperatur und durchtränkt die Glut. Bei Bränden fester Stoffe ist Wasser das Mittel der Wahl.'],
+      foam: ['good', 'Der Schaum kühlt und deckt das Brandgut ab. Das funktioniert, ist für einen kleinen Papierkorb aber schon fast zu viel.'],
+      powder: ['ok', 'Das Pulver erstickt die Flammen. Der Brand ist aus, aber der ganze Raum ist voll feinem Staub und alles ist verschmutzt.'],
+      co2: ['reignite', 'Das CO₂ verdrängt den Sauerstoff, die Flammen verschwinden. Das Papier glimmt aber heiß weiter, und sobald sich das Gas verzieht, flammt es wieder auf.'],
+      blanket: ['ok', 'Die Löschdecke erstickt den kleinen Brand. Das geht, wenn du nah genug herankommst. Wasser kühlt zusätzlich die Glut.'],
+      sand: ['ok', 'Der Sand erstickt das Feuer. Im Klassenzimmer hast du aber selten Sand griffbereit, und der Papierkorb ist danach unbrauchbar.'] } };
+  SC.fett = { name: 'Fettbrand', loc: 'Küche', cls: 'F: Speisefette und -öle',
+    intro: 'In der Küche brennt Fett in einer Pfanne auf dem Herd.',
+    prims: [box(0, 0, 0, 200, 72, 120, '#aeb6c2'), box(0, 72, 62, 200, 70, 6, '#66798a'), cyl(55, 72, -20, 22, 22, 2, '#2a2a30'), cyl(-55, 72, 28, 22, 22, 2, '#2a2a30'), cyl(55, 72, 28, 22, 22, 2, '#2a2a30'), cyl(-55, 74, -20, 30, 34, 9, '#1e1e24', { open: true, fill: '#d9a62e' }), box(-9, 78, -20, 50, 4, 8, '#1e1e24'), cyl(80, 72, 38, 6, 6, 28, '#c9a227')],
+    em: [{ x: -55, y: 84, z: -20, r: 22, rate: 50, sc: 1, pal: 'fat' }], tgt: { x: -55, y: 86, z: -20 }, cover: { w: 78, d: 78, h: 6, y: 86 }, sandY: 84,
+    tip: 'Fett wird weit über 200 °C heiß. Wasser ist dichter als Fett (Fett schwimmt darauf).',
+    r: {
+      water: ['explosion', 'Wasser ist schwerer als Fett und sinkt in das über 300 °C heiße Fett. Dort verdampft es schlagartig, das Volumen wächst auf das Tausendfache und reißt brennende Fetttröpfchen mit: eine Fettexplosion.'],
+      foam: ['spread', 'Der Schaum besteht überwiegend aus Wasser. Er spritzt im heißen Fett, und brennendes Fett wird über den ganzen Herd verteilt.'],
+      powder: ['reignite', 'Das Pulver erstickt die Flammen kurz. Das Fett bleibt aber weit über seiner Zündtemperatur, wird nicht gekühlt und entzündet sich sofort wieder.'],
+      co2: ['reignite', 'Das CO₂ verdrängt den Sauerstoff, aber das Fett bleibt sehr heiß. Sobald das Gas weg ist, zündet es erneut.'],
+      blanket: ['good', 'Die Decke (oder ein Deckel) schneidet die Pfanne vom Sauerstoff ab. Danach die Decke liegen lassen, bis das Fett abgekühlt ist.'],
+      sand: ['ok', 'Der Sand erstickt das Fett. In der Küche hat man ihn selten griffbereit, und die Pfanne ist danach unbrauchbar.'] } };
+  SC.benzin = { name: 'Benzin-Lache', loc: 'Werkstatt', cls: 'B: flüssige Stoffe',
+    intro: 'In der Werkstatt ist Benzin ausgelaufen und brennt als große Lache.',
+    prims: [disc(0, 0, 10, 92, 62, '#2b2b36'), box(-120, 0, -50, 28, 44, 16, '#c23a2e'), box(-120, 44, -50, 8, 6, 8, '#222'), cyl(125, 0, -35, 28, 28, 70, '#2e5d9e')],
+    em: [{ x: 0, y: 2, z: 10, r: 62, rx: 82, rz: 54, rate: 80, sc: 1.1 }], tgt: { x: 0, y: 14, z: 10 }, cover: { w: 200, d: 140, h: 5, y: 10 }, sandY: 0,
+    tip: 'Benzin ist leichter als Wasser und verdunstet leicht. Die Fläche ist groß.',
+    r: {
+      water: ['spread', 'Benzin ist leichter als Wasser und schwimmt oben. Das Wasser spült das brennende Benzin auseinander, und die Brandfläche wird größer.'],
+      foam: ['good', 'Der Schaum schwimmt auf dem Benzin, deckt es ab und trennt es vom Sauerstoff. Außerdem kühlt er.'],
+      powder: ['good', 'Das Pulver unterbricht die Verbrennung und erstickt die Flammen. Es eignet sich gut für brennende Flüssigkeiten.'],
+      co2: ['ok', 'Das CO₂ erstickt die Flammen über der Lache. Bei so viel Dampf kann es aber wieder aufflammen, wenn das Gas verweht.'],
+      blanket: ['burn', 'Die Lache ist viel zu groß für die Decke. Du müsstest dicht an die Flammen, und ein Teil brennt weiter.'],
+      sand: ['ok', 'Der Sand nimmt das Benzin auf und erstickt die Flammen. Bei einer so großen Lache brauchst du allerdings sehr viel davon.'] } };
+  SC.elektro = { name: 'Elektrobrand', loc: 'Büro', cls: 'Brand an Anlagen unter Spannung',
+    intro: 'Im Büro brennt die Steckdosenleiste am Computerplatz. Das Kabel steht unter Strom.',
+    prims: [box(0, 66, 30, 214, 6, 94, '#80684a'), box(-98, 0, -8, 6, 66, 6, '#5e4b36'), box(98, 0, -8, 6, 66, 6, '#5e4b36'), box(-98, 0, 68, 6, 66, 6, '#5e4b36'), box(98, 0, 68, 6, 66, 6, '#5e4b36'), cyl(-40, 72, 34, 12, 12, 4, '#222'), box(-40, 76, 34, 8, 16, 8, '#222'), box(-40, 92, 30, 78, 48, 6, '#13161d'), box(-40, 72, 56, 58, 3, 18, '#2b2f38'), box(70, 72, 30, 28, 52, 48, '#40454f'), box(40, 0, -58, 72, 5, 12, '#e8e8e8'), box(24, 5, -58, 8, 1, 6, '#222'), box(40, 5, -58, 8, 1, 6, '#222'), box(56, 5, -58, 8, 1, 6, '#222')],
+    em: [{ x: 40, y: 7, z: -58, r: 14, rate: 38, sc: 0.9 }], tgt: { x: 40, y: 10, z: -58 }, cover: { w: 86, d: 34, h: 6, y: 8 }, sandY: 5, elec: true,
+    tip: 'In der Steckdosenleiste fließt Strom. Welche Löschmittel leiten den Strom?',
+    r: {
+      water: ['shock', 'Wasser leitet Strom. Der Strahl verbindet dich mit der Steckdose: Lebensgefahr durch Stromschlag.'],
+      foam: ['shock', 'Schaum enthält Wasser und leitet Strom. Auch hier besteht Lebensgefahr durch Stromschlag.'],
+      powder: ['ok', 'Das Pulver erstickt den Brand und leitet keinen Strom. Die Geräte sind danach allerdings durch den feinen Staub zerstört.'],
+      co2: ['good', 'CO₂ leitet keinen Strom, hinterlässt keine Rückstände und verdrängt den Sauerstoff. Das passt für Geräte unter Spannung.'],
+      blanket: ['burn', 'Die Leiste liegt unter Spannung, und du kommst nur schlecht heran. Unter der Decke glüht das Kabel weiter.'],
+      sand: ['burn', 'Der Sand deckt die Leiste nicht richtig ab, und das Feuer in den Kabeln brennt weiter. Außerdem rieselt er in die Geräte.'] } };
+  SC.metall = { name: 'Metallbrand', loc: 'Labor', cls: 'D: Metalle',
+    intro: 'Im Labor brennt Magnesium in einer Schale mit grellweißer Flamme.',
+    prims: [box(0, 0, 0, 270, 80, 100, '#394a5a'), box(0, 80, 0, 274, 4, 104, '#d3d8de'), cyl(0, 84, 0, 24, 20, 10, '#7b828d', { open: true }), cyl(-95, 84, 14, 7, 7, 34, '#555a63'), cyl(88, 84, -22, 8, 8, 30, '#9bc7a1')],
+    em: [{ x: 0, y: 98, z: 0, r: 9, rate: 60, sc: 0.8, pal: 'mg' }], tgt: { x: 0, y: 96, z: 0 }, cover: { w: 62, d: 62, h: 6, y: 100 }, sandY: 94, mg: true,
+    tip: 'Magnesium ist ein sehr unedles Metall. Was passiert, wenn es mit Wasser oder Kohlenstoffdioxid in Kontakt kommt?',
+    r: {
+      water: ['explosion', 'Brennendes Magnesium zersetzt Wasser: Mg + H₂O → MgO + H₂. Der entstehende Wasserstoff verbrennt explosionsartig, und der Brand wird heftiger.'],
+      foam: ['explosion', 'Der Schaum enthält Wasser, daher läuft dieselbe Reaktion ab: Wasserstoff entsteht und verbrennt. Der Brand wird größer.'],
+      powder: ['burn', 'Normales Löschpulver ist für Metallbrände nicht gedacht. Das Magnesium brennt bei sehr hoher Temperatur unbeeindruckt weiter.'],
+      co2: ['burn', 'Magnesium ist so unedel und heiß, dass es dem CO₂ den Sauerstoff entreißt: 2 Mg + CO₂ → 2 MgO + C. Es brennt im CO₂ weiter, und Ruß entsteht.'],
+      blanket: ['burn', 'Magnesium brennt bei etwa 3000 °C. Die Decke hält diese Hitze nicht lange aus, und das Feuer geht nicht aus.'],
+      sand: ['good', 'Trockener Sand ist nicht brennbar und enthält kein Wasser. Er deckt das Metall ab und erstickt die Flamme. Dafür gibt es auch spezielles Metallbrandpulver.'] } };
+  SC.person = { name: 'Brennender Kittel', loc: 'Labor', cls: 'Brennende Kleidung',
+    intro: 'Im Labor hat der Kittel einer Puppe Feuer gefangen (Übungspuppe). Bei einer echten Person zählt jede Sekunde.',
+    prims: [box(0, 0, 76, 270, 70, 40, '#394a5a'), box(-10, 0, 0, 16, 82, 16, '#3a4660'), box(10, 0, 0, 16, 82, 16, '#3a4660'), box(0, 82, 0, 46, 62, 24, '#e8ecf2'), box(-31, 86, 0, 12, 56, 12, '#e8ecf2'), box(31, 86, 0, 12, 56, 12, '#e8ecf2'), cyl(0, 144, 0, 13, 13, 24, '#cfa88a', { seg: 10 })],
+    em: [{ x: 0, y: 112, z: 0, r: 20, rate: 46, sc: 1 }, { x: -31, y: 108, z: 0, r: 8, rate: 22, sc: 0.8 }, { x: 31, y: 108, z: 0, r: 8, rate: 22, sc: 0.8 }], tgt: { x: 0, y: 112, z: 0 }, cover: { w: 78, d: 52, h: 130, y: 6 }, sandY: 0, above: true,
+    tip: 'Eine Person soll nicht zusätzlich verletzt werden. Was wirkt sofort und ist für Haut und Atemwege unbedenklich?',
+    r: {
+      water: ['good', 'Wasser kühlt sofort und löscht (Notdusche!). Bei einer brennenden Person wirkt das Kühlen auch gegen die Verbrennung der Haut.'],
+      foam: ['harm', 'Der Schaum bleibt am Stoff hängen, kühlt zu wenig, und der Strahl verletzt die Person zusätzlich.'],
+      powder: ['harm', 'Das Pulver gelangt in Augen und Atemwege und verletzt die Person zusätzlich. Auf der Kleidung erstickt es den Brand nur unzuverlässig.'],
+      co2: ['harm', 'CO₂ kommt mit etwa −78 °C aus dem Löscher. Auf der Haut verursacht das Kälteverbrennungen, und der Strahl kann Atemnot auslösen.'],
+      blanket: ['good', 'Die Decke erstickt die Flammen. Die Person wird hingelegt (Flammen weg vom Gesicht), die Decke wird fest angedrückt.'],
+      sand: ['harm', 'Sand ist hier völlig ungeeignet: Er verletzt die Person und löscht die Kleidung nicht zuverlässig.'] } };
+  return SC;
+}
+var SCN = buildScenes(), ORDER = ['papier', 'fett', 'benzin', 'elektro', 'metall', 'person'];
+var TOOLS = [['water', '💧', 'Wasser'], ['foam', '🫧', 'Schaum'], ['powder', '🌫️', 'Pulver'], ['co2', '❄️', 'CO₂'], ['blanket', '🧣', 'Löschdecke'], ['sand', '🟫', 'Sand']];
+var TNAME = { water: 'Wasser', foam: 'Schaum', powder: 'Pulver', co2: 'CO₂', blanket: 'Löschdecke', sand: 'Sand' };
+var OUTT = { good: '✔ Gelöscht', ok: '✔ Gelöscht, aber mit Nachteilen', reignite: '🔥 Es flammt wieder auf', explosion: '💥 Explosion!', spread: '🔥 Der Brand breitet sich aus', shock: '⚡ Stromschlag!', burn: '🔥 Das Feuer brennt weiter', harm: '⚠ Die Person wird verletzt' };
+var TFACTS = {
+  water: ['Wasser', ['Nimmt sehr viel Wärme auf und verdampft dabei: starke <b>Kühlwirkung</b>.', 'Dichte 1 g/cm³: schwerer als Speiseöl und Benzin, die auf Wasser schwimmen.', 'Beim Verdampfen wächst das Volumen auf das 1700-Fache.', 'Leitet den elektrischen Strom (gelöste Ionen).', 'Reagiert mit sehr unedlen Metallen unter Bildung von Wasserstoff.']],
+  foam: ['Schaum', ['Besteht überwiegend aus <b>Wasser</b> und Schaumbildner.', 'Kühlt und bildet eine Decke, die auf brennenden Flüssigkeiten schwimmt.', 'Trennt den brennenden Stoff vom Sauerstoff.', 'Leitet Strom, weil er Wasser enthält.']],
+  powder: ['Löschpulver (ABC)', ['Feines Pulver, das die Verbrennung unterbricht und die Flammen erstickt.', 'Leitet keinen Strom.', 'Kühlt kaum.', 'Hinterlässt viel Staub, der Geräte zerstört und Augen und Atemwege reizt.']],
+  co2: ['Kohlenstoffdioxid (CO₂)', ['Gas, schwerer als Luft: <b>verdrängt den Sauerstoff</b>.', 'Kommt mit etwa −78 °C aus dem Löscher.', 'Leitet keinen Strom und hinterlässt keine Rückstände.', 'Wirkt nur kurz, danach strömt wieder Luft nach.', 'Sehr heiße unedle Metalle können dem CO₂ den Sauerstoff entziehen.']],
+  blanket: ['Löschdecke', ['Hitzebeständiges Glasfasergewebe.', 'Deckt einen kleinen Brand ab und schneidet ihn vom Sauerstoff ab.', 'Kühlt nicht, deshalb liegen lassen, bis alles abgekühlt ist.', 'Nur für kleine Brände geeignet, auch bei Personen anwendbar.']],
+  sand: ['Sand', ['Trocken, nicht brennbar und schwer.', 'Deckt den Brandherd ab und erstickt die Flammen.', 'Wirkt nur bei kleinen Flächen und verschmutzt stark.']]
+};
+
+/* ====== Zustand & Szene ====== */
+var S = { step: 1, unlocked: 1, scId: 'holz', sc: null, prims: [], em: [], fire: { I: 1 }, spread: 1, run: null, blanket: null, sandN: 0, smokeT: 0, flash: null, shake: 0, res: null,
+  s1: { fuel: false, o2: false, heat: false, last: '' }, s2: { sel: null, seen: {}, q: null }, tr: { solved: {}, tried: {}, tip: {} }, quiz: null, drag: false };
+function loadScene(id) {
+  var sc = SCN[id]; S.scId = id; S.sc = sc;
+  S.prims = [PLATFORM].concat(sc.prims.map(function (p) { return Object.assign({}, p); }));
+  S.em = sc.em.map(function (e) { return Object.assign({}, e); });
+  PS.length = 0; DECO.length = 0; S.fire = { I: 1 }; S.spread = 1; S.run = null; S.blanket = null; S.sandN = 0; S.smokeT = 0; S.flash = null; S.shake = 0; S.res = null;
+  cam.S = sc.cs || 1.3;
+}
+function origin() { return unrot(-215, 80, -165); }
+function shoot(k, O, T, Tf, g, ex) {
+  var p = { k: k, x: O[0], y: O[1], z: O[2], vx: (T[0] - O[0]) / Tf, vy: (T[1] - O[1]) / Tf - 0.5 * g * Tf, vz: (T[2] - O[2]) / Tf, g: g, life: Tf, age: 0, size: 10 }, q;
+  for (q in ex) p[q] = ex[q]; addP(p);
+}
+function toolEmit(R, dt) {
+  var t = R.t, tg = S.sc.tgt, T = [tg.x, tg.y, tg.z], tl = R.tool, O, n, w0 = 0.15, w1 = 1.5, i, rate = 0;
+  if (tl === 'blanket') return;
+  rate = { water: 130, foam: 36, powder: 55, co2: 70, sand: 90 }[tl] || 0;
+  if (t < w0 || t > (tl === 'sand' ? 1.8 : w1)) return;
+  R.acc = (R.acc || 0) + rate * dt; n = Math.floor(R.acc); R.acc -= n;
+  for (i = 0; i < n; i++) {
+    var jx = rnd(-10, 10), jz = rnd(-10, 10), Tj = [T[0] + jx, T[1], T[2] + jz];
+    if (tl === 'sand') { var a = rnd(0, 6.28), rr = rnd(0, 16); shoot('sg', [T[0] + Math.cos(a) * rr, T[1] + 120, T[2] + Math.sin(a) * rr], [T[0] + Math.cos(a) * rr, T[1] - 4, T[2] + Math.sin(a) * rr], 0.42, 0, { land: function () { S.sandN++; } }); continue; }
+    O = (tl === 'water' && S.sc.above) ? [T[0] + rnd(-14, 14), T[1] + 150, T[2] + rnd(-14, 14)] : origin();
+    if (tl === 'water') shoot('w', O, Tj, 0.5, -520, { land: function (p) { if (Math.random() < 0.5) addP({ k: 'st', x: p.x, y: p.y + 4, z: p.z, vx: rnd(-6, 6), vy: rnd(20, 40), vz: rnd(-6, 6), life: 0.9, age: 0, size: 14 }); } });
+    else if (tl === 'foam') shoot('fm', O, Tj, 0.55, -300, { size: 18, land: function () { if (DECO.length < 26) DECO.push({ k: 'fm', x: tg.x + rnd(-22, 22) * (S.sc.em[0].rx ? 3 : 1), y: tg.y - 6 + rnd(0, 8), z: tg.z + rnd(-22, 22), size: rnd(16, 26), age: 0, life: 1 }); } });
+    else if (tl === 'powder') shoot('pw', O, Tj, 0.6, 0, { life: 1.5, t1: 0.6, drag: 3, size: 12 });
+    else if (tl === 'co2') shoot('co', O, Tj, 0.38, 0, { life: 1.3, t1: 0.38, drag: 3, size: 12 });
+  }
+}
+function startRun(tool, out, cb) {
+  if (S.run) return;
+  S.run = { tool: tool, out: out, t: 0, cb: cb, th: tool === 'blanket' ? 1.15 : 0.85, hit: false, acc: 0 };
+  if (tool === 'blanket') S.blanket = { p: 0 };
+}
+function finishRun(R) { S.run = null; if (R.out === 'demo') { S.blanket = null; S.sandN = 0; DECO.length = 0; S.fire.I = 1; } if (R.cb) R.cb(R.out); }
+function runStep(dt) {
+  var R = S.run, F = S.fire, t, th, o, u, i, n, k;
+  if (!R) return; R.t += dt; t = R.t; th = R.th; o = R.out; toolEmit(R, dt);
+  if (S.blanket && R.tool === 'blanket') S.blanket.p = clamp((t - 0.15) / 1.0, 0, 1);
+  if (o === 'fuel') {
+    n = S.sc.logs.length; k = Math.floor(t / 0.6);
+    for (i = 0; i < n; i++) S.prims[1 + S.sc.logs[i]].hide = i < k;
+    F.I = clamp(n - t / 0.6, 0, n) / n; if (t > n * 0.6 + 0.5) { F.I = 0; S.smokeT = 3; finishRun(R); } return;
+  }
+  if (!R.hit && t >= th) {
+    R.hit = true;
+    if (o === 'explosion') { S.flash = { c: '255,200,120', a: 0.85 }; S.shake = 14; var tg = S.sc.tgt, j; for (j = 0; j < 26; j++) addP({ k: 'fb', x: tg.x + rnd(-14, 14), y: tg.y, z: tg.z + rnd(-14, 14), vx: rnd(-70, 70), vy: rnd(90, 220), vz: rnd(-70, 70), life: rnd(0.9, 1.5), age: 0, size: rnd(34, 62) }); }
+    if (o === 'shock') { S.flash = { c: '170,210,255', a: 0.5 }; S.shake = 6; }
+    if (o === 'harm') { S.flash = { c: '255,50,40', a: 0.4 }; }
+  }
+  if (o === 'good' || o === 'ok') { u = clamp((t - th) / 1.5, 0, 1); F.I = t < th ? 1 : (1 - u) * (1 - u); if (t > th + 2.0) { F.I = 0; S.smokeT = 4; finishRun(R); } }
+  else if (o === 'demo') { u = clamp((t - th) / 2, 0, 1); F.I = t < th ? 1 : 1 - 0.65 * Math.sin(u * Math.PI); if (t > th + 2.4) finishRun(R); }
+  else if (o === 'reignite') { F.I = t < th ? 1 : t < th + 0.9 ? lerp(1, 0.12, (t - th) / 0.9) : lerp(0.12, 1.1, clamp((t - th - 0.9) / 1.8, 0, 1)); if (t > th + 3.2) finishRun(R); }
+  else if (o === 'explosion') { F.I = t < th ? 1 : lerp(2.3, 1.5, clamp((t - th) / 2, 0, 1)); if (t > th + 2.4) finishRun(R); }
+  else if (o === 'spread') { u = clamp((t - th) / 1.2, 0, 1); F.I = lerp(1, 1.5, u); S.spread = lerp(1, 1.6, u); if (t > th + 2.2) finishRun(R); }
+  else if (o === 'shock') { F.I = 1; if (Math.random() < dt * 14) { var g = S.sc.tgt, o2 = origin(); addP({ k: 'sp', x: g.x + rnd(-14, 14), y: g.y + rnd(0, 14), z: g.z + rnd(-14, 14), vx: rnd(-120, 120), vy: rnd(40, 160), vz: rnd(-120, 120), g: -400, life: 0.5, age: 0, col: '#bfe0ff' }); S.flash = { c: '170,210,255', a: 0.22 }; } if (t > th + 2.2) finishRun(R); }
+  else if (o === 'burn') { F.I = t < th ? 1 : lerp(1, 1.18, clamp((t - th) / 0.8, 0, 1)); if (t > th + 2.0) finishRun(R); }
+  else if (o === 'harm') { F.I = 1; if (t > th + 2.0) finishRun(R); }
+  else finishRun(R);
+}
+
+/* ====== Zeichnen ====== */
+function renderScene(c, t, dt) {
+  var items = [], i, q, F = S.fire, I = F.I, tg = S.sc.tgt;
+  c.clearRect(0, 0, CW, CH);
+  cam.sx = S.shake > 0.1 ? rnd(-S.shake, S.shake) : 0; cam.sy = S.shake > 0.1 ? rnd(-S.shake, S.shake) : 0; S.shake *= Math.pow(0.02, dt);
+  drawBox(c, S.prims[0]);
+  if (I > 0.04) { q = proj(tg.x, tg.y, tg.z); var gs = (230 + 90 * Math.min(I, 2)) * cam.S * (S.sc.em[0].rx ? 1.5 : 1); c.globalCompositeOperation = 'lighter'; c.globalAlpha = Math.min(1, I) * 0.7; c.drawImage(SP.glow, q.x - gs / 2, q.y - gs / 2 + 20, gs, gs); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; }
+  for (i = 1; i < S.prims.length; i++) shadowOf(c, S.prims[i]);
+  for (i = 1; i < S.prims.length; i++) { (function (b) { items.push({ d: primDepth(b), fn: function () { drawPrim(c, b); } }); })(S.prims[i]); }
+  if (S.sandN > 0) { var pp = Math.min(1, S.sandN / 220), sb = cyl(tg.x, S.sc.sandY, tg.z, 8 + S.sc.cover.w * 0.38 * pp, 1.5, 6 + 24 * pp, '#c9a36a', { seg: 12 }); items.push({ d: primDepth(sb) - 1, fn: function () { drawCyl(c, sb); } }); }
+  if (S.blanket) { var cv = S.sc.cover, e = S.blanket.p, yy = lerp(cv.y + 110, cv.y, e * e * (3 - 2 * e)), bb = box(tg.x, yy, tg.z, cv.w, cv.h, cv.d, '#a9b3bf'); items.push({ d: primDepth(bb) - 2, fn: function () { drawBox(c, bb); } }); }
+  DECO.forEach(function (p) { items.push({ d: proj(p.x, p.y, p.z).d, fn: function () { drawP(c, p); } }); });
+  PS.forEach(function (p) { items.push({ d: proj(p.x, p.y, p.z).d, fn: function () { drawP(c, p); } }); });
+  items.sort(function (a, b) { return b.d - a.d; });
+  items.forEach(function (it) { it.fn(); });
+  if (S.flash) { c.fillStyle = 'rgba(' + S.flash.c + ',' + S.flash.a + ')'; c.fillRect(0, 0, CW, CH); S.flash.a -= dt * 1.6; if (S.flash.a <= 0) S.flash = null; }
+}
+
+/* ====== Oberfläche ====== */
+var STEPN = ['1 · Feuer verstehen', '2 · Löschmittel', '3 · Training', '4 · Fazit'];
+function renderSteps() {
+  var n = $('steps'); n.innerHTML = '';
+  STEPN.forEach(function (nm, i) { var b = mk('button', (S.step === i + 1 ? 'on ' : '') + (S.unlocked > i + 1 ? 'done' : ''), nm); b.type = 'button'; b.disabled = S.unlocked < i + 1; b.addEventListener('click', function () { goStep(i + 1); }); n.appendChild(b); });
+}
+function goStep(i) {
+  S.step = i;
+  if (i === 3) loadScene(S.scId === 'holz' ? 'papier' : S.scId); else { loadScene('holz'); if (i === 4) { S.fire.I = 0; S.prims.forEach(function (p, k) { if (k > 0 && k < 7) p.hide = false; }); } }
+  S.res = null; showBanner(''); panel(); window.scrollTo(0, 0);
+}
+function showBanner(txt, ms) { var b = $('banner'); if (!txt) { b.className = 'banner'; return; } b.textContent = txt; b.className = 'banner show'; clearTimeout(showBanner.t); showBanner.t = setTimeout(function () { b.className = 'banner'; }, ms || 2600); }
+function nextBtn(label, to) { var r = mk('div', 'row'); r.appendChild(btn(label, 'go', function () { S.unlocked = Math.max(S.unlocked, to); goStep(to); })); return r; }
+function toolGrid(handler, dis, st) {
+  var g = mk('div', 'tools');
+  TOOLS.forEach(function (t) { var b = mk('button', (st && st[t[0]] ? st[t[0]] : '') + (S.s2.sel === t[0] && S.step === 2 ? ' on' : ''), '<b>' + t[1] + '</b>' + t[2]); b.type = 'button'; b.disabled = !!dis; b.addEventListener('click', function () { handler(t[0]); }); g.appendChild(b); });
+  return g;
+}
+function renderTools() {
+  var t = $('cvtools'); t.innerHTML = '';
+  if (S.step === 1) {
+    var s1 = S.s1, off = !!S.run || S.fire.I < 0.05;
+    var row = mk('div', 'tools'); row.style.gridTemplateColumns = 'repeat(3,minmax(0,1fr))';
+    [['fuel', '🪵', 'Holz wegnehmen'], ['o2', '🧣', 'Decke drüberlegen'], ['heat', '💧', 'Wasser drübergießen']].forEach(function (a) { var b = mk('button', s1[a[0]] ? 'ok' : '', '<b>' + a[1] + '</b>' + a[2]); b.type = 'button'; b.disabled = off; b.addEventListener('click', function () { act1(a[0]); }); row.appendChild(b); });
+    t.appendChild(row);
+    t.appendChild(btn('🔥 Neu entzünden', 'sec small', function () { loadScene('holz'); S.res = null; renderTools(); }, !!S.run || S.fire.I > 0.5));
+    t.appendChild(mk('span', 'muted', '↔ Zum Drehen ziehen')); t.lastChild.style.fontSize = '13px';
+  } else if (S.step === 2) {
+    t.appendChild(toolGrid(demo2, !!S.run));
+  } else if (S.step === 3) {
+    var id = S.scId, tr = S.tr.tried[id] || {}, st = {}; TOOLS.forEach(function (x) { if (tr[x[0]]) st[x[0]] = (tr[x[0]] === 'good' || tr[x[0]] === 'ok') ? 'ok' : 'no'; });
+    t.appendChild(toolGrid(use3, !!S.run || !!S.res, st));
+  }
+}
+function triSVG() {
+  var s1 = S.s1, h = function (k, cx, cy, l1, l2) { var ok = s1[k]; return '<circle class="c' + (ok ? ' ok' : '') + '" cx="' + cx + '" cy="' + cy + '" r="38"/>' + (ok ? '<text x="' + cx + '" y="' + (cy - 2) + '">' + l1 + '</text><text x="' + cx + '" y="' + (cy + 14) + '">' + l2 + '</text>' : '<text x="' + cx + '" y="' + (cy + 8) + '" style="font-size:26px">?</text>'); };
+  return '<svg class="tri" viewBox="0 0 300 220"><polygon points="150,48 48,172 252,172" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="2"/>' + h('fuel', 150, 48, 'Brennbarer', 'Stoff') + h('o2', 48, 172, 'Sauerstoff', '') + h('heat', 252, 172, 'Zündtem-', 'peratur') + '</svg>';
+}
+var A1 = { fuel: ['Brennstoff entfernen', 'Ohne brennbaren Stoff gibt es nichts mehr zu verbrennen. Beispiele: Gashahn zudrehen, Strom abschalten, Waldbrandschneise.'], o2: ['Ersticken', 'Ohne Sauerstoff hört die Verbrennung auf. Beispiele: Deckel auf den Topf, Löschdecke, Schaum.'], heat: ['Abkühlen', 'Unter die Zündtemperatur gekühlt, brennt der Stoff nicht weiter. Wasser nimmt dabei sehr viel Wärme auf.'] };
+function act1(k) {
+  var done = function () { S.s1[k] = true; S.s1.last = k; if (S.s1.fuel && S.s1.o2 && S.s1.heat) { S.unlocked = Math.max(S.unlocked, 2); burst($('cvwrap')); } panel(); };
+  if (k === 'fuel') startRun('hand', 'fuel', done); else if (k === 'o2') startRun('blanket', 'good', done); else startRun('water', 'good', done);
+  renderTools();
+}
+function pStep1(p) {
+  var s1 = S.s1, all = s1.fuel && s1.o2 && s1.heat;
+  p.appendChild(mk('h2', '', '1 · Wie geht ein Feuer aus?'));
+  p.appendChild(mk('p', 'muted', 'Ein Holzfeuer brennt. Es gibt drei ganz verschiedene Möglichkeiten, es zu löschen. Probiere unter dem Bild alle drei aus. Danach kannst du es neu entzünden.'));
+  p.appendChild(mk('div', '', triSVG()));
+  if (s1.last) p.appendChild(mk('div', 'fb ok', '<b>' + A1[s1.last][0] + '.</b> ' + A1[s1.last][1]));
+  if (all) { p.appendChild(mk('div', 'cap', '<small>Das Feuerdreieck</small>Ein Feuer braucht <b>brennbaren Stoff</b>, <b>Sauerstoff</b> und eine <b>Temperatur über der Zündtemperatur</b> gleichzeitig. Löschen heißt, eine dieser drei Ecken zu entfernen.')); p.appendChild(nextBtn('Weiter zu den Löschmitteln →', 2)); }
+  else p.appendChild(mk('p', 'muted', 'Noch offen: ' + (3 - [s1.fuel, s1.o2, s1.heat].filter(Boolean).length) + ' von 3 Möglichkeiten.'));
+}
+function demo2(tool) { if (S.run) return; S.s2.sel = tool; startRun(tool, 'demo', function () { S.s2.seen[tool] = true; panel(); }); panel(); }
+var Q2 = [['Wasser löscht vor allem durch …', ['Abkühlen', 'Ersticken', 'Brennstoff entfernen', 'Verdünnen'], 'Wasser nimmt viel Wärme auf und kühlt unter die Zündtemperatur.'], ['Wie wirkt CO₂ im Löscher hauptsächlich?', ['Es verdrängt den Sauerstoff (Ersticken)', 'Es kühlt am stärksten', 'Es entfernt den Brennstoff', 'Es leitet den Strom ab'], 'CO₂ ist schwerer als Luft und verdrängt den Sauerstoff.'], ['Du drehst bei einem Gasbrand das Ventil zu. Welches Verfahren ist das?', ['Brennstoff entfernen', 'Ersticken', 'Abkühlen', 'Verdünnen'], 'Ohne Gaszufuhr fehlt der Brennstoff.'], ['Warum erstickt eine Löschdecke das Feuer?', ['Sie schneidet den Brandherd vom Sauerstoff ab', 'Sie kühlt das Feuer', 'Sie entfernt den Brennstoff', 'Sie leitet die Hitze ab'], 'Die Decke deckt den Brandherd ab, sodass kein neuer Sauerstoff nachströmt.']];
+function mcq(p, opts, correct, cb) {
+  var box = mk('div', 'opts'), order = shuffle(opts.map(function (t, i) { return i; })), fb = mk('div'), locked = false;
+  order.forEach(function (oi) { var b = mk('button', 'opt', opts[oi]); b.type = 'button'; b.addEventListener('click', function () { if (locked) return; if (oi === correct) { locked = true; b.className = 'opt good'; cb(true); } else { b.className = 'opt bad'; fb.innerHTML = '<div class="fb no">Nicht ganz. Denk an die Eigenschaften der Löschmittel und versuche es noch einmal.</div>'; } }); box.appendChild(b); });
+  p.appendChild(box); p.appendChild(fb);
+}
+function pStep2(p) {
+  var s2 = S.s2, n = Object.keys(s2.seen).length;
+  p.appendChild(mk('h2', '', '2 · Löschmittel kennenlernen'));
+  p.appendChild(mk('p', 'muted', 'Tippe unter dem Bild die Löschmittel an. Das Bild zeigt, wie sie wirken, hier stehen ihre Eigenschaften. Gesehen: <b>' + n + ' von 6</b>'));
+  if (s2.sel) { var f = TFACTS[s2.sel], card = mk('div', 'fb info', '<b>' + f[0] + '</b><ul style="margin:6px 0 0;padding-left:20px">' + f[1].map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>'); p.appendChild(card); }
+  if (n >= 6) {
+    p.appendChild(mk('h3', '', 'Kurz-Check')); p.lastChild.style.marginTop = '12px';
+    var Q = s2.q || (s2.q = { i: 0 });
+    if (Q.i >= Q2.length) { p.appendChild(mk('div', 'fb ok', '<b>✔ Geschafft.</b> Jetzt kannst du das Wissen im Training anwenden.')); p.appendChild(nextBtn('Weiter zum Training →', 3)); return; }
+    var q = Q2[Q.i]; p.appendChild(mk('p', '', '<b>' + (Q.i + 1) + '/' + Q2.length + ' · ' + q[0] + '</b>'));
+    mcq(p, q[1], 0, function () { p.appendChild(mk('div', 'fb ok', '✔ Richtig. ' + q[2])); var r = mk('div', 'row'); r.appendChild(btn('Weiter', '', function () { Q.i++; panel(); })); p.appendChild(r); });
+  }
+}
+function use3(tool) {
+  var id = S.scId, r = S.sc.r[tool], out = r[0]; if (S.run || S.res) return; showBanner('');
+  startRun(tool, out, function () {
+    var okk = out === 'good' || out === 'ok'; (S.tr.tried[id] = S.tr.tried[id] || {})[tool] = out;
+    if (okk) { S.tr.solved[id] = tool; burst($('cvwrap')); }
+    S.res = { out: out, text: r[1], tool: tool, solved: okk }; showBanner(OUTT[out], 3500);
+    if (ORDER.every(function (k) { return S.tr.solved[k]; })) S.unlocked = Math.max(S.unlocked, 4);
+    panel();
+  });
+  panel();
+}
+function pStep3(p) {
+  var id = S.scId, sc = S.sc, res = S.res, sol = S.tr.solved;
+  p.appendChild(mk('h2', '', '3 · Training: Wähle das richtige Löschmittel'));
+  var ch = mk('div', 'scn'); ORDER.forEach(function (k) { var b = mk('button', (k === id ? 'on ' : '') + (sol[k] ? 'ok' : ''), SCN[k].name); b.type = 'button'; b.addEventListener('click', function () { if (S.run) return; loadScene(k); S.res = null; panel(); }); ch.appendChild(b); });
+  p.appendChild(ch);
+  p.appendChild(mk('div', 'cap', '<small>📍 ' + sc.loc + '</small>' + sc.intro));
+  if (!res) p.appendChild(mk('p', 'muted', S.run ? 'Das Löschmittel wirkt …' : 'Du bist am Brandherd. Wähle unter dem Bild ein Löschmittel. Das Bild lässt sich drehen.'));
+  var r = mk('div', 'row');
+  if (!res && !S.run) r.appendChild(btn('💡 Tipp', 'sec', function () { S.tr.tip[id] = true; panel(); }, !!S.tr.tip[id]));
+  p.appendChild(r);
+  if (S.tr.tip[id] && !res) p.appendChild(mk('div', 'tip', '<b>Tipp:</b> ' + sc.tip));
+  if (res) {
+    p.appendChild(mk('div', 'fb ' + (res.solved ? 'ok' : 'no'), '<b>' + TNAME[res.tool] + ': ' + OUTT[res.out] + '</b><br>' + res.text + (res.solved ? '<br><small>Brandklasse: ' + sc.cls + '</small>' : '')));
+    var rr = mk('div', 'row'); rr.appendChild(btn(res.solved ? '↻ Anderes Löschmittel testen' : '↻ Nochmal versuchen', res.solved ? 'sec' : '', function () { loadScene(id); S.res = null; panel(); }));
+    var idx = ORDER.indexOf(id), allDone = ORDER.every(function (k) { return sol[k]; });
+    if (res.solved && allDone) rr.appendChild(btn('Weiter zum Fazit →', 'go', function () { goStep(4); }));
+    else if (res.solved) rr.appendChild(btn('Nächster Brand →', 'go', function () { var nx = ORDER.filter(function (k) { return !sol[k]; })[0]; loadScene(nx); S.res = null; panel(); }));
+    p.appendChild(rr);
+  }
+  p.appendChild(mk('p', 'muted', 'Gelöscht: <b>' + ORDER.filter(function (k) { return sol[k]; }).length + ' von 6</b> Bränden.')); p.lastChild.style.marginTop = '12px';
+}
+var QF = [['Warum darf man brennendes Fett nicht mit Wasser löschen?', ['Das Wasser verdampft schlagartig und schleudert brennendes Fett auf', 'Wasser löst das Fett auf', 'Wasser ist leichter als Fett und brennt mit', 'Wasser kühlt zu stark'], 'Wasser sinkt unter das Fett und verdampft dort explosionsartig.'],
+  ['Welche Löschwirkung hat eine Löschdecke?', ['Ersticken', 'Abkühlen', 'Brennstoff entfernen', 'Brennstoff verdünnen'], 'Sie schneidet den Brandherd vom Sauerstoff ab.'],
+  ['Warum eignet sich CO₂ für Brände an Geräten unter Spannung?', ['Es leitet keinen Strom und hinterlässt keine Rückstände', 'Es kühlt am stärksten', 'Es ist leichter als Luft', 'Es reagiert mit dem Strom'], 'Ein nichtleitendes Gas ohne Rückstände.'],
+  ['Was passiert, wenn man brennendes Magnesium mit Wasser löscht?', ['Es entsteht brennbarer Wasserstoff, der Brand wird heftiger', 'Das Magnesium wird abgekühlt und erlischt', 'Es bildet sich eine Schutzschicht', 'Das Wasser verdampft ohne Wirkung'], 'Mg + H₂O → MgO + H₂, und der Wasserstoff verbrennt.'],
+  ['Du schließt bei einem Brand das Ventil der Gasleitung. Welches Verfahren ist das?', ['Brennstoff entfernen', 'Ersticken', 'Abkühlen', 'Verdünnen'], 'Ohne Gaszufuhr fehlt der Brennstoff.'],
+  ['Eine Person brennt. Was ist richtig?', ['Hinlegen und mit Decke oder Wasser löschen', 'Wegrennen, um Hilfe zu holen', 'Mit dem Pulverlöscher besprühen', 'Ruhig stehen bleiben und warten'], 'Rennen facht das Feuer an, Pulver verletzt Augen und Atemwege.']];
+function pStep4(p) {
+  p.appendChild(mk('h2', '', '4 · Fazit'));
+  p.appendChild(mk('p', 'muted', 'Dein Löschmittel-Check: <b>✔</b> hat funktioniert, <b>✘</b> war falsch oder gefährlich. Leere Felder hast du nicht ausprobiert.'));
+  var tb = '<table class="mx"><tr><th></th>' + TOOLS.map(function (t) { return '<th>' + t[1] + '<br>' + t[2] + '</th>'; }).join('') + '</tr>';
+  ORDER.forEach(function (k) { tb += '<tr><td>' + SCN[k].name + '</td>' + TOOLS.map(function (t) { var o = (S.tr.tried[k] || {})[t[0]]; return o ? ((o === 'good' || o === 'ok') ? '<td class="g">✔</td>' : '<td class="b">✘</td>') : '<td></td>'; }).join('') + '</tr>'; });
+  p.appendChild(mk('div', '', tb + '</table>'));
+  var ul = mk('ul', 'rules'); ['<b>Eigene Sicherheit zuerst:</b> Nur kleine Brände löschen, den Fluchtweg im Rücken.', '<b>Alarm:</b> Notruf 112, andere warnen, bei Gefahr den Raum verlassen.', '<b>Brennstoff entfernen:</b> Strom und Gas abstellen, wenn es sicher geht.', '<b>Wasser nie</b> auf brennendes Fett, Öl, Elektrogeräte unter Spannung oder Metalle.', '<b>Brennende Person:</b> nicht rennen, hinlegen und mit Decke oder Wasser löschen.', '<b>Brandklassen:</b> A feste Stoffe, B Flüssigkeiten, C Gase, D Metalle, F Speisefette und -öle.'].forEach(function (t) { ul.appendChild(mk('li', '', t)); }); p.appendChild(ul);
+  p.appendChild(mk('h3', '', 'Wissens-Check')); p.lastChild.style.marginTop = '14px';
+  var Q = S.quiz; if (!Q) Q = S.quiz = { list: shuffle(QF).slice(0, 5), i: 0, ok: 0, done: false };
+  if (Q.done) { p.appendChild(mk('div', 'fb ok', '<b>' + Q.ok + ' von ' + Q.list.length + ' richtig.</b>')); var r = mk('div', 'row'); r.appendChild(btn('Check wiederholen', 'sec', function () { S.quiz = null; panel(); })); r.appendChild(btn('Zurück zum Training', 'sec', function () { goStep(3); })); p.appendChild(r); return; }
+  var q = Q.list[Q.i], once = false; p.appendChild(mk('p', '', '<b>' + (Q.i + 1) + '/' + Q.list.length + ' · ' + q[0] + '</b>'));
+  mcq(p, q[1], 0, function () { if (once) return; once = true; Q.ok++; p.appendChild(mk('div', 'fb ok', '✔ Richtig. ' + q[2])); var rr = mk('div', 'row'); rr.appendChild(btn(Q.i + 1 >= Q.list.length ? 'Ergebnis' : 'Weiter', '', function () { Q.i++; if (Q.i >= Q.list.length) Q.done = true; panel(); })); p.appendChild(rr); });
+}
+function panel() { var p = $('panel'); p.innerHTML = ''; renderSteps(); renderTools(); ({ 1: pStep1, 2: pStep2, 3: pStep3, 4: pStep4 })[S.step](p); }
+
+/* ====== Eingabe & Schleife ====== */
+var cv = $('cv'), ctx = cv.getContext('2d'), PT = null, lastW = 0, userRot = false;
+cv.addEventListener('pointerdown', function (e) { PT = { lx: e.clientX }; userRot = true; try { cv.setPointerCapture(e.pointerId); } catch (x) { } });
+cv.addEventListener('pointermove', function (e) { if (!PT) return; cam.yaw += (e.clientX - PT.lx) * 0.012; PT.lx = e.clientX; });
+cv.addEventListener('pointerup', function () { PT = null; }); cv.addEventListener('pointercancel', function () { PT = null; });
+function checkResize() { var w = cv.clientWidth; if (w === lastW && w) return; lastW = w; var dpr = window.devicePixelRatio || 1; cv.width = Math.round(w * dpr); cv.height = Math.round(w * CH / CW * dpr); VS = w / CW * dpr; }
+var last = performance.now(), tt = 0, baseYaw = cam.yaw;
+function frame(now) {
+  var dt = Math.min(0.05, (now - last) / 1000), i, e; last = now; tt += dt;
+  checkResize(); ctx.setTransform(VS, 0, 0, VS, 0, 0);
+  if (!userRot) cam.yaw = baseYaw + 0.14 * Math.sin(tt * 0.55);
+  runStep(dt);
+  for (i = 0; i < S.em.length; i++) fireP(S.em[i], S.fire.I, dt);
+  if (S.fire.I <= 0.05 && S.smokeT > 0) { S.smokeT -= dt; for (i = 0; i < S.em.length; i++) if (Math.random() < dt * 5) { e = S.em[i]; addP({ k: 'sm', x: e.x + rnd(-e.r, e.r) * 0.5, y: e.y + 10, z: e.z + rnd(-e.r, e.r) * 0.5, vx: rnd(-6, 6), vy: rnd(24, 40), vz: rnd(-6, 6), life: rnd(1.6, 2.4), age: 0, size: rnd(16, 26) }); } }
+  stepP(dt);
+  renderScene(ctx, tt, dt);
+  requestAnimationFrame(frame);
+}
+loadScene('holz'); panel(); showBanner('↔ Zum Drehen ziehen', 3500); requestAnimationFrame(frame);
+</script>
+</body>
+</html>
