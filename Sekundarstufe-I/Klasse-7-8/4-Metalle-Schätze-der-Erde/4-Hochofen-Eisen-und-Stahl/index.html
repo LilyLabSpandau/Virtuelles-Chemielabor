@@ -73,6 +73,16 @@
   .burst { position:fixed; width:0; height:0; z-index:10000; pointer-events:none; } .burst i { position:absolute; left:-4px; top:-4px; width:8px; height:8px; border-radius:50%; animation:bu .9s ease-out forwards; } @keyframes bu { to { transform:translate(var(--dx),var(--dy)) scale(.2); opacity:0; } }
   .impressum { position:fixed; bottom:10px; right:10px; background:rgba(0,0,0,.6); color:#fff; padding:5px 10px; text-decoration:none; border-radius:5px; font-family:sans-serif; font-size:12px; z-index:9999; }
   @media (max-width:480px) { .glass { padding:12px; } .eq { font-size:18px; } }
+  .bar .tr u { position:absolute; top:0; bottom:0; background:rgba(94,230,168,.55); }
+  .know { display:grid; gap:7px; margin:8px 0; } .know div { background:rgba(255,255,255,.07); border:1px solid var(--line); border-radius:10px; padding:8px 12px; font-size:14.5px; } .know b { display:block; }
+  .tg { display:flex; flex-direction:column; gap:7px; margin:8px 0; } .tg button { text-align:left; border:2px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-size:15px; border-radius:12px; padding:9px 13px; cursor:pointer; } .tg button small { display:block; color:var(--muted); font-size:13px; } .tg button.on { border-color:var(--ok); background:rgba(94,230,168,.16); }
+  #ws { display:none; position:fixed; inset:0; z-index:20000; background:#d9d9e0; overflow:auto; padding:12px; }
+  #ws.open { display:block; }
+  #ws .bar2 { max-width:820px; margin:0 auto 10px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; } #ws .bar2 span { color:#333; font-size:14px; }
+  #ws .sheet { background:#fff; color:#111; max-width:820px; margin:0 auto 14px; padding:18px 22px; box-shadow:0 2px 12px rgba(0,0,0,.3); font-family:Arial,Helvetica,sans-serif; }
+  #ws .sheet h2 { margin:0 0 2px; font-size:22px; } #ws .sheet .nd { display:flex; justify-content:space-between; font-size:13px; margin:6px 0 8px; } #ws .sheet svg { width:100%; height:auto; display:block; }
+  #ws .sheet table { border-collapse:collapse; width:100%; font-size:13px; margin-top:8px; } #ws .sheet td, #ws .sheet th { border:1px solid #333; padding:5px 8px; text-align:left; vertical-align:top; }
+  @media print { html, body { background:#fff !important; } body::before { display:none !important; } body > *:not(#ws) { display:none !important; } #ws { position:static; display:block; background:#fff; padding:0; overflow:visible; } #ws .bar2 { display:none; } #ws .sheet { box-shadow:none; margin:0; padding:0; max-width:none; } #ws .sheet.pg1 { page-break-after:always; } @page { size:A4; margin:12mm; } }
 </style>
 </head>
 <body>
@@ -93,6 +103,7 @@
     <div class="glass" id="panel"></div>
   </div>
 </div>
+<div id="ws"></div>
 <a class="impressum" href="/Virtuelles-Chemielabor/impressum.html">Impressum &amp; Datenschutz</a>
 <script>
 'use strict';
@@ -151,7 +162,7 @@ var HOLE_I = { y: 684, a: 0.85 }, HOLE_S = { y: 640, a: -0.85 };
 var S;
 function freshState() {
   return { step: 1, unlocked: 1, view: 'out', yaw: 0.0, auto: true, speed: 1, gasOn: true, selZone: null,
-    aufg: { mode: 'explore', sel: null, queue: [], idx: 0, ok: 0, fb: '', done: false, wrong: 0 },
+    aufg: { mode: 'explore', sel: null, seen: {}, queue: [], idx: 0, ok: 0, fb: '', done: false, wrong: 0 },
     charge: [], parts: [], bell: 0, tipsB: 0, run: null, eq: {}, cap: '', hs: [],
     tap: { iron: false, slag: false, ironOut: 0, slagOut: 0, qDone: false, fb: '', order: [] },
     konv: null, quiz: null };
@@ -462,7 +473,10 @@ function drawKonv(c, t, dt) {
     c.save(); c.translate(150, 120); c.rotate(pa - 0.4); c.fillStyle = '#4b5366'; c.beginPath(); c.moveTo(-34, -22); c.lineTo(34, -22); c.lineTo(26, 26); c.lineTo(-26, 26); c.closePath(); c.fill(); c.fillStyle = '#ffd34d'; c.fillRect(-30, -20, 60, 8); c.restore();
     if (f > 0.1 && f < 0.9) { c.strokeStyle = '#ffd34d'; c.lineWidth = 7; c.lineCap = 'round'; c.beginPath(); c.moveTo(188, 150); c.quadraticCurveTo(250, 160, CX - 30, 232); c.stroke(); c.lineCap = 'butt'; }
   }
-  if (K && K.state === 'pour') { c.strokeStyle = '#ffe9a0'; c.lineWidth = 8; c.lineCap = 'round'; c.beginPath(); c.moveTo(CX - 120, 360); c.quadraticCurveTo(CX - 170, 460, 110, 640); c.stroke(); c.lineCap = 'butt'; c.fillStyle = '#4b5366'; c.beginPath(); c.moveTo(60, 640); c.lineTo(160, 640); c.lineTo(148, 700); c.lineTo(72, 700); c.closePath(); c.fill(); }
+  if (K && K.state === 'pour') {
+    if (KS.tilt < -0.25 && KS.fill > 0.02) { var cs = Math.cos(KS.tilt), sn = Math.sin(KS.tilt), lx = CX + (-84 * cs + 240 * sn), ly2 = 430 + (-84 * sn - 240 * cs); c.strokeStyle = '#ffe9a0'; c.lineWidth = 8; c.lineCap = 'round'; c.beginPath(); c.moveTo(lx, ly2); c.quadraticCurveTo(lx - 8, 520, 112, 640); c.stroke(); c.lineCap = 'butt'; }
+    c.fillStyle = '#4b5366'; c.beginPath(); c.moveTo(60, 640); c.lineTo(160, 640); c.lineTo(148, 700); c.lineTo(72, 700); c.closePath(); c.fill();
+  }
 }
 function konvStep(dt) {
   var K = S.konv, e; if (!K) return;
@@ -471,19 +485,23 @@ function konvStep(dt) {
     e = K.el; K.blowT += dt; e.Si *= Math.exp(-0.42 * dt); e.Mn *= Math.exp(-0.28 * dt); e.P *= Math.exp(-0.13 * dt); e.S *= Math.exp(-0.045 * dt); e.C *= Math.exp(-0.17 * dt);
     if (e.C < 0.05) K.fe += dt; updKonvBars();
   }
-  if (K.state === 'pour') { K.t += dt; var g = clamp(K.t / 2.8, 0, 1); KS.tilt = 0.75 * Math.sin(Math.min(1, g * 1.1) * Math.PI / 1.4); KS.fill = 0.55 * (1 - g); if (g >= 1) { K.state = 'done'; KS.tilt = 0; KS.fill = 0; K.res = konvResult(); if (K.res.steel) { S.unlocked = Math.max(S.unlocked, 6); burst($('cvwrap')); } panel(); } }
+  if (K.state === 'pour') { K.t += dt; var g = clamp(K.t / 2.8, 0, 1); KS.tilt = -0.75 * Math.sin(Math.min(1, g * 1.1) * Math.PI / 1.4); KS.fill = 0.55 * (1 - g); if (g >= 1) { K.state = 'done'; KS.tilt = 0; KS.fill = 0; K.res = konvResult(); if (K.res.steel) { S.unlocked = Math.max(S.unlocked, 6); burst($('cvwrap')); } panel(); } }
 }
 
+var KT = {
+  bau: { n: 'Baustahl', lo: 0.05, hi: 0.3, use: 'für Träger, Bleche und Schweißkonstruktionen' },
+  schiene: { n: 'Schienen- und Achsenstahl', lo: 0.3, hi: 0.8, use: 'für Schienen und Achsen' },
+  werkzeug: { n: 'Werkzeugstahl', lo: 0.8, hi: 1.5, use: 'für Meißel, Bohrer und Messer' }
+};
+function rngTxt(t) { return fmt(t.lo, 2) + ' bis ' + fmt(t.hi, 2) + ' % Kohlenstoff'; }
+function cpos(x) { return clamp(Math.sqrt(Math.max(0, x) / 4.5), 0, 1) * 100; }
 function konvResult() {
-  var K = S.konv, e = K.el, r = { steel: false, title: '', text: '' };
+  var K = S.konv, e = K.el, r = { steel: false, title: '', text: '' }, tg = KT[S.kt];
   if (e.C > 2) { r.title = 'Das ist noch Roheisen'; r.text = 'Mit ' + fmt(e.C) + ' % Kohlenstoff ist das Eisen noch spröde und nicht schmiedbar. Stahl enthält höchstens 2 % Kohlenstoff. Du hast zu früh aufgehört: Beginne mit neuem Roheisen und blase länger.'; }
-  else if (e.C < 0.05) { r.title = 'Zu lange geblasen'; r.text = 'Der Kohlenstoff ist fast vollständig weg (' + fmt(e.C, 2) + ' %), und ein Teil des Eisens selbst ist verbrannt. Das kostet Ausbeute, und der Stahl wäre sehr weich. Versuche es noch einmal mit etwas weniger Blasezeit.'; }
-  else if (e.P > 0.06) { r.title = 'Fast: Phosphor noch zu hoch'; r.text = 'Der Kohlenstoff passt (' + fmt(e.C, 2) + ' %), aber es steckt noch ' + fmt(e.P, 2) + ' % Phosphor im Stahl. Er macht Stahl in der Kälte spröde. Blase etwas länger, bis auch der Phosphor weitgehend oxidiert ist.'; }
-  else {
-    r.steel = true; r.title = '✔ Stahl!';
-    var typ = e.C < 0.25 ? 'weicher Baustahl (gut schmiedbar und schweißbar)' : e.C < 0.8 ? 'mittelharter Stahl (z. B. für Schienen, Achsen)' : 'harter Werkzeugstahl';
-    r.text = 'Kohlenstoff ' + fmt(e.C, 2) + ' %: ' + typ + '. Die Verunreinigungen sind größtenteils oxidiert und als Gas oder Schlacke entwichen.';
-  }
+  else if (e.C > tg.hi) { r.title = 'Noch zu viel Kohlenstoff'; r.text = 'Das ist zwar schon Stahl, aber mit ' + fmt(e.C, 2) + ' % Kohlenstoff ist er härter als ' + tg.n + ' (' + rngTxt(tg) + '). Blase beim nächsten Versuch länger.'; }
+  else if (e.C < tg.lo) { r.title = 'Zu weit geblasen'; r.text = 'Mit ' + fmt(e.C, 2) + ' % ist zu viel Kohlenstoff verbrannt (Ziel: ' + rngTxt(tg) + '), außerdem ist ein Teil des Eisens selbst oxidiert. Blase beim nächsten Versuch kürzer.'; }
+  else if (e.P > 0.06) { r.title = 'Fast: Phosphor noch zu hoch'; r.text = 'Der Kohlenstoff passt (' + fmt(e.C, 2) + ' %), aber es steckt noch ' + fmt(e.P, 2) + ' % Phosphor im Stahl. Er macht Stahl in der Kälte spröde. Hier hätte etwas längeres Blasen geholfen, und beim Kohlenstoff sollst du trotzdem im grünen Bereich bleiben. Probiere es nochmal.'; }
+  else { r.steel = true; r.title = '✔ ' + tg.n + '!'; r.text = 'Kohlenstoff ' + fmt(e.C, 2) + ' %, Phosphor ' + fmt(e.P, 3) + ' %: ' + tg.n + ' ' + tg.use + '. Die Verunreinigungen sind größtenteils oxidiert und als Gas oder Schlacke entwichen.'; }
   return r;
 }
 
@@ -529,7 +547,7 @@ function checkEq(id) {
   st.c.forEach(function (v) { g = gcd(g, v); });
   if (!bal) st.fb = '<div class="fb no">Noch nicht ausgeglichen: Auf beiden Seiten müssen von jeder Atomsorte gleich viele Atome stehen. Schau in die Atomzählung.</div>';
   else if (g > 1) st.fb = '<div class="fb no">Die Atome stimmen. Kürze die Zahlen noch auf die kleinstmöglichen ganzen Zahlen.</div>';
-  else { st.ok = true; st.fb = '<div class="fb ok"><b>✔ Richtig ausgeglichen.</b> ' + q.read + '<br>' + q.merke + '</div>'; burst($('panel')); }
+  else { st.ok = true; st.t0 = performance.now() / 1000; st.fb = '<div class="fb ok"><b>✔ Richtig ausgeglichen.</b> ' + q.read + '<br>' + q.merke + '</div>'; burst($('panel')); }
   panel();
 }
 function eqHTML(id) {
@@ -553,19 +571,44 @@ function eqHTML(id) {
 var MOLA = { Fe2O3: [['Fe', -9, -4], ['Fe', 9, -4], ['O', -14, 9], ['O', 0, 11], ['O', 14, 9]], CO: [['C', -6, 0], ['O', 6, 0]], Fe: [['Fe', 0, 0]], CO2: [['O', -12, 0], ['C', 0, 0], ['O', 12, 0]], C: [['C', 0, 0]], O2: [['O', -6, 0], ['O', 6, 0]], Fe3C: [['Fe', -9, 3], ['Fe', 9, 3], ['Fe', 0, -9], ['C', 0, 2]] };
 var ACOL = { Fe: ['#f0a14b', 8], O: ['#ff5d73', 5.6], C: ['#4a5262', 5.6] };
 function drawMol(c, m, x, y) { MOLA[m].forEach(function (a) { var s = ACOL[a[0]]; c.fillStyle = s[0]; c.beginPath(); c.arc(x + a[1] * 0.8, y + a[2] * 0.8, s[1] * 0.8, 0, 6.283); c.fill(); c.strokeStyle = 'rgba(255,255,255,.5)'; c.lineWidth = 1; c.stroke(); }); }
+function molLayout(list, co, x0, x1, H) {
+  var items = [], mols = [], i;
+  list.forEach(function (m, jj) { for (i = 0; i < co[jj]; i++) items.push(m); });
+  var cols = Math.min(5, Math.max(1, items.length)), rows = Math.ceil(items.length / cols);
+  items.forEach(function (m, idx) {
+    var cx = x0 + ((idx % cols) + 0.5) * (x1 - x0) / cols, cy = H / 2 + (Math.floor(idx / cols) - (rows - 1) / 2) * 38;
+    mols.push({ m: m, atoms: MOLA[m].map(function (a) { return { el: a[0], x: cx + a[1] * 0.8, y: cy + a[2] * 0.8 }; }) });
+  });
+  return mols;
+}
+function drawBonds(c, mols, al) {
+  if (al <= 0) return;
+  c.strokeStyle = 'rgba(255,255,255,' + (al * 0.75) + ')'; c.lineWidth = 3; c.lineCap = 'round';
+  mols.forEach(function (mo) { var A = mo.atoms, i, j; for (i = 0; i < A.length; i++) for (j = i + 1; j < A.length; j++) if ((A[i].el !== A[j].el || mo.m === 'O2') && Math.hypot(A[i].x - A[j].x, A[i].y - A[j].y) <= 15.2) { c.beginPath(); c.moveTo(A[i].x, A[i].y); c.lineTo(A[j].x, A[j].y); c.stroke(); } });
+  c.lineCap = 'butt';
+}
+function drawAtom(c, el, x, y) { var s = ACOL[el]; c.fillStyle = s[0]; c.beginPath(); c.arc(x, y, s[1] * 0.8, 0, 6.283); c.fill(); c.strokeStyle = 'rgba(255,255,255,.55)'; c.lineWidth = 1; c.stroke(); }
+function easeIO(x) { return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; }
 function drawReaction(c, id, t) {
-  var q = EQ[id], st = eqCoef(id), n = q.L.length, W = 340, H = 120, ph = (t % 5) / 5, ac = atomCount(id), bal = true, a;
+  var q = EQ[id], st = eqCoef(id), n = q.L.length, W = 340, H = 120;
   c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, c.canvas.width, c.canvas.height); var k = c.canvas.width / W; c.setTransform(k, 0, 0, k, 0, 0);
-  for (a in ac.L) if (ac.L[a] !== (ac.R[a] || 0)) bal = false; for (a in ac.R) if (ac.R[a] !== (ac.L[a] || 0)) bal = false;
-  function row(list, x0, x1, move) {
-    var items = [], j, i; list.forEach(function (m, jj) { for (i = 0; i < st.c[(list === q.L ? 0 : n) + jj]; i++) items.push(m); });
-    var cols = Math.min(5, Math.max(1, items.length)), rows = Math.ceil(items.length / cols);
-    items.forEach(function (m, idx) { var cx = x0 + ((idx % cols) + 0.5) * (x1 - x0) / cols, cy = H / 2 + (Math.floor(idx / cols) - (rows - 1) / 2) * 34 + Math.sin(t * 2 + idx) * 3; drawMol(c, m, cx + move, cy); });
+  var L = molLayout(q.L, st.c.slice(0, n), 8, 332, H), R = molLayout(q.R, st.c.slice(n), 8, 332, H), label = '', i;
+  c.fillStyle = '#e8dcd2'; c.font = '10px sans-serif'; c.textAlign = 'left';
+  if (!st.ok) {
+    drawBonds(c, L, 1); L.forEach(function (mo) { mo.atoms.forEach(function (a) { drawAtom(c, a.el, a.x, a.y); }); });
+    c.fillText('Ausgangsstoffe (Edukte)', 6, 12); c.textAlign = 'center'; c.fillText('Nach „Prüfen“ reagieren die Teilchen', W / 2, H - 5); return;
   }
-  var pull = Math.sin(clamp(ph / 0.5, 0, 1) * Math.PI / 2) * 22;
-  row(q.L, 8, 140, pull); row(q.R, 200, 332, -pull * 0.4 * (1 - clamp((ph - 0.5) * 4, 0, 1)));
-  c.fillStyle = bal ? '#5ee6a8' : '#9fb0c8'; c.font = 'bold 24px sans-serif'; c.textAlign = 'center'; c.fillText('→', 170, H / 2 + 8);
-  if (bal && ph > 0.45 && ph < 0.6) { c.fillStyle = 'rgba(255,240,170,' + (1 - Math.abs(ph - 0.52) * 12) + ')'; c.beginPath(); c.arc(170, H / 2, 24, 0, 6.283); c.fill(); }
+  if (st.t0 === undefined) st.t0 = t - 99;
+  var T = t - st.t0, bA = T < 0.9 ? 1 : T < 1.7 ? 1 - (T - 0.9) / 0.8 : 0, bB = T < 3.9 ? 0 : T < 4.7 ? (T - 3.9) / 0.8 : 1, srcs = {}, tgts = {}, idx = 0;
+  L.forEach(function (mo) { mo.atoms.forEach(function (a) { (srcs[a.el] = srcs[a.el] || []).push(a); }); });
+  R.forEach(function (mo) { mo.atoms.forEach(function (a) { (tgts[a.el] = tgts[a.el] || []).push(a); }); });
+  drawBonds(c, L, bA); drawBonds(c, R, bB);
+  Object.keys(srcs).forEach(function (el) {
+    var sa = srcs[el].slice().sort(function (a, b) { return a.x - b.x || a.y - b.y; }), ta = (tgts[el] || []).slice().sort(function (a, b) { return a.x - b.x || a.y - b.y; });
+    sa.forEach(function (a, j) { var g = ta[j] || a, m = easeIO(clamp((T - 1.7 - 0.02 * idx) / 1.7, 0, 1)); idx++; drawAtom(c, el, lerp(a.x, g.x, m), lerp(a.y, g.y, m)); });
+  });
+  label = T < 0.9 ? 'Ausgangsstoffe (Edukte)' : T < 3.9 ? 'Bindungen lösen sich, Atome ordnen sich neu' : 'Reaktionsprodukte';
+  c.textAlign = 'left'; c.fillText(label, 6, 12);
 }
 
 /* ====== Texte ====== */
@@ -614,7 +657,7 @@ function goStep(i) {
   if (i === 5 && !S.konv) newKonv();
   panel(); window.scrollTo(0, 0);
 }
-function showBanner(txt) { var b = $('banner'); if (!txt) { b.className = 'banner'; return; } b.textContent = txt; b.className = 'banner show'; clearTimeout(showBanner.t); showBanner.t = setTimeout(function () { b.className = 'banner'; }, 2600); }
+function showBanner(txt, ms) { var b = $('banner'); if (!txt) { b.className = 'banner'; return; } b.textContent = txt; b.className = 'banner show'; clearTimeout(showBanner.t); showBanner.t = setTimeout(function () { b.className = 'banner'; }, ms || 2600); }
 function updCap() { var e = $('capText'); if (e) e.textContent = S.cap; }
 function legendHTML() {
   var items = [];
@@ -642,32 +685,44 @@ function pAufbau(p) {
   p.appendChild(mk('div', 'cap', '<small>🎬 Erklärung</small>Hochöfen gibt es in verschiedenen Größen und Formen, aber sie sind im Prinzip immer gleich aufgebaut. Oben befindet sich eine Öffnung, durch die der Ofen mit Kohle, Eisenerz und Zusätzen wie Kalkstein befüllt wird. Unten wird heiße Luft eingeblasen. Dazwischen liegen verschiedene Stockwerke mit unterschiedlichen Temperaturen, in denen unterschiedliche chemische Prozesse ablaufen. Die Feststoffe wandern dabei nach unten, die Gase nach oben. Am Ende entsteht flüssiges Roheisen.'));
   var r = mk('div', 'row');
   r.appendChild(btn('🔍 Erkunden', 'sec small' + (A.mode === 'explore' ? ' on' : ''), function () { A.mode = 'explore'; panel(); }));
-  r.appendChild(btn('🎯 Aufgabe', 'sec small' + (A.mode === 'quiz' ? ' on' : ''), function () { if (!A.queue.length || A.done) { A.queue = shuffle(AQ).slice(0, 5); A.idx = 0; A.ok = 0; A.done = false; A.fb = ''; A.wrong = 0; } A.mode = 'quiz'; panel(); }));
+  r.appendChild(btn('🎯 Aufgabe', 'sec small' + (A.mode === 'quiz' ? ' on' : ''), function () { if (!A.queue.length || A.done) { A.queue = shuffle(AQ).slice(0, 5); A.idx = 0; A.ok = 0; A.done = false; A.fb = ''; A.wrong = 0; } A.mode = 'quiz'; S.view = 'cut'; S.auto = false; panel(); }));
   p.appendChild(r);
   if (A.mode === 'explore') {
+    var nSeen = Object.keys(A.seen).length;
+    p.appendChild(mk('p', 'muted', 'Tippe im Bild oder auf einen Namen: Das Bauteil wird im Bild markiert. Entdeckt: <b>' + nSeen + ' von ' + PARTLIST.length + '</b>'));
+    var chips = mk('div', 'zlist');
+    PARTLIST.forEach(function (id) { var b = mk('button', (A.sel === id ? 'on ' : '') + (A.seen[id] ? 'ok' : ''), PARTS[id].n); b.type = 'button'; b.addEventListener('click', function () { aufbauTap(id, true); }); chips.appendChild(b); });
+    p.appendChild(chips);
     if (A.sel) p.appendChild(mk('div', 'fb info', '<b>' + PARTS[A.sel].n + ':</b> ' + PARTS[A.sel].d));
-    else p.appendChild(mk('p', 'muted', 'Tippe im Bild auf ein Bauteil. Mit „Schnitt“ siehst du ins Innere, in der Außenansicht drehst du den Ofen mit Finger oder Maus.'));
-    if (!A.done) p.appendChild(mk('p', 'muted', 'Wenn du dich auskennst, starte die Aufgabe.'));
+    else p.appendChild(mk('p', 'muted', 'In der Außenansicht drehst du den Ofen mit dem Finger, mit „Schnitt“ siehst du ins Innere.'));
+    if (!A.done) p.appendChild(mk('p', 'muted', nSeen >= PARTLIST.length ? 'Du hast alle Bauteile gesehen. Teste dich jetzt in der Aufgabe.' : 'Wenn du dich auskennst, starte die Aufgabe.'));
   } else {
     if (A.done) { p.appendChild(mk('div', 'fb ok', '<b>✔ Geschafft!</b> Du kennst die wichtigsten Teile des Hochofens.')); }
     else {
-      p.appendChild(mk('h3', '', 'Tippe im Bild auf das passende Bauteil (' + (A.idx + 1) + ' von ' + A.queue.length + ')'));
-      p.appendChild(mk('div', 'cap', AQ.filter(function (x) { return x[0] === A.queue[A.idx][0]; })[0][1]));
-      var pr = mk('div', 'prog', '<i style="width:' + (A.idx / A.queue.length * 100) + '%"></i>'); p.appendChild(pr);
+      var want = A.queue[A.idx][0];
+      p.appendChild(mk('h3', '', 'Wie heißt das markierte Bauteil? (' + (A.idx + 1) + ' von ' + A.queue.length + ')'));
+      p.appendChild(mk('div', 'prog', '<i style="width:' + (A.idx / A.queue.length * 100) + '%"></i>'));
+      if (A.fb) p.appendChild(mk('div', '', A.fb));
+      var opts = [PARTS[want].n].concat(shuffle(PARTLIST.filter(function (x) { return x !== want; })).slice(0, 3).map(function (x) { return PARTS[x].n; }));
+      mcq(p, opts, 0, function (ok) {
+        if (!ok) { A.wrong++; return; }
+        A.ok++; A.idx++; A.fb = '<div class="fb ok">✔ Richtig: ' + PARTS[want].n + '. ' + PARTS[want].d + '</div>';
+        if (A.idx >= A.queue.length) { A.done = true; S.unlocked = Math.max(S.unlocked, 2); burst($('cvwrap')); }
+        panel();
+      }, 'Schau dir die markierte Stelle noch einmal an. Im Modus „Erkunden“ kannst du jedes Bauteil nachschlagen.');
     }
-    if (A.fb) p.appendChild(mk('div', '', A.fb));
   }
   if (A.done) p.appendChild(nextBtn('Weiter zum Beschicken →', 2));
 }
-function aufbauTap(id) {
+var PARTLIST = ['gicht', 'gasrohr', 'schacht', 'kohlensack', 'rast', 'gestell', 'wind', 'stich', 'schlacke'], HOTP = { gasrohr: 1, wind: 1, stich: 1, schlacke: 1 };
+function aufbauTap(id, chip) {
   var A = S.aufg;
+  if (A.mode !== 'explore') { if (id) showBanner('Wähle unten den Namen des markierten Bauteils.'); return; }
   if (!id) return;
-  if (A.mode === 'explore') { A.sel = id; showBanner(PARTS[id].n); panel(); return; }
-  if (A.done) return;
-  var want = A.queue[A.idx][0];
-  if (id === want) { A.ok++; A.idx++; A.fb = '<div class="fb ok">✔ Richtig: ' + PARTS[id].n + '. ' + PARTS[id].d + '</div>'; if (A.idx >= A.queue.length) { A.done = true; S.unlocked = Math.max(S.unlocked, 2); burst($('cvwrap')); } }
-  else { A.wrong++; A.fb = '<div class="fb no">✘ Das ist ' + (id === 'wind' ? 'eine ' : id === 'gicht' || id === 'gasrohr' ? 'die ' : 'der ') + PARTS[id].n + ': ' + PARTS[id].d + ' Such weiter.</div>'; }
-  panel();
+  A.sel = id; A.seen[id] = 1;
+  if (chip && HOTP[id]) { S.view = 'cut'; S.auto = false; }
+  panel(); showBanner(PARTS[id].n + ': ' + PARTS[id].d, 9000);
+  if (chip) { var cw = $('cvwrap'), rc = cw.getBoundingClientRect(); if (rc.top < 50 || rc.bottom > window.innerHeight) cw.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
 }
 function partAt(x, y) {
   var i, h, best = null, bd = 1e9;
@@ -683,6 +738,10 @@ function pBeschicken(p) {
   var n = S.charge.length, full = n >= 8, locked = S.bell > 0 || !!S.run;
   p.appendChild(mk('h2', '', '2 · Den Ofen beschicken'));
   p.appendChild(mk('p', 'muted', 'Der Ofen fasst 8 Schichten. Beschicke ihn von unten nach oben, so wie du ihn betreiben würdest. Die erste Schicht liegt später direkt unten an den Windformen.'));
+  var kn = mk('div', 'know');
+  [['⚫ Koks', 'Brennt unten an den Windformen und liefert die Wärme. Aus ihm entsteht auch das Gas CO, das dem Erz den Sauerstoff entzieht. Koks bleibt in der Hitze fest und hält die Füllung locker, sodass Gas hindurchströmen kann.'], ['🟤 Eisenerz', 'Enthält Eisenoxid (Fe₂O₃), aus dem Eisen entstehen soll. Das Erz liegt dicht gepackt, Gas strömt nur schlecht hindurch.'], ['⚪ Kalkstein', 'Bindet Verunreinigungen des Erzes (z. B. Silicium) zur Schlacke.']].forEach(function (k) { kn.appendChild(mk('div', '', '<b>' + k[0] + '</b>' + k[1])); });
+  p.appendChild(kn);
+  p.appendChild(mk('p', 'muted', '<b>Ziel:</b> Der Ofen soll heiß genug werden, das Erz vollständig zu Eisen reduzieren und die Verunreinigungen als Schlacke abtrennen. Überlege bei jeder Schicht, was sie dazu beiträgt.'));
   var lay = mk('div', 'layers'), names = { k: 'Koks', e: 'Eisenerz', c: 'Kalkstein' }, i;
   for (i = 0; i < 8; i++) lay.appendChild(mk('span', S.charge[i] || 'empty', S.charge[i] ? (i + 1) + '. ' + names[S.charge[i]] : (i + 1) + '. leer'));
   p.appendChild(lay);
@@ -705,10 +764,11 @@ function pBetrieb(p) {
   if (!R) { p.appendChild(mk('p', 'muted', 'Beschicke zuerst den Ofen.')); p.appendChild(btn('Zum Beschicken', 'go', function () { goStep(2); })); return; }
   p.appendChild(mk('p', 'muted', 'Schalte den Heißwind ein und beobachte den Ofen. Tippe im Bild auf eine Zone, um die Reaktion dort zu untersuchen.'));
   var r = mk('div', 'row');
-  r.appendChild(btn(R.wind ? '💨 Heißwind aus' : '🔥 Heißwind an', R.wind ? 'sec' : '', function () { R.wind = !R.wind; panel(); }));
+  r.appendChild(btn(R.wind ? '⏸ Heißwind ausschalten' : '🔥 Heißwind einschalten', R.wind ? 'sec' : '', function () { R.wind = !R.wind; panel(); }));
   [1, 2, 4].forEach(function (s) { r.appendChild(btn(s + '×', 'sec small' + (S.speed === s ? ' on' : ''), function () { S.speed = s; panel(); })); });
-  r.appendChild(btn(S.gasOn ? '💨 Gase: an' : '💨 Gase: aus', 'sec small', function () { S.gasOn = !S.gasOn; panel(); }));
+  r.appendChild(btn((S.gasOn ? '☑' : '☐') + ' Gasteilchen anzeigen', 'sec small', function () { S.gasOn = !S.gasOn; panel(); }));
   p.appendChild(r);
+  p.appendChild(mk('p', 'muted', 'Die Gasteilchen zeigen, wie CO und CO₂ im Ofen aufsteigen. Blende sie aus, wenn sie dich beim Beobachten stören.')); p.lastChild.style.cssText = 'font-size:13.5px;margin:6px 0 0';
   var st = mk('div', 'bar', '<div class="lab"><span>🌡 Temperatur unten</span><span id="stT">–</span></div><div class="tr"><i id="stTb" style="width:0"></i></div>'); p.appendChild(st);
   var cp = mk('div', 'cap', '<small>🎬 Erklärung</small><span id="capText">' + (S.cap || 'Schalte den Heißwind ein, dann läuft der Prozess ab.') + '</span>'); p.appendChild(cp);
   if (R.log.length > 1) { var dt = mk('details', 'log', '<summary>Bisherige Erklärungen</summary>' + R.log.slice(0, -1).map(function (x) { return '<p>' + x + '</p>'; }).join('')); p.appendChild(dt); }
@@ -725,11 +785,11 @@ function pBetrieb(p) {
     p.appendChild(card);
     if (EQ[sel]) {
       p.appendChild(mk('h3', '', 'Aufgabe: ' + EQ[sel].nm)); p.lastChild.style.marginTop = '10px';
-      p.appendChild(mk('p', 'muted', 'Gleiche die Reaktionsgleichung aus. Das Teilchenbild zeigt, was du eingestellt hast.'));
+      p.appendChild(mk('p', 'muted', 'Gleiche die Reaktionsgleichung aus. Das Teilchenbild zeigt die Ausgangsstoffe mit deinen Zahlen. Nach „Prüfen“ siehst du, was im Ofen passiert.'));
       p.appendChild(eqHTML(sel));
       var cvR = mk('canvas'); cvR.id = 'cvR'; cvR.width = 680; cvR.height = 240; p.appendChild(cvR);
       var st2 = eqCoef(sel), rw = mk('div', 'row');
-      rw.appendChild(btn('Prüfen', 'go', function () { checkEq(sel); }, st2.ok)); p.appendChild(rw);
+      rw.appendChild(btn('Prüfen', 'go', function () { checkEq(sel); }, st2.ok)); if (st2.ok) rw.appendChild(btn('▶ Nochmal ansehen', 'sec', function () { st2.t0 = performance.now() / 1000; })); p.appendChild(rw);
       if (st2.fb) p.appendChild(mk('div', '', st2.fb));
     }
   }
@@ -802,20 +862,31 @@ function newKonv() {
 }
 function pKonvPanel(p) {
   var K = S.konv; if (!K) newKonv(); K = S.konv;
+  var tg = KT[S.kt];
   p.appendChild(mk('h2', '', '5 · Vom Roheisen zum Stahl'));
   p.appendChild(mk('div', 'cap', '<small>🎬 Erklärung</small>Roheisen ist spröde und nicht schmiedbar. Im Konverter wird das flüssige Roheisen mit Luft oder reinem Sauerstoff aufgeblasen. Dabei werden die Verunreinigungen zum größten Teil oxidiert und verflüchtigen sich als Gase oder Schlacke. Stahl enthält höchstens noch 2 % Kohlenstoff und nur Spuren der anderen Elemente.'));
   var r = mk('div', 'row');
-  if (K.state === 'empty') { p.appendChild(mk('p', 'muted', 'Fülle das Roheisen aus der Pfanne in den Konverter.')); r.appendChild(btn('Roheisen einfüllen', '', function () { K.state = 'filling'; K.t = 0; panel(); })); }
-  else if (K.state === 'filling') p.appendChild(mk('p', 'muted', 'Das Roheisen wird eingefüllt …'));
+  if (K.state === 'empty') {
+    p.appendChild(mk('p', 'muted', 'Je nach Verwendung braucht man Stahl mit anderem Kohlenstoffgehalt. <b>Wähle zuerst, welchen Stahl du herstellen willst:</b>'));
+    var tl = mk('div', 'tg');
+    Object.keys(KT).forEach(function (id) { var t = KT[id], b = mk('button', S.kt === id ? 'on' : '', '<b>' + t.n + '</b> · ' + rngTxt(t) + '<small>' + t.use + '</small>'); b.type = 'button'; b.addEventListener('click', function () { S.kt = id; panel(); }); tl.appendChild(b); });
+    p.appendChild(tl);
+    r.appendChild(btn('Roheisen einfüllen', '', function () { K.state = 'filling'; K.t = 0; panel(); }, !S.kt));
+  } else {
+    p.appendChild(mk('div', 'fb info', '<b>Ziel: ' + tg.n + '</b> ' + tg.use + '.<br>Kohlenstoff im <b>grünen Bereich</b> (' + rngTxt(tg) + ') und Phosphor <b>unter 0,06 %</b> (Phosphor macht Stahl in der Kälte spröde).'));
+    p.lastChild.style.marginBottom = '6px';
+  }
+  if (K.state === 'filling') p.appendChild(mk('p', 'muted', 'Das Roheisen wird eingefüllt …'));
   else if (K.state === 'ready' || K.state === 'blow' || K.state === 'pause') {
-    p.appendChild(mk('p', 'muted', 'Blase Sauerstoff auf die Schmelze und beobachte die Gehalte. Ziel: Stahl mit höchstens 2 % Kohlenstoff, aber nicht zu weit blasen.'));
+    p.appendChild(mk('p', 'muted', 'Der Sauerstoff verbrennt Kohlenstoff zu Gas, und auch Silicium, Mangan und Phosphor werden oxidiert. Blase und beobachte die Balken. Wenn du meinst, dass der Stahl passt, gieße ihn ab.'));
     r.appendChild(btn(K.state === 'blow' ? '⏸ Blasen stoppen' : '💨 Sauerstoff aufblasen', K.state === 'blow' ? 'sec' : '', function () { K.state = K.state === 'blow' ? 'pause' : 'blow'; panel(); }));
     r.appendChild(btn('🥄 Stahl abgießen', 'go', function () { K.state = 'pour'; K.t = 0; panel(); }, K.blowT < 0.5));
   } else if (K.state === 'pour') p.appendChild(mk('p', 'muted', 'Die Schmelze wird abgegossen …'));
   p.appendChild(r);
-  p.appendChild(mk('div', 'bar', '<div class="lab"><span>Kohlenstoff C</span><span id="kC"></span></div><div class="tr"><i id="kCb"></i><b style="left:' + (2 / 4.5 * 100) + '%" title="2 %"></b></div>'));
-  [['Si', 'Silicium Si', 3], ['Mn', 'Mangan Mn', 1], ['P', 'Phosphor P', 0.15], ['S', 'Schwefel S', 0.08]].forEach(function (m) { p.appendChild(mk('div', 'bar', '<div class="lab"><span>' + m[1] + '</span><span id="k' + m[0] + '"></span></div><div class="tr"><i id="k' + m[0] + 'b"></i></div>')); });
-  p.appendChild(mk('p', 'hint', 'Die weiße Marke beim Kohlenstoff zeigt 2 %: darüber Roheisen, darunter Stahl.'));
+  var band = tg ? '<u style="left:' + cpos(tg.lo) + '%;width:' + (cpos(tg.hi) - cpos(tg.lo)) + '%"></u>' : '';
+  p.appendChild(mk('div', 'bar', '<div class="lab"><span>Kohlenstoff C</span><span id="kC"></span></div><div class="tr">' + band + '<i id="kCb"></i></div>'));
+  [['Si', 'Silicium Si', 3], ['Mn', 'Mangan Mn', 1], ['P', 'Phosphor P', 0.15], ['S', 'Schwefel S', 0.08]].forEach(function (m) { p.appendChild(mk('div', 'bar', '<div class="lab"><span>' + m[1] + '</span><span id="k' + m[0] + '"></span></div><div class="tr">' + (m[0] === 'P' ? '<u style="left:0;width:40%"></u>' : '') + '<i id="k' + m[0] + 'b"></i></div>')); });
+  if (tg) p.appendChild(mk('p', 'hint', 'Grün markiert ist der gewünschte Bereich. Die Skala des Kohlenstoffbalkens ist bei kleinen Werten gedehnt.'));
   if (K.state === 'done') {
     p.appendChild(mk('div', 'fb ' + (K.res.steel ? 'ok' : 'no'), '<b>' + K.res.title + '</b><br>' + K.res.text));
     var r2 = mk('div', 'row');
@@ -826,7 +897,7 @@ function pKonvPanel(p) {
 }
 function updKonvBars() {
   var K = S.konv, e; if (!K || S.step !== 5) return;
-  [['C', 4.5, 2], ['Si', 3, 2], ['Mn', 1, 2], ['P', 0.15, 2], ['S', 0.08, 2]].forEach(function (m) { if ((e = $('k' + m[0]))) { e.textContent = fmt(K.el[m[0]], m[0] === 'C' || m[0] === 'Si' ? 2 : 3) + ' %'; $('k' + m[0] + 'b').style.width = clamp(K.el[m[0]] / m[1], 0, 1) * 100 + '%'; } });
+  [['C', 4.5, 2], ['Si', 3, 2], ['Mn', 1, 2], ['P', 0.15, 2], ['S', 0.08, 2]].forEach(function (m) { if ((e = $('k' + m[0]))) { e.textContent = fmt(K.el[m[0]], m[0] === 'C' || m[0] === 'Si' ? 2 : 3) + ' %'; $('k' + m[0] + 'b').style.width = (m[0] === 'C' ? cpos(K.el.C) : clamp(K.el[m[0]] / m[1], 0, 1) * 100) + '%'; } });
 }
 
 /* ----- 6 Fazit ----- */
@@ -851,12 +922,131 @@ function pFazit(p) {
   var Q = S.quiz; if (!Q) Q = S.quiz = { list: shuffle(QZ).slice(0, 6), i: 0, ok: 0, done: false, ans: false };
   if (Q.done) {
     p.appendChild(mk('div', 'fb ok', '<b>' + Q.ok + ' von ' + Q.list.length + ' richtig.</b>'));
-    var r = mk('div', 'row'); r.appendChild(btn('Check wiederholen', 'sec', function () { S.quiz = null; panel(); })); r.appendChild(btn('Ganz von vorn beginnen', 'sec', function () { var u = S.unlocked; S = freshState(); S.unlocked = 6; panel(); })); p.appendChild(r);
+    var r = mk('div', 'row'); r.appendChild(btn('📄 Arbeitsblatt erstellen', 'go', openWS)); r.appendChild(btn('Check wiederholen', 'sec', function () { S.quiz = null; panel(); })); r.appendChild(btn('Ganz von vorn beginnen', 'sec', function () { var u = S.unlocked; S = freshState(); S.unlocked = 6; panel(); })); p.appendChild(r);
   } else {
     var q = Q.list[Q.i]; p.appendChild(mk('p', 'big', (Q.i + 1) + '/' + Q.list.length + ' · ' + q[0])); p.lastChild.style.fontWeight = '700';
     var correct = 0, once = false;
     mcq(p, q[1], 0, function (ok) { if (once) return; once = true; if (ok) Q.ok++; var rr = mk('div', 'row'); p.appendChild(mk('div', 'fb ' + (ok ? 'ok' : 'info'), (ok ? '✔ Richtig. ' : 'Richtig wäre: <b>' + q[1][0] + '</b>. ') + q[2])); rr.appendChild(btn(Q.i + 1 >= Q.list.length ? 'Ergebnis' : 'Weiter', '', function () { Q.i++; if (Q.i >= Q.list.length) Q.done = true; panel(); })); p.appendChild(rr); }, '');
   }
+}
+
+/* ====== Arbeitsblatt ====== */
+function wsEsc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function wsWrap(t, n) { var w = t.split(' '), lines = [], cur = ''; w.forEach(function (x) { if ((cur + ' ' + x).trim().length > n && cur) { lines.push(cur); cur = x; } else cur = (cur + ' ' + x).trim(); }); if (cur) lines.push(cur); return lines; }
+function wsText(x, y, head, body, n, anchor, col) {
+  var h = wsWrap(head, n), b = wsWrap(body, n), out = '<text x="' + x + '" y="' + y + '" font-size="11.5" fill="#111" text-anchor="' + (anchor || 'start') + '">', yy = y, hgt = 0;
+  h.forEach(function (l, i) { out += '<tspan x="' + x + '" dy="' + (i ? 14 : 0) + '" font-weight="bold" fill="' + (col || '#111') + '">' + wsEsc(l) + '</tspan>'; });
+  b.forEach(function (l) { out += '<tspan x="' + x + '" dy="13.5">' + wsEsc(l) + '</tspan>'; });
+  out += '</text>'; return { svg: out, h: (h.length - 1) * 14 + b.length * 13.5 + 12 };
+}
+function wsFurnace() {
+  var X = 380, fy = function (y) { return y - 5; }, fx = function (r) { return r * 0.7; }, y, pts = '', pi = '', i, o = '', ys = [];
+  for (y = 70; y <= 690; y += 10) ys.push(y);
+  ys.forEach(function (y) { pts += (X - fx(outerR(y))).toFixed(1) + ',' + fy(y) + ' '; });
+  for (i = ys.length - 1; i >= 0; i--) pts += (X + fx(outerR(ys[i]))).toFixed(1) + ',' + fy(ys[i]) + ' ';
+  ys.forEach(function (y) { pi += (X - fx(innerR(y))).toFixed(1) + ',' + fy(y) + ' '; });
+  for (i = ys.length - 1; i >= 0; i--) pi += (X + fx(innerR(ys[i])).toFixed(1) * 1) + ',' + fy(ys[i]) + ' ';
+  var zc = { vor: '#fff3cf', red: '#ffe0b8', koh: '#ffc99a', sch: '#ffae7a', ver: '#ff9470' };
+  o += '<defs><clipPath id="wsin"><polygon points="' + pi + '"/></clipPath><pattern id="wsdots" width="14" height="12" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="2.2" fill="#555" opacity=".55"/><circle cx="10" cy="9" r="2.2" fill="#b5532a" opacity=".6"/></pattern></defs>';
+  o += '<polygon points="' + pts + '" fill="#d5d9e2" stroke="#222" stroke-width="1.6"/>';
+  o += '<g clip-path="url(#wsin)">';
+  ZONES.forEach(function (z) { o += '<rect x="200" y="' + fy(z.y0) + '" width="360" height="' + (z.y1 - z.y0) + '" fill="' + zc[z.id] + '"/>'; });
+  o += '<rect x="200" y="' + fy(610) + '" width="360" height="40" fill="#fff6e0"/>';
+  o += '<rect x="200" y="' + fy(70) + '" width="360" height="' + (610 - 70) + '" fill="url(#wsdots)"/>';
+  o += '<rect x="200" y="' + fy(640) + '" width="360" height="22" fill="#c98f55"/><rect x="200" y="' + fy(662) + '" width="360" height="40" fill="#f6c640"/>';
+  o += '</g><polygon points="' + pi + '" fill="none" stroke="#222" stroke-width="1.2"/>';
+  [170, 300, 470, 560, 610].forEach(function (yy) { o += '<line x1="' + (X - fx(innerR(yy))) + '" y1="' + fy(yy) + '" x2="' + (X + fx(innerR(yy))) + '" y2="' + fy(yy) + '" stroke="#333" stroke-width="1" stroke-dasharray="5 4"/>'; });
+  ZONES.forEach(function (z) { var m = fy((z.y0 + z.y1) / 2); o += '<rect x="' + (X - 50) + '" y="' + (m - 13) + '" width="100" height="27" rx="4" fill="#fff" opacity=".82"/><text x="' + X + '" y="' + (m - 1) + '" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#111">' + z.name + '</text><text x="' + X + '" y="' + (m + 10.5) + '" text-anchor="middle" font-size="10" fill="#111">' + z.t + '</text>'; });
+  o += '<text x="' + X + '" y="' + (fy(628) + 4) + '" text-anchor="middle" font-size="10" font-weight="bold" fill="#111">Schlacke</text><text x="' + X + '" y="' + (fy(680) + 2) + '" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#111">Roheisen</text>';
+  /* Gicht, Gasleitungen */
+  o += '<polygon points="' + (X - 30) + ',' + fy(52) + ' ' + (X + 30) + ',' + fy(52) + ' ' + (X + 18) + ',' + fy(70) + ' ' + (X - 18) + ',' + fy(70) + '" fill="#9aa3b5" stroke="#222" stroke-width="1.2"/>';
+  [-1, 1].forEach(function (sd) { o += '<line x1="' + (X + sd * 40) + '" y1="' + fy(72) + '" x2="' + (X + sd * 92) + '" y2="' + fy(22) + '" stroke="#777" stroke-width="7" stroke-linecap="round"/><line x1="' + (X + sd * 40) + '" y1="' + fy(72) + '" x2="' + (X + sd * 92) + '" y2="' + fy(22) + '" stroke="#ddd" stroke-width="3" stroke-linecap="round"/>'; });
+  o += '<path d="M ' + (X - 8) + ' ' + fy(24) + ' l 8 14 l 8 -14" fill="none" stroke="#222" stroke-width="2"/><path d="M ' + (X - 22) + ' ' + fy(16) + ' l 6 10 l 6 -10 M ' + (X + 10) + ' ' + fy(16) + ' l 6 10 l 6 -10" fill="none" stroke="#222" stroke-width="2"/>';
+  /* Windformen */
+  [-1, 1].forEach(function (sd) { var xe = X + sd * fx(outerR(598)); o += '<line x1="' + (xe + sd * 40) + '" y1="' + fy(598) + '" x2="' + xe + '" y2="' + fy(598) + '" stroke="#555" stroke-width="8"/><path d="M ' + (xe + sd * 22) + ' ' + (fy(598) - 7) + ' l ' + (-sd * 9) + ' 7 l ' + (sd * 9) + ' 7" fill="none" stroke="#c8531a" stroke-width="2"/>'; });
+  /* Stich- und Schlackenloch rechts */
+  var xr = function (y) { return X + fx(outerR(y)); };
+  o += '<line x1="' + xr(640) + '" y1="' + fy(640) + '" x2="' + (xr(640) + 34) + '" y2="' + (fy(640) + 8) + '" stroke="#555" stroke-width="7"/><circle cx="' + (xr(640) + 38) + '" cy="' + (fy(640) + 18) + '" r="3.5" fill="#c98f55"/>';
+  o += '<line x1="' + xr(684) + '" y1="' + fy(684) + '" x2="' + (xr(684) + 34) + '" y2="' + (fy(684) + 8) + '" stroke="#555" stroke-width="7"/><circle cx="' + (xr(684) + 38) + '" cy="' + (fy(684) + 18) + '" r="3.5" fill="#f6c640" stroke="#222" stroke-width=".6"/>';
+  return o;
+}
+function wsHochofenSVG() {
+  var X = 380, fy = function (y) { return y - 5; }, fx = function (r) { return r * 0.7; }, o = wsFurnace(), steps, parts, top, k;
+  var BL = '#c8531a', BB = '#1b5fa8';
+  function band(x, y0, y1, col, num, side) { y0 += 3; y1 -= 3; return '<line x1="' + x + '" y1="' + fy(y0) + '" x2="' + x + '" y2="' + fy(y1) + '" stroke="' + col + '" stroke-width="3"/><line x1="' + (x + (side < 0 ? 5 : -5)) + '" y1="' + fy(y0) + '" x2="' + x + '" y2="' + fy(y0) + '" stroke="' + col + '" stroke-width="3"/><line x1="' + (x + (side < 0 ? 5 : -5)) + '" y1="' + fy(y1) + '" x2="' + x + '" y2="' + fy(y1) + '" stroke="' + col + '" stroke-width="3"/>'; }
+  function lw(y0, y1) { var m = 0, y; for (y = y0; y <= y1; y += 5) m = Math.max(m, fx(outerR(Math.min(690, y)))); return m; }
+  /* linke Schritte */
+  steps = [
+    { y: [52, 70], n: 1, t: 'Beschicken', d: 'Von oben werden abwechselnd Koks, Eisenerz und Kalkstein eingefüllt. Die Füllung wandert langsam nach unten.' },
+    { y: [70, 170], n: 5, t: 'Vorwärmzone', d: 'Das aufgestiegene heiße Gas trocknet und erwärmt die Füllung. Dabei kühlt es sich ab und verlässt den Ofen als Gichtgas.' },
+    { y: [170, 300], n: 4, t: 'Reduktionszone', d: 'Fe₂O₃ + 3 CO → 2 Fe + 3 CO₂. Das Erz gibt Sauerstoff ab (Reduktion), das CO nimmt ihn auf (Oxidation).' },
+    { y: [300, 470], n: 3, t: 'Kohlungszone', d: 'CO₂ + C → 2 CO (Boudouard-Gleichgewicht). Kalkstein zerfällt: CaCO₃ → CaO + CO₂.' },
+    { y: [470, 560], n: 6, t: 'Schmelzzone', d: 'Das entstandene Eisen sinkt nach unten: 3 Fe + C → Fe₃C. Es nimmt Kohlenstoff auf, schmilzt und tropft nach unten. Der Kalk bindet Verunreinigungen (z. B. SiO₂) zur Schlacke.' },
+    { y: [560, 610], n: 2, t: 'Verbrennungszone', d: 'Im Heißwind verbrennt der Koks: C + O₂ → CO₂. Diese Wärme (bis ca. 2000 °C) heizt den ganzen Ofen. Das heiße Gas steigt nach oben.' },
+    { y: [610, 690], n: 7, t: 'Gestell und Abstich', d: 'Das flüssige Roheisen (bis 4 % C, spröde) sammelt sich unten. Die leichtere Schlacke schwimmt darauf. Beide werden getrennt abgestochen.' }
+  ];
+  var ty = 40, prev = -100;
+  steps.forEach(function (st, i) {
+    var mid = fy((st.y[0] + st.y[1]) / 2), w = wsText(40, 0, st.t, st.d, 31, 'start', BL), tt = Math.max(mid - 14, ty);
+    var bx = X - lw(st.y[0], st.y[1]) - 10;
+    if (i === 0) { o += '<line x1="' + (X - 30) + '" y1="' + fy(40) + '" x2="226" y2="' + (tt + 6) + '" stroke="' + BL + '" stroke-width="1.4"/>'; }
+    else { o += band(bx, st.y[0], st.y[1], BL, i + 1, -1) + '<line x1="' + bx + '" y1="' + mid + '" x2="226" y2="' + (tt + 6) + '" stroke="' + BL + '" stroke-width="1.4"/>'; }
+    o += '<circle cx="24" cy="' + (tt - 4) + '" r="0" fill="none"/>' + '<g transform="translate(0,' + tt + ')">' + w.svg.replace(/(<text x="40" y=")0/, '$10') + '</g>';
+    o += '<circle cx="' + (i === 0 ? X - 30 : bx) + '" cy="' + (i === 0 ? fy(40) : mid) + '" r="12" fill="' + BL + '"/><text x="' + (i === 0 ? X - 30 : bx) + '" y="' + ((i === 0 ? fy(40) : mid) + 4) + '" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#fff">' + st.n + (st.n >= 2 && st.n <= 5 ? '↑' : '↓') + '</text>';
+    o += '<circle cx="24" cy="' + (tt + 4) + '" r="12" fill="' + BL + '"/><text x="24" y="' + (tt + 8) + '" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#fff">' + st.n + (st.n >= 2 && st.n <= 5 ? '↑' : '↓') + '</text>';
+    ty = tt + w.h + 14;
+  });
+  /* rechte Bauteile */
+  parts = [
+    { n: 'Gichtgasleitung', d: 'Hier entweicht das Gas (Gichtgas) nach oben und wird abgeleitet.', pt: [X + 92, fy(22)], ly: 28 },
+    { n: 'Gicht', d: 'Die Öffnung oben. Durch sie wird der Ofen befüllt.', pt: [X + 30, fy(60)], ly: 100 },
+    { n: 'Schacht', d: 'Oberer, nach unten weiter werdender Teil. Feststoffe wandern nach unten, Gase nach oben.', y: [100, 420], ly: 205 },
+    { n: 'Kohlensack', d: 'Breiteste Stelle des Ofens.', y: [420, 470], ly: 365 },
+    { n: 'Rast', d: 'Der Ofen wird wieder enger. Hier schmilzt das Eisen.', y: [470, 590], ly: 440 },
+    { n: 'Windform (Düse)', d: 'Hier wird die heiße Luft (Heißwind) eingeblasen.', pt: [X + fx(outerR(598)) + 38, fy(598)], ly: 528 },
+    { n: 'Schlackenloch', d: 'Hier läuft die Schlacke ab.', pt: [X + fx(outerR(640)) + 36, fy(640) + 6], ly: 648 },
+    { n: 'Stichloch', d: 'Hier wird das flüssige Roheisen abgestochen.', pt: [X + fx(outerR(684)) + 36, fy(684) + 6], ly: 704 },
+    { n: 'Gestell', d: 'Unterster Teil: Hier sammeln sich Roheisen und Schlacke.', pt: [X + fx(outerR(622)), fy(622)], ly: 590 }
+  ];
+  parts.forEach(function (pt) {
+    var w = wsText(556, 0, pt.n, pt.d, 29, 'start', BB), lyy = pt.ly, ax, ay;
+    if (pt.y) { ax = X + lw(pt.y[0], pt.y[1]) + 10; ay = fy((pt.y[0] + pt.y[1]) / 2); o += band(ax, pt.y[0], pt.y[1], BB, 0, 1); }
+    else { ax = pt.pt[0]; ay = pt.pt[1]; o += '<circle cx="' + ax + '" cy="' + ay + '" r="5" fill="' + BB + '"/>'; }
+    o += '<line x1="' + ax + '" y1="' + ay + '" x2="548" y2="' + (lyy + 4) + '" stroke="' + BB + '" stroke-width="1.4"/>';
+    o += '<g transform="translate(0,' + lyy + ')">' + w.svg + '</g>';
+  });
+  return '<svg viewBox="0 0 760 795" xmlns="http://www.w3.org/2000/svg" font-family="Arial, Helvetica, sans-serif">' + o + '</svg>';
+}
+function wsKonvSVG() {
+  var o = '', BL = '#c8531a', n = 0, st = [
+    { t: 'Einfüllen', d: 'Das flüssige Roheisen (bis 4 % Kohlenstoff) wird aus der Pfanne in den Konverter gegossen.', pt: [212, 70] },
+    { t: 'Sauerstoff aufblasen', d: 'Durch eine wassergekühlte Lanze wird reiner Sauerstoff auf die Schmelze geblasen.', pt: [150, 100] },
+    { t: 'Verunreinigungen oxidieren', d: 'Kohlenstoff verbrennt zu Gas und entweicht. Silicium, Mangan und Phosphor werden oxidiert und gehen in die Schlacke.', pt: [118, 215] },
+    { t: 'Stahl entsteht', d: 'Stahl enthält höchstens 2 % Kohlenstoff, ist schmiedbar und nicht mehr spröde wie Roheisen.', pt: [182, 262] },
+    { t: 'Abgießen', d: 'Der Konverter wird gekippt, der flüssige Stahl läuft in die Pfanne.', pt: [90, 301] }
+  ], ty = 18;
+  o += '<g transform="translate(150,150) scale(.58)"><path d="M -84 -240 L -84 -170 C -150 -120 -150 120 -128 200 Q 0 275 128 200 C 150 120 150 -120 84 -170 L 84 -240 Z" fill="#c9d0dd" stroke="#222" stroke-width="3"/><clipPath id="wsk"><path d="M -64 -240 L -64 -164 C -128 -116 -128 116 -108 188 Q 0 250 108 188 C 128 116 128 -116 64 -164 L 64 -240 Z"/></clipPath><path d="M -64 -240 L -64 -164 C -128 -116 -128 116 -108 188 Q 0 250 108 188 C 128 116 128 -116 64 -164 L 64 -240 Z" fill="#fff"/><g clip-path="url(#wsk)"><rect x="-140" y="20" width="280" height="260" fill="#f6a640"/><rect x="-140" y="14" width="280" height="8" fill="#ffd9a0"/></g></g>';
+  o += '<rect x="145" y="12" width="10" height="110" fill="#8892a6" stroke="#222" stroke-width="1"/><path d="M 138 128 L 162 128 L 176 170 L 124 170 Z" fill="#bfe6ff" stroke="#222" stroke-width="1" opacity=".9"/>';
+  o += '<path d="M 112 44 l 5 -16 l 5 16 M 142 40 l 5 -16 l 5 16 M 172 44 l 5 -16 l 5 16" fill="none" stroke="#222" stroke-width="2"/>';
+  o += '<rect x="30" y="300" width="60" height="38" fill="#9aa3b5" stroke="#222" stroke-width="1.2"/><text x="60" y="324" text-anchor="middle" font-size="10" fill="#111">Pfanne</text>';
+  st.forEach(function (s, i) {
+    var w = wsText(340, 0, s.t, s.d, 52, 'start', BL), ay = ty + 4;
+    o += '<line x1="' + s.pt[0] + '" y1="' + s.pt[1] + '" x2="326" y2="' + ay + '" stroke="' + BL + '" stroke-width="1.4"/><circle cx="' + s.pt[0] + '" cy="' + s.pt[1] + '" r="9" fill="' + BL + '"/><text x="' + s.pt[0] + '" y="' + (s.pt[1] + 4) + '" text-anchor="middle" font-size="11" font-weight="bold" fill="#fff">' + (i + 1) + '</text>';
+    o += '<g transform="translate(0,' + ty + ')">' + w.svg + '</g><circle cx="326" cy="' + (ty + 4) + '" r="9" fill="' + BL + '"/><text x="326" y="' + (ty + 8) + '" text-anchor="middle" font-size="11" font-weight="bold" fill="#fff">' + (i + 1) + '</text>';
+    ty += w.h + 12;
+  });
+  return '<svg viewBox="0 0 760 ' + Math.max(350, Math.round(ty + 10)) + '" xmlns="http://www.w3.org/2000/svg" font-family="Arial, Helvetica, sans-serif">' + o + '</svg>';
+}
+function openWS() {
+  var w = $('ws');
+  w.innerHTML = '<div class="bar2"><button class="btn go" type="button" id="wsPrint">🖨 Drucken / als PDF speichern</button><button class="btn sec" type="button" id="wsClose">✕ Schließen</button><span>Tipp: Im Druckdialog „Als PDF speichern“ wählen.</span></div>'
+    + '<div class="sheet pg1"><h2>Vom Eisenerz zum Stahl: Der Hochofen</h2><div class="nd"><span>Name: ______________________</span><span>Klasse: ________</span><span>Datum: ____________</span></div>' + wsHochofenSVG()
+    + '<div style="font-size:12px;margin-top:4px"><b style="color:#c8531a">Orange:</b> Verfahrensschritte in zeitlicher Reihenfolge (1 bis 7) und Zonen (links) &nbsp;·&nbsp; <b style="color:#1b5fa8">Blau:</b> Bauteile (rechts)<br><b>↑</b> das Gas steigt von unten nach oben &nbsp;·&nbsp; <b>↓</b> Füllung und Eisen sinken nach unten</div></div>'
+    + '<div class="sheet"><h2>Vom Roheisen zum Stahl: Der Konverter</h2>' + wsKonvSVG()
+    + '<table><tr><th></th><th>Roheisen</th><th>Stahl</th></tr><tr><th>Kohlenstoffgehalt</th><td>bis 4 %</td><td>höchstens 2 %</td></tr><tr><th>Eigenschaften</th><td>spröde, nicht schmiedbar</td><td>schmiedbar, je nach Kohlenstoffgehalt unterschiedlich hart</td></tr></table></div>';
+  w.className = 'open'; w.scrollTop = 0; document.body.style.overflow = 'hidden';
+  $('wsPrint').addEventListener('click', function () { window.print(); });
+  $('wsClose').addEventListener('click', function () { w.className = ''; w.innerHTML = ''; document.body.style.overflow = ''; });
 }
 
 /* ====== Eingabe ====== */
@@ -883,7 +1073,7 @@ function checkResize() {
 }
 var last = performance.now(), prevBell = 0;
 function drawSel(c, t) {
-  var A = S.aufg, id = A.mode === 'explore' ? A.sel : null, i, h, B = { gicht: [24, 100], schacht: [100, 420], kohlensack: [420, 470], rast: [470, 590], gestell: [590, 716] }, b, pul = 0.6 + 0.4 * Math.sin(t * 6);
+  var A = S.aufg, id = A.mode === 'explore' ? A.sel : (!A.done && A.queue.length ? A.queue[A.idx][0] : null), i, h, B = { gicht: [24, 100], schacht: [100, 420], kohlensack: [420, 470], rast: [470, 590], gestell: [590, 716] }, b, pul = 0.6 + 0.4 * Math.sin(t * 6);
   if (S.step !== 1 || !id) return;
   c.save();
   if (B[id]) {
@@ -893,7 +1083,7 @@ function drawSel(c, t) {
   } else {
     for (i = 0; i < S.hs.length; i++) { h = S.hs[i]; if (h.id !== id) continue; c.strokeStyle = 'rgba(255,209,102,' + pul + ')'; c.lineWidth = 4; c.beginPath(); c.arc(h.x, h.y, h.r + 6, 0, 6.2832); c.stroke(); c.fillStyle = 'rgba(255,209,102,.2)'; c.fill(); }
   }
-  c.setLineDash([]); c.font = 'bold 22px Inter, sans-serif'; c.textAlign = 'left'; var tx = PARTS[id].n, ty = B[id] ? Math.max(B[id][0] + 28, 60) : 40; c.lineWidth = 5; c.strokeStyle = 'rgba(0,0,0,.85)'; c.fillStyle = '#ffd166'; var txx = B[id] ? 14 : 14; c.strokeText(tx, txx, ty); c.fillText(tx, txx, ty);
+  if (A.mode === 'explore') { c.setLineDash([]); c.font = 'bold 22px Inter, sans-serif'; c.textAlign = 'left'; var tx = PARTS[id].n, ty = B[id] ? Math.max(B[id][0] + 28, 60) : 40; c.lineWidth = 5; c.strokeStyle = 'rgba(0,0,0,.85)'; c.fillStyle = '#ffd166'; var txx = B[id] ? 14 : 14; c.strokeText(tx, txx, ty); c.fillText(tx, txx, ty); }
   c.restore();
 }
 function frame(now) {
