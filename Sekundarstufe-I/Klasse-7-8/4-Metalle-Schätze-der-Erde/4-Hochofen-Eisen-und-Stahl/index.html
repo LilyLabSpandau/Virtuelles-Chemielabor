@@ -27,7 +27,7 @@
   .main { display:grid; gap:14px; grid-template-columns:1fr; }
   @media (min-width:900px) { .main { grid-template-columns:minmax(0,520px) minmax(0,1fr); align-items:start; } .stagecol { position:sticky; top:62px; } }
   .cvwrap { position:relative; padding:8px; }
-  #cv { display:block; width:100%; height:auto; border-radius:14px; touch-action:pan-y; cursor:pointer; background:radial-gradient(ellipse at 50% 60%, rgba(120,50,30,.35), rgba(8,8,16,.6)); }
+  #cv { -webkit-tap-highlight-color:transparent; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; display:block; width:100%; height:auto; border-radius:14px; touch-action:pan-y; cursor:pointer; background:radial-gradient(ellipse at 50% 60%, rgba(120,50,30,.35), rgba(8,8,16,.6)); }
   .banner { position:absolute; left:14px; right:14px; top:14px; background:rgba(10,10,18,.82); border:1px solid var(--line); border-radius:12px; padding:7px 11px; font-size:14px; pointer-events:none; opacity:0; transition:opacity .25s; }
   .banner.show { opacity:1; }
   .cvtools { display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; align-items:center; }
@@ -662,7 +662,7 @@ function pAufbau(p) {
 function aufbauTap(id) {
   var A = S.aufg;
   if (!id) return;
-  if (A.mode === 'explore') { A.sel = id; panel(); return; }
+  if (A.mode === 'explore') { A.sel = id; showBanner(PARTS[id].n); panel(); return; }
   if (A.done) return;
   var want = A.queue[A.idx][0];
   if (id === want) { A.ok++; A.idx++; A.fb = '<div class="fb ok">✔ Richtig: ' + PARTS[id].n + '. ' + PARTS[id].d + '</div>'; if (A.idx >= A.queue.length) { A.done = true; S.unlocked = Math.max(S.unlocked, 2); burst($('cvwrap')); } }
@@ -882,6 +882,20 @@ function checkResize() {
   cv.width = Math.round(w * dpr); cv.height = Math.round(w * CH / CW * dpr); VS = w / CW * dpr;
 }
 var last = performance.now(), prevBell = 0;
+function drawSel(c, t) {
+  var A = S.aufg, id = A.mode === 'explore' ? A.sel : null, i, h, B = { gicht: [24, 100], schacht: [100, 420], kohlensack: [420, 470], rast: [470, 590], gestell: [590, 716] }, b, pul = 0.6 + 0.4 * Math.sin(t * 6);
+  if (S.step !== 1 || !id) return;
+  c.save();
+  if (B[id]) {
+    b = B[id]; var yy0 = b[0], yy1 = b[1], hw = Math.max(outerR(clamp(yy0, 70, 714)), outerR(clamp(yy1, 70, 714))) + 8;
+    c.fillStyle = 'rgba(255,209,102,.18)'; c.fillRect(CX - hw, yy0, hw * 2, yy1 - yy0);
+    c.setLineDash([8, 6]); c.strokeStyle = 'rgba(255,209,102,' + pul + ')'; c.lineWidth = 3; c.strokeRect(CX - hw, yy0 + 1, hw * 2, yy1 - yy0 - 2);
+  } else {
+    for (i = 0; i < S.hs.length; i++) { h = S.hs[i]; if (h.id !== id) continue; c.strokeStyle = 'rgba(255,209,102,' + pul + ')'; c.lineWidth = 4; c.beginPath(); c.arc(h.x, h.y, h.r + 6, 0, 6.2832); c.stroke(); c.fillStyle = 'rgba(255,209,102,.2)'; c.fill(); }
+  }
+  c.setLineDash([]); c.font = 'bold 22px Inter, sans-serif'; c.textAlign = 'left'; var tx = PARTS[id].n, ty = B[id] ? Math.max(B[id][0] + 28, 60) : 40; c.lineWidth = 5; c.strokeStyle = 'rgba(0,0,0,.85)'; c.fillStyle = '#ffd166'; var txx = B[id] ? 14 : 14; c.strokeText(tx, txx, ty); c.fillText(tx, txx, ty);
+  c.restore();
+}
 function frame(now) {
   var dt = Math.min(0.05, (now - last) / 1000), t = now / 1000; last = now;
   checkResize(); ctx.setTransform(VS, 0, 0, VS, 0, 0); ctx.clearRect(0, 0, CW, CH); S.hs = [];
@@ -889,6 +903,7 @@ function frame(now) {
   if (S.auto && S.view === 'out' && S.step !== 5) S.yaw += 0.25 * dt;
   fallParts(dt); simRun(dt); tapStep(dt); konvStep(dt);
   if (S.step === 5) drawKonv(ctx, t, dt); else if (S.view === 'cut') drawCut(ctx, t); else drawOut(ctx, t);
+  drawSel(ctx, t);
   updStatus();
   requestAnimationFrame(frame);
 }
