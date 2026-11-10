@@ -489,7 +489,7 @@ var TASKS = [
   { id: 'e4', title: 'Beschleunigungsspannung', need: function () { return S.src === 'e' && !S.det && S.slits === 'AB' && SL() >= 2 && H('e|AB|-') >= 300; }, goal: 'Erzeuge das Doppelspalt-Muster mit Elektronen (Detektor aus, beide Spalte, mindestens 300 Treffer) und verschiebe dabei den Regler für die Beschleunigungsspannung mindestens zweimal. Beobachte den Abstand der Streifen bei kleiner und bei großer Spannung.',
     prog: function () { return H('e|AB|-') + ' Treffer · Reglerbewegungen: ' + Math.min(SL(), 2) + ' / 2'; },
     qs: [ ['Wie ändert sich der Abstand der Streifen, wenn die Beschleunigungsspannung steigt?', ['Er wird kleiner', 'Er wird größer', 'Er bleibt gleich']],
-          ['Warum?', ['Schnellere Elektronen haben eine kleinere Wellenlänge (λ = h/p)', 'Schnellere Elektronen haben eine größere Wellenlänge', 'Der Abstand der Spalte ändert sich']] ] },
+          ['Warum? Bei Wellen gilt: Je kleiner die Wellenlänge, desto enger liegen die Interferenzstreifen.', ['Schnellere Elektronen haben eine kleinere Wellenlänge', 'Schnellere Elektronen haben eine größere Wellenlänge', 'Der Abstand der Spalte ändert sich']] ] },
   { id: 'p1', title: 'Photonen', need: function () { return S.src === 'p' && S.slits === 'AB' && !S.det && H('p|AB|-') >= 400 && SL() >= 3; }, goal: 'Wechsle zu <b>Photonen</b> (Laserlicht), beide Spalte, Detektor aus, mindestens 400 Treffer. Verändere dabei die Wellenlänge (Farbe) mit dem Regler. Vergleiche mit deiner Erwartung für Licht aus Schritt 1.',
     prog: function () { return H('p|AB|-') + ' / 400 Photonen'; },
     qs: [ ['Wie erscheint das Licht auf dem Schirm, wenn nur einzelne Photonen unterwegs sind?', ['In einzelnen punktförmigen Treffern, die sich erst nach und nach zum Streifenmuster aufbauen', 'Als gleichmäßig helle, stetige Streifen', 'Gar nicht']],
@@ -535,7 +535,7 @@ var OBS = [
 ];
 function panelStep2(p) {
   p.appendChild(mk('h2', '', '2 · Was sagen die Beobachtungen?'));
-  p.appendChild(mk('p', 'muted', 'Ordne jede Beobachtung zu: Welches Modell erklärt sie?'));
+  p.appendChild(mk('p', 'muted', 'Ordne jede Beobachtung zu: Welches Modell erklärt sie? Zur Erinnerung: Bei Wellen liegen die Interferenzstreifen umso enger, je kleiner die Wellenlänge ist.'));
   var done = 0;
   OBS.forEach(function (o, i) {
     var row = mk('div', 'obs'); row.appendChild(mk('div', 'otxt', o[0])); var bs = mk('div', 'ob'), fb = mk('div');

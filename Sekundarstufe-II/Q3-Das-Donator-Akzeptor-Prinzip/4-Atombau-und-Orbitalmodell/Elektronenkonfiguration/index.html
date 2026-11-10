@@ -306,7 +306,9 @@ var BAD = [
 ];
 var RULES = ['Aufbauprinzip', 'Pauli-Prinzip', 'Hundsche Regel'];
 function p2(p) {
-  p.appendChild(mk('h2', '', '2 · Fehlersuche: Welche Regel wird verletzt?'));
+  p.appendChild(mk('h2', '', '2 · Die drei Regeln und Fehlersuche'));
+  p.appendChild(mk('p', 'muted', 'Beim Füllen der Kästchen hast du drei Regeln angewendet. Sie haben Namen:'));
+  p.appendChild(mk('div', 'fb info conflict', '<ul class="rules"><li><b>Aufbauprinzip:</b> Die Orbitale werden in der Reihenfolge steigender Energie besetzt: 1s, 2s, 2p, 3s, 3p, 4s, …</li><li><b>Pauli-Prinzip:</b> Ein Orbital fasst höchstens zwei Elektronen, und diese haben entgegengesetzten Spin (↑↓).</li><li><b>Hundsche Regel:</b> Energiegleiche Orbitale (z. B. die drei 2p-Kästchen) werden zunächst einzeln mit Elektronen gleichen Spins besetzt, erst danach entstehen Paare.</li></ul>'));
   p.appendChild(mk('p', 'muted', 'Bei diesen Besetzungen ist ein Fehler. Entscheide jeweils, welche Regel verletzt wird.'));
   var ti = S.ti[2];
   BAD.forEach(function (b, k) {
@@ -320,10 +322,7 @@ function p2(p) {
     }
     p.appendChild(box);
   });
-  if (ti >= BAD.length) {
-    var m = mk('div', 'fb info conflict', '<b>Die drei Regeln für die Besetzung der Orbitale</b><ul class="rules"><li><b>Aufbauprinzip:</b> Die Orbitale werden in der Reihenfolge steigender Energie besetzt: 1s, 2s, 2p, 3s, 3p, 4s, …</li><li><b>Pauli-Prinzip:</b> Ein Orbital fasst höchstens zwei Elektronen, und diese haben entgegengesetzten Spin (↑↓).</li><li><b>Hundsche Regel:</b> Energiegleiche Orbitale (z. B. die drei 2p-Kästchen) werden zunächst einzeln mit Elektronen gleichen Spins besetzt, erst danach entstehen Paare.</li></ul>');
-    p.appendChild(m); p.appendChild(nextTo('Weiter →', 3));
-  }
+  if (ti >= BAD.length) p.appendChild(nextTo('Weiter →', 3));
 }
 /* ---- Schritt 3: Kurzschreibweise ---- */
 var T3 = [

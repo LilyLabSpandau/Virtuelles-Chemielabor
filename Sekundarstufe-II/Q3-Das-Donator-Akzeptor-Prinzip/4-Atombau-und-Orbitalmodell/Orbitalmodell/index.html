@@ -415,7 +415,7 @@ function showQN() { var q = S.qn; var k = q.l === 0 ? q.n + 's' : (q.l === 1 && 
 
 /* ====== Aufgaben (Schritt 1 und 2) ====== */
 var T1 = [
-  { id: 'a', title: 'Das Bohr-Modell', need: function () { return !!S.fx.bohr; }, goal: 'Blende unter dem Bild <b>Bohr-Bahn zeigen</b> ein. Das Bohr-Modell (1913) beschreibt das Elektron des Wasserstoffatoms als kleine Kugel, die auf einer Kreisbahn um den Kern läuft.',
+  { id: 'a', title: 'Das Bohr-Modell', need: function () { return !!S.fx.bohr; }, goal: 'Blende unter dem Bild <b>Bohr-Bahn zeigen</b> ein. Das Bohr-Modell (1913) beschreibt das Elektron des Wasserstoffatoms als kleine Kugel, die auf einer Kreisbahn um den Kern läuft. Der Radius dieser Bahn heißt Bohr-Radius a₀ (0,053 nm) und dient hier als Längeneinheit.',
     qs: [['Was behauptet das Bohr-Modell über den Aufenthaltsort des Elektrons?', ['Das Elektron bewegt sich im festen Abstand auf einer Kreisbahn um den Kern', 'Das Elektron ist überall im Atom gleichzeitig', 'Das Elektron ruht im Kern']]] },
   { id: 'b', title: 'Messen, wo das Elektron ist', need: function () { return S.N >= 200; }, goal: 'Quantenobjekte lassen sich nur durch Messung orten. Miss die Position des Elektrons mindestens <b>200-mal</b> (die Messungen kannst du mit „Dauer-Messung“ oder +100 beschleunigen). Jede Messung setzt einen Punkt. Das Diagramm zeigt, bei welchem Abstand vom Kern wie oft gemessen wurde.',
     prog: function () { return S.N + ' / 200 Messungen'; },
@@ -428,11 +428,11 @@ var T1 = [
     done: 'Merke: Ein <b>Orbital</b> ist keine Bahn, sondern ein Aufenthaltsraum. Die Dichte der Punkte zeigt, wie wahrscheinlich das Elektron dort gefunden wird.' }
 ];
 var T2 = [
-  { id: 'a', title: 'Knoten beim s-Orbital', need: function () { return S.seen['1s'] && S.seen['2s'] && !!S.fx.slice; }, goal: 'Wähle <b>1s</b> und dann <b>2s</b>. Schalte das <b>Schnittbild</b> ein und verschiebe die Schnittebene durch die Mitte (z = 0). Achte im Diagramm auf die rosa Markierung.',
+  { id: 'a', title: 'Knoten beim s-Orbital', need: function () { return S.seen['1s'] && S.seen['2s'] && !!S.fx.slice; }, goal: 'Wähle <b>1s</b> und dann <b>2s</b>. Schalte das <b>Schnittbild</b> ein und verschiebe die Schnittebene durch die Mitte (z = 0). Ein <b>Knoten</b> ist eine Stelle, an der die Aufenthaltswahrscheinlichkeit null ist. Im Diagramm sind Knoten rosa markiert.',
     prog: function () { return '1s gesehen: ' + (S.seen['1s'] ? '✔' : '–') + ' · 2s gesehen: ' + (S.seen['2s'] ? '✔' : '–') + ' · Schnittbild: ' + (S.fx.slice ? '✔' : '–'); },
     qs: [['Was fällt beim Schnitt durch das 2s-Orbital auf?', ['In einem Abstand vom Kern gibt es eine kugelförmige Schale ohne Aufenthaltswahrscheinlichkeit (Knotenfläche)', 'Es ist innen genauso dicht wie das 1s-Orbital', 'Es besteht nur aus einem Ring']],
          ['Wie viele Knotenflächen hat ein 1s-, wie viele ein 2s-Orbital?', ['1s: keine, 2s: eine', '1s: eine, 2s: zwei', 'Beide haben keine']]] },
-  { id: 'b', title: 'Die p-Orbitale', need: function () { return S.seen['2px'] && S.seen['2py'] && S.seen['2pz']; }, goal: 'Betrachte nacheinander <b>2p<sub>x</sub></b>, <b>2p<sub>y</sub></b> und <b>2p<sub>z</sub></b>. Drehe das Bild und nutze „Von oben“. Schalte das Schnittbild ein und schiebe die Ebene durch z = 0.',
+  { id: 'b', title: 'Die p-Orbitale', need: function () { return S.seen['2px'] && S.seen['2py'] && S.seen['2pz']; }, goal: 'Betrachte nacheinander <b>2p<sub>x</sub></b>, <b>2p<sub>y</sub></b> und <b>2p<sub>z</sub></b>. Drehe das Bild und nutze „Von oben“. Schalte das Schnittbild ein und schiebe die Ebene durch z = 0. Die Farben zeigen das Vorzeichen der Wellenfunktion ψ (der Welle aus dem Doppelspaltmodul, die die Aufenthaltswahrscheinlichkeit festlegt).',
     prog: function () { return ['2px', '2py', '2pz'].map(function (k) { return k + ': ' + (S.seen[k] ? '✔' : '–'); }).join(' · '); },
     qs: [['Wie sind die drei 2p-Orbitale ausgerichtet?', ['Jedes liegt entlang einer anderen Achse, die drei stehen senkrecht aufeinander', 'Alle drei liegen in derselben Richtung', 'Sie sind kugelförmig']],
          ['Wie viele Aufenthaltsbereiche hat ein p-Orbital und was liegt dazwischen?', ['Zwei Keulen, dazwischen am Kern eine Knotenebene ohne Aufenthaltswahrscheinlichkeit', 'Eine Kugel mit dem Kern in der Mitte', 'Vier Keulen']],
@@ -515,14 +515,14 @@ function panelEnergy(p) {
   } else box.appendChild(mk('p', 'muted', 'Die Fragen erscheinen nach drei Sprüngen.'));
   p.appendChild(box);
   if ((S.tprog.e1 || 0) >= 3) {
-    var b2 = mk('div', 'task'); b2.appendChild(mk('h3', '', 'Reihenfolge der Energien in Mehrelektronenatomen')); b2.appendChild(mk('p', '', 'Im Wasserstoffatom hängt die Energie nur von n ab. Bei Atomen mit mehreren Elektronen unterscheiden sich auch s-, p- und d-Orbitale derselben Schale (die Elektronen schirmen sich gegenseitig ab). <b>Tippe die Orbitale in der Reihenfolge steigender Energie an</b> (niedrigste zuerst).'));
+    var b2 = mk('div', 'task'); b2.appendChild(mk('h3', '', 'Reihenfolge der Energien in Mehrelektronenatomen')); b2.appendChild(mk('p', '', 'Im Wasserstoffatom hängt die Energie nur von n ab. Bei Atomen mit mehreren Elektronen unterscheiden sich auch s-, p- und d-Orbitale derselben Schale (die Elektronen schirmen sich gegenseitig ab). <b>Tippe die Orbitale in der Reihenfolge steigender Energie an</b> (niedrigste zuerst). Faustregel (Madelung): Die Energie steigt mit der Summe n + l (s: l = 0, p: l = 1, d: l = 2). Bei gleicher Summe liegt das Orbital mit dem kleineren n tiefer.'));
     var ch = mk('div', 'zl'), chosen = S.en.order;
     S.en.chips = S.en.chips || shuffle(ORDER);
     S.en.chips.forEach(function (k) { var on = chosen.indexOf(k) >= 0; var x = mk('button', 'sel' + (on ? ' on' : ''), k + (on ? ' (' + (chosen.indexOf(k) + 1) + ')' : '')); x.type = 'button'; x.addEventListener('click', function () { if (S.en.puz) return; if (on) { S.en.order = chosen.filter(function (z) { return z !== k; }); } else chosen.push(k); panel(); }); ch.appendChild(x); }); b2.appendChild(ch);
     var rr = mk('div', 'row'); rr.appendChild(btn('Zurücksetzen', 'sec small', function () { S.en.order = []; S.en.puz = false; panel(); }, S.en.puz));
     rr.appendChild(btn('Prüfen', 'small', function () { if (chosen.length < ORDER.length) return; var ok = ORDER.every(function (k, i) { return chosen[i] === k; }); if (ok) { S.en.puz = true; burst(b2); } else { S.en.err = true; } panel(); }, chosen.length < ORDER.length || S.en.puz)); b2.appendChild(rr);
     if (S.en.puz) { b2.appendChild(mk('div', 'fb ok', '✔ Richtig: 1s < 2s < 2p < 3s < 3p < 4s < 3d. Merke: Das 4s-Orbital liegt energetisch <b>unter</b> dem 3d-Orbital. Das erklärt, warum zuerst 4s gefüllt wird (Kalium, Calcium) und erst danach 3d (Scandium bis Zink).')); b2.appendChild(nextBtn('Weiter zum Fazit →', 5)); }
-    else if (S.en.err && chosen.length === ORDER.length) b2.appendChild(mk('div', 'fb no', 'Das ist noch nicht richtig. Tipp: Innerhalb einer Schale steigt die Energie von s über p zu d. Schau, wo das 4s-Orbital einzuordnen ist.'));
+    else if (S.en.err && chosen.length === ORDER.length) b2.appendChild(mk('div', 'fb no', 'Das ist noch nicht richtig. Rechne n + l für jedes Orbital aus und beachte die Regel bei gleicher Summe.'));
     p.appendChild(b2);
   }
 }

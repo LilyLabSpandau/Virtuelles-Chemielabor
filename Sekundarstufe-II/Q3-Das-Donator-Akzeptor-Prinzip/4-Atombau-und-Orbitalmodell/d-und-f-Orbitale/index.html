@@ -348,9 +348,9 @@ var T1 = [
     done: 'Merke: Es gibt <b>fünf</b> d-Orbitale. Drei (d<sub>xy</sub>, d<sub>xz</sub>, d<sub>yz</sub>) liegen zwischen den Achsen, zwei (d<sub>z²</sub>, d<sub>x²−y²</sub>) zeigen auf die Achsen. Diese Unterscheidung brauchst du später bei den Komplexen.' }
 ];
 var T2 = [
-  { id: 'a', title: 'Die sieben f-Orbitale', need: function () { return Object.keys(ORB).filter(function (k) { return ORB[k].fam === 'f' && S.seen[k]; }).length >= 4; }, goal: 'Betrachte mindestens <b>vier</b> der sieben f-Orbitale und drehe sie. Zähle die Keulen und achte auf die Farben.',
-    prog: function () { return Object.keys(ORB).filter(function (k) { return ORB[k].fam === 'f' && S.seen[k]; }).length + ' von mindestens 4 angesehen'; },
-    qs: [['Wie viele Keulen haben die meisten f-Orbitale (z. B. f<sub>xyz</sub>)?', ['Acht', 'Vier', 'Zwei']],
+  { id: 'a', title: 'Die sieben f-Orbitale', need: function () { return S.seen.fxyz && Object.keys(ORB).filter(function (k) { return ORB[k].fam === 'f' && S.seen[k]; }).length >= 4; }, goal: 'Betrachte mindestens <b>vier</b> der sieben f-Orbitale, darunter <b>f<sub>xyz</sub></b>, und drehe sie. Zähle die Keulen und achte auf die Farben.',
+    prog: function () { return Object.keys(ORB).filter(function (k) { return ORB[k].fam === 'f' && S.seen[k]; }).length + ' von mindestens 4 angesehen · f<sub>xyz</sub>: ' + (S.seen.fxyz ? '✔' : '–'); },
+    qs: [['Wie viele Keulen hat das f<sub>xyz</sub>-Orbital?', ['Acht', 'Vier', 'Zwei']],
          ['Wie viele f-Orbitale gehören zu einer f-Unterschale?', ['Sieben', 'Fünf', 'Neun']],
          ['Wie viele Elektronen fasst die f-Unterschale höchstens?', ['14', '10', '7']]] },
   { id: 'b', title: 'Ordnung der Unterschalen', need: function () { return true; }, goal: 'Vergleiche s, p, d, f: Die Zahl der Orbitale ist 1, 3, 5, 7. Die Zahl der Knotenflächen (Ebenen oder Kegel ohne Elektronenaufenthalt) ist 0, 1, 2, 3.',
