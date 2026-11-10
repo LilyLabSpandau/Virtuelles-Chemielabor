@@ -397,7 +397,7 @@ function drawHist() {
 var STEPN = ['1 · Erwartung', '2 · Experiment', '3 · Deutung', '4 · Fachtext', '5 · Fazit'];
 function renderSteps() {
   var n = $('steps'); n.innerHTML = '';
-  STEPN.forEach(function (t, i) { var b = mk('button', (S.step === i + 1 ? 'on ' : '') + (S.unlocked > i + 1 ? 'done' : ''), t); b.type = 'button'; b.disabled = i + 1 > S.unlocked; b.addEventListener('click', function () { goStep(i + 1); }); n.appendChild(b); });
+  STEPN.forEach(function (t, i) { var b = mk('button', (S.step === i + 1 ? 'on ' : '') + (S.unlocked > i + 1 ? 'done' : ''), t); b.type = 'button'; b.addEventListener('click', function () { goStep(i + 1); }); n.appendChild(b); });
 }
 function goStep(i) {
   S.step = i; S.run = false; renderSteps(); var st = i <= 2; document.querySelector('.main').className = 'main' + (st ? '' : ' solo'); $('stagecol').style.display = st ? '' : 'none';

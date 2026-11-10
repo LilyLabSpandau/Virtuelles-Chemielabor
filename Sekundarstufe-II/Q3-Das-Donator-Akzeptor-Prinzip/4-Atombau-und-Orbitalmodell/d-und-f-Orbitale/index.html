@@ -309,7 +309,7 @@ function boxes(host, occ, o) {
 }
 /* ====== Schritte ====== */
 var STEPN = ['1 · d-Orbitale', '2 · f-Orbitale', '3 · Übergangsmetalle', '4 · Farbe', '5 · Fazit'];
-function renderSteps() { var n = $('steps'); n.innerHTML = ''; STEPN.forEach(function (t, i) { var b = mk('button', (S.step === i + 1 ? 'on ' : '') + (S.unlocked > i + 1 ? 'done' : ''), t); b.type = 'button'; b.disabled = i + 1 > S.unlocked; b.addEventListener('click', function () { goStep(i + 1); }); n.appendChild(b); }); }
+function renderSteps() { var n = $('steps'); n.innerHTML = ''; STEPN.forEach(function (t, i) { var b = mk('button', (S.step === i + 1 ? 'on ' : '') + (S.unlocked > i + 1 ? 'done' : ''), t); b.type = 'button'; b.addEventListener('click', function () { goStep(i + 1); }); n.appendChild(b); }); }
 function goStep(i) {
   S.step = i; S.msg = ''; S.occ = emptyOcc(); renderSteps();
   var hide = i === 5; $('stagecol').style.display = hide ? 'none' : ''; document.querySelector('.main').className = 'main' + (hide ? ' solo' : '');

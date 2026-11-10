@@ -368,7 +368,7 @@ var lastE = performance.now(); (function loopE(now) { var dt = Math.min(0.05, (n
 var STEPN = ['1 · Vom Bohr-Modell zum Orbital', '2 · Gestalt der Orbitale', '3 · Quantenzahlen', '4 · Energieniveaus', '5 · Fazit'];
 function renderSteps() {
   var n = $('steps'); n.innerHTML = '';
-  STEPN.forEach(function (t, i) { var b = mk('button', (S.step === i + 1 ? 'on ' : '') + (S.unlocked > i + 1 ? 'done' : ''), t.replace(/^(\d · )(.*)$/, '$1$2')); b.type = 'button'; b.disabled = i + 1 > S.unlocked; b.addEventListener('click', function () { goStep(i + 1); }); n.appendChild(b); });
+  STEPN.forEach(function (t, i) { var b = mk('button', (S.step === i + 1 ? 'on ' : '') + (S.unlocked > i + 1 ? 'done' : ''), t.replace(/^(\d · )(.*)$/, '$1$2')); b.type = 'button'; b.addEventListener('click', function () { goStep(i + 1); }); n.appendChild(b); });
 }
 function goStep(i) {
   S.step = i; S.run = false; renderSteps();

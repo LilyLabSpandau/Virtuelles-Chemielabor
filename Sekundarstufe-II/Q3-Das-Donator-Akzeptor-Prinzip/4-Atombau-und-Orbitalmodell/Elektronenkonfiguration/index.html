@@ -240,9 +240,9 @@ var S = { step: 1, unlocked: 1, ti: { 1: 0, 2: 0, 3: 0, 4: 0 }, qp: {}, occ: emp
 var STEPN = ['1 · Kästchen füllen', '2 · Die drei Regeln', '3 · Kurzschreibweise', '4 · Üben', '5 · Fazit'];
 function renderSteps() {
   var n = $('steps'); n.innerHTML = '';
-  STEPN.forEach(function (t, i) { var b = mk('button', (S.step === i + 1 ? 'on ' : '') + (S.unlocked > i + 1 ? 'done' : ''), t); b.type = 'button'; b.disabled = i + 1 > S.unlocked; b.addEventListener('click', function () { goStep(i + 1); }); n.appendChild(b); });
+  STEPN.forEach(function (t, i) { var b = mk('button', (S.step === i + 1 ? 'on ' : '') + (S.unlocked > i + 1 ? 'done' : ''), t); b.type = 'button'; b.addEventListener('click', function () { goStep(i + 1); }); n.appendChild(b); });
 }
-function goStep(i) { S.step = i; S.msg = ''; S.occ = emptyOcc(); renderSteps(); stage(); panel(); window.scrollTo(0, 0); }
+function goStep(i) { onBoxOk = null; S.step = i; S.msg = ''; S.occ = emptyOcc(); renderSteps(); stage(); panel(); window.scrollTo(0, 0); }
 function nextTo(label, to) { var r = mk('div', 'row'); r.appendChild(btn(label, 'go', function () { S.unlocked = Math.max(S.unlocked, to); goStep(to); })); return r; }
 function elHead(Z) { return '<b>' + NAME[Z - 1] + '</b> (' + SYM[Z - 1] + '), Ordnungszahl <b>' + Z + '</b> → ' + Z + ' Elektron' + (Z > 1 ? 'en' : ''); }
 /* ====== Aufgabenfolge Schritt 1 ====== */
