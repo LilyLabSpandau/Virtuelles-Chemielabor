@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hochofen-Werkstatt – vom Erz zum Stahl</title>
+<style>
+  :root { --ink:#f6eee8; --muted:#c9b9ad; --org:#ff8a3d; --amb:#ffd166; --cy:#7df9ff; --ok:#5ee6a8; --bad:#ff7d7d; --line:rgba(255,176,120,.28); }
+  * { box-sizing:border-box; }
+  html { -webkit-text-size-adjust:100%; }
+  body { margin:0; min-height:100vh; color:var(--ink); font-family:'Segoe UI',system-ui,-apple-system,Roboto,sans-serif; line-height:1.5;
+    background: radial-gradient(ellipse at 12% -8%, #6a2212 0%, rgba(106,34,18,0) 55%), radial-gradient(ellipse at 100% 28%, #12365a 0%, rgba(18,54,90,0) 50%), radial-gradient(ellipse at 40% 115%, #4a1840 0%, rgba(74,24,64,0) 45%), #0b0c14; background-attachment:fixed; }
+  body::before { content:''; position:fixed; inset:0; pointer-events:none; opacity:.65;
+    background-image: radial-gradient(1.6px 1.6px at 9% 82%, #ffb36b, transparent), radial-gradient(1.2px 1.2px at 21% 64%, #ff8a3d, transparent), radial-gradient(1.5px 1.5px at 38% 91%, #ffd166, transparent), radial-gradient(1px 1px at 52% 72%, #ff9e5e, transparent), radial-gradient(1.4px 1.4px at 67% 88%, #ffb36b, transparent), radial-gradient(1px 1px at 81% 69%, #ff8a3d, transparent), radial-gradient(1.5px 1.5px at 93% 84%, #ffd166, transparent), radial-gradient(1px 1px at 14% 22%, #cfe3ff, transparent), radial-gradient(1.2px 1.2px at 47% 12%, #cfe3ff, transparent), radial-gradient(1px 1px at 76% 18%, #cfe3ff, transparent); }
+  .wrap { position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:12px 12px 90px; }
+  .back { display:inline-block; color:#fff; background:rgba(255,255,255,.12); border:1px solid var(--line); text-decoration:none; font-weight:700; font-size:14px; padding:8px 14px; border-radius:999px; }
+  h1 { margin:8px 0 0; font-size:clamp(24px,5.4vw,36px); line-height:1.15; background:linear-gradient(90deg,#ffd166,#ff8a3d 55%,#ff5d73); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .sub { color:var(--muted); margin:4px 0 8px; font-size:15px; }
+  nav.steps { position:sticky; top:0; z-index:40; display:flex; gap:6px; padding:8px 0; overflow-x:auto; background:linear-gradient(#0b0c14 75%, rgba(11,12,20,0)); -webkit-overflow-scrolling:touch; }
+  nav.steps button { flex:1 0 auto; border:1px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-weight:700; font-size:14px; padding:9px 12px; border-radius:12px; cursor:pointer; white-space:nowrap; }
+  nav.steps button.on { background:linear-gradient(135deg,#ff8a3d,#e0334f); border-color:transparent; box-shadow:0 4px 18px rgba(255,100,60,.4); }
+  nav.steps button.done::after { content:' ✔'; color:var(--ok); } nav.steps button.on.done::after { color:#fff; }
+  nav.steps button:disabled { opacity:.4; cursor:not-allowed; }
+  .glass { background:linear-gradient(160deg, rgba(60,40,48,.74), rgba(18,16,30,.82)); border:1px solid var(--line); border-radius:18px; padding:14px; box-shadow:0 10px 34px rgba(0,0,0,.4); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); }
+  h2 { margin:0 0 6px; font-size:19px; } h3 { margin:0 0 4px; font-size:16.5px; }
+  .muted { color:var(--muted); }
+  .main { display:grid; gap:14px; grid-template-columns:1fr; }
+  @media (min-width:900px) { .main { grid-template-columns:minmax(0,520px) minmax(0,1fr); align-items:start; } .stagecol { position:sticky; top:62px; } }
+  .cvwrap { position:relative; padding:8px; }
+  #cv { display:block; width:100%; height:auto; border-radius:14px; touch-action:pan-y; cursor:pointer; background:radial-gradient(ellipse at 50% 60%, rgba(120,50,30,.35), rgba(8,8,16,.6)); }
+  .banner { position:absolute; left:14px; right:14px; top:14px; background:rgba(10,10,18,.82); border:1px solid var(--line); border-radius:12px; padding:7px 11px; font-size:14px; pointer-events:none; opacity:0; transition:opacity .25s; }
+  .banner.show { opacity:1; }
+  .cvtools { display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; align-items:center; }
+  .legend { display:flex; flex-wrap:wrap; gap:4px 10px; margin-top:8px; font-size:12.5px; color:var(--muted); }
+  .legend i { display:inline-block; width:11px; height:11px; border-radius:50%; margin-right:4px; vertical-align:-1px; }
+  .btn { border:0; border-radius:11px; padding:11px 16px; font:inherit; font-size:15.5px; font-weight:700; color:#fff; cursor:pointer; background:linear-gradient(135deg,#ff8a3d,#e0334f); box-shadow:0 4px 14px rgba(255,100,60,.35); }
+  .btn:disabled { opacity:.4; cursor:not-allowed; box-shadow:none; }
+  .btn.sec { background:rgba(255,255,255,.1); border:1px solid var(--line); box-shadow:none; color:var(--ink); }
+  .btn.go { background:linear-gradient(135deg,#19c98a,#1fb6ff); box-shadow:0 4px 14px rgba(30,180,200,.35); }
+  .btn.small { padding:7px 11px; font-size:14px; }
+  .btn.on { outline:2px solid var(--amb); }
+  .row { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; align-items:center; }
+  .cap { background:rgba(255,255,255,.07); border-left:4px solid var(--amb); border-radius:8px; padding:8px 12px; margin:8px 0; font-size:15.5px; }
+  .cap small { display:block; color:var(--muted); font-size:12.5px; letter-spacing:.6px; text-transform:uppercase; margin-bottom:2px; }
+  .fb { margin-top:8px; padding:9px 12px; border-radius:10px; font-size:15px; } .fb.ok { background:rgba(94,230,168,.14); border:1px solid rgba(94,230,168,.5); } .fb.no { background:rgba(255,125,125,.13); border:1px solid rgba(255,125,125,.5); } .fb.info { background:rgba(255,255,255,.07); border:1px solid var(--line); }
+  .tip { background:rgba(255,209,102,.12); border:1px dashed rgba(255,209,102,.55); border-radius:10px; padding:7px 11px; margin-top:7px; font-size:15px; }
+  .layers { display:flex; flex-direction:column-reverse; gap:3px; margin:8px 0; }
+  .layers span { display:block; border-radius:6px; padding:3px 10px; font-size:13.5px; font-weight:700; color:#111; }
+  .layers .k { background:#8a8f9c; } .layers .e { background:#c4623f; } .layers .c { background:#efe8d6; } .layers .empty { background:rgba(255,255,255,.07); color:var(--muted); font-weight:500; }
+  .chg { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:8px; }
+  .chg button { border:2px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-weight:700; font-size:14.5px; border-radius:14px; padding:10px 6px; cursor:pointer; }
+  .chg button small { display:block; font-weight:500; color:var(--muted); font-size:12px; }
+  .chg button:disabled { opacity:.4; cursor:not-allowed; }
+  .zlist { display:flex; flex-wrap:wrap; gap:6px; margin:8px 0; }
+  .zlist button { border:1px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-size:14px; font-weight:700; padding:7px 11px; border-radius:999px; cursor:pointer; }
+  .zlist button.on { background:rgba(255,138,61,.3); border-color:var(--org); } .zlist button.ok::after { content:' ✔'; color:var(--ok); }
+  .eq { display:flex; flex-wrap:wrap; align-items:center; gap:6px 4px; margin:8px 0; font-size:20px; font-weight:700; }
+  .eq .term { display:inline-flex; align-items:center; gap:4px; background:rgba(255,255,255,.07); border:1px solid var(--line); border-radius:12px; padding:3px 5px; }
+  .eq .term .st { display:flex; flex-direction:column; } .eq .term .st button { width:30px; height:19px; line-height:1; border:0; border-radius:6px; background:rgba(255,255,255,.14); color:#fff; font-weight:800; font-size:14px; cursor:pointer; padding:0; margin:1px 0; }
+  .eq .term .n { min-width:18px; text-align:center; font-size:20px; } .eq .op { color:var(--muted); padding:0 3px; }
+  .eq sub { font-size:.65em; }
+  .atoms { display:flex; flex-wrap:wrap; gap:6px; margin:6px 0; font-size:14px; } .atoms span { border-radius:9px; padding:2px 9px; background:rgba(255,255,255,.07); border:1px solid var(--line); } .atoms span.ok { border-color:var(--ok); color:var(--ok); } .atoms span.no { border-color:var(--bad); color:var(--bad); }
+  #cvR { display:block; width:100%; max-width:340px; height:auto; border-radius:12px; background:rgba(0,0,0,.3); border:1px solid var(--line); margin:6px 0; }
+  .bar { margin:7px 0; } .bar .lab { display:flex; justify-content:space-between; font-size:14.5px; font-weight:700; } .bar .tr { position:relative; height:12px; border-radius:7px; background:rgba(255,255,255,.12); overflow:hidden; } .bar .tr i { display:block; height:100%; border-radius:7px; background:linear-gradient(90deg,#ffd166,#ff8a3d); transition:width .15s; } .bar .tr b { position:absolute; top:0; bottom:0; width:2px; background:#fff; opacity:.8; }
+  .prog { height:10px; border-radius:6px; background:rgba(255,255,255,.12); overflow:hidden; margin:6px 0; } .prog i { display:block; height:100%; background:linear-gradient(90deg,#ff8a3d,#ffd166); transition:width .2s; }
+  .opts { display:flex; flex-direction:column; gap:7px; margin:8px 0; }
+  .opt { text-align:left; border:2px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-size:15.5px; border-radius:12px; padding:10px 14px; cursor:pointer; }
+  .opt:hover { border-color:var(--org); } .opt.good { border-color:var(--ok); background:rgba(94,230,168,.18); } .opt.bad { border-color:var(--bad); background:rgba(255,125,125,.16); animation:shake .3s; }
+  @keyframes shake { 25% { transform:translateX(-4px); } 75% { transform:translateX(4px); } }
+  .flow { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin:8px 0; } .flow b { background:rgba(255,255,255,.09); border:1px solid var(--line); border-radius:10px; padding:5px 10px; font-size:14px; } .flow span { color:var(--amb); font-weight:800; }
+  .rules { margin:6px 0 0; padding:0; list-style:none; } .rules li { margin:7px 0; padding-left:14px; border-left:3px solid var(--org); }
+  details.log summary { cursor:pointer; color:var(--muted); font-size:14px; margin-top:6px; } details.log p { margin:6px 0; font-size:14.5px; }
+  .burst { position:fixed; width:0; height:0; z-index:10000; pointer-events:none; } .burst i { position:absolute; left:-4px; top:-4px; width:8px; height:8px; border-radius:50%; animation:bu .9s ease-out forwards; } @keyframes bu { to { transform:translate(var(--dx),var(--dy)) scale(.2); opacity:0; } }
+  .impressum { position:fixed; bottom:10px; right:10px; background:rgba(0,0,0,.6); color:#fff; padding:5px 10px; text-decoration:none; border-radius:5px; font-family:sans-serif; font-size:12px; z-index:9999; }
+  @media (max-width:480px) { .glass { padding:12px; } .eq { font-size:18px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← Zur Übersicht</a>
+  <h1>🔥 Hochofen-Werkstatt</h1>
+  <p class="sub">Vom Eisenerz zum Stahl: Beschicke den Hochofen selbst, beobachte die Zonen im Inneren und stich ihn am Ende an.</p>
+  <nav class="steps" id="steps"></nav>
+  <div class="main">
+    <div class="stagecol">
+      <div class="glass cvwrap" id="cvwrap">
+        <canvas id="cv" width="600" height="760" aria-label="Hochofen"></canvas>
+        <div class="banner" id="banner"></div>
+        <div class="cvtools" id="cvtools"></div>
+        <div class="legend" id="legend"></div>
+      </div>
+    </div>
+    <div class="glass" id="panel"></div>
+  </div>
+</div>
+<a class="impressum" href="/Virtuelles-Chemielabor/impressum.html">Impressum &amp; Datenschutz</a>
+<script>
+'use strict';
+/* ====== Hilfen ====== */
+function $(id) { return document.getElementById(id); }
+function mk(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; }
+function btn(label, cls, fn, dis) { var b = mk('button', 'btn ' + (cls || ''), label); b.type = 'button'; if (dis) b.disabled = true; b.addEventListener('click', fn); return b; }
+function lerp(a, b, t) { return a + (b - a) * t; }
+function clamp(x, a, b) { return x < a ? a : x > b ? b : x; }
+function rnd(a, b) { return a + Math.random() * (b - a); }
+function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+function mixc(a, b, t) { t = clamp(t, 0, 1); return 'rgb(' + Math.round(a[0] + (b[0] - a[0]) * t) + ',' + Math.round(a[1] + (b[1] - a[1]) * t) + ',' + Math.round(a[2] + (b[2] - a[2]) * t) + ')'; }
+function rgb(a) { return 'rgb(' + Math.round(a[0]) + ',' + Math.round(a[1]) + ',' + Math.round(a[2]) + ')'; }
+function fmt(x, d) { return x.toFixed(d === undefined ? 1 : d).replace('.', ','); }
+function burst(host) {
+  var r = host.getBoundingClientRect(), box = mk('div', 'burst'), i, cols = ['#ffd166', '#ff8a3d', '#ff5d73', '#7df9ff', '#5ee6a8'];
+  box.style.left = (r.left + r.width / 2) + 'px'; box.style.top = (r.top + Math.min(r.height / 2, 90)) + 'px';
+  for (i = 0; i < 18; i++) { var s = mk('i'), a = i / 18 * 6.283 + Math.random() * .3, d = 60 + Math.random() * 70; s.style.setProperty('--dx', Math.cos(a) * d + 'px'); s.style.setProperty('--dy', Math.sin(a) * d + 'px'); s.style.background = cols[i % cols.length]; box.appendChild(s); }
+  document.body.appendChild(box); setTimeout(function () { if (box.parentNode) box.parentNode.removeChild(box); }, 1000);
+}
+
+/* ====== Geometrie des Ofens (Zeichenfläche 600 x 760) ====== */
+var CW = 600, CH = 760, CX = 300, TILT = 0.2, WALL = 24;
+var PR = [[70, 70], [420, 150], [470, 150], [590, 112], [690, 112]];
+var KEYY = [70, 420, 470, 590, 690];
+function innerR(y) {
+  var i; if (y <= PR[0][0]) return PR[0][1];
+  for (i = 1; i < PR.length; i++) if (y <= PR[i][0]) return lerp(PR[i - 1][1], PR[i][1], (y - PR[i - 1][0]) / (PR[i][0] - PR[i - 1][0]));
+  return PR[PR.length - 1][1];
+}
+function outerR(y) { return innerR(y) + WALL; }
+var TST = [[70, 200], [170, 400], [300, 900], [470, 1400], [560, 1600], [610, 2000], [690, 1600]];
+var CST = [[20, [24, 24, 36]], [200, [96, 28, 22]], [400, [156, 30, 20]], [900, [226, 58, 30]], [1400, [255, 156, 34]], [1600, [255, 210, 62]], [2000, [255, 246, 206]]];
+function colAt(T) {
+  var i, t, a, b; if (T <= CST[0][0]) return CST[0][1];
+  for (i = 1; i < CST.length; i++) if (T <= CST[i][0]) { t = (T - CST[i - 1][0]) / (CST[i][0] - CST[i - 1][0]); a = CST[i - 1][1]; b = CST[i][1]; return [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)]; }
+  return CST[CST.length - 1][1];
+}
+function heatGrad(c, heat) {
+  var g = c.createLinearGradient(0, 70, 0, 690);
+  TST.forEach(function (s) { g.addColorStop((s[0] - 70) / 620, rgb(colAt(20 + (s[1] - 20) * heat))); });
+  return g;
+}
+var ZONES = [
+  { id: 'vor', name: 'Vorwärmzone', t: '200 – 400 °C', y0: 70, y1: 170 },
+  { id: 'red', name: 'Reduktionszone', t: '400 – 900 °C', y0: 170, y1: 300 },
+  { id: 'koh', name: 'Kohlungszone', t: '900 – 1400 °C', y0: 300, y1: 470 },
+  { id: 'sch', name: 'Schmelzzone', t: '1400 – 1600 °C', y0: 470, y1: 560 },
+  { id: 'ver', name: 'Verbrennungszone', t: 'bis ca. 2000 °C', y0: 560, y1: 610 }
+];
+function zoneAt(y) { var i; for (i = 0; i < ZONES.length; i++) if (y >= ZONES[i].y0 && y < ZONES[i].y1) return ZONES[i]; return null; }
+function zoneById(id) { var i; for (i = 0; i < ZONES.length; i++) if (ZONES[i].id === id) return ZONES[i]; return null; }
+var HOLE_I = { y: 684, a: 0.85 }, HOLE_S = { y: 640, a: -0.85 };
+
+/* ====== Zustand ====== */
+var S;
+function freshState() {
+  return { step: 1, unlocked: 1, view: 'out', yaw: 0.0, auto: true, speed: 1, gasOn: true, selZone: null,
+    aufg: { mode: 'explore', sel: null, queue: [], idx: 0, ok: 0, fb: '', done: false, wrong: 0 },
+    charge: [], parts: [], bell: 0, tipsB: 0, run: null, eq: {}, cap: '', hs: [],
+    tap: { iron: false, slag: false, ironOut: 0, slagOut: 0, qDone: false, fb: '', order: [] },
+    konv: null, quiz: null };
+}
+
+/* ====== Beschickung ====== */
+function makeLayer(type, idx) {
+  var arr = [], rows = 4, cols = 14, y0 = 590 - (idx + 1) * 56, r, c, u;
+  for (r = 0; r < rows; r++) for (c = 0; c < cols; c++) {
+    u = -0.93 + 1.86 * (c + (r % 2 ? 0.5 : 0)) / (cols - 0.5) + rnd(-0.03, 0.03);
+    arr.push({ t: type, u: u, y: -30 - Math.random() * 90, ty: y0 + (r + 0.5) * 14 + rnd(-2, 2), vy: 0, fall: true, rad: rnd(5.2, 6.8), z: Math.random(), fe: false });
+  }
+  return arr;
+}
+function addLayer(t) {
+  if (S.charge.length >= 8 || S.bell > 0 || S.run) return;
+  S.parts = S.parts.concat(makeLayer(t, S.charge.length)); S.charge.push(t); S.bell = 0.9; panel();
+}
+function resetCharge() { S.charge = []; S.parts = []; S.run = null; S.tipsB = 0; S.tap = { iron: false, slag: false, ironOut: 0, slagOut: 0, qDone: false, fb: '', order: [] }; S.konv = null; S.eq = {}; S.selZone = null; }
+
+function newRun() {
+  var ch = S.charge, e = 0, k = 0, c = 0, fail = '', hang = -1, i, ausb, ores = [];
+  ch.forEach(function (t) { if (t === 'e') e++; else if (t === 'k') k++; else c++; });
+  if (ch[0] !== 'k' || k < 2) fail = 'kalt';
+  else for (i = 1; i < ch.length; i++) if (ch[i] === 'e' && ch[i - 1] === 'e') { fail = 'hang'; hang = i; break; }
+  ausb = clamp(k / Math.max(1, e), 0, 1);
+  S.parts.forEach(function (p) { if (p.t === 'e') ores.push(p); });
+  var feN = Math.max(1, Math.round(ores.length * ausb)); shuffle(ores).forEach(function (p, j) { p.fe = j < feN; });
+  var kalkN = S.parts.filter(function (p) { return p.t === 'c'; }).length;
+  return { wind: false, t: 0, heat: 0, heatMax: fail === 'kalt' ? 0.3 : 1, desc: 0, fail: fail, failShown: false, hang: hang, e: e, k: k, c: c, ausb: ausb,
+    ironTot: Math.min(0.95, 0.31 * e * ausb), slagTot: Math.min(0.95, 0.1 * e + 0.22 * c), iron: 0, slag: 0, gas: [], drips: [], flashes: [], gasAcc: 0, capIdx: 0, log: [],
+    done: false, oreN: ores.length, feN: feN, kalkN: kalkN };
+}
+var CAPS = [
+  [0.3, 'Unten wird heiße Luft (Heißwind) eingeblasen. Der Koks verbrennt dort mit Sauerstoff zu Kohlenstoffdioxid, dabei entsteht sehr viel Wärme. Deshalb ist es unten am heißesten.'],
+  [4, 'Feststoffe wandern im Hochofen kontinuierlich nach unten, die Gase nach oben (Gegenstrom).'],
+  [8, 'Das entstandene Kohlenstoffdioxid strömt nach oben und reagiert mit weiterem Kohlenstoff zu Kohlenstoffmonoxid (Boudouard-Gleichgewicht). Der Sauerstoff wurde ein Stockwerk tiefer schon verbraucht, hier fehlt er.'],
+  [13, 'Das Kohlenstoffmonoxid steigt weiter nach oben und reagiert mit dem Eisenoxid: Es entsteht festes Eisen.'],
+  [19, 'Das Eisen wandert langsam nach unten, bis es in eine Zone kommt, wo es schmilzt. Unten sammelt es sich als flüssiges Roheisen.'],
+  [25, 'Der Kalkstein reagiert mit den Verunreinigungen des Erzes (z. B. Silicium) und bildet die Schlacke. Sie schwimmt auf dem flüssigen Roheisen und kann dort abgenommen werden.'],
+  [31, 'Das Gas entweicht nach oben durch die Gicht und heißt deshalb Gichtgas. Es enthält neben Stickstoff und Kohlenstoffdioxid auch Kohlenstoffmonoxid, Wasserstoff und Methan.']
+];
+function pushCap(txt) { S.cap = txt; if (S.run) S.run.log.push(txt); updCap(); }
+
+function fallParts(dt) { var i, p; for (i = 0; i < S.parts.length; i++) { p = S.parts[i]; if (p.fall) { p.vy += 900 * dt; p.y += p.vy * dt; if (p.y >= p.ty) { p.y = p.ty; p.fall = false; } } } }
+function simRun(dt) {
+  var R = S.run, sdt, i, p, moving, dy, ironTop, slagTop, d, x, rate;
+  if (!R) return;
+  sdt = dt * S.speed;
+  if (R.wind) { R.t += sdt; R.heat = Math.min(R.heatMax, R.heat + sdt / 5); } else R.heat = Math.max(0, R.heat - sdt / 10);
+  while (R.wind && R.capIdx < CAPS.length && R.t >= CAPS[R.capIdx][0] && R.heat > 0.1) { if (R.fail && R.capIdx > 1) { R.capIdx = CAPS.length; break; } pushCap(CAPS[R.capIdx][1]); R.capIdx++; }
+  moving = R.wind && R.heat > 0.5 && !(R.fail === 'hang' && R.t > 3);
+  dy = moving ? 12 * sdt : 0; R.desc += dy;
+  ironTop = 690 - R.iron * 40; slagTop = ironTop - R.slag * 40;
+  for (i = S.parts.length - 1; i >= 0; i--) {
+    p = S.parts[i];
+    if (p.fall) continue;
+    p.y += dy; x = CX + p.u * (innerR(p.y) - 9);
+    if (p.t === 'k' && p.y >= 578 && R.heat > 0.6) { S.parts.splice(i, 1); R.flashes.push({ x: x, y: p.y, t: 0 }); continue; }
+    if (p.t !== 'k' && p.y >= 498 && R.heat > 0.7) {
+      S.parts.splice(i, 1);
+      if (p.t === 'e') {
+        if (p.fe) R.drips.push({ x: x, y: p.y, vy: 0, k: 'fe', a: R.ironTot / R.feN });
+        R.drips.push({ x: x + rnd(-3, 3), y: p.y - 4, vy: 0, k: 'sl', a: R.slagTot * (R.kalkN ? 0.25 : 1) / Math.max(1, R.oreN) });
+      } else R.drips.push({ x: x, y: p.y, vy: 0, k: 'sl', a: R.slagTot * 0.75 / Math.max(1, R.kalkN) });
+    }
+  }
+  for (i = R.drips.length - 1; i >= 0; i--) {
+    d = R.drips[i]; d.vy += 700 * dt * Math.min(S.speed, 2); d.y += d.vy * dt;
+    if (d.k === 'fe' && d.y >= ironTop) { R.iron = Math.min(1, R.iron + d.a); R.drips.splice(i, 1); }
+    else if (d.k === 'sl' && d.y >= slagTop) { R.slag = Math.min(1, R.slag + d.a); R.drips.splice(i, 1); }
+  }
+  for (i = R.flashes.length - 1; i >= 0; i--) { R.flashes[i].t += dt * 3; if (R.flashes[i].t >= 1) R.flashes.splice(i, 1); }
+  /* Gas */
+  if (R.wind && R.heat > 0.25) { R.gasAcc += sdt * 45 * R.heat; while (R.gasAcc >= 1 && R.gas.length < 260) { R.gasAcc -= 1; R.gas.push({ u: rnd(-0.85, 0.85), y: rnd(584, 604), vy: -rnd(50, 80), r: rnd(1.6, 2.6) }); } R.gasAcc = Math.min(R.gasAcc, 3); }
+  var yMin = (R.fail === 'hang' && R.t > 3) ? 590 - (R.hang + 1) * 56 + R.desc : -999;
+  for (i = R.gas.length - 1; i >= 0; i--) {
+    p = R.gas[i]; p.y += p.vy * sdt;
+    if (p.y < yMin) { p.y = yMin + rnd(0, 8); p.vy *= 0.4; }
+    if (p.y < 62) R.gas.splice(i, 1);
+  }
+  if (!R.wind && R.gas.length) R.gas.splice(0, 2);
+  /* Ergebnis */
+  if (!R.done && !R.fail && R.wind && R.heat >= 0.99 && !S.parts.some(function (q) { return q.t !== 'k'; }) && !R.drips.length) { R.done = true; pushCap('Das Gestell ist gefüllt: Unten liegt das flüssige Roheisen, darauf schwimmt die Schlacke. Jetzt kannst du den Ofen abstechen.'); panel(); }
+  if (R.fail && !R.failShown && ((R.fail === 'kalt' && R.t > 7) || (R.fail === 'hang' && R.t > 9))) { R.failShown = true; panel(); }
+}
+
+/* ====== Zeichnen ====== */
+function interiorPath(c) {
+  var i; c.beginPath(); c.moveTo(CX - innerR(70), 70);
+  for (i = 1; i < KEYY.length; i++) c.lineTo(CX - innerR(KEYY[i]), KEYY[i]);
+  c.lineTo(CX + innerR(690), 690);
+  for (i = KEYY.length - 2; i >= 0; i--) c.lineTo(CX + innerR(KEYY[i]), KEYY[i]);
+  c.closePath();
+}
+function bandPath(c, s, o0, o1, yEnd) {
+  var i; c.beginPath(); c.moveTo(CX + s * (innerR(70) + o1), 70);
+  for (i = 1; i < KEYY.length; i++) c.lineTo(CX + s * (innerR(KEYY[i]) + o1), KEYY[i]);
+  c.lineTo(CX + s * (innerR(690) + o1), yEnd); c.lineTo(CX + s * (innerR(690) + o0), yEnd);
+  for (i = KEYY.length - 1; i >= 0; i--) c.lineTo(CX + s * (innerR(KEYY[i]) + o0), KEYY[i]);
+  c.closePath();
+}
+function gasCol(y, k) {
+  if (y > 640) return 'rgba(190,220,255,.9)';
+  if (y > 470) return 'rgba(170,175,185,.9)';
+  if (y > 300) return 'rgba(125,249,255,.95)';
+  if (y > 170) return k < 0.5 ? 'rgba(125,249,255,.95)' : 'rgba(170,175,185,.9)';
+  return k < 0.4 ? 'rgba(125,249,255,.95)' : k < 0.75 ? 'rgba(170,175,185,.9)' : 'rgba(190,150,255,.9)';
+}
+function partCol(p, h) {
+  var y = p.y, g;
+  if (p.t === 'k') { g = clamp((y - 330) / 230, 0, 1) * h; return mixc([28, 28, 36], [255, 130, 40], g * 0.85); }
+  if (p.t === 'e') { g = clamp((y - 170) / 130, 0, 1) * h; var col = mixc([142, 58, 38], [176, 182, 194], g); return y > 440 ? mixc([176, 182, 194], [255, 190, 80], clamp((y - 440) / 60, 0, 1) * h) : col; }
+  g = clamp((y - 300) / 120, 0, 1) * h; return y > 440 ? mixc([255, 248, 235], [255, 184, 112], clamp((y - 440) / 60, 0, 1) * h) : mixc([233, 228, 214], [255, 250, 240], g);
+}
+function drawParts(c, h) {
+  var i, p, R, x, rr;
+  for (i = 0; i < S.parts.length; i++) {
+    p = S.parts[i]; R = innerR(p.y); x = CX + p.u * (R - 9); rr = p.rad * Math.sqrt(R / 110) * (0.9 + 0.2 * p.z);
+    c.fillStyle = partCol(p, h); c.beginPath(); c.arc(x, p.y, rr, 0, 6.283); c.fill();
+    c.fillStyle = 'rgba(255,255,255,.2)'; c.beginPath(); c.arc(x - rr * 0.3, p.y - rr * 0.32, rr * 0.38, 0, 6.283); c.fill();
+  }
+}
+function drawLiquids(c) {
+  var R = S.run; if (!R) return;
+  var it = 690 - R.iron * 40, st = it - R.slag * 40, rr = innerR(690), ry = rr * TILT * 0.55;
+  if (R.iron > 0.001) { var g = c.createLinearGradient(0, it, 0, 690); g.addColorStop(0, '#fff2a8'); g.addColorStop(1, '#ff9a2e'); c.fillStyle = g; c.fillRect(CX - rr, it, rr * 2, 690 - it); c.fillStyle = '#ffe98a'; c.beginPath(); c.ellipse(CX, it, rr, ry * 0.6, 0, 0, 6.283); c.fill(); }
+  if (R.slag > 0.001) { var g2 = c.createLinearGradient(0, st, 0, it); g2.addColorStop(0, '#ff9b52'); g2.addColorStop(1, '#c2491f'); c.fillStyle = g2; c.fillRect(CX - rr, st, rr * 2, it - st); c.fillStyle = '#ffb06a'; c.beginPath(); c.ellipse(CX, st, rr, ry * 0.6, 0, 0, 6.283); c.fill(); }
+  R.drips.forEach(function (d) { c.fillStyle = d.k === 'fe' ? '#ffe27a' : '#ff9a52'; c.beginPath(); c.ellipse(d.x, d.y, 2.6, 4.4, 0, 0, 6.283); c.fill(); });
+}
+function drawGasAndFlash(c) {
+  var R = S.run; if (!R) return;
+  if (S.gasOn) R.gas.forEach(function (g) { var x = CX + g.u * (innerR(g.y) - 9), k = (g.u * 7.3 + 1) % 1; c.fillStyle = gasCol(g.y, Math.abs(k)); c.beginPath(); c.arc(x, g.y, g.r, 0, 6.283); c.fill(); });
+  R.flashes.forEach(function (f) { c.fillStyle = 'rgba(255,240,170,' + (1 - f.t) + ')'; c.beginPath(); c.arc(f.x, f.y, 6 + f.t * 14, 0, 6.283); c.fill(); });
+}
+function arcLine(c, y, r, back, col, w) { c.strokeStyle = col; c.lineWidth = w; c.beginPath(); c.ellipse(CX, y, r, r * TILT, 0, back ? Math.PI : 0, back ? 2 * Math.PI : Math.PI); c.stroke(); }
+function pipeDash(c, x0, y0, x1, y1, on, t) {
+  c.lineCap = 'round'; c.strokeStyle = '#6f7c93'; c.lineWidth = 11; c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke();
+  c.strokeStyle = on ? '#ffc27a' : '#9aa6bb'; c.lineWidth = 5; c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke();
+  if (on) { c.strokeStyle = 'rgba(255,255,255,.95)'; c.lineWidth = 3; c.setLineDash([5, 12]); c.lineDashOffset = -t * 40; c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke(); c.setLineDash([]); }
+  c.lineCap = 'butt';
+}
+function drawGasPipe(c, x0, y0, x1, y1, t, on) {
+  c.lineCap = 'round'; c.strokeStyle = '#5b3a2b'; c.lineWidth = 15; c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke();
+  c.strokeStyle = '#8b5a3d'; c.lineWidth = 9; c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke();
+  if (on) { c.strokeStyle = 'rgba(190,200,215,.9)'; c.lineWidth = 3; c.setLineDash([4, 10]); c.lineDashOffset = t * 30; c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke(); c.setLineDash([]); }
+  c.lineCap = 'butt';
+}
+function addHS(id, x, y, r) { S.hs.push({ id: id, x: x, y: y, r: r }); }
+function pulse(c, x, y, t, col) { var k = (Math.sin(t * 5) + 1) / 2; c.strokeStyle = col || 'rgba(255,230,120,' + (0.35 + 0.5 * k) + ')'; c.lineWidth = 3; c.beginPath(); c.arc(x, y, 16 + 5 * k, 0, 6.283); c.stroke(); }
+
+function drawLadles(c, t) {
+  var R = S.run, T = S.tap, i;
+  /* Roheisenpfanne rechts, Schlackenpfanne links */
+  function pot(x, col, lvl, hot) {
+    c.fillStyle = '#4b5366'; c.beginPath(); c.moveTo(x - 38, 722); c.lineTo(x + 38, 722); c.lineTo(x + 30, 758); c.lineTo(x - 30, 758); c.closePath(); c.fill();
+    if (lvl > 0) { c.save(); c.beginPath(); c.moveTo(x - 36, 724); c.lineTo(x + 36, 724); c.lineTo(x + 29, 757); c.lineTo(x - 29, 757); c.closePath(); c.clip(); c.fillStyle = col; var h = 34 * clamp(lvl, 0, 1); c.fillRect(x - 40, 757 - h, 80, h + 2); c.restore(); }
+    c.strokeStyle = '#8f9bb3'; c.lineWidth = 3; c.beginPath(); c.moveTo(x - 38, 722); c.lineTo(x + 38, 722); c.stroke();
+  }
+  pot(520, '#ffd34d', T.ironOut, 1); pot(86, '#ff8a3d', T.slagOut, 1);
+}
+function drawStreams(c, t) {
+  var T = S.tap;
+  if (T.iron && T.irunning) { c.strokeStyle = '#ffe27a'; c.lineWidth = 6; c.lineCap = 'round'; c.beginPath(); c.moveTo(T.ix0, T.iy0); c.quadraticCurveTo(T.ix0 + 22, T.iy0 + 6, 520, 724); c.stroke(); c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = 2; c.beginPath(); c.moveTo(T.ix0, T.iy0); c.quadraticCurveTo(T.ix0 + 22, T.iy0 + 6, 520, 724); c.stroke(); c.lineCap = 'butt'; }
+  if (T.slag && T.srunning) { c.strokeStyle = '#ff8a3d'; c.lineWidth = 6; c.lineCap = 'round'; c.beginPath(); c.moveTo(T.sx0, T.sy0); c.quadraticCurveTo(T.sx0 - 22, T.sy0 + 4, 86, 724); c.stroke(); c.lineCap = 'butt'; }
+}
+
+function drawCut(c, t) {
+  var R = S.run, heat = R ? R.heat : 0, i, y, g;
+  c.fillStyle = 'rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(CX, 726, 190, 22, 0, 0, 6.283); c.fill();
+  /* Heißwindleitung (senkrecht) und Düsen */
+  var wOn = !!(R && R.wind);
+  [-1, 1].forEach(function (s) {
+    var wx = CX + s * (outerR(598) + 24);
+    pipeDash(c, wx, 520, wx, 598, wOn, t); pipeDash(c, wx, 598, CX + s * (outerR(598) - 4), 598, wOn, t);
+    c.fillStyle = '#6f7c93'; c.beginPath(); c.arc(wx, 520, 9, 0, 6.283); c.fill();
+    addHS('wind', wx, 598, 20);
+  });
+  /* Gasleitungen oben */
+  [-1, 1].forEach(function (s) { drawGasPipe(c, CX + s * 46, 74, CX + s * 100, 22, t, !!(R && R.wind && R.heat > 0.3)); addHS('gasrohr', CX + s * 80, 38, 22); });
+  /* Wand */
+  [-1, 1].forEach(function (s) {
+    bandPath(c, s, 0, 16, 714); c.fillStyle = '#6e3326'; c.fill();
+    c.save(); bandPath(c, s, 0, 16, 714); c.clip(); c.strokeStyle = 'rgba(30,10,6,.55)'; c.lineWidth = 1;
+    for (y = 74; y < 714; y += 12) { c.beginPath(); c.moveTo(CX + s * (innerR(y) - 2), y); c.lineTo(CX + s * (innerR(y) + 18), y); c.stroke(); }
+    c.restore();
+    bandPath(c, s, 16, 24, 714); g = c.createLinearGradient(CX - 190, 0, CX + 190, 0); g.addColorStop(0, '#dfe7f4'); g.addColorStop(.5, '#8d99ae'); g.addColorStop(1, '#4e586c'); c.fillStyle = g; c.fill();
+  });
+  c.fillStyle = '#3a4152'; c.fillRect(CX - outerR(690), 690, outerR(690) * 2, 24);
+  /* Innenraum */
+  c.save(); interiorPath(c); c.clip();
+  c.fillStyle = heatGrad(c, heat); c.fillRect(0, 60, CW, 650);
+  g = c.createLinearGradient(CX - 160, 0, CX + 160, 0); g.addColorStop(0, 'rgba(0,0,0,.6)'); g.addColorStop(.2, 'rgba(0,0,0,0)'); g.addColorStop(.8, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.6)'); c.fillStyle = g; c.fillRect(0, 60, CW, 650);
+  [170, 300, 420, 470, 590].forEach(function (yy) { arcLine(c, yy, innerR(yy), true, 'rgba(0,0,0,.32)', 2); });
+  if (S.selZone && S.step === 3) { var z = zoneById(S.selZone); c.fillStyle = 'rgba(255,255,255,.1)'; c.fillRect(0, z.y0, CW, z.y1 - z.y0); c.setLineDash([6, 5]); c.strokeStyle = 'rgba(255,255,255,.85)'; c.lineWidth = 2; c.strokeRect(CX - 200, z.y0 + 1, 400, z.y1 - z.y0 - 2); c.setLineDash([]); }
+  drawLiquids(c); drawParts(c, heat); drawGasAndFlash(c);
+  if (S.step === 3 && heat > 0.3) { c.font = 'bold 13px sans-serif'; c.textAlign = 'center'; c.fillStyle = '#fff'; c.shadowColor = 'rgba(0,0,0,.9)'; c.shadowBlur = 4; [[110, '200 °C'], [170, '400 °C'], [300, '900 °C'], [470, '1400 °C'], [560, '1600 °C'], [602, '2000 °C']].forEach(function (q) { c.fillText(q[1], CX, q[0] + 5); }); c.shadowBlur = 0; }
+  c.restore();
+  /* Ränder und Kanten */
+  arcLine(c, 70, outerR(70), true, '#dfe7f4', 4);
+  [-1, 1].forEach(function (s) { c.strokeStyle = 'rgba(255,255,255,.35)'; c.lineWidth = 1.5; bandPath(c, s, 16, 24, 714); c.stroke(); });
+  /* Gichtverschluss (Glocke) und Trichter */
+  var open = S.bell > 0;
+  c.fillStyle = '#5b667c'; c.beginPath(); c.moveTo(CX - 48, 46); c.lineTo(CX + 48, 46); c.lineTo(CX + 26, 70); c.lineTo(CX - 26, 70); c.closePath(); c.fill();
+  c.fillStyle = open ? '#1d2230' : '#aab6cc'; c.beginPath(); c.moveTo(CX - 26, 70); c.lineTo(CX + 26, 70); c.lineTo(CX + (open ? 34 : 8), open ? 84 : 78); c.lineTo(CX - (open ? 34 : 8), open ? 84 : 78); c.closePath(); c.fill();
+  addHS('gicht', CX, 56, 26);
+  /* Düsen-Glut innen */
+  if (R && R.wind) { [-1, 1].forEach(function (s) { var gg = c.createRadialGradient(CX + s * (innerR(598) - 8), 598, 2, CX + s * (innerR(598) - 8), 598, 30); gg.addColorStop(0, 'rgba(255,255,230,' + 0.9 * R.heat + ')'); gg.addColorStop(1, 'rgba(255,200,100,0)'); c.fillStyle = gg; c.fillRect(CX + s * innerR(598) - 40, 560, 80, 80); }); }
+  /* Abstichlöcher */
+  var xi = CX + outerR(684), xs = CX - outerR(640), T = S.tap;
+  c.strokeStyle = '#7e8aa2'; c.lineWidth = 10; c.lineCap = 'round'; c.beginPath(); c.moveTo(xi - 8, 684); c.lineTo(xi + 30, 692); c.stroke(); c.beginPath(); c.moveTo(xs + 8, 640); c.lineTo(xs - 30, 648); c.stroke(); c.lineCap = 'butt';
+  c.fillStyle = T.iron ? '#ffcf4a' : '#1b1b22'; c.beginPath(); c.arc(xi - 2, 684, 6, 0, 6.283); c.fill();
+  c.fillStyle = T.slag ? '#ff8a3d' : '#1b1b22'; c.beginPath(); c.arc(xs + 2, 640, 6, 0, 6.283); c.fill();
+  T.ix0 = xi + 30; T.iy0 = 692; T.sx0 = xs - 30; T.sy0 = 648;
+  addHS('stich', xi + 8, 686, 24); addHS('schlacke', xs - 8, 642, 24);
+  if (S.step === 4 && !T.iron && R) pulse(c, xi + 6, 686, t); if (S.step === 4 && !T.slag && R) pulse(c, xs - 6, 642, t, 'rgba(255,160,90,' + (0.35 + 0.5 * (Math.sin(t * 5) + 1) / 2) + ')');
+  drawLadles(c, t); drawStreams(c, t);
+  /* Zonen-Klammern */
+  if (S.step === 3) {
+    c.font = 'bold 12.5px sans-serif'; c.textAlign = 'left';
+    ZONES.forEach(function (z) {
+      var on = S.selZone === z.id; c.strokeStyle = on ? '#ffd166' : 'rgba(125,249,255,.8)'; c.lineWidth = on ? 3 : 2;
+      c.beginPath(); c.moveTo(482, z.y0 + 3); c.lineTo(488, z.y0 + 3); c.lineTo(488, z.y1 - 3); c.lineTo(482, z.y1 - 3); c.stroke();
+      c.fillStyle = on ? '#ffd166' : '#bdeeff'; var words = z.name.split(' '); c.fillText(z.id === 'ver' ? 'Verbrennung' : z.name, 494, (z.y0 + z.y1) / 2 + 4);
+    });
+  }
+}
+
+function drawOut(c, t) {
+  var yaw = S.yaw, N = 28, i, k, a, d, y, R = S.run, wOn = !!(R && R.wind), g;
+  c.fillStyle = 'rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(CX, 726, 190, 22, 0, 0, 6.283); c.fill();
+  /* Förderband / Schrägaufzug */
+  c.strokeStyle = '#6c7890'; c.lineWidth = 4; c.beginPath(); c.moveTo(40, 720); c.lineTo(CX - 90, 40); c.stroke(); c.beginPath(); c.moveTo(60, 720); c.lineTo(CX - 74, 40); c.stroke();
+  for (i = 0; i < 14; i++) { var f = i / 14; c.lineWidth = 2; c.beginPath(); c.moveTo(lerp(40, CX - 90, f), lerp(720, 40, f)); c.lineTo(lerp(60, CX - 74, f), lerp(720, 40, f)); c.stroke(); }
+  var sk = S.bell > 0 ? (1 - S.bell / 0.9) : (S.run ? 0 : 0); var skf = S.bell > 0 ? clamp(sk, 0, 1) : 0.02;
+  c.save(); c.translate(lerp(50, CX - 82, skf), lerp(712, 52, skf)); c.rotate(-0.16); c.fillStyle = '#c4623f'; c.fillRect(-14, -12, 28, 18); c.fillStyle = '#333'; c.fillRect(-14, 6, 28, 4); c.restore();
+  /* hintere Anbauten (Tiefe < 0) */
+  function atts(front) {
+    var Rb = outerR(548) + 34, Rt = outerR(598) + 6, bx, by, tx, ty;
+    arcLine2(c, 548, Rb, !front, wOn ? '#e3a15d' : '#7e8aa2', 9);
+    for (k = 0; k < 12; k++) {
+      a = k * Math.PI * 2 / 12 + yaw; d = Math.cos(a); if ((d > 0) !== front) continue;
+      bx = CX + Rb * Math.sin(a); by = 548 + Rb * TILT * d; tx = CX + Rt * Math.sin(a); ty = 598 + Rt * TILT * d;
+      pipeDash(c, bx, by, tx, ty, wOn, t); c.fillStyle = wOn ? '#ffd9a0' : '#a9b4c9'; c.beginPath(); c.arc(tx, ty, 5, 0, 6.283); c.fill();
+      if (front) addHS('wind', tx, ty, 14);
+    }
+    [[HOLE_I, '#ffcf4a', 'stich', S.tap.iron], [HOLE_S, '#ff8a3d', 'schlacke', S.tap.slag]].forEach(function (h) {
+      var aa = h[0].a + yaw, dd = Math.cos(aa); if ((dd > 0) !== front) return;
+      var rr = outerR(h[0].y), hx = CX + rr * Math.sin(aa), hy = h[0].y + rr * TILT * dd, ex = hx + Math.sin(aa) * 34, ey = hy + 12 + 8 * dd;
+      c.strokeStyle = '#7e8aa2'; c.lineWidth = 11; c.lineCap = 'round'; c.beginPath(); c.moveTo(hx, hy); c.lineTo(ex, ey); c.stroke(); c.lineCap = 'butt';
+      c.fillStyle = h[3] ? h[1] : '#1b1b22'; c.beginPath(); c.arc(hx, hy, 6, 0, 6.283); c.fill();
+      if (front) { addHS(h[2], hx, hy, 22); if (S.step === 4 && !h[3]) pulse(c, hx, hy, t, h[2] === 'schlacke' ? 'rgba(255,160,90,.8)' : null); }
+      if (h[2] === 'stich') { S.tap.ix0 = ex; S.tap.iy0 = ey; } else { S.tap.sx0 = ex; S.tap.sy0 = ey; }
+    });
+    [-1, 1].forEach(function (s) { var aa = s * 1.15 + yaw, dd = Math.cos(aa); if ((dd > 0) !== front) return; var rr = outerR(70) - 8, bx2 = CX + rr * Math.sin(aa), by2 = 70 + rr * TILT * dd; drawGasPipe(c, bx2, by2, bx2 + Math.sin(aa) * 40, by2 - 50, t, !!(R && R.wind && R.heat > 0.3)); if (front) addHS('gasrohr', bx2 + Math.sin(aa) * 20, by2 - 25, 20); });
+  }
+  atts(false);
+  /* Körper */
+  c.beginPath(); c.moveTo(CX - outerR(70), 70); for (i = 1; i < KEYY.length; i++) c.lineTo(CX - outerR(KEYY[i]), KEYY[i]); c.lineTo(CX - outerR(690), 714); c.lineTo(CX + outerR(690), 714); for (i = KEYY.length - 1; i >= 0; i--) c.lineTo(CX + outerR(KEYY[i]), KEYY[i]); c.closePath();
+  g = c.createLinearGradient(CX - 180, 0, CX + 180, 0); g.addColorStop(0, '#39425a'); g.addColorStop(.28, '#b3bfd6'); g.addColorStop(.45, '#8f9db7'); g.addColorStop(.78, '#4c566e'); g.addColorStop(1, '#262c3c'); c.fillStyle = g; c.fill();
+  c.save(); c.clip();
+  for (k = 0; k < N; k++) { a = k * Math.PI * 2 / N + yaw; d = Math.cos(a); if (d <= 0) continue; c.strokeStyle = 'rgba(15,20,35,' + (0.28 * d) + ')'; c.lineWidth = 1.6; c.beginPath(); KEYY.forEach(function (yy, j) { var xx = CX + outerR(yy) * Math.sin(a), y2 = yy + outerR(yy) * TILT * d; if (j) c.lineTo(xx, y2); else c.moveTo(xx, y2); }); c.stroke(); }
+  [130, 200, 270, 345, 420, 470, 530, 590, 650].forEach(function (yy) { arcLine(c, yy, outerR(yy), false, 'rgba(10,14,28,.5)', 2.2); arcLine(c, yy - 3, outerR(yy), false, 'rgba(255,255,255,.12)', 1.2); });
+  if (R && R.heat > 0.2) { g = c.createLinearGradient(0, 400, 0, 700); g.addColorStop(0, 'rgba(255,120,40,0)'); g.addColorStop(1, 'rgba(255,120,40,' + (0.3 * R.heat) + ')'); c.fillStyle = g; c.fillRect(0, 400, CW, 320); }
+  c.restore();
+  /* Deckel */
+  c.fillStyle = '#2b3243'; c.beginPath(); c.ellipse(CX, 70, outerR(70), outerR(70) * TILT, 0, 0, 6.283); c.fill(); c.strokeStyle = '#dfe7f4'; c.lineWidth = 3; c.stroke();
+  c.fillStyle = '#5b667c'; c.beginPath(); c.moveTo(CX - 48, 52); c.lineTo(CX + 48, 52); c.lineTo(CX + 32, 70); c.lineTo(CX - 32, 70); c.closePath(); c.fill(); c.fillStyle = '#aab6cc'; c.beginPath(); c.ellipse(CX, 52, 48, 7, 0, 0, 6.283); c.fill();
+  addHS('gicht', CX, 60, 28);
+  atts(true);
+}
+function arcLine2(c, y, r, back, col, w) { c.strokeStyle = col; c.lineWidth = w; c.beginPath(); c.ellipse(CX, y, r, r * TILT, 0, back ? Math.PI : 0, back ? 2 * Math.PI : Math.PI); c.stroke(); }
+
+/* ====== Konverter ====== */
+var KS = { tilt: 0, fill: 0, spark: [], fume: [] }, VS = 1;
+function vpOut(c) { c.beginPath(); c.moveTo(-84, -240); c.lineTo(-84, -170); c.bezierCurveTo(-150, -120, -150, 120, -128, 200); c.quadraticCurveTo(0, 275, 128, 200); c.bezierCurveTo(150, 120, 150, -120, 84, -170); c.lineTo(84, -240); c.closePath(); }
+function vpIn(c) { c.beginPath(); c.moveTo(-64, -240); c.lineTo(-64, -164); c.bezierCurveTo(-128, -116, -128, 116, -108, 188); c.quadraticCurveTo(0, 250, 108, 188); c.bezierCurveTo(128, 116, 128, -116, 64, -164); c.lineTo(64, -240); c.closePath(); }
+function drawKonv(c, t, dt) {
+  var K = S.konv, i, g, blow = K && K.state === 'blow';
+  c.fillStyle = 'rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(CX, 736, 200, 18, 0, 0, 6.283); c.fill();
+  c.fillStyle = '#3a4152'; c.fillRect(CX - 175, 700, 350, 26); c.fillRect(CX - 178, 430, 20, 280); c.fillRect(CX + 158, 430, 20, 280);
+  c.fillStyle = '#6c7890'; c.beginPath(); c.arc(CX - 168, 430, 14, 0, 6.283); c.fill(); c.beginPath(); c.arc(CX + 168, 430, 14, 0, 6.283); c.fill();
+  c.save(); c.translate(CX, 430); c.rotate(KS.tilt);
+  vpOut(c); g = c.createLinearGradient(-150, 0, 150, 0); g.addColorStop(0, '#2f3648'); g.addColorStop(.3, '#b3bed4'); g.addColorStop(.55, '#7d8aa3'); g.addColorStop(1, '#2a3040'); c.fillStyle = g; c.fill();
+  vpIn(c); c.fillStyle = '#34170f'; c.fill();
+  c.restore();
+  if (KS.fill > 0.001) {
+    c.save(); c.translate(CX, 430); c.rotate(KS.tilt); vpIn(c); c.clip(); c.setTransform(VS, 0, 0, VS, 0, 0);
+    var surf = 430 + 215 - KS.fill * 330 + Math.abs(KS.tilt) * 70;
+    g = c.createLinearGradient(0, surf, 0, 700); var hot = blow ? 1 : 0.7; g.addColorStop(0, mixc([255, 240, 170], [255, 255, 235], hot - 0.7)); g.addColorStop(1, '#ff7a2a'); c.fillStyle = g; c.fillRect(0, surf, CW, 400);
+    c.fillStyle = 'rgba(255,255,255,.55)'; c.fillRect(CX - 140, surf, 280, 2);
+    if (blow) for (i = 0; i < 14; i++) { var bx = CX - 80 + ((i * 53 + t * 40) % 160), by = surf + 10 + ((i * 37 + t * 90) % 90); c.fillStyle = 'rgba(255,240,190,.5)'; c.beginPath(); c.arc(bx, by, 3 + (i % 3), 0, 6.283); c.fill(); }
+    c.restore();
+  }
+  /* Sauerstofflanze */
+  var ly = blow ? 262 : 70;
+  c.fillStyle = '#9aa6bb'; c.fillRect(CX - 8, 20, 16, ly - 20); c.fillStyle = '#d7e0ef'; c.fillRect(CX - 3, 20, 4, ly - 20); c.fillStyle = '#6f7c93'; c.fillRect(CX - 12, ly - 6, 24, 10);
+  if (blow) {
+    var jg = c.createLinearGradient(0, ly, 0, ly + 70); jg.addColorStop(0, 'rgba(190,235,255,.95)'); jg.addColorStop(1, 'rgba(190,235,255,0)'); c.fillStyle = jg; c.beginPath(); c.moveTo(CX - 7, ly + 4); c.lineTo(CX + 7, ly + 4); c.lineTo(CX + 26, ly + 70); c.lineTo(CX - 26, ly + 70); c.closePath(); c.fill();
+    for (i = 0; i < 3; i++) { KS.spark.push({ x: CX + rnd(-30, 30), y: 196, vx: rnd(-90, 90), vy: -rnd(120, 260), l: 1 }); }
+    KS.fume.push({ x: CX + rnd(-30, 30), y: 190, vy: -rnd(30, 60), l: 1, r: rnd(10, 18) });
+  }
+  for (i = KS.spark.length - 1; i >= 0; i--) { var sp = KS.spark[i]; sp.x += sp.vx * dt; sp.y += sp.vy * dt; sp.vy += 420 * dt; sp.l -= dt * 0.9; if (sp.l <= 0) { KS.spark.splice(i, 1); continue; } c.fillStyle = 'rgba(255,190,80,' + sp.l + ')'; c.beginPath(); c.arc(sp.x, sp.y, 2.2, 0, 6.283); c.fill(); }
+  for (i = KS.fume.length - 1; i >= 0; i--) { var fu = KS.fume[i]; fu.y += fu.vy * dt; fu.r += dt * 14; fu.l -= dt * 0.45; if (fu.l <= 0) { KS.fume.splice(i, 1); continue; } c.fillStyle = 'rgba(190,100,60,' + (fu.l * 0.35) + ')'; c.beginPath(); c.arc(fu.x, fu.y, fu.r, 0, 6.283); c.fill(); }
+  /* Pfanne beim Einfüllen */
+  if (K && K.state === 'filling') {
+    var f = K.t / 2.6, pa = -0.9 * Math.sin(clamp(f * 1.2, 0, 1) * Math.PI / 1.1);
+    c.save(); c.translate(150, 120); c.rotate(pa - 0.4); c.fillStyle = '#4b5366'; c.beginPath(); c.moveTo(-34, -22); c.lineTo(34, -22); c.lineTo(26, 26); c.lineTo(-26, 26); c.closePath(); c.fill(); c.fillStyle = '#ffd34d'; c.fillRect(-30, -20, 60, 8); c.restore();
+    if (f > 0.1 && f < 0.9) { c.strokeStyle = '#ffd34d'; c.lineWidth = 7; c.lineCap = 'round'; c.beginPath(); c.moveTo(188, 150); c.quadraticCurveTo(250, 160, CX - 30, 232); c.stroke(); c.lineCap = 'butt'; }
+  }
+  if (K && K.state === 'pour') { c.strokeStyle = '#ffe9a0'; c.lineWidth = 8; c.lineCap = 'round'; c.beginPath(); c.moveTo(CX - 120, 360); c.quadraticCurveTo(CX - 170, 460, 110, 640); c.stroke(); c.lineCap = 'butt'; c.fillStyle = '#4b5366'; c.beginPath(); c.moveTo(60, 640); c.lineTo(160, 640); c.lineTo(148, 700); c.lineTo(72, 700); c.closePath(); c.fill(); }
+}
+function konvStep(dt) {
+  var K = S.konv, e; if (!K) return;
+  if (K.state === 'filling') { K.t += dt; var f = clamp(K.t / 2.6, 0, 1); KS.tilt = -0.75 * Math.sin(f * Math.PI); KS.fill = 0.55 * clamp((f - 0.2) / 0.6, 0, 1); if (f >= 1) { K.state = 'ready'; KS.tilt = 0; KS.fill = 0.55; panel(); } }
+  if (K.state === 'blow') {
+    e = K.el; K.blowT += dt; e.Si *= Math.exp(-0.42 * dt); e.Mn *= Math.exp(-0.28 * dt); e.P *= Math.exp(-0.13 * dt); e.S *= Math.exp(-0.045 * dt); e.C *= Math.exp(-0.17 * dt);
+    if (e.C < 0.05) K.fe += dt; updKonvBars();
+  }
+  if (K.state === 'pour') { K.t += dt; var g = clamp(K.t / 2.8, 0, 1); KS.tilt = 0.75 * Math.sin(Math.min(1, g * 1.1) * Math.PI / 1.4); KS.fill = 0.55 * (1 - g); if (g >= 1) { K.state = 'done'; KS.tilt = 0; KS.fill = 0; K.res = konvResult(); if (K.res.steel) { S.unlocked = Math.max(S.unlocked, 6); burst($('cvwrap')); } panel(); } }
+}
+
+function konvResult() {
+  var K = S.konv, e = K.el, r = { steel: false, title: '', text: '' };
+  if (e.C > 2) { r.title = 'Das ist noch Roheisen'; r.text = 'Mit ' + fmt(e.C) + ' % Kohlenstoff ist das Eisen noch spröde und nicht schmiedbar. Stahl enthält höchstens 2 % Kohlenstoff. Du hast zu früh aufgehört: Beginne mit neuem Roheisen und blase länger.'; }
+  else if (e.C < 0.05) { r.title = 'Zu lange geblasen'; r.text = 'Der Kohlenstoff ist fast vollständig weg (' + fmt(e.C, 2) + ' %), und ein Teil des Eisens selbst ist verbrannt. Das kostet Ausbeute, und der Stahl wäre sehr weich. Versuche es noch einmal mit etwas weniger Blasezeit.'; }
+  else if (e.P > 0.06) { r.title = 'Fast: Phosphor noch zu hoch'; r.text = 'Der Kohlenstoff passt (' + fmt(e.C, 2) + ' %), aber es steckt noch ' + fmt(e.P, 2) + ' % Phosphor im Stahl. Er macht Stahl in der Kälte spröde. Blase etwas länger, bis auch der Phosphor weitgehend oxidiert ist.'; }
+  else {
+    r.steel = true; r.title = '✔ Stahl!';
+    var typ = e.C < 0.25 ? 'weicher Baustahl (gut schmiedbar und schweißbar)' : e.C < 0.8 ? 'mittelharter Stahl (z. B. für Schienen, Achsen)' : 'harter Werkzeugstahl';
+    r.text = 'Kohlenstoff ' + fmt(e.C, 2) + ' %: ' + typ + '. Die Verunreinigungen sind größtenteils oxidiert und als Gas oder Schlacke entwichen.';
+  }
+  return r;
+}
+
+/* ====== Abstich ====== */
+function tapHole(which) {
+  var R = S.run, T = S.tap; if (!R || S.step !== 4) return;
+  if (which === 'iron') {
+    if (T.iron) return; T.iron = true; T.irunning = true; T.order.push('iron');
+    T.fb = '<div class="fb ok">Das Stichloch ist offen: Das flüssige Roheisen läuft in die Pfanne.' + (T.order.length === 1 ? ' Die Schlacke schwimmt noch oben im Gestell. Sie wird durch ein eigenes Loch weiter oben abgelassen.' : '') + '</div>';
+  } else {
+    if (T.slag) return; T.slag = true; T.srunning = true; T.order.push('slag');
+    T.fb = '<div class="fb ok">Das Schlackenloch ist offen: Die Schlacke läuft ab, die auf dem Roheisen schwimmt.' + (T.order.length === 1 ? ' Das Roheisen liegt darunter und wird durch das Stichloch weiter unten abgestochen.' : '') + '</div>';
+  }
+  panel();
+}
+function tapStep(dt) {
+  var R = S.run, T = S.tap, d; if (!R) return;
+  if (T.iron && T.irunning) { d = Math.min(R.iron, 0.2 * dt); R.iron -= d; T.ironOut += d; if (R.iron <= 0.0005) { T.irunning = false; R.iron = 0; panel(); } }
+  if (T.slag && T.srunning) { d = Math.min(R.slag, 0.2 * dt); R.slag -= d; T.slagOut += d; if (R.slag <= 0.0005) { T.srunning = false; R.slag = 0; panel(); } }
+}
+
+/* ====== Gleichungen ====== */
+var ATOMS = { Fe2O3: { Fe: 2, O: 3 }, CO: { C: 1, O: 1 }, Fe: { Fe: 1 }, CO2: { C: 1, O: 2 }, C: { C: 1 }, O2: { O: 2 }, Fe3C: { Fe: 3, C: 1 } };
+var FORM = { Fe2O3: 'Fe<sub>2</sub>O<sub>3</sub>', CO: 'CO', Fe: 'Fe', CO2: 'CO<sub>2</sub>', C: 'C', O2: 'O<sub>2</sub>', Fe3C: 'Fe<sub>3</sub>C' };
+var EQ = {
+  red: { L: ['Fe2O3', 'CO'], R: ['Fe', 'CO2'], sol: [1, 3, 2, 3], init: [1, 1, 1, 1], nm: 'Reduktion des Eisenoxids', read: 'Eisenoxid reagiert mit Kohlenstoffmonoxid zu Eisen und Kohlenstoffdioxid.', merke: 'Das Eisenoxid gibt Sauerstoff ab: Es wird <b>reduziert</b>. Das CO nimmt den Sauerstoff auf: Es wird <b>oxidiert</b>. Das ist eine Redoxreaktion.' },
+  koh: { L: ['CO2', 'C'], R: ['CO'], sol: [1, 1, 2], init: [1, 2, 1], nm: 'Boudouard-Gleichgewicht', read: 'Kohlenstoffdioxid reagiert mit Kohlenstoff zu Kohlenstoffmonoxid.', merke: 'Hier fehlt der Sauerstoff, der ein Stockwerk tiefer schon verbraucht wurde. So entsteht das Reduktionsmittel CO, das weiter oben das Erz reduziert.' },
+  ver: { L: ['C', 'O2'], R: ['CO2'], sol: [1, 1, 1], init: [2, 1, 2], nm: 'Verbrennung des Kokses', read: 'Kohlenstoff verbrennt mit Sauerstoff zu Kohlenstoffdioxid.', merke: 'Diese Verbrennung liefert sehr viel Wärme. Deshalb ist es an den Windformen am heißesten.' },
+  sch: { L: ['Fe', 'C'], R: ['Fe3C'], sol: [3, 1, 1], init: [1, 1, 1], nm: 'Aufnahme von Kohlenstoff', read: 'Eisen nimmt Kohlenstoff auf und bildet Eisencarbid.', merke: 'Darum enthält das Roheisen bis zu 4 % Kohlenstoff und ist spröde.' }
+};
+function eqCoef(id) { if (!S.eq[id]) S.eq[id] = { c: EQ[id].init.slice(), ok: false, fb: '' }; return S.eq[id]; }
+function atomCount(id) {
+  var q = EQ[id], st = eqCoef(id), L = {}, R = {}, i, a, n = q.L.length;
+  q.L.forEach(function (m, j) { for (a in ATOMS[m]) L[a] = (L[a] || 0) + ATOMS[m][a] * st.c[j]; });
+  q.R.forEach(function (m, j) { for (a in ATOMS[m]) R[a] = (R[a] || 0) + ATOMS[m][a] * st.c[n + j]; });
+  return { L: L, R: R };
+}
+function gcd(a, b) { return b ? gcd(b, a % b) : a; }
+function checkEq(id) {
+  var st = eqCoef(id), q = EQ[id], ac = atomCount(id), bal = true, a, g = 0;
+  for (a in ac.L) if (ac.L[a] !== (ac.R[a] || 0)) bal = false;
+  for (a in ac.R) if (ac.R[a] !== (ac.L[a] || 0)) bal = false;
+  st.c.forEach(function (v) { g = gcd(g, v); });
+  if (!bal) st.fb = '<div class="fb no">Noch nicht ausgeglichen: Auf beiden Seiten müssen von jeder Atomsorte gleich viele Atome stehen. Schau in die Atomzählung.</div>';
+  else if (g > 1) st.fb = '<div class="fb no">Die Atome stimmen. Kürze die Zahlen noch auf die kleinstmöglichen ganzen Zahlen.</div>';
+  else { st.ok = true; st.fb = '<div class="fb ok"><b>✔ Richtig ausgeglichen.</b> ' + q.read + '<br>' + q.merke + '</div>'; burst($('panel')); }
+  panel();
+}
+function eqHTML(id) {
+  var q = EQ[id], st = eqCoef(id), box = mk('div'), eq = mk('div', 'eq'), n = q.L.length, all = q.L.concat(q.R);
+  all.forEach(function (m, j) {
+    if (j === n) eq.appendChild(mk('span', 'op', '→')); else if (j > 0) eq.appendChild(mk('span', 'op', '+'));
+    var term = mk('span', 'term'), s = mk('span', 'st'), up = mk('button', '', '+'), dn = mk('button', '', '−'); up.type = dn.type = 'button';
+    up.setAttribute('aria-label', 'Zahl erhöhen'); dn.setAttribute('aria-label', 'Zahl verringern');
+    up.addEventListener('click', function () { if (st.ok) return; st.c[j] = Math.min(9, st.c[j] + 1); st.fb = ''; panel(); });
+    dn.addEventListener('click', function () { if (st.ok) return; st.c[j] = Math.max(1, st.c[j] - 1); st.fb = ''; panel(); });
+    s.appendChild(up); s.appendChild(dn); term.appendChild(s); term.appendChild(mk('span', 'n', String(st.c[j]))); term.appendChild(mk('span', '', FORM[m])); eq.appendChild(term);
+  });
+  box.appendChild(eq);
+  var ac = atomCount(id), at = mk('div', 'atoms'), a, names = {};
+  for (a in ac.L) names[a] = 1; for (a in ac.R) names[a] = 1;
+  Object.keys(names).forEach(function (x) { var l = ac.L[x] || 0, r = ac.R[x] || 0; at.appendChild(mk('span', l === r ? 'ok' : 'no', x + ': ' + l + ' | ' + r)); });
+  box.appendChild(mk('p', 'hint muted', 'Atomzählung (links | rechts):')); box.lastChild.style.cssText = 'font-size:13px;margin:4px 0 0'; box.appendChild(at);
+  return box;
+}
+/* Teilchenbild */
+var MOLA = { Fe2O3: [['Fe', -9, -4], ['Fe', 9, -4], ['O', -14, 9], ['O', 0, 11], ['O', 14, 9]], CO: [['C', -6, 0], ['O', 6, 0]], Fe: [['Fe', 0, 0]], CO2: [['O', -12, 0], ['C', 0, 0], ['O', 12, 0]], C: [['C', 0, 0]], O2: [['O', -6, 0], ['O', 6, 0]], Fe3C: [['Fe', -9, 3], ['Fe', 9, 3], ['Fe', 0, -9], ['C', 0, 2]] };
+var ACOL = { Fe: ['#f0a14b', 8], O: ['#ff5d73', 5.6], C: ['#4a5262', 5.6] };
+function drawMol(c, m, x, y) { MOLA[m].forEach(function (a) { var s = ACOL[a[0]]; c.fillStyle = s[0]; c.beginPath(); c.arc(x + a[1] * 0.8, y + a[2] * 0.8, s[1] * 0.8, 0, 6.283); c.fill(); c.strokeStyle = 'rgba(255,255,255,.5)'; c.lineWidth = 1; c.stroke(); }); }
+function drawReaction(c, id, t) {
+  var q = EQ[id], st = eqCoef(id), n = q.L.length, W = 340, H = 120, ph = (t % 5) / 5, ac = atomCount(id), bal = true, a;
+  c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, c.canvas.width, c.canvas.height); var k = c.canvas.width / W; c.setTransform(k, 0, 0, k, 0, 0);
+  for (a in ac.L) if (ac.L[a] !== (ac.R[a] || 0)) bal = false; for (a in ac.R) if (ac.R[a] !== (ac.L[a] || 0)) bal = false;
+  function row(list, x0, x1, move) {
+    var items = [], j, i; list.forEach(function (m, jj) { for (i = 0; i < st.c[(list === q.L ? 0 : n) + jj]; i++) items.push(m); });
+    var cols = Math.min(5, Math.max(1, items.length)), rows = Math.ceil(items.length / cols);
+    items.forEach(function (m, idx) { var cx = x0 + ((idx % cols) + 0.5) * (x1 - x0) / cols, cy = H / 2 + (Math.floor(idx / cols) - (rows - 1) / 2) * 34 + Math.sin(t * 2 + idx) * 3; drawMol(c, m, cx + move, cy); });
+  }
+  var pull = Math.sin(clamp(ph / 0.5, 0, 1) * Math.PI / 2) * 22;
+  row(q.L, 8, 140, pull); row(q.R, 200, 332, -pull * 0.4 * (1 - clamp((ph - 0.5) * 4, 0, 1)));
+  c.fillStyle = bal ? '#5ee6a8' : '#9fb0c8'; c.font = 'bold 24px sans-serif'; c.textAlign = 'center'; c.fillText('→', 170, H / 2 + 8);
+  if (bal && ph > 0.45 && ph < 0.6) { c.fillStyle = 'rgba(255,240,170,' + (1 - Math.abs(ph - 0.52) * 12) + ')'; c.beginPath(); c.arc(170, H / 2, 24, 0, 6.283); c.fill(); }
+}
+
+/* ====== Texte ====== */
+var PARTS = {
+  gicht: { n: 'Gicht', d: 'Die Öffnung ganz oben. Hier wird der Ofen mit Koks, Eisenerz und Zuschlägen wie Kalkstein befüllt.' },
+  gasrohr: { n: 'Gichtgasleitung', d: 'Durch sie entweicht das Gas nach oben (Gichtgas) und wird abgeleitet.' },
+  kohlensack: { n: 'Kohlensack', d: 'Die breiteste Stelle des Ofens, zwischen Schacht und Rast.' },
+  schacht: { n: 'Schacht', d: 'Der obere, nach unten weiter werdende Teil. Hier wandern die Feststoffe nach unten und die Gase nach oben.' },
+  rast: { n: 'Rast', d: 'Der Ofen wird wieder enger. Hier ist es so heiß, dass das Eisen schmilzt.' },
+  gestell: { n: 'Gestell', d: 'Der unterste Teil. Hier sammelt sich das flüssige Roheisen, darauf schwimmt die Schlacke.' },
+  wind: { n: 'Windform (Düse)', d: 'Durch die Windformen wird die heiße Luft (Heißwind) in den Ofen geblasen.' },
+  stich: { n: 'Abstich (Stichloch)', d: 'Hier wird das flüssige Roheisen entnommen.' },
+  schlacke: { n: 'Schlackenloch', d: 'Hier läuft die Schlacke ab, die auf dem Roheisen schwimmt.' }
+};
+var AQ = [
+  ['gicht', 'Hier wird der Ofen von oben mit Koks, Erz und Kalkstein befüllt.'],
+  ['wind', 'Hier wird die heiße Luft eingeblasen.'],
+  ['stich', 'Hier wird das flüssige Roheisen entnommen.'],
+  ['schlacke', 'Hier läuft die Schlacke ab.'],
+  ['gasrohr', 'Hier entweicht das Gas, das nach oben durch den Ofen gestiegen ist.'],
+  ['gestell', 'Hier sammelt sich unten das flüssige Roheisen.'],
+  ['kohlensack', 'Das ist die breiteste Stelle des Ofens.']
+];
+var ZTXT = {
+  vor: 'Die Beschickung wird von den aufsteigenden heißen Gasen getrocknet und vorgewärmt. Hier gibt das Gas viel von seiner Wärme ab und kühlt sich dabei ab.',
+  red: 'Das aufsteigende Kohlenstoffmonoxid reagiert mit dem Eisenoxid des Erzes. Dabei entsteht festes Eisen.',
+  koh: 'Das Kohlenstoffdioxid aus der Verbrennung strömt nach oben und reagiert mit weiterem Kohlenstoff zu Kohlenstoffmonoxid. Außerdem zerfällt hier der Kalkstein: CaCO<sub>3</sub> → CaO + CO<sub>2</sub>.',
+  sch: 'Das Eisen nimmt Kohlenstoff auf, schmilzt und tropft nach unten. Der Kalk (CaO) verbindet sich mit Verunreinigungen wie Siliciumdioxid zur flüssigen Schlacke.',
+  ver: 'Hier wird die heiße Luft eingeblasen. Der Koks verbrennt mit dem Sauerstoff zu Kohlenstoffdioxid. Dabei entsteht sehr viel Wärme.'
+};
+var TIPSB = ['Die unterste Schicht liegt später direkt an den Windformen, wo die heiße Luft eintritt. Dort muss etwas verbrennen können.',
+  'Koks liefert Wärme und das Reduktionsmittel Kohlenstoffmonoxid. Er sollte mindestens so oft vorkommen wie das Erz. Auch zwischen den Erzschichten hat er eine Aufgabe.',
+  'Zwei Erzschichten direkt übereinander lassen das Gas schlecht durch. Der Kalkstein wird für die Schlacke gebraucht: Ohne ihn bleiben Verunreinigungen im Eisen.'];
+
+/* ====== Oberfläche ====== */
+var STEPN = ['1 · Aufbau', '2 · Beschicken', '3 · Betrieb', '4 · Abstich', '5 · Konverter', '6 · Fazit'];
+function renderSteps() {
+  var n = $('steps'); n.innerHTML = '';
+  STEPN.forEach(function (nm, i) {
+    var b = mk('button', (S.step === i + 1 ? 'on ' : '') + (i + 1 < S.unlocked ? 'done' : ''), nm + (i + 1 > S.unlocked ? ' 🔒' : '')); b.type = 'button'; b.disabled = i + 1 > S.unlocked;
+    b.addEventListener('click', function () { goStep(i + 1); }); n.appendChild(b);
+  });
+}
+function goStep(i) {
+  S.step = i; S.view = (i >= 2 && i <= 4) ? 'cut' : 'out'; S.auto = (i === 1 || i === 6); S.selZone = null; showBanner('');
+  if (i === 5 && !S.konv) newKonv();
+  panel(); window.scrollTo(0, 0);
+}
+function showBanner(txt) { var b = $('banner'); if (!txt) { b.className = 'banner'; return; } b.textContent = txt; b.className = 'banner show'; clearTimeout(showBanner.t); showBanner.t = setTimeout(function () { b.className = 'banner'; }, 2600); }
+function updCap() { var e = $('capText'); if (e) e.textContent = S.cap; }
+function legendHTML() {
+  var items = [];
+  if (S.step >= 2 && S.step <= 4) items = [['#3a3a46', 'Koks'], ['#b8593a', 'Eisenerz'], ['#efe8d6', 'Kalkstein'], ['#ffe27a', 'Roheisen'], ['#ff8a3d', 'Schlacke']];
+  if (S.step === 3) items = items.concat([['#7df9ff', 'CO'], ['#aab0ba', 'CO₂'], ['#c696ff', 'Gichtgas-Gemisch']]);
+  return items.map(function (x) { return '<span><i style="background:' + x[0] + '"></i>' + x[1] + '</span>'; }).join('');
+}
+function renderTools() {
+  var t = $('cvtools'); t.innerHTML = '';
+  if (S.step === 5) { t.appendChild(mk('span', 'muted', 'Der Konverter wandelt Roheisen in Stahl um.')); t.lastChild.style.fontSize = '13.5px'; return; }
+  var b1 = btn('🔎 Schnitt', 'sec small' + (S.view === 'cut' ? ' on' : ''), function () { S.view = 'cut'; renderTools(); }), b2 = btn('🏭 Außenansicht', 'sec small' + (S.view === 'out' ? ' on' : ''), function () { S.view = 'out'; renderTools(); });
+  t.appendChild(b1); t.appendChild(b2);
+  if (S.view === 'out') { var h = mk('span', 'muted', '↔ Zum Drehen ziehen'); h.style.fontSize = '13px'; t.appendChild(h); }
+}
+function panel() {
+  var p = $('panel'); p.innerHTML = ''; renderSteps(); renderTools(); $('legend').innerHTML = legendHTML();
+  ({ 1: pAufbau, 2: pBeschicken, 3: pBetrieb, 4: pAbstich, 5: pKonvPanel, 6: pFazit })[S.step](p);
+}
+function nextBtn(label, to) { var r = mk('div', 'row'); r.appendChild(btn(label, 'go', function () { S.unlocked = Math.max(S.unlocked, to); goStep(to); })); return r; }
+
+/* ----- 1 Aufbau ----- */
+function pAufbau(p) {
+  var A = S.aufg;
+  p.appendChild(mk('h2', '', '1 · Aufbau des Hochofens'));
+  p.appendChild(mk('div', 'cap', '<small>🎬 Erklärung</small>Hochöfen gibt es in verschiedenen Größen und Formen, aber sie sind im Prinzip immer gleich aufgebaut. Oben befindet sich eine Öffnung, durch die der Ofen mit Kohle, Eisenerz und Zusätzen wie Kalkstein befüllt wird. Unten wird heiße Luft eingeblasen. Dazwischen liegen verschiedene Stockwerke mit unterschiedlichen Temperaturen, in denen unterschiedliche chemische Prozesse ablaufen. Die Feststoffe wandern dabei nach unten, die Gase nach oben. Am Ende entsteht flüssiges Roheisen.'));
+  var r = mk('div', 'row');
+  r.appendChild(btn('🔍 Erkunden', 'sec small' + (A.mode === 'explore' ? ' on' : ''), function () { A.mode = 'explore'; panel(); }));
+  r.appendChild(btn('🎯 Aufgabe', 'sec small' + (A.mode === 'quiz' ? ' on' : ''), function () { if (!A.queue.length || A.done) { A.queue = shuffle(AQ).slice(0, 5); A.idx = 0; A.ok = 0; A.done = false; A.fb = ''; A.wrong = 0; } A.mode = 'quiz'; panel(); }));
+  p.appendChild(r);
+  if (A.mode === 'explore') {
+    if (A.sel) p.appendChild(mk('div', 'fb info', '<b>' + PARTS[A.sel].n + ':</b> ' + PARTS[A.sel].d));
+    else p.appendChild(mk('p', 'muted', 'Tippe im Bild auf ein Bauteil. Mit „Schnitt“ siehst du ins Innere, in der Außenansicht drehst du den Ofen mit Finger oder Maus.'));
+    if (!A.done) p.appendChild(mk('p', 'muted', 'Wenn du dich auskennst, starte die Aufgabe.'));
+  } else {
+    if (A.done) { p.appendChild(mk('div', 'fb ok', '<b>✔ Geschafft!</b> Du kennst die wichtigsten Teile des Hochofens.')); }
+    else {
+      p.appendChild(mk('h3', '', 'Tippe im Bild auf das passende Bauteil (' + (A.idx + 1) + ' von ' + A.queue.length + ')'));
+      p.appendChild(mk('div', 'cap', AQ.filter(function (x) { return x[0] === A.queue[A.idx][0]; })[0][1]));
+      var pr = mk('div', 'prog', '<i style="width:' + (A.idx / A.queue.length * 100) + '%"></i>'); p.appendChild(pr);
+    }
+    if (A.fb) p.appendChild(mk('div', '', A.fb));
+  }
+  if (A.done) p.appendChild(nextBtn('Weiter zum Beschicken →', 2));
+}
+function aufbauTap(id) {
+  var A = S.aufg;
+  if (!id) return;
+  if (A.mode === 'explore') { A.sel = id; panel(); return; }
+  if (A.done) return;
+  var want = A.queue[A.idx][0];
+  if (id === want) { A.ok++; A.idx++; A.fb = '<div class="fb ok">✔ Richtig: ' + PARTS[id].n + '. ' + PARTS[id].d + '</div>'; if (A.idx >= A.queue.length) { A.done = true; S.unlocked = Math.max(S.unlocked, 2); burst($('cvwrap')); } }
+  else { A.wrong++; A.fb = '<div class="fb no">✘ Das ist ' + (id === 'wind' ? 'eine ' : id === 'gicht' || id === 'gasrohr' ? 'die ' : 'der ') + PARTS[id].n + ': ' + PARTS[id].d + ' Such weiter.</div>'; }
+  panel();
+}
+function partAt(x, y) {
+  var i, h, best = null, bd = 1e9;
+  for (i = 0; i < S.hs.length; i++) { h = S.hs[i]; var d = Math.hypot(x - h.x, y - h.y); if (d <= h.r && d < bd) { bd = d; best = h.id; } }
+  if (best) return best;
+  if (S.view === 'cut' && S.step !== 5) { if (y < 20) return null; }
+  var yy = clamp(y, 70, 714); if (Math.abs(x - CX) > outerR(yy) + 6 || y < 24 || y > 716) return null;
+  if (y < 100) return 'gicht'; if (y < 420) return 'schacht'; if (y < 470) return 'kohlensack'; if (y < 590) return 'rast'; return 'gestell';
+}
+
+/* ----- 2 Beschicken ----- */
+function pBeschicken(p) {
+  var n = S.charge.length, full = n >= 8, locked = S.bell > 0 || !!S.run;
+  p.appendChild(mk('h2', '', '2 · Den Ofen beschicken'));
+  p.appendChild(mk('p', 'muted', 'Der Ofen fasst 8 Schichten. Beschicke ihn von unten nach oben, so wie du ihn betreiben würdest. Die erste Schicht liegt später direkt unten an den Windformen.'));
+  var lay = mk('div', 'layers'), names = { k: 'Koks', e: 'Eisenerz', c: 'Kalkstein' }, i;
+  for (i = 0; i < 8; i++) lay.appendChild(mk('span', S.charge[i] || 'empty', S.charge[i] ? (i + 1) + '. ' + names[S.charge[i]] : (i + 1) + '. leer'));
+  p.appendChild(lay);
+  var g = mk('div', 'chg');
+  [['k', '⚫ Koks', 'Brennstoff'], ['e', '🟤 Eisenerz', 'Eisenoxid'], ['c', '⚪ Kalkstein', 'Zuschlag']].forEach(function (m) { var b = mk('button', '', m[1] + '<small>' + m[2] + '</small>'); b.type = 'button'; b.disabled = full || locked; b.addEventListener('click', function () { addLayer(m[0]); }); g.appendChild(b); });
+  p.appendChild(g);
+  var r = mk('div', 'row');
+  if (full) r.appendChild(btn('🔥 Ofen anfahren', 'go', function () { S.run = newRun(); S.unlocked = Math.max(S.unlocked, 3); goStep(3); }));
+  r.appendChild(btn('💡 Tipp', 'sec', function () { if (S.tipsB < TIPSB.length) S.tipsB++; panel(); }, S.tipsB >= TIPSB.length));
+  r.appendChild(btn('Alles leeren', 'sec', function () { resetCharge(); panel(); }, !n));
+  p.appendChild(r);
+  for (i = 0; i < S.tipsB; i++) p.appendChild(mk('div', 'tip', '<b>Tipp ' + (i + 1) + ':</b> ' + TIPSB[i]));
+  if (S.run) { p.appendChild(mk('p', 'muted', 'Der Ofen läuft bereits. Mit „Alles leeren“ beginnst du von vorn.')); p.lastChild.style.marginTop = '10px'; }
+}
+
+/* ----- 3 Betrieb ----- */
+function pBetrieb(p) {
+  var R = S.run, sel = S.selZone, i;
+  p.appendChild(mk('h2', '', '3 · Der Ofen in Betrieb'));
+  if (!R) { p.appendChild(mk('p', 'muted', 'Beschicke zuerst den Ofen.')); p.appendChild(btn('Zum Beschicken', 'go', function () { goStep(2); })); return; }
+  p.appendChild(mk('p', 'muted', 'Schalte den Heißwind ein und beobachte den Ofen. Tippe im Bild auf eine Zone, um die Reaktion dort zu untersuchen.'));
+  var r = mk('div', 'row');
+  r.appendChild(btn(R.wind ? '💨 Heißwind aus' : '🔥 Heißwind an', R.wind ? 'sec' : '', function () { R.wind = !R.wind; panel(); }));
+  [1, 2, 4].forEach(function (s) { r.appendChild(btn(s + '×', 'sec small' + (S.speed === s ? ' on' : ''), function () { S.speed = s; panel(); })); });
+  r.appendChild(btn(S.gasOn ? '💨 Gase: an' : '💨 Gase: aus', 'sec small', function () { S.gasOn = !S.gasOn; panel(); }));
+  p.appendChild(r);
+  var st = mk('div', 'bar', '<div class="lab"><span>🌡 Temperatur unten</span><span id="stT">–</span></div><div class="tr"><i id="stTb" style="width:0"></i></div>'); p.appendChild(st);
+  var cp = mk('div', 'cap', '<small>🎬 Erklärung</small><span id="capText">' + (S.cap || 'Schalte den Heißwind ein, dann läuft der Prozess ab.') + '</span>'); p.appendChild(cp);
+  if (R.log.length > 1) { var dt = mk('details', 'log', '<summary>Bisherige Erklärungen</summary>' + R.log.slice(0, -1).map(function (x) { return '<p>' + x + '</p>'; }).join('')); p.appendChild(dt); }
+  if (R.failShown) {
+    var msg = R.fail === 'kalt' ? '<b>Kalter Gang:</b> Der Ofen wird nicht heiß genug. Ohne Koks, der unten an den Windformen verbrennt, und ohne genug Koks insgesamt entsteht nicht die nötige Hitze.' : '<b>Der Ofen hängt:</b> Die Beschickung rutscht nicht mehr nach und das Gas staut sich. Zwei Erzschichten direkt übereinander sind kaum gasdurchlässig. Koks dazwischen hält die Beschickung locker.';
+    p.appendChild(mk('div', 'fb no', msg)); var rr = mk('div', 'row'); rr.appendChild(btn('Neu beschicken', '', function () { resetCharge(); goStep(2); })); p.appendChild(rr); return;
+  }
+  p.appendChild(mk('div', 'bar', '<div class="lab"><span>Gestell: Roheisen</span><span id="stI">0 %</span></div><div class="tr"><i id="stIb" style="width:0"></i></div>'));
+  var zl = mk('div', 'zlist');
+  ZONES.forEach(function (z) { var b = mk('button', (sel === z.id ? 'on ' : '') + (EQ[z.id] && eqCoef(z.id).ok ? 'ok' : ''), z.name); b.type = 'button'; b.addEventListener('click', function () { S.selZone = z.id; S.view = 'cut'; panel(); }); zl.appendChild(b); });
+  p.appendChild(zl);
+  if (sel) {
+    var z = zoneById(sel), card = mk('div', 'fb info'); card.innerHTML = '<b>' + z.name + '</b> · ' + z.t + '<br>' + ZTXT[sel];
+    p.appendChild(card);
+    if (EQ[sel]) {
+      p.appendChild(mk('h3', '', 'Aufgabe: ' + EQ[sel].nm)); p.lastChild.style.marginTop = '10px';
+      p.appendChild(mk('p', 'muted', 'Gleiche die Reaktionsgleichung aus. Das Teilchenbild zeigt, was du eingestellt hast.'));
+      p.appendChild(eqHTML(sel));
+      var cvR = mk('canvas'); cvR.id = 'cvR'; cvR.width = 680; cvR.height = 240; p.appendChild(cvR);
+      var st2 = eqCoef(sel), rw = mk('div', 'row');
+      rw.appendChild(btn('Prüfen', 'go', function () { checkEq(sel); }, st2.ok)); p.appendChild(rw);
+      if (st2.fb) p.appendChild(mk('div', '', st2.fb));
+    }
+  }
+  var open = Object.keys(EQ).filter(function (k) { return !eqCoef(k).ok; }).length, ready = R.done && !open;
+  var ft = mk('div', 'row'); ft.style.marginTop = '12px';
+  if (ready) { p.appendChild(mk('div', 'fb ok', '<b>Der Ofen ist durchgelaufen</b> und du hast alle Reaktionen ausgeglichen. ' + report(R))); ft.appendChild(btn('Weiter zum Abstich →', 'go', function () { S.unlocked = Math.max(S.unlocked, 4); goStep(4); })); }
+  else { var todo = []; if (!R.done) todo.push('der Ofen muss durchlaufen (Heißwind an, ggf. Zeitraffer)'); if (open) todo.push('noch ' + open + ' Reaktion' + (open > 1 ? 'en' : '') + ' auszugleichen'); p.appendChild(mk('p', 'muted', 'Noch offen: ' + todo.join(' und ') + '.')); }
+  p.appendChild(ft);
+}
+function report(R) {
+  var s = '<br>Eisen-Ausbeute: <b>' + Math.round(R.ausb * 100) + ' %</b>.';
+  if (R.ausb < 1) s += ' Es war zu wenig Koks da, um alles Erz zu reduzieren.';
+  if (R.c === 0) s += ' Ohne Kalkstein bildet sich kaum Schlacke, Verunreinigungen wie Silicium bleiben im Eisen.';
+  return s;
+}
+function updStatus() {
+  var R = S.run, e;
+  if (S.step === 3 && R) {
+    if ((e = $('stT'))) { var T = Math.round((20 + 1980 * R.heat) / 10) * 10; e.textContent = T + ' °C'; $('stTb').style.width = (R.heat * 100) + '%'; }
+    if ((e = $('stI'))) { e.textContent = Math.round(R.ironTot ? Math.min(1, R.iron / R.ironTot) * 100 : 0) + ' %'; $('stIb').style.width = (R.ironTot ? Math.min(1, R.iron / R.ironTot) * 100 : 0) + '%'; }
+    if (S.selZone && EQ[S.selZone] && (e = $('cvR'))) drawReaction(e.getContext('2d'), S.selZone, performance.now() / 1000);
+  }
+  if (S.step === 4 && R) {
+    var a = $('stA1'), b = $('stA2');
+    if (a) { a.style.width = (R.ironTot ? Math.min(1, R.iron / R.ironTot) * 100 : 0) + '%'; $('stA1t').textContent = Math.round(R.ironTot ? Math.min(1, R.iron / R.ironTot) * 100 : 0) + ' %'; }
+    if (b) { b.style.width = (R.slagTot ? Math.min(1, R.slag / R.slagTot) * 100 : 0) + '%'; $('stA2t').textContent = Math.round(R.slagTot ? Math.min(1, R.slag / R.slagTot) * 100 : 0) + ' %'; }
+  }
+}
+
+/* ----- 4 Abstich ----- */
+function pAbstich(p) {
+  var R = S.run, T = S.tap;
+  p.appendChild(mk('h2', '', '4 · Abstich'));
+  if (!R || !R.done) { p.appendChild(mk('p', 'muted', 'Der Ofen muss erst durchgelaufen sein.')); p.appendChild(btn('Zum Betrieb', 'go', function () { goStep(3); })); return; }
+  p.appendChild(mk('div', 'cap', '<small>🎬 Erklärung</small>Das Eisen sammelt sich unten als flüssiges Roheisen. Weil die Verunreinigungen mit dem Kalkstein zur Schlacke reagiert haben, schwimmt diese auf dem Roheisen und kann dort abgenommen werden.'));
+  p.appendChild(mk('p', 'muted', 'Das Gestell ist voll. Stich den Ofen an: Tippe im Bild auf die pulsierenden Abstichlöcher.'));
+  p.appendChild(mk('div', 'bar', '<div class="lab"><span>Roheisen im Gestell</span><span id="stA1t"></span></div><div class="tr"><i id="stA1" style="width:0"></i></div>'));
+  p.appendChild(mk('div', 'bar', '<div class="lab"><span>Schlacke im Gestell</span><span id="stA2t"></span></div><div class="tr"><i id="stA2" style="width:0;background:linear-gradient(90deg,#c2491f,#ff9b52)"></i></div>'));
+  if (T.fb) p.appendChild(mk('div', '', T.fb));
+  var emptied = T.iron && T.slag && !T.irunning && !T.srunning;
+  if (emptied) {
+    if (!T.qDone) {
+      p.appendChild(mk('h3', '', 'Warum schwimmt die Schlacke oben?')); p.lastChild.style.marginTop = '12px';
+      mcq(p, ['Die Schlacke hat eine geringere Dichte als das Roheisen.', 'Die Schlacke ist heißer und steigt deshalb auf.', 'Die Schlacke ist fest, das Roheisen flüssig.', 'Das obere Loch ist einfach größer.'], 0, function (ok) { if (ok) { T.qDone = true; S.unlocked = Math.max(S.unlocked, 5); burst($('panel')); panel(); } }, 'Flüssigkeiten mit geringerer Dichte schwimmen oben, wie Öl auf Wasser.');
+    } else {
+      p.appendChild(mk('div', 'fb ok', '<b>✔ Richtig.</b> Die Schlacke hat eine geringere Dichte und schwimmt deshalb auf dem Roheisen.'));
+      p.appendChild(mk('div', 'cap', '<small>🎬 Erklärung</small>Das dem Hochofen entnommene Roheisen enthält noch bis zu 4 % Kohlenstoff sowie andere Elemente wie Phosphor, Schwefel, Silicium und Mangan. Es ist sehr spröde und nicht schmiedbar.'));
+      p.appendChild(nextBtn('Weiter zum Konverter →', 5));
+    }
+  }
+}
+function mcq(parent, opts, correct, cb, why) {
+  var box = mk('div', 'opts'), order = shuffle(opts.map(function (t, i) { return i; })), fb = mk('div'), locked = false;
+  order.forEach(function (oi) {
+    var b = mk('button', 'opt', opts[oi]); b.type = 'button';
+    b.addEventListener('click', function () {
+      if (locked) return;
+      if (oi === correct) { locked = true; b.className = 'opt good'; cb(true); }
+      else { b.className = 'opt bad'; fb.innerHTML = '<div class="fb no">Nicht ganz. ' + (why || '') + '</div>'; cb(false); }
+    }); box.appendChild(b);
+  });
+  parent.appendChild(box); parent.appendChild(fb);
+}
+
+/* ----- 5 Konverter ----- */
+function newKonv() {
+  var c = S.run ? S.run.c : 1, si = c === 0 ? 2.6 : c === 1 ? 1.2 : 0.7;
+  S.konv = { state: 'empty', t: 0, blowT: 0, fe: 0, el: { C: 4.0, Si: si, Mn: 0.7, P: 0.12, S: 0.06 }, res: null };
+  KS.tilt = 0; KS.fill = 0; KS.spark = []; KS.fume = [];
+}
+function pKonvPanel(p) {
+  var K = S.konv; if (!K) newKonv(); K = S.konv;
+  p.appendChild(mk('h2', '', '5 · Vom Roheisen zum Stahl'));
+  p.appendChild(mk('div', 'cap', '<small>🎬 Erklärung</small>Roheisen ist spröde und nicht schmiedbar. Im Konverter wird das flüssige Roheisen mit Luft oder reinem Sauerstoff aufgeblasen. Dabei werden die Verunreinigungen zum größten Teil oxidiert und verflüchtigen sich als Gase oder Schlacke. Stahl enthält höchstens noch 2 % Kohlenstoff und nur Spuren der anderen Elemente.'));
+  var r = mk('div', 'row');
+  if (K.state === 'empty') { p.appendChild(mk('p', 'muted', 'Fülle das Roheisen aus der Pfanne in den Konverter.')); r.appendChild(btn('Roheisen einfüllen', '', function () { K.state = 'filling'; K.t = 0; panel(); })); }
+  else if (K.state === 'filling') p.appendChild(mk('p', 'muted', 'Das Roheisen wird eingefüllt …'));
+  else if (K.state === 'ready' || K.state === 'blow' || K.state === 'pause') {
+    p.appendChild(mk('p', 'muted', 'Blase Sauerstoff auf die Schmelze und beobachte die Gehalte. Ziel: Stahl mit höchstens 2 % Kohlenstoff, aber nicht zu weit blasen.'));
+    r.appendChild(btn(K.state === 'blow' ? '⏸ Blasen stoppen' : '💨 Sauerstoff aufblasen', K.state === 'blow' ? 'sec' : '', function () { K.state = K.state === 'blow' ? 'pause' : 'blow'; panel(); }));
+    r.appendChild(btn('🥄 Stahl abgießen', 'go', function () { K.state = 'pour'; K.t = 0; panel(); }, K.blowT < 0.5));
+  } else if (K.state === 'pour') p.appendChild(mk('p', 'muted', 'Die Schmelze wird abgegossen …'));
+  p.appendChild(r);
+  p.appendChild(mk('div', 'bar', '<div class="lab"><span>Kohlenstoff C</span><span id="kC"></span></div><div class="tr"><i id="kCb"></i><b style="left:' + (2 / 4.5 * 100) + '%" title="2 %"></b></div>'));
+  [['Si', 'Silicium Si', 3], ['Mn', 'Mangan Mn', 1], ['P', 'Phosphor P', 0.15], ['S', 'Schwefel S', 0.08]].forEach(function (m) { p.appendChild(mk('div', 'bar', '<div class="lab"><span>' + m[1] + '</span><span id="k' + m[0] + '"></span></div><div class="tr"><i id="k' + m[0] + 'b"></i></div>')); });
+  p.appendChild(mk('p', 'hint', 'Die weiße Marke beim Kohlenstoff zeigt 2 %: darüber Roheisen, darunter Stahl.'));
+  if (K.state === 'done') {
+    p.appendChild(mk('div', 'fb ' + (K.res.steel ? 'ok' : 'no'), '<b>' + K.res.title + '</b><br>' + K.res.text));
+    var r2 = mk('div', 'row');
+    if (K.res.steel) r2.appendChild(btn('Weiter zum Fazit →', 'go', function () { S.unlocked = Math.max(S.unlocked, 6); goStep(6); }));
+    r2.appendChild(btn('Nochmal versuchen', 'sec', function () { newKonv(); panel(); })); p.appendChild(r2);
+  }
+  updKonvBars();
+}
+function updKonvBars() {
+  var K = S.konv, e; if (!K || S.step !== 5) return;
+  [['C', 4.5, 2], ['Si', 3, 2], ['Mn', 1, 2], ['P', 0.15, 2], ['S', 0.08, 2]].forEach(function (m) { if ((e = $('k' + m[0]))) { e.textContent = fmt(K.el[m[0]], m[0] === 'C' || m[0] === 'Si' ? 2 : 3) + ' %'; $('k' + m[0] + 'b').style.width = clamp(K.el[m[0]] / m[1], 0, 1) * 100 + '%'; } });
+}
+
+/* ----- 6 Fazit ----- */
+var QZ = [
+  ['Was wird im Hochofen aus Eisenerz gewonnen?', ['Roheisen', 'Stahl', 'Reines Eisen', 'Schlacke'], 'Im Hochofen entsteht flüssiges Roheisen. Erst im Konverter wird daraus Stahl.'],
+  ['Wozu braucht man Koks im Hochofen?', ['Als Brennstoff und zur Bildung des Reduktionsmittels Kohlenstoffmonoxid', 'Nur als Brennstoff', 'Zur Bildung der Schlacke', 'Um das Erz zu kühlen'], 'Koks verbrennt (Wärme) und liefert Kohlenstoff, aus dem CO entsteht.'],
+  ['Wozu gibt man Kalkstein zu?', ['Er bindet Verunreinigungen und bildet die Schlacke', 'Er liefert zusätzliches Eisen', 'Er senkt die Temperatur', 'Er reduziert das Eisenoxid'], 'Kalkstein reagiert mit den Verunreinigungen zur Schlacke.'],
+  ['Wo ist es im Hochofen am heißesten?', ['Unten an den Windformen', 'Oben an der Gicht', 'Im Kohlensack', 'Gleichmäßig überall'], 'Unten verbrennt der Koks mit dem Sauerstoff, dabei entsteht sehr viel Wärme.'],
+  ['Wie bewegen sich Feststoffe und Gase im Hochofen?', ['Feststoffe nach unten, Gase nach oben', 'Beides nach unten', 'Feststoffe nach oben, Gase nach unten', 'Beides nach oben'], 'Das ist das Gegenstromprinzip.'],
+  ['Was passiert mit dem Eisenoxid im Hochofen?', ['Es wird durch Kohlenstoffmonoxid zu Eisen reduziert', 'Es wird zu Eisen oxidiert', 'Es verdampft', 'Es löst sich in der Schlacke'], 'Das Eisenoxid gibt Sauerstoff ab: Reduktion.'],
+  ['Was trifft auf Roheisen zu?', ['Es enthält bis zu 4 % Kohlenstoff und ist spröde', 'Es enthält kein Kohlenstoff', 'Es ist sehr gut schmiedbar', 'Es enthält höchstens 2 % Kohlenstoff'], 'Roheisen ist spröde und nicht schmiedbar.'],
+  ['Was geschieht im Konverter?', ['Verunreinigungen werden mit Sauerstoff oxidiert', 'Erz wird reduziert', 'Roheisen wird mit Kohlenstoff angereichert', 'Schlacke wird gebildet und danach wieder entfernt'], 'Beim Aufblasen mit Sauerstoff oxidieren die Verunreinigungen.']
+];
+function pFazit(p) {
+  p.appendChild(mk('h2', '', '6 · Zusammenfassung'));
+  p.appendChild(mk('div', 'cap', '<small>🎬 Erklärung</small>Eisen und Stahl werden mit Hilfe eines Hochofens hergestellt. Dabei werden Eisenerz, Kohle und andere Zuschläge in den Hochofen gefüllt und Luft eingeblasen. Nach verschiedenen chemischen Reaktionen entsteht Eisen, welches schmilzt und als flüssiges Roheisen entnommen wird. Das Roheisen wird im Konverter weiter zu Stahl verarbeitet.'));
+  p.appendChild(mk('div', 'flow', '<b>Erz + Koks + Kalkstein</b><span>→</span><b>Hochofen + Heißwind</b><span>→</span><b>Roheisen (bis 4 % C)</b><span>→</span><b>Konverter + O₂</b><span>→</span><b>Stahl (höchstens 2 % C)</b>'));
+  var ul = mk('ul', 'rules'); [
+    '<b>Verbrennung:</b> C + O₂ → CO₂ (Wärme, unten)', '<b>Boudouard-Gleichgewicht:</b> CO₂ + C → 2 CO', '<b>Reduktion:</b> Fe₂O₃ + 3 CO → 2 Fe + 3 CO₂', '<b>Kohlenstoffaufnahme:</b> 3 Fe + C → Fe₃C', '<b>Schlacke</b> entsteht aus Kalkstein und Verunreinigungen und schwimmt auf dem Roheisen.'
+  ].forEach(function (t) { ul.appendChild(mk('li', '', t)); }); p.appendChild(ul);
+  p.appendChild(mk('h3', '', 'Wissens-Check')); p.lastChild.style.marginTop = '14px';
+  var Q = S.quiz; if (!Q) Q = S.quiz = { list: shuffle(QZ).slice(0, 6), i: 0, ok: 0, done: false, ans: false };
+  if (Q.done) {
+    p.appendChild(mk('div', 'fb ok', '<b>' + Q.ok + ' von ' + Q.list.length + ' richtig.</b>'));
+    var r = mk('div', 'row'); r.appendChild(btn('Check wiederholen', 'sec', function () { S.quiz = null; panel(); })); r.appendChild(btn('Ganz von vorn beginnen', 'sec', function () { var u = S.unlocked; S = freshState(); S.unlocked = 6; panel(); })); p.appendChild(r);
+  } else {
+    var q = Q.list[Q.i]; p.appendChild(mk('p', 'big', (Q.i + 1) + '/' + Q.list.length + ' · ' + q[0])); p.lastChild.style.fontWeight = '700';
+    var correct = 0, once = false;
+    mcq(p, q[1], 0, function (ok) { if (once) return; once = true; if (ok) Q.ok++; var rr = mk('div', 'row'); p.appendChild(mk('div', 'fb ' + (ok ? 'ok' : 'info'), (ok ? '✔ Richtig. ' : 'Richtig wäre: <b>' + q[1][0] + '</b>. ') + q[2])); rr.appendChild(btn(Q.i + 1 >= Q.list.length ? 'Ergebnis' : 'Weiter', '', function () { Q.i++; if (Q.i >= Q.list.length) Q.done = true; panel(); })); p.appendChild(rr); }, '');
+  }
+}
+
+/* ====== Eingabe ====== */
+var cv = $('cv'), ctx = cv.getContext('2d'), PT = null, lastW = 0;
+function toLogical(e) { var r = cv.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * CW, (e.clientY - r.top) / r.height * CH]; }
+cv.addEventListener('pointerdown', function (e) { PT = { x: e.clientX, lx: e.clientX, moved: false }; S.auto = false; try { cv.setPointerCapture(e.pointerId); } catch (x) { } });
+cv.addEventListener('pointermove', function (e) { if (!PT) return; if (Math.abs(e.clientX - PT.x) > 6) PT.moved = true; if (PT.moved && S.view === 'out' && S.step !== 5) S.yaw += (e.clientX - PT.lx) * 0.012; PT.lx = e.clientX; });
+cv.addEventListener('pointerup', function (e) { if (PT && !PT.moved) tap.apply(null, toLogical(e)); PT = null; });
+cv.addEventListener('pointercancel', function () { PT = null; });
+function tap(x, y) {
+  if (S.step === 5 || S.step === 6) return;
+  var id = partAt(x, y);
+  if (S.step === 1) { aufbauTap(id); return; }
+  if (S.step === 4) { if (id === 'stich') tapHole('iron'); else if (id === 'schlacke') tapHole('slag'); else showBanner('Tippe auf die pulsierenden Abstichlöcher.'); return; }
+  if (S.step === 3 && S.run && !S.run.failShown) {
+    if (S.view !== 'cut') { showBanner('Wechsle zur Schnittansicht, um die Zonen zu sehen.'); return; }
+    var z = id === 'wind' ? zoneById('ver') : (Math.abs(x - CX) <= outerR(clamp(y, 70, 690)) && y >= 70 && y < 610 ? zoneAt(y) : null);
+    if (z) { S.selZone = z.id; panel(); }
+  }
+}
+function checkResize() {
+  var w = cv.clientWidth; if (w === lastW && w) return; lastW = w; var dpr = window.devicePixelRatio || 1;
+  cv.width = Math.round(w * dpr); cv.height = Math.round(w * CH / CW * dpr); VS = w / CW * dpr;
+}
+var last = performance.now(), prevBell = 0;
+function frame(now) {
+  var dt = Math.min(0.05, (now - last) / 1000), t = now / 1000; last = now;
+  checkResize(); ctx.setTransform(VS, 0, 0, VS, 0, 0); ctx.clearRect(0, 0, CW, CH); S.hs = [];
+  if (S.bell > 0) { S.bell = Math.max(0, S.bell - dt); if (S.bell === 0 && prevBell > 0) panel(); } prevBell = S.bell;
+  if (S.auto && S.view === 'out' && S.step !== 5) S.yaw += 0.25 * dt;
+  fallParts(dt); simRun(dt); tapStep(dt); konvStep(dt);
+  if (S.step === 5) drawKonv(ctx, t, dt); else if (S.view === 'cut') drawCut(ctx, t); else drawOut(ctx, t);
+  updStatus();
+  requestAnimationFrame(frame);
+}
+S = freshState(); panel(); requestAnimationFrame(frame);
+</script>
+</body>
+</html>
