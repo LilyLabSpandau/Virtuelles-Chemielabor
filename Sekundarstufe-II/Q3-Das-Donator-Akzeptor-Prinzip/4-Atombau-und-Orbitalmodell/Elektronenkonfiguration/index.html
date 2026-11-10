@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Elektronenkonfiguration</title>
+<style>
+
+  :root { --ink:#f6eee8; --muted:#c9b9ad; --org:#8b5cff; --amb:#ffd166; --cy:#7df9ff; --ok:#5ee6a8; --bad:#ff7d7d; --line:rgba(150,170,255,.30); }
+  * { box-sizing:border-box; }
+  html { -webkit-text-size-adjust:100%; }
+  body { margin:0; min-height:100vh; color:var(--ink); font-family:'Segoe UI',system-ui,-apple-system,Roboto,sans-serif; line-height:1.5;
+    background: radial-gradient(ellipse at 12% -8%, #2a1c6e 0%, rgba(42,28,110,0) 55%), radial-gradient(ellipse at 100% 28%, #0f3a5e 0%, rgba(15,58,94,0) 50%), radial-gradient(ellipse at 40% 115%, #3a1a5a 0%, rgba(58,26,90,0) 45%), #0a0b16; background-attachment:fixed; }
+  body::before { content:''; position:fixed; inset:0; pointer-events:none; opacity:.6; background-image: radial-gradient(1.4px 1.4px at 9% 82%, #8bb4ff, transparent), radial-gradient(1.2px 1.2px at 24% 12%, #b69cff, transparent), radial-gradient(1.5px 1.5px at 38% 91%, #7df9ff, transparent), radial-gradient(1px 1px at 62% 22%, #8bb4ff, transparent), radial-gradient(1.4px 1.4px at 77% 78%, #b69cff, transparent), radial-gradient(1px 1px at 91% 14%, #7df9ff, transparent); }
+  .wrap { position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:12px 12px 90px; }
+  .back { display:inline-block; color:#fff; background:rgba(255,255,255,.12); border:1px solid var(--line); text-decoration:none; font-weight:700; font-size:14px; padding:8px 14px; border-radius:999px; }
+  h1 { margin:8px 0 0; font-size:clamp(24px,5.4vw,36px); line-height:1.15; background:linear-gradient(90deg,#7df9ff,#8b5cff 55%,#ff7ad9); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .sub { color:var(--muted); margin:4px 0 8px; font-size:15px; }
+  nav.steps { position:sticky; top:0; z-index:40; display:flex; gap:6px; padding:8px 0; overflow-x:auto; background:linear-gradient(#0a0b16 75%, rgba(10,11,22,0)); -webkit-overflow-scrolling:touch; }
+  nav.steps button { flex:1 0 auto; border:1px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-weight:700; font-size:14px; padding:9px 12px; border-radius:12px; cursor:pointer; white-space:nowrap; }
+  nav.steps button.on { background:linear-gradient(135deg,#8b5cff,#3b82f6); border-color:transparent; box-shadow:0 4px 18px rgba(110,90,255,.45); }
+  nav.steps button.done::after { content:' ✔'; color:var(--ok); } nav.steps button.on.done::after { color:#fff; }
+  nav.steps button:disabled { opacity:.4; cursor:not-allowed; }
+  .glass { background:linear-gradient(160deg, rgba(40,42,84,.74), rgba(14,16,34,.84)); border:1px solid var(--line); border-radius:18px; padding:14px; box-shadow:0 10px 34px rgba(0,0,0,.4); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); }
+  h2 { margin:0 0 6px; font-size:19px; } h3 { margin:0 0 4px; font-size:16.5px; }
+  .muted { color:var(--muted); }
+  .main { display:grid; gap:14px; grid-template-columns:1fr; }
+  @media (min-width:900px) { .main { grid-template-columns:minmax(0,520px) minmax(0,1fr); align-items:start; } .stagecol { position:sticky; top:62px; } }
+  .cvwrap { position:relative; padding:8px; }
+  #cv { -webkit-tap-highlight-color:transparent; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; display:block; width:100%; height:auto; border-radius:14px; touch-action:pan-y; cursor:pointer; background:radial-gradient(ellipse at 50% 60%, rgba(120,50,30,.35), rgba(8,8,16,.6)); }
+  .banner { position:absolute; left:14px; right:14px; top:14px; background:rgba(10,10,18,.82); border:1px solid var(--line); border-radius:12px; padding:7px 11px; font-size:14px; pointer-events:none; opacity:0; transition:opacity .25s; }
+  .banner.show { opacity:1; }
+  .cvtools { display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; align-items:center; }
+  .legend { display:flex; flex-wrap:wrap; gap:4px 10px; margin-top:8px; font-size:12.5px; color:var(--muted); }
+  .legend i { display:inline-block; width:11px; height:11px; border-radius:50%; margin-right:4px; vertical-align:-1px; }
+  .btn { border:0; border-radius:11px; padding:11px 16px; font:inherit; font-size:15.5px; font-weight:700; color:#fff; cursor:pointer; background:linear-gradient(135deg,#8b5cff,#3b82f6); box-shadow:0 4px 14px rgba(110,90,255,.38); }
+  .btn:disabled { opacity:.4; cursor:not-allowed; box-shadow:none; }
+  .btn.sec { background:rgba(255,255,255,.1); border:1px solid var(--line); box-shadow:none; color:var(--ink); }
+  .btn.go { background:linear-gradient(135deg,#19c98a,#1fb6ff); box-shadow:0 4px 14px rgba(30,180,200,.35); }
+  .btn.small { padding:7px 11px; font-size:14px; }
+  .btn.on { outline:2px solid var(--amb); }
+  .row { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; align-items:center; }
+  .cap { background:rgba(255,255,255,.07); border-left:4px solid var(--amb); border-radius:8px; padding:8px 12px; margin:8px 0; font-size:15.5px; }
+  .cap small { display:block; color:var(--muted); font-size:12.5px; letter-spacing:.6px; text-transform:uppercase; margin-bottom:2px; }
+  .fb { margin-top:8px; padding:9px 12px; border-radius:10px; font-size:15px; } .fb.ok { background:rgba(94,230,168,.14); border:1px solid rgba(94,230,168,.5); } .fb.no { background:rgba(255,125,125,.13); border:1px solid rgba(255,125,125,.5); } .fb.info { background:rgba(255,255,255,.07); border:1px solid var(--line); }
+  .tip { background:rgba(255,209,102,.12); border:1px dashed rgba(255,209,102,.55); border-radius:10px; padding:7px 11px; margin-top:7px; font-size:15px; }
+  .layers { display:flex; flex-direction:column-reverse; gap:3px; margin:8px 0; }
+  .layers span { display:block; border-radius:6px; padding:3px 10px; font-size:13.5px; font-weight:700; color:#111; }
+  .layers .k { background:#8a8f9c; } .layers .e { background:#c4623f; } .layers .c { background:#efe8d6; } .layers .empty { background:rgba(255,255,255,.07); color:var(--muted); font-weight:500; }
+  .chg { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:8px; }
+  .chg button { border:2px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-weight:700; font-size:14.5px; border-radius:14px; padding:10px 6px; cursor:pointer; }
+  .chg button small { display:block; font-weight:500; color:var(--muted); font-size:12px; }
+  .chg button:disabled { opacity:.4; cursor:not-allowed; }
+  .zlist { display:flex; flex-wrap:wrap; gap:6px; margin:8px 0; }
+  .zlist button { border:1px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-size:14px; font-weight:700; padding:7px 11px; border-radius:999px; cursor:pointer; }
+  .zlist button.on { background:rgba(255,138,61,.3); border-color:var(--org); } .zlist button.ok::after { content:' ✔'; color:var(--ok); }
+  .eq { display:flex; flex-wrap:wrap; align-items:center; gap:6px 4px; margin:8px 0; font-size:20px; font-weight:700; }
+  .eq .term { display:inline-flex; align-items:center; gap:4px; background:rgba(255,255,255,.07); border:1px solid var(--line); border-radius:12px; padding:3px 5px; }
+  .eq .term .st { display:flex; flex-direction:column; } .eq .term .st button { width:30px; height:19px; line-height:1; border:0; border-radius:6px; background:rgba(255,255,255,.14); color:#fff; font-weight:800; font-size:14px; cursor:pointer; padding:0; margin:1px 0; }
+  .eq .term .n { min-width:18px; text-align:center; font-size:20px; } .eq .op { color:var(--muted); padding:0 3px; }
+  .eq sub { font-size:.65em; }
+  .atoms { display:flex; flex-wrap:wrap; gap:6px; margin:6px 0; font-size:14px; } .atoms span { border-radius:9px; padding:2px 9px; background:rgba(255,255,255,.07); border:1px solid var(--line); } .atoms span.ok { border-color:var(--ok); color:var(--ok); } .atoms span.no { border-color:var(--bad); color:var(--bad); }
+  #cvR { display:block; width:100%; max-width:340px; height:auto; border-radius:12px; background:rgba(0,0,0,.3); border:1px solid var(--line); margin:6px 0; }
+  .bar { margin:7px 0; } .bar .lab { display:flex; justify-content:space-between; font-size:14.5px; font-weight:700; } .bar .tr { position:relative; height:12px; border-radius:7px; background:rgba(255,255,255,.12); overflow:hidden; } .bar .tr i { display:block; height:100%; border-radius:7px; background:linear-gradient(90deg,#ffd166,#ff8a3d); transition:width .15s; } .bar .tr b { position:absolute; top:0; bottom:0; width:2px; background:#fff; opacity:.8; }
+  .prog { height:10px; border-radius:6px; background:rgba(255,255,255,.12); overflow:hidden; margin:6px 0; } .prog i { display:block; height:100%; background:linear-gradient(90deg,#ff8a3d,#ffd166); transition:width .2s; }
+  .opts { display:flex; flex-direction:column; gap:7px; margin:8px 0; }
+  .opt { text-align:left; border:2px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-size:15.5px; border-radius:12px; padding:10px 14px; cursor:pointer; }
+  .opt:hover { border-color:var(--org); } .opt.good { border-color:var(--ok); background:rgba(94,230,168,.18); } .opt.bad { border-color:var(--bad); background:rgba(255,125,125,.16); animation:shake .3s; }
+  @keyframes shake { 25% { transform:translateX(-4px); } 75% { transform:translateX(4px); } }
+  .flow { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin:8px 0; } .flow b { background:rgba(255,255,255,.09); border:1px solid var(--line); border-radius:10px; padding:5px 10px; font-size:14px; } .flow span { color:var(--amb); font-weight:800; }
+  .rules { margin:6px 0 0; padding:0; list-style:none; } .rules li { margin:7px 0; padding-left:14px; border-left:3px solid var(--org); }
+  details.log summary { cursor:pointer; color:var(--muted); font-size:14px; margin-top:6px; } details.log p { margin:6px 0; font-size:14.5px; }
+  .burst { position:fixed; width:0; height:0; z-index:10000; pointer-events:none; } .burst i { position:absolute; left:-4px; top:-4px; width:8px; height:8px; border-radius:50%; animation:bu .9s ease-out forwards; } @keyframes bu { to { transform:translate(var(--dx),var(--dy)) scale(.2); opacity:0; } }
+  .impressum { position:fixed; bottom:10px; right:10px; background:rgba(0,0,0,.6); color:#fff; padding:5px 10px; text-decoration:none; border-radius:5px; font-family:sans-serif; font-size:12px; z-index:9999; }
+  @media (max-width:480px) { .glass { padding:12px; } .eq { font-size:18px; } }
+  .bar .tr u { position:absolute; top:0; bottom:0; background:rgba(94,230,168,.55); }
+
+  nav.steps button.on { background:linear-gradient(135deg,#8b5cff,#3b82f6); }
+  .main.solo { grid-template-columns:minmax(0,860px); justify-content:center; }
+  #three canvas { display:block; width:100% !important; height:auto !important; border-radius:14px; touch-action:pan-y; }
+  #three { border-radius:14px; overflow:hidden; background:#080a18; min-height:120px; }
+  #hist { display:block; width:100%; height:96px; margin-top:8px; border-radius:10px; background:rgba(0,0,0,.28); border:1px solid var(--line); }
+  .cvtools { display:flex; flex-direction:column; align-items:stretch; gap:8px; }
+  .grp { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+  .sl { background:rgba(255,255,255,.06); border:1px solid var(--line); border-radius:12px; padding:7px 11px; }
+  .sl label { display:block; font-size:14px; margin-bottom:2px; } .sl input[type=range] { width:100%; accent-color:#8b5cff; }
+  .sw { display:inline-block; width:14px; height:14px; border-radius:50%; vertical-align:-2px; border:1px solid #fff4; }
+  .task { background:rgba(255,255,255,.05); border:1px solid var(--line); border-radius:14px; padding:10px 12px; margin:10px 0; }
+  .tdone { margin:6px 0; padding:6px 12px; border-radius:10px; background:rgba(94,230,168,.12); color:var(--ok); font-weight:700; font-size:14.5px; }
+  .tlock { margin:6px 0; padding:6px 12px; border-radius:10px; background:rgba(255,255,255,.04); color:var(--muted); font-size:14.5px; }
+  .thumbs { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:8px 0; }
+  .thumb { border:2px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); border-radius:12px; padding:6px; cursor:pointer; font:inherit; font-weight:700; font-size:14px; } .thumb svg { display:block; width:100%; height:auto; } .thumb.good { border-color:var(--ok); background:rgba(94,230,168,.16); } .thumb.bad { border-color:var(--bad); animation:shake .3s; }
+  .obs { margin:10px 0; padding:10px 12px; border:1px solid var(--line); border-radius:14px; background:rgba(255,255,255,.04); } .otxt { font-size:15.5px; margin-bottom:6px; }
+  .ob { display:flex; flex-wrap:wrap; gap:6px; } .sel { border:2px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-weight:700; font-size:14px; border-radius:10px; padding:7px 11px; cursor:pointer; } .sel.good { border-color:var(--ok); background:rgba(94,230,168,.18); } .sel.bad { border-color:var(--bad); background:rgba(255,125,125,.16); }
+  details.txt { margin:10px 0; border:1px solid var(--line); border-radius:14px; background:rgba(255,255,255,.04); padding:8px 12px; } details.txt summary { cursor:pointer; font-size:17px; padding:4px 0; }
+  details.txt .body { font-size:16px; line-height:1.6; } details.txt .body p { margin:9px 0; } .fm { text-align:center; font-size:18px; font-weight:700; background:rgba(139,92,255,.16); border:1px solid rgba(139,92,255,.5); border-radius:10px; padding:7px 10px; }
+  input.num { width:130px; font:inherit; font-size:16px; padding:8px 10px; border-radius:10px; border:1px solid var(--line); background:rgba(0,0,0,.3); color:var(--ink); }
+  .luecke select { font:inherit; font-size:15px; margin:0 4px; padding:4px 6px; border-radius:8px; background:#1a1f3a; color:var(--ink); border:1px solid var(--line); max-width:100%; } .luecke select.good { border-color:var(--ok); } .luecke select.bad { border-color:var(--bad); } .lz { line-height:2.1; margin:4px 0; }
+  .btn.on { outline:2px solid var(--amb); }
+  .bar2 { display:none; }
+  .fb.conflict { border-color:#ffd166; background:rgba(255,209,102,.12); }
+  .cfg { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .cbox { background:rgba(255,255,255,.05); border:1px solid var(--line); border-radius:12px; padding:7px; display:flex; flex-direction:column; gap:6px; }
+  .cbox .ct { font-size:12px; letter-spacing:.6px; text-transform:uppercase; color:var(--muted); }
+  .cbox .btn { width:100%; text-align:left; }
+.qn{display:flex;flex-direction:column;gap:10px;margin:10px 0}
+.qrow .qk{display:block;font-size:14px;margin-bottom:4px}
+.qb{display:flex;flex-wrap:wrap;gap:6px}
+button.sel:disabled{opacity:.35;cursor:default}
+.spin{display:flex;gap:12px;align-items:center;margin:10px 0;font-size:14px}
+.spin .box{border:2px solid #cdd5ff;border-radius:6px;padding:4px 10px;font-size:28px;white-space:nowrap}
+.ar.up{color:#7df9ff}.ar.dn{color:#ff7ad9}
+.zl{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.sw{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:middle;margin-left:4px}
+
+button.sel.on{background:rgba(124,92,255,.45);border-color:#a99bff}.bxs{display:flex;flex-direction:column;gap:6px;padding:6px 4px}
+.bxs .orow{display:flex;align-items:center;gap:8px}
+.bxs .olab{width:34px;text-align:right;font-weight:700;font-size:15px;color:#cfd6ff}
+.bxs .boxes{display:flex}
+.bxs .bx{width:46px;height:46px;border:2px solid #cdd5ff;margin-right:-2px;display:flex;align-items:center;justify-content:center;font-size:24px;line-height:1;color:#fff;background:rgba(255,255,255,.05);cursor:default;user-select:none;-webkit-user-select:none;padding:0;font-family:inherit}
+.bxs.act .bx{cursor:pointer;background:rgba(125,249,255,.08)}
+.bxs.act .bx:active{background:rgba(125,249,255,.25)}
+.bxs .bx i{font-style:normal;display:inline-block}
+.bxs .bx .u{color:#7df9ff}.bxs .bx .d{color:#ff7ad9}
+.bxs .eaxis{writing-mode:vertical-rl;transform:rotate(180deg);font-size:12px;color:#aab4e8;letter-spacing:.08em}
+.bxs.sm .bx{width:36px;height:36px;font-size:19px}
+.bxs.sm .olab{font-size:13px;width:28px}
+.ein{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.ein input{flex:1;min-width:160px;font:inherit;font-size:18px;padding:9px 12px;border-radius:10px;border:2px solid rgba(160,175,255,.45);background:rgba(0,0,0,.3);color:#fff}
+.sup{display:flex;gap:4px;flex-wrap:wrap;margin:4px 0}
+.sup button{font:inherit;min-width:40px;min-height:40px;border-radius:8px;border:1px solid rgba(160,175,255,.4);background:rgba(255,255,255,.08);color:#fff;cursor:pointer}
+.klam{font-size:22px;letter-spacing:.02em;margin:8px 0}
+.sup button{font-size:20px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← Zur Übersicht</a>
+  <h1>🧱 Elektronenkonfiguration</h1>
+  <p class="sub">Verteile die Elektronen auf die Orbitale und schreibe die Konfiguration auf.</p>
+  <nav class="steps" id="steps"></nav>
+  <div class="main">
+    <div class="stagecol" id="stagecol"><div class="glass cvwrap">
+      <div id="stagehost"></div>
+      <div class="cvtools" id="cvtools"></div>
+    </div></div>
+    <div class="glass" id="panel"></div>
+  </div>
+</div>
+<script>
+'use strict';
+/* ====== Helfer ====== */
+function $(id) { return document.getElementById(id); }
+function mk(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; }
+function btn(label, cls, fn, dis) { var b = mk('button', 'btn ' + (cls || ''), label); b.type = 'button'; if (dis) b.disabled = true; b.addEventListener('click', fn); return b; }
+function lerp(a, b, t) { return a + (b - a) * t; }
+function clamp(x, a, b) { return x < a ? a : x > b ? b : x; }
+function rnd(a, b) { return a + Math.random() * (b - a); }
+function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+function burst(host) {
+  var r = host.getBoundingClientRect(), b = mk('div', 'burst'), i, p;
+  b.style.left = (r.left + r.width / 2) + 'px'; b.style.top = (r.top + Math.min(r.height / 2, 200)) + 'px';
+  for (i = 0; i < 18; i++) { p = mk('i'); p.style.background = ['#7df9ff', '#8b5cff', '#5ee6a8', '#ffd166'][i % 4]; p.style.setProperty('--dx', Math.round(rnd(-120, 120)) + 'px'); p.style.setProperty('--dy', Math.round(rnd(-120, 60)) + 'px'); b.appendChild(p); }
+  document.body.appendChild(b); setTimeout(function () { b.remove(); }, 1000);
+}
+/* Mehrfachauswahl: opts[0] ist richtig, die Anzeige wird gemischt */
+function mcq(host, opts, onOk) {
+  var box = mk('div', 'opts'), done = false;
+  shuffle(opts.map(function (t, i) { return { t: t, ok: i === 0 }; })).forEach(function (o) {
+    var b = mk('button', 'opt', o.t); b.type = 'button';
+    b.addEventListener('click', function () {
+      if (done) return;
+      if (o.ok) { done = true; b.className = 'opt good'; burst(b); if (onOk) onOk(); } else { b.className = 'opt bad'; }
+    });
+    box.appendChild(b);
+  });
+  host.appendChild(box); return box;
+}
+function numQ(host, o, onOk) {
+  var row = mk('div', 'row'), inp = mk('input', 'num'); inp.type = 'text'; inp.inputMode = 'decimal'; inp.placeholder = o.ph || 'Ergebnis'; inp.setAttribute('aria-label', 'Ergebnis');
+  var fb = mk('div'), done = false;
+  row.appendChild(inp); row.appendChild(mk('span', 'muted', o.unit));
+  row.appendChild(btn('Prüfen', 'small', function () {
+    if (done) return;
+    var v = parseFloat(String(inp.value).replace(',', '.'));
+    if (isNaN(v)) { fb.className = 'fb info'; fb.textContent = 'Gib eine Zahl ein.'; return; }
+    if (Math.abs(v - o.ans) <= Math.abs(o.ans) * (o.tol || 0.03)) { done = true; fb.className = 'fb ok'; fb.innerHTML = '✔ Richtig. ' + (o.ok || ''); burst(row); if (onOk) onOk(); }
+    else { fb.className = 'fb no'; fb.textContent = 'Das stimmt noch nicht. Prüfe Formel, Einheiten und Zehnerpotenzen.'; }
+  }));
+  host.appendChild(row); host.appendChild(fb);
+}
+
+/* ====== Daten ====== */
+var SYM = ['H','He','Li','Be','B','C','N','O','F','Ne','Na','Mg','Al','Si','P','S','Cl','Ar','K','Ca'];
+var NAME = ['Wasserstoff','Helium','Lithium','Beryllium','Bor','Kohlenstoff','Stickstoff','Sauerstoff','Fluor','Neon','Natrium','Magnesium','Aluminium','Silicium','Phosphor','Schwefel','Chlor','Argon','Kalium','Calcium'];
+var ORBS = [['1s', 1], ['2s', 1], ['2p', 3], ['3s', 1], ['3p', 3], ['4s', 1]];
+var SUP = { 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶' };
+function emptyOcc() { var o = {}; ORBS.forEach(function (a) { o[a[0]] = []; for (var i = 0; i < a[1]; i++) o[a[0]].push(0); }); return o; }
+function groundOcc(Z) {
+  var o = emptyOcc(), n = Z;
+  ORBS.forEach(function (a) { var b = o[a[0]], k, i; for (k = 0; k < 2 && n > 0; k++) for (i = 0; i < b.length && n > 0; i++) { if (k === 0) { b[i] = 1; n--; } else if (b[i] === 1) { b[i] = 2; n--; } } });
+  return o;
+}
+function cnt(o, key) { return o[key].reduce(function (s, v) { return s + (v === 3 ? 2 : v); }, 0); }
+function total(o) { return ORBS.reduce(function (s, a) { return s + cnt(o, a[0]); }, 0); }
+function cfgString(Z, noble) {
+  var o = groundOcc(Z), core = '', skip = 0;
+  if (noble) { var nz = Z >= 19 ? 18 : Z >= 11 ? 10 : 2; core = '[' + SYM[nz - 1] + ']'; var oc = groundOcc(nz); ORBS.forEach(function (a) { if (cnt(oc, a[0]) > 0) o[a[0]] = o[a[0]].map(function () { return -1; }); }); }
+  var s = core; ORBS.forEach(function (a) { var c = cnt(o, a[0]); if (o[a[0]][0] === -1) return; if (c > 0) s += a[0] + SUP[c]; });
+  return s;
+}
+function plain(s) { return String(s).toLowerCase().replace(/[\s·.,;_*-]/g, '').replace(/[()\{\}]/g, function (m) { return m === '(' ? '[' : m === ')' ? ']' : m; }).replace(/[⁰¹²³⁴⁵⁶]/g, function (c) { return '⁰¹²³⁴⁵⁶'.indexOf(c); }).replace(/\^/g, ''); }
+function cfgPlain(Z, noble) { return plain(cfgString(Z, noble)); }
+function diagnose(o, Z) {
+  var t = total(o); if (t !== Z) return 'Du hast ' + t + ' Elektronen eingetragen, das Atom hat ' + Z + '.';
+  var i, j, a, b;
+  for (i = 0; i < ORBS.length; i++) for (j = i + 1; j < ORBS.length; j++) { var ci = cnt(o, ORBS[i][0]), cj = cnt(o, ORBS[j][0]); if (cj > 0 && ci < 2 * ORBS[i][1]) return 'Ein energiereicheres Orbital (' + ORBS[j][0] + ') ist besetzt, obwohl im energieärmeren (' + ORBS[i][0] + ') noch Platz ist.'; }
+  for (i = 0; i < ORBS.length; i++) { var bx = o[ORBS[i][0]]; if (bx.length > 1 && bx.some(function (v) { return v === 2; }) && bx.some(function (v) { return v === 0; })) return 'Im Unterniveau ' + ORBS[i][0] + ' ist ein Kästchen doppelt besetzt, während ein gleichwertiges Kästchen leer bleibt.'; }
+  return 'Das stimmt noch nicht ganz. Prüfe die Besetzung Kästchen für Kästchen.';
+}
+function same(o, Z) { var g = groundOcc(Z); return ORBS.every(function (a) { return o[a[0]].every(function (v, i) { return v === g[a[0]][i]; }); }) || (function () { /* Reihenfolge gleichwertiger Kästchen egal */ return ORBS.every(function (a) { var x = o[a[0]].slice().sort().join(), y = g[a[0]].slice().sort().join(); return x === y; }); })(); }
+/* ====== Kästchen-Darstellung ====== */
+function boxes(host, occ, o) {
+  o = o || {}; var rows = o.rows || ORBS.length, w = mk('div', 'bxs' + (o.act ? ' act' : '') + (o.sm ? ' sm' : '')), i, k;
+  w.appendChild(mk('div', 'eaxis', 'Energie →'));
+  var list = mk('div', ''); list.style.cssText = 'display:flex;flex-direction:column;gap:6px';
+  for (i = rows - 1; i >= 0; i--) (function (a) {
+    var r = mk('div', 'orow'), bs = mk('div', 'boxes'); r.appendChild(mk('span', 'olab', a[0]));
+    occ[a[0]].forEach(function (v, idx) {
+      var b = mk('button', 'bx'); b.type = 'button'; b.setAttribute('aria-label', a[0] + ' Kästchen ' + (idx + 1));
+      b.innerHTML = v === 1 ? '<i class="u">↑</i>' : v === 2 ? '<i class="u">↑</i><i class="d">↓</i>' : v === 3 ? '<i class="u">↑</i><i class="u">↑</i>' : '';
+      if (o.act) b.addEventListener('click', function () { occ[a[0]][idx] = (occ[a[0]][idx] + 1) % 3; o.act(); });
+      bs.appendChild(b);
+    }); r.appendChild(bs); list.appendChild(r);
+  })(ORBS[i]);
+  w.style.flexDirection = 'row'; w.style.alignItems = 'stretch'; w.appendChild(list); host.appendChild(w); return w;
+}
+/* ====== Zustand ====== */
+var S = { step: 1, unlocked: 1, ti: { 1: 0, 2: 0, 3: 0, 4: 0 }, qp: {}, occ: emptyOcc(), msg: '', done: {}, tf: {} };
+var STEPN = ['1 · Kästchen füllen', '2 · Die drei Regeln', '3 · Kurzschreibweise', '4 · Üben', '5 · Fazit'];
+function renderSteps() {
+  var n = $('steps'); n.innerHTML = '';
+  STEPN.forEach(function (t, i) { var b = mk('button', (S.step === i + 1 ? 'on ' : '') + (S.unlocked > i + 1 ? 'done' : ''), t); b.type = 'button'; b.disabled = i + 1 > S.unlocked; b.addEventListener('click', function () { goStep(i + 1); }); n.appendChild(b); });
+}
+function goStep(i) { S.step = i; S.msg = ''; S.occ = emptyOcc(); renderSteps(); stage(); panel(); window.scrollTo(0, 0); }
+function nextTo(label, to) { var r = mk('div', 'row'); r.appendChild(btn(label, 'go', function () { S.unlocked = Math.max(S.unlocked, to); goStep(to); })); return r; }
+function elHead(Z) { return '<b>' + NAME[Z - 1] + '</b> (' + SYM[Z - 1] + '), Ordnungszahl <b>' + Z + '</b> → ' + Z + ' Elektron' + (Z > 1 ? 'en' : ''); }
+/* ====== Aufgabenfolge Schritt 1 ====== */
+var T1 = [
+  { Z: 1 }, { Z: 2, q: ['Warum stehen beim Helium beide Elektronen im selben Kästchen?', ['Ein Orbital fasst zwei Elektronen, die sich im Spin unterscheiden (↑↓)', 'Weil sich Elektronen anziehen', 'Weil 1s unbegrenzt Platz hat']] },
+  { Z: 3, q: ['Warum steht das dritte Elektron des Lithiums im 2s-Orbital und nicht im 1s-Orbital?', ['1s ist mit zwei Elektronen voll besetzt', 'Weil 2s energieärmer ist als 1s', 'Lithium hat keine 1s-Elektronen']] },
+  { Z: 6, q: ['Wie verteilen sich die beiden 2p-Elektronen des Kohlenstoffs?', ['Auf zwei verschiedene Kästchen mit gleichem Spin, bevor ein Kästchen doppelt besetzt wird', 'Beide in dasselbe Kästchen', 'Beide in das 2s-Orbital']] },
+  { Z: 7 },
+  { Z: 8, num: ['Wie viele ungepaarte Elektronen hat Sauerstoff?', 2, ''] }
+];
+function stage() {
+  var h = $('stagehost'); h.innerHTML = ''; var tl = $('cvtools'); tl.innerHTML = '';
+  var hide = S.step === 2 || S.step === 5 || (S.step === 4 && (!curEx() || curEx().t !== 'A'));
+  $('stagecol').style.display = hide ? 'none' : '';
+  document.querySelector('.main').className = 'main' + (hide ? ' solo' : '');
+  if (S.step === 1 || (S.step === 4 && curEx() && curEx().t === 'A')) {
+    var Z = S.step === 1 ? T1[S.ti[1]] && T1[S.ti[1]].Z : curEx().Z; if (!Z) return;
+    var tot = total(S.occ);
+    boxes(h, S.occ, { act: function () { S.msg = ''; stage(); updMsg(); } });
+    tl.appendChild(mk('div', 'cap', '<small>Aufgabe</small>' + elHead(Z) + '<br>Eingetragen: <b>' + tot + ' / ' + Z + '</b>'));
+    tl.appendChild(mk('div', 'muted', 'Tippe auf ein Kästchen: 1× = ein Elektron (↑), 2× = zwei (↑↓), 3× = leer.'));
+    var r = mk('div', 'row'); r.appendChild(btn('Prüfen', '', function () { checkBoxes(Z); })); r.appendChild(btn('Zurücksetzen', 'sec', function () { S.occ = emptyOcc(); S.msg = ''; stage(); updMsg(); })); tl.appendChild(r);
+    var m = mk('div', ''); m.id = 'msg'; tl.appendChild(m); updMsg();
+  } else if (S.step === 3) {
+    var ex = T3[S.ti[3]]; if (!ex) { var o = groundOcc(15); boxes(h, o, { sm: true }); tl.appendChild(mk('div', 'muted', 'Beispiel: Phosphor')); return; }
+    boxes(h, groundOcc(ex.Z), {}); tl.appendChild(mk('div', 'cap', '<small>Element</small>' + elHead(ex.Z)));
+  }
+}
+function updMsg() { var m = $('msg'); if (!m) return; m.className = S.msg ? 'fb ' + (S.msgOk ? 'ok' : 'no') : ''; m.innerHTML = S.msg || ''; }
+var onBoxOk = null;
+function checkBoxes(Z) {
+  if (same(S.occ, Z)) { S.msg = '✔ Richtig: ' + cfgString(Z); S.msgOk = true; updMsg(); burst($('msg')); if (onBoxOk) { var f = onBoxOk; onBoxOk = null; setTimeout(f, 700); } }
+  else { S.msg = diagnose(S.occ, Z); S.msgOk = false; updMsg(); }
+}
+function panel() { var p = $('panel'); p.innerHTML = ''; ({ 1: p1, 2: p2, 3: p3, 4: p4, 5: p5 })[S.step](p); }
+/* ---- Schritt 1 ---- */
+function p1(p) {
+  p.appendChild(mk('h2', '', '1 · Orbitale mit Elektronen füllen'));
+  p.appendChild(mk('p', 'muted', 'Jedes Kästchen ist ein Orbital, die Pfeile sind Elektronen (↑ und ↓ stehen für den Spin). Je höher die Zeile, desto energiereicher. Verteile die Elektronen der Elemente so, wie es im Grundzustand (energieärmster Zustand) vorliegt.'));
+  var ti = S.ti[1], i;
+  T1.forEach(function (t, k) {
+    if (k < ti) { p.appendChild(mk('div', 'tdone', '✔ ' + NAME[t.Z - 1] + ' (' + SYM[t.Z - 1] + '): ' + cfgString(t.Z))); return; }
+    if (k > ti) { p.appendChild(mk('div', 'tlock', (k + 1) + ' · ' + NAME[t.Z - 1])); return; }
+    var box = mk('div', 'task'); box.appendChild(mk('h3', '', (k + 1) + ' · ' + NAME[t.Z - 1]));
+    var phase = S.qp['s1_' + k] || 0;
+    if (phase === 0) { box.appendChild(mk('p', '', 'Trage die ' + t.Z + ' Elektron' + (t.Z > 1 ? 'en' : '') + ' von ' + NAME[t.Z - 1] + ' in die Kästchen links ein und klicke auf <b>Prüfen</b>.')); onBoxOk = function () { S.qp['s1_' + k] = 1; if (!t.q && !t.num) { S.ti[1]++; S.occ = emptyOcc(); S.msg = ''; if (S.ti[1] >= T1.length) { } stage(); panel(); } else { panel(); } }; }
+    else {
+      if (t.q) { box.appendChild(mk('p', '', '<b>Frage:</b> ' + t.q[0])); mcq(box, t.q[1], function () { setTimeout(function () { S.ti[1]++; S.occ = emptyOcc(); S.msg = ''; stage(); panel(); }, 700); }); }
+      else { box.appendChild(mk('p', '', '<b>Frage:</b> ' + t.num[0])); numQ(box, { ans: t.num[1], tol: 0.001, unit: t.num[2], ok: '2p: ↑↓ ↑ ↑' }, function () { setTimeout(function () { S.ti[1]++; S.occ = emptyOcc(); S.msg = ''; stage(); panel(); }, 800); }); }
+    }
+    p.appendChild(box);
+  });
+  if (ti >= T1.length) { p.appendChild(mk('div', 'fb ok', '✔ Alle Elemente geschafft. Du hast die Regeln schon angewendet. Im nächsten Schritt bekommen sie Namen.')); p.appendChild(nextTo('Weiter →', 2)); $('stagecol').style.display = 'none'; }
+}
+/* ---- Schritt 2: Fehlersuche ---- */
+var BAD = [
+  { t: 'Beryllium (4 Elektronen)', rows: 3, o: { '1s': [2], '2s': [0], '2p': [2, 0, 0] }, r: 'Aufbauprinzip' },
+  { t: 'Helium (2 Elektronen)', rows: 1, o: { '1s': [3] }, r: 'Pauli-Prinzip' },
+  { t: 'Kohlenstoff (6 Elektronen)', rows: 3, o: { '1s': [2], '2s': [2], '2p': [2, 0, 0] }, r: 'Hundsche Regel' },
+  { t: 'Magnesium (12 Elektronen)', rows: 5, o: { '1s': [2], '2s': [2], '2p': [2, 2, 2], '3s': [1], '3p': [1, 0, 0] }, r: 'Aufbauprinzip' }
+];
+var RULES = ['Aufbauprinzip', 'Pauli-Prinzip', 'Hundsche Regel'];
+function p2(p) {
+  p.appendChild(mk('h2', '', '2 · Fehlersuche: Welche Regel wird verletzt?'));
+  p.appendChild(mk('p', 'muted', 'Bei diesen Besetzungen ist ein Fehler. Entscheide jeweils, welche Regel verletzt wird.'));
+  var ti = S.ti[2];
+  BAD.forEach(function (b, k) {
+    if (k > ti) return;
+    var box = mk('div', 'task'); box.appendChild(mk('h3', '', (k + 1) + ' · ' + b.t));
+    var oc = emptyOcc(); Object.keys(b.o).forEach(function (key) { oc[key] = b.o[key]; });
+    boxes(box, oc, { rows: b.rows, sm: true });
+    if (k < ti) { box.appendChild(mk('div', 'fb ok', '✔ ' + b.r)); } else {
+      box.appendChild(mk('p', '', 'Welche Regel ist hier verletzt?')); var opts = [b.r].concat(RULES.filter(function (r) { return r !== b.r; }));
+      mcq(box, opts, function () { setTimeout(function () { S.ti[2]++; panel(); }, 700); });
+    }
+    p.appendChild(box);
+  });
+  if (ti >= BAD.length) {
+    var m = mk('div', 'fb info conflict', '<b>Die drei Regeln für die Besetzung der Orbitale</b><ul class="rules"><li><b>Aufbauprinzip:</b> Die Orbitale werden in der Reihenfolge steigender Energie besetzt: 1s, 2s, 2p, 3s, 3p, 4s, …</li><li><b>Pauli-Prinzip:</b> Ein Orbital fasst höchstens zwei Elektronen, und diese haben entgegengesetzten Spin (↑↓).</li><li><b>Hundsche Regel:</b> Energiegleiche Orbitale (z. B. die drei 2p-Kästchen) werden zunächst einzeln mit Elektronen gleichen Spins besetzt, erst danach entstehen Paare.</li></ul>');
+    p.appendChild(m); p.appendChild(nextTo('Weiter →', 3));
+  }
+}
+/* ---- Schritt 3: Kurzschreibweise ---- */
+var T3 = [
+  { Z: 7, kind: 'full', txt: 'Die <b>Kurzschreibweise</b> gibt für jedes besetzte Unterniveau den Namen und die Zahl der Elektronen als Hochzahl an. Beispiel Kohlenstoff: <b>1s²2s²2p²</b>. Schreibe sie für <b>Stickstoff</b> auf (siehe Kästchen links).' },
+  { Z: 15, kind: 'full', txt: 'Jetzt ohne Hilfe: Wie lautet die Kurzschreibweise von <b>Phosphor</b>? Das Kästchen-Bild links zeigt dir die Besetzung.' },
+  { Z: 17, kind: 'noble', txt: 'Bei größeren Atomen ist die volle Schreibweise lang. Die inneren Elektronen entsprechen der Konfiguration des davor liegenden <b>Edelgases</b> und werden durch dessen Symbol in eckiger Klammer ersetzt. Beispiel Phosphor: <b>[Ne]3s²3p³</b>. Schreibe <b>Chlor</b> so: Welches Edelgas passt, und was bleibt übrig?', hint: 'Edelgase: He (2 Elektronen), Ne (10), Ar (18).' },
+  { Z: 20, kind: 'noble', txt: 'Und nun <b>Calcium</b>. Beachte die Reihenfolge der Orbitale (Aufbauprinzip).' },
+  { Z: 16, kind: 'who', txt: 'Rückwärts gedacht: Zu welchem Element gehört <b>[Ne]3s²3p⁴</b>?', opts: ['Schwefel', 'Phosphor', 'Chlor', 'Silicium'] }
+];
+function supBtns(inp) { var s = mk('div', 'sup'); ['²', '³', '⁴', '⁵', '⁶', '¹'].forEach(function (c) { var b = mk('button', '', c); b.type = 'button'; b.addEventListener('click', function () { inp.value += c; inp.focus(); }); s.appendChild(b); }); return s; }
+function cfgInput(host, Z, noble, onOk) {
+  var row = mk('div', 'ein'), inp = mk('input'); inp.type = 'text'; inp.placeholder = noble ? 'z. B. [Ne]3s²3p³' : 'z. B. 1s²2s²2p²'; inp.setAttribute('aria-label', 'Kurzschreibweise'); inp.autocapitalize = 'off'; inp.autocomplete = 'off'; inp.spellcheck = false;
+  var fb = mk('div'), done = false;
+  row.appendChild(inp);
+  host.appendChild(row); host.appendChild(supBtns(inp)); var r = mk('div', 'row');
+  r.appendChild(btn('Prüfen', '', function () {
+    if (done) return; var v = plain(inp.value), ex = cfgPlain(Z, noble);
+    if (v === ex) { done = true; fb.className = 'fb ok'; fb.innerHTML = '✔ Richtig: <b>' + cfgString(Z, noble) + '</b>'; burst(r); if (onOk) onOk(); }
+    else if (noble && v === cfgPlain(Z, false)) { fb.className = 'fb info'; fb.textContent = 'Das ist die volle Schreibweise und stimmt. Hier ist aber die Schreibweise mit Edelgas-Klammer gefragt.'; }
+    else if (!noble && v === cfgPlain(Z, true)) { fb.className = 'fb info'; fb.textContent = 'Das passt, ist aber schon die verkürzte Edelgas-Schreibweise. Hier ist die volle Schreibweise gefragt.'; }
+    else { fb.className = 'fb no'; var cnt = (v.match(/[spdf][0-6]/g) || []).reduce(function (s, x) { return s + (+x[1]); }, 0); fb.textContent = noble ? 'Das stimmt noch nicht. Welches Edelgas steht vor dem Element? Welche Orbitale bleiben danach noch zu besetzen?' : 'Das stimmt noch nicht. Gehe die Orbitale in der Reihenfolge der Energie durch und zähle die Elektronen.'; }
+  })); host.appendChild(r); host.appendChild(fb);
+}
+function p3(p) {
+  p.appendChild(mk('h2', '', '3 · Von den Kästchen zur Kurzschreibweise'));
+  var ti = S.ti[3]; T3.forEach(function (t, k) {
+    if (k < ti) { p.appendChild(mk('div', 'tdone', '✔ ' + NAME[t.Z - 1] + ': ' + (t.kind === 'who' ? '[Ne]3s²3p⁴' : cfgString(t.Z, t.kind === 'noble')))); return; }
+    if (k > ti) return;
+    var box = mk('div', 'task'); box.appendChild(mk('h3', '', (k + 1) + ' · ' + NAME[t.Z - 1])); box.appendChild(mk('p', '', t.txt)); if (t.hint) box.appendChild(mk('p', 'muted', t.hint));
+    var adv = function () { setTimeout(function () { S.ti[3]++; stage(); panel(); }, 900); };
+    if (t.kind === 'who') mcq(box, t.opts, adv); else cfgInput(box, t.Z, t.kind === 'noble', adv);
+    p.appendChild(box);
+  });
+  if (ti >= T3.length) { p.appendChild(mk('div', 'fb info conflict', '<b>Merke:</b> Die Hochzahl gibt die Zahl der Elektronen im Unterniveau an. Die Summe aller Hochzahlen ist die Ordnungszahl. Mit Edelgas-Klammer schreibt man nur die Elektronen der äußeren Schale und der noch nicht gefüllten Unterniveaus auf.')); p.appendChild(nextTo('Weiter zum Üben →', 4)); }
+}
+/* ---- Schritt 4: Üben ---- */
+var EX = [
+  { t: 'A', Z: 17 }, { t: 'K', Z: 12, noble: false }, { t: 'U', Z: 15, ans: 3 }, { t: 'A', Z: 19 },
+  { t: 'K', Z: 14, noble: true }, { t: 'W', cfg: '[Ne]3s²3p⁵', Z: 17, opts: ['Chlor', 'Schwefel', 'Argon', 'Fluor'] }, { t: 'K', Z: 9, noble: true }
+];
+function curEx() { return EX[S.ti[4]]; }
+function p4(p) {
+  p.appendChild(mk('h2', '', '4 · Üben'));
+  p.appendChild(mk('p', 'muted', 'Gemischte Aufgaben: Kästchen füllen, aufschreiben, ableiten.'));
+  var ti = S.ti[4]; EX.forEach(function (e, k) {
+    if (k < ti) { p.appendChild(mk('div', 'tdone', '✔ Aufgabe ' + (k + 1) + ': ' + NAME[e.Z - 1])); return; }
+    if (k > ti) return;
+    var box = mk('div', 'task'); box.appendChild(mk('h3', '', 'Aufgabe ' + (k + 1) + ' von ' + EX.length));
+    var adv = function () { setTimeout(function () { S.ti[4]++; S.occ = emptyOcc(); S.msg = ''; stage(); panel(); }, 800); };
+    if (e.t === 'A') { box.appendChild(mk('p', '', 'Besetze die Orbitale für <b>' + NAME[e.Z - 1] + '</b> (Ordnungszahl ' + e.Z + ').' + (e.Z > 18 ? ' Das 3d-Niveau lassen wir hier weg.' : ''))); onBoxOk = adv; }
+    else if (e.t === 'K') { box.appendChild(mk('p', '', 'Schreibe die Elektronenkonfiguration von <b>' + NAME[e.Z - 1] + '</b> ' + (e.noble ? 'mit Edelgas-Klammer.' : 'in voller Kurzschreibweise.'))); cfgInput(box, e.Z, e.noble, adv); }
+    else if (e.t === 'U') { box.appendChild(mk('p', '', 'Wie viele <b>ungepaarte Elektronen</b> hat ein Phosphor-Atom im Grundzustand?')); numQ(box, { ans: e.ans, tol: 0.001, unit: '', ok: '3p: ↑ ↑ ↑' }, adv); }
+    else { box.appendChild(mk('p', '', 'Welches Element hat die Konfiguration <b>' + e.cfg + '</b>?')); mcq(box, e.opts, adv); }
+    p.appendChild(box);
+  });
+  if (ti >= EX.length) { p.appendChild(mk('div', 'fb ok', '✔ Alle Aufgaben gelöst.')); p.appendChild(nextTo('Weiter zum Fazit →', 5)); $('stagecol').style.display = 'none'; }
+  else if (curEx().t !== 'A') { /* Bühne ausblenden bei Nicht-Kästchen-Aufgaben */ }
+}
+/* ---- Schritt 5 ---- */
+var FZ = [
+  ['Nach dem Aufbauprinzip werden die Orbitale in der Reihenfolge steigender Energie besetzt.', true, 'Also 1s, 2s, 2p, 3s, 3p, 4s, …'],
+  ['Im Kohlenstoffatom stehen die beiden 2p-Elektronen im selben Kästchen.', false, 'Nach der Hundschen Regel besetzen sie zwei Kästchen mit gleichem Spin.'],
+  ['Die Konfiguration von Stickstoff lautet 1s²2s²2p³ und hat drei ungepaarte Elektronen.', true, 'Alle drei 2p-Kästchen sind einfach besetzt.'],
+  ['Ein Orbital kann bis zu vier Elektronen aufnehmen.', false, 'Höchstens zwei, mit entgegengesetztem Spin.'],
+  ['Calcium hat die Konfiguration [Ar]4s².', true, 'Das 4s-Orbital liegt energetisch unter 3d und wird zuerst gefüllt.'],
+  ['[Ne]3s²3p⁴ gehört zum Chlor.', false, 'Das ist Schwefel (16 Elektronen). Chlor hat 3p⁵.']
+];
+function p5(p) {
+  p.appendChild(mk('h2', '', '5 · Fazit: Richtig oder falsch?')); var n = 0;
+  FZ.forEach(function (f, i) {
+    var row = mk('div', 'obs'); row.appendChild(mk('div', 'otxt', f[0])); var bs = mk('div', 'ob'), ans = S.tf[i];
+    [[true, 'Richtig'], [false, 'Falsch']].forEach(function (a) { var b = mk('button', 'sel' + (ans === a[0] ? (a[0] === f[1] ? ' good' : ' bad') : ''), a[1]); b.type = 'button'; b.addEventListener('click', function () { if (ans === f[1]) return; S.tf[i] = a[0]; panel(); }); bs.appendChild(b); });
+    row.appendChild(bs); if (ans === f[1]) { n++; row.appendChild(mk('div', 'fb ok', '✔ ' + f[2])); } else if (ans !== undefined) row.appendChild(mk('div', 'fb no', 'Das stimmt nicht. Überlege mit den drei Regeln.'));
+    p.appendChild(row);
+  });
+  if (n === FZ.length) { p.appendChild(mk('div', 'fb ok', '<b>Geschafft.</b><ul class="rules"><li>Aufbauprinzip: steigende Energie, 1s 2s 2p 3s 3p 4s.</li><li>Pauli-Prinzip: höchstens zwei Elektronen pro Orbital, entgegengesetzter Spin.</li><li>Hundsche Regel: energiegleiche Orbitale erst einzeln besetzen.</li><li>Kurzschreibweise: Hochzahlen = Elektronenzahl; Edelgas-Klammer für die inneren Elektronen.</li></ul>')); var r = mk('div', 'row'); var a = mk('a', 'btn go', 'Zurück zur Übersicht'); a.href = '../index.html'; a.style.textDecoration = 'none'; r.appendChild(a); p.appendChild(r); }
+}
+goStep(1);
+
+</script>
+<a class="impressum" href="/Virtuelles-Chemielabor/impressum.html">Impressum &amp; Datenschutz</a>
+</body>
+</html>
