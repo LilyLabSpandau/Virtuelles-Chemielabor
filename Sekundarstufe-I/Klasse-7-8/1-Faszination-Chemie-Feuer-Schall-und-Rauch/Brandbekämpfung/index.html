@@ -254,7 +254,7 @@ function buildScenes() {
       foam: ['spread', 'Der Schaum besteht überwiegend aus Wasser. Er spritzt im heißen Fett, und brennendes Fett wird über den ganzen Herd verteilt.'],
       powder: ['reignite', 'Das Pulver erstickt die Flammen kurz. Das Fett bleibt aber weit über seiner Zündtemperatur, wird nicht gekühlt und entzündet sich sofort wieder.'],
       co2: ['reignite', 'Das CO₂ verdrängt den Sauerstoff, aber das Fett bleibt sehr heiß. Sobald das Gas weg ist, zündet es erneut.'],
-      blanket: ['ok', 'Die Löschdecke erstickt das Feuer, wenn du sie sicher über die Pfanne legen kannst. Das ist aber umständlich: In der Küche liegt meist ein passender Deckel viel näher, und der Herd sollte dabei aus sein.'],
+      blanket: ['ok', 'Die Löschdecke erstickt das Feuer, ist danach aber voller Fett und nicht mehr zu gebrauchen. Außerdem musst du mit der Decke dicht an die Flammen. Gibt es in der Küche etwas Besseres?'],
       sand: ['ok', 'Der Sand erstickt das Fett. In der Küche hat man ihn selten griffbereit, und die Pfanne ist danach unbrauchbar.'] } };
   SC.benzin = { name: 'Benzin-Lache', loc: 'Werkstatt', cls: 'B: flüssige Stoffe',
     intro: 'In der Werkstatt ist Benzin ausgelaufen und brennt als große Lache.',
@@ -377,7 +377,7 @@ function runStep(dt) {
   }
   if (o === 'good' || o === 'ok') { u = clamp((t - th) / 1.5, 0, 1); F.I = t < th ? 1 : (1 - u) * (1 - u); if (t > th + 2.0) { F.I = 0; S.smokeT = 4; finishRun(R); } }
   else if (o === 'demo') { u = clamp((t - th) / 2, 0, 1); F.I = t < th ? 1 : 1 - 0.65 * Math.sin(u * Math.PI); if (t > th + 2.4) finishRun(R); }
-  else if (o === 'reignite') { F.I = t < th ? 1 : t < th + 0.9 ? lerp(1, 0.12, (t - th) / 0.9) : lerp(0.12, 1.1, clamp((t - th - 0.9) / 1.8, 0, 1)); if (t > th + 3.2) finishRun(R); }
+  else if (o === 'reignite') { if (R.tool === 'blanket' && t > th + 0.9) S.blanket = null; F.I = t < th ? 1 : t < th + 0.9 ? lerp(1, 0.12, (t - th) / 0.9) : lerp(0.12, 1.1, clamp((t - th - 0.9) / 1.8, 0, 1)); if (t > th + 3.2) finishRun(R); }
   else if (o === 'explosion') { F.I = t < th ? 1 : lerp(2.3, 1.5, clamp((t - th) / 2, 0, 1)); if (t > th + 2.4) finishRun(R); }
   else if (o === 'spread') { u = clamp((t - th) / 1.2, 0, 1); F.I = lerp(1, 1.5, u); S.spread = lerp(1, 1.6, u); if (t > th + 2.2) finishRun(R); }
   else if (o === 'shock') { F.I = 1; if (Math.random() < dt * 14) { var g = S.sc.tgt, o2 = origin(); addP({ k: 'sp', x: g.x + rnd(-14, 14), y: g.y + rnd(0, 14), z: g.z + rnd(-14, 14), vx: rnd(-120, 120), vy: rnd(40, 160), vz: rnd(-120, 120), g: -400, life: 0.5, age: 0, col: '#bfe0ff' }); S.flash = { c: '170,210,255', a: 0.22 }; } if (t > th + 2.2) finishRun(R); }
@@ -478,7 +478,9 @@ function pStep2(p) {
   }
 }
 function use3(tool, ro) {
-  var id = S.scId, r = ro || S.sc.r[tool], out = r[0]; if (S.run || S.res) return; showBanner('');
+  var id = S.scId, r = ro || S.sc.r[tool], out;
+  if (!ro && id === 'fett' && !S.fx.off && (tool === 'blanket' || tool === 'sand')) r = ['reignite', 'Die Flammen sind kurz aus, aber die Herdplatte heizt weiter. Das Fett bleibt über der Zündtemperatur und entzündet sich erneut, sobald Luft herankommt.'];
+  out = r[0]; if (S.run || S.res) return; showBanner('');
   startRun(tool, out, function () {
     var okk = out === 'good' || out === 'ok'; (S.tr.tried[id] = S.tr.tried[id] || {})[tool] = out;
     if (okk) { S.tr.solved[id] = tool; burst($('cvwrap')); }
@@ -521,7 +523,7 @@ function pStep4(p) {
   var tb = '<table class="mx"><tr><th></th>' + TOOLS.map(function (t) { return '<th>' + t[1] + '<br>' + t[2] + '</th>'; }).join('') + '</tr>';
   ORDER.forEach(function (k) { tb += '<tr><td>' + SCN[k].name + '</td>' + TOOLS.map(function (t) { var o = (S.tr.tried[k] || {})[t[0]]; return o ? ((o === 'good' || o === 'ok') ? '<td class="g">✔</td>' : '<td class="b">✘</td>') : '<td></td>'; }).join('') + '</tr>'; });
   p.appendChild(mk('div', '', tb + '</table>'));
-  var ul = mk('ul', 'rules'); ['<b>Eigene Sicherheit zuerst:</b> Nur kleine Brände löschen, den Fluchtweg im Rücken.', '<b>Alarm:</b> Notruf 112, andere warnen, bei Gefahr den Raum verlassen.', '<b>Brennstoff entfernen:</b> Strom und Gas abstellen, wenn es sicher geht.', '<b>Wasser nie</b> auf brennendes Fett, Öl, Elektrogeräte unter Spannung oder Metalle.', '<b>Brennende Person:</b> nicht rennen, hinlegen und mit Decke oder Wasser löschen.', '<b>Brandklassen:</b> A feste Stoffe, B Flüssigkeiten, C Gase, D Metalle, F Speisefette und -öle.'].forEach(function (t) { ul.appendChild(mk('li', '', t)); }); p.appendChild(ul);
+  var ul = mk('ul', 'rules'); ['<b>Eigene Sicherheit zuerst:</b> Nur kleine Brände löschen, den Fluchtweg im Rücken.', '<b>Alarm:</b> Notruf 112, andere warnen, bei Gefahr den Raum verlassen.', '<b>Brennstoff entfernen:</b> Strom und Gas abstellen, wenn es sicher geht.', '<b>Fettbrand:</b> Herd ausschalten und die Pfanne mit einem Deckel abdecken. Deckel geschlossen lassen, bis das Fett abgekühlt ist.', '<b>Wasser nie</b> auf brennendes Fett, Öl, Elektrogeräte unter Spannung oder Metalle.', '<b>Brennende Person:</b> nicht rennen, hinlegen und mit Decke oder Wasser löschen.', '<b>Brandklassen:</b> A feste Stoffe, B Flüssigkeiten, C Gase, D Metalle, F Speisefette und -öle.'].forEach(function (t) { ul.appendChild(mk('li', '', t)); }); p.appendChild(ul);
   p.appendChild(mk('h3', '', 'Wissens-Check')); p.lastChild.style.marginTop = '14px';
   var Q = S.quiz; if (!Q) Q = S.quiz = { list: shuffle(QF).slice(0, 5), i: 0, ok: 0, done: false };
   if (Q.done) { p.appendChild(mk('div', 'fb ok', '<b>' + Q.ok + ' von ' + Q.list.length + ' richtig.</b>')); var r = mk('div', 'row'); r.appendChild(btn('Check wiederholen', 'sec', function () { S.quiz = null; panel(); })); r.appendChild(btn('Zurück zum Training', 'sec', function () { goStep(3); })); p.appendChild(r); return; }
