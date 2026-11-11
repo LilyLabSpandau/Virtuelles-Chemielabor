@@ -2,8 +2,8 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Molekülbuilder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Teilchenbuilder</title>
   <!-- 1. Versucht zuerst lokal ./three.min.js zu laden (Offline-Modus per Doppelklick) -->
   <script src="./three.min.js"></script>
   <style>
@@ -15,72 +15,83 @@
       --text-main: #f8fafc; --text-muted: #94a3b8;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg-dark); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-    header { height: 58px; background: #090d16; border-bottom: 1px solid var(--border); padding: 0 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-shrink: 0; }
+    html { -webkit-text-size-adjust: 100%; }
+    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg-dark); color: var(--text-main); height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; overscroll-behavior: none; touch-action: manipulation; -webkit-tap-highlight-color: transparent; padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px)); }
+    button, select { font-family: inherit; touch-action: manipulation; }
+    header { min-height: 54px; background: #090d16; border-bottom: 1px solid var(--border); padding: 6px 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-shrink: 0; flex-wrap: wrap; }
     .brand { display: flex; align-items: center; gap: 10px; }
-    .brand h1 { font-size: 1.15rem; font-weight: 700; color: var(--accent); }
-    .brand-badge { font-size: 0.78rem; color: var(--text-muted); background: rgba(56, 189, 248, 0.12); padding: 3px 9px; border-radius: 99px; border: 1px solid rgba(56, 189, 248, 0.3); }
-    .course-switch { display: flex; gap: 6px; background: #1e293b; padding: 4px; border-radius: 9px; border: 1px solid var(--border); }
-    .course-btn { background: transparent; border: none; color: var(--text-muted); padding: 6px 14px; border-radius: 6px; font-size: 0.84rem; font-weight: 600; cursor: pointer; transition: all 0.15s; }
-    .course-btn.active { background: var(--accent); color: #090d16; }
+    .brand h1 { font-size: 1.15rem; font-weight: 700; color: var(--accent); white-space: nowrap; }
+    .mode-switch { display: flex; gap: 4px; background: #1e293b; padding: 4px; border-radius: 10px; border: 1px solid var(--border); }
+    .mode-btn { background: transparent; border: none; color: var(--text-muted); padding: 7px 16px; border-radius: 7px; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+    .mode-btn.active { background: var(--accent); color: #090d16; }
     .header-actions { display: flex; gap: 8px; align-items: center; }
-    select, .action-btn { background: #1e293b; color: var(--text-main); border: 1px solid var(--border); padding: 6px 11px; border-radius: 7px; font-size: 0.82rem; cursor: pointer; }
+    .menu-btn { display: none; }
+    select, .action-btn { background: #1e293b; color: var(--text-main); border: 1px solid var(--border); padding: 7px 11px; border-radius: 7px; font-size: 0.82rem; cursor: pointer; }
     .action-btn:hover, select:hover { border-color: var(--accent); }
-    .workspace { flex: 1; display: grid; grid-template-columns: 510px 1fr 410px; height: calc(100vh - 58px); overflow: hidden; }
-    .panel { background: var(--panel-bg); display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+    #tabbar { display: none; background: #090d16; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    #tabbar button { flex: 1; background: transparent; border: none; border-bottom: 3px solid transparent; color: var(--text-muted); padding: 11px 6px; font-size: 0.92rem; font-weight: 700; cursor: pointer; }
+    #tabbar button.active { color: var(--accent); border-bottom-color: var(--accent); background: rgba(56, 189, 248, 0.07); }
+    .workspace { flex: 1; min-height: 0; display: grid; grid-template-columns: clamp(400px, 36vw, 510px) 1fr clamp(310px, 27vw, 410px); overflow: hidden; position: relative; }
+    .panel { background: var(--panel-bg); display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
     .panel-left { border-right: 1px solid var(--border); }
-    .panel-right { border-left: 1px solid var(--border); overflow-y: auto; padding: 15px; gap: 13px; }
-    .panel-header { padding: 10px 14px; background: rgba(15, 23, 42, 0.6); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .panel-right { border-left: 1px solid var(--border); overflow-y: auto; padding: 15px; gap: 13px; -webkit-overflow-scrolling: touch; }
+    .panel-header { padding: 8px 14px; background: rgba(15, 23, 42, 0.6); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
     .panel-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; color: var(--accent); }
-    .toolbar { padding: 10px 12px; background: #151f32; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 7px; }
+    .toolbar { padding: 8px 12px; background: #151f32; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
     .tool-row-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600; display: flex; justify-content: space-between; }
     .tool-palette { display: flex; flex-wrap: wrap; gap: 5px; }
-    .tool-btn { background: #0f172a; border: 1px solid rgba(148, 163, 184, 0.3); color: var(--text-main); min-width: 38px; height: 34px; padding: 0 10px; border-radius: 6px; font-size: 0.83rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 5px; transition: all 0.12s; user-select: none; }
+    .tool-sep { width: 1px; background: var(--border); margin: 2px 3px; flex: 0 0 1px; }
+    .tool-btn { background: #0f172a; border: 1px solid rgba(148, 163, 184, 0.3); color: var(--text-main); min-width: 38px; height: 36px; padding: 0 10px; border-radius: 7px; font-size: 0.85rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap; flex: 0 0 auto; user-select: none; -webkit-user-select: none; }
     .tool-btn:hover { border-color: var(--accent); background: rgba(56, 189, 248, 0.12); }
-    .tool-btn.active { background: var(--accent); border-color: var(--accent); color: #090d16; box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.3); }
-    .tool-btn.ring-btn.active { background: var(--accent-purple); border-color: var(--accent-purple); color: #fff; box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.35); }
-    .tool-btn.eraser.active { background: var(--accent-red); border-color: var(--accent-red); color: #fff; box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.35); }
+    .tool-btn.active { background: var(--accent); border-color: var(--accent); color: #090d16 !important; box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.3); }
+    .tool-btn.ring-btn.active { background: var(--accent-purple); border-color: var(--accent-purple); color: #fff !important; box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.35); }
+    .tool-btn.eraser.active { background: var(--accent-red); border-color: var(--accent-red); color: #fff !important; box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.35); }
+    .tool-btn.charge.active { background: #f59e0b; border-color: #f59e0b; color: #1c1917 !important; }
+    .tool-btn.action { background: #1e293b; }
+    .tool-btn.action:active { background: var(--accent); color: #090d16; }
+    .tool-btn:disabled { opacity: 0.35; cursor: default; }
     .dots-icon { display: inline-flex; gap: 3px; align-items: center; }
     .dots-icon span { width: 5px; height: 5px; border-radius: 50%; background: currentColor; display: inline-block; }
-    #paper-wrapper { flex: 1; padding: 12px; background: #0b111e; display: flex; flex-direction: column; position: relative; overflow: hidden; }
-   #paper-sheet {
-      flex: 1;
-      background: #ffffff;
-      border-radius: 6px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), inset 0 0 0 1px #cbd5e1;
-      position: relative;
-      overflow: hidden;
-      transform: translateZ(0); /* Zwingt den Browser zur sauberen Pixel-Trennung am unteren Rand */
-    }
-    #lewis-canvas { width: 100%; height: 100%; display: block; cursor: crosshair; }
-    #paper-status-pill { position: absolute; top: 8px; left: 42px; right: 10px; pointer-events: none; display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #334155; background: rgba(248, 250, 252, 0.92); border: 1px solid #cbd5e1; padding: 4px 10px; border-radius: 6px; z-index: 2; }
-    .translate-bar { padding: 10px 14px; background: #0f172a; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
-    #validation-msg { font-size: 0.8rem; padding: 8px 10px; border-radius: 6px; line-height: 1.4; display: none; }
+    #paper-wrapper { flex: 1; min-height: 0; padding: 10px; background: #0b111e; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+    #paper-sheet { flex: 1; min-height: 0; background: #ffffff; border-radius: 6px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), inset 0 0 0 1px #cbd5e1; position: relative; overflow: hidden; transform: translateZ(0); }
+    #lewis-canvas { width: 100%; height: 100%; display: block; cursor: crosshair; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+    #paper-status-pill { position: absolute; top: 8px; left: 42px; right: 10px; pointer-events: none; display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; line-height: 1.3; color: #334155; background: rgba(248, 250, 252, 0.92); border: 1px solid #cbd5e1; border-radius: 8px; padding: 5px 10px; z-index: 2; }
+    #paper-tools { position: absolute; right: 8px; bottom: 8px; display: flex; flex-direction: column; gap: 6px; z-index: 3; }
+    #paper-tools button { width: 40px; height: 40px; border-radius: 10px; border: 1px solid #94a3b8; background: rgba(255, 255, 255, 0.94); color: #0f172a; font-size: 1.25rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18); user-select: none; -webkit-user-select: none; }
+    #paper-tools button:active { background: #bae6fd; }
+    .translate-bar { padding: 8px 12px; background: #0f172a; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 7px; flex-shrink: 0; }
+    #validation-msg { font-size: 0.8rem; padding: 8px 10px; border-radius: 6px; line-height: 1.4; display: none; max-height: 30vh; overflow-y: auto; }
     #validation-msg.error { display: block; background: rgba(239, 68, 68, 0.18); border: 1px solid #ef4444; color: #fecaca; }
     #validation-msg.success { display: block; background: rgba(34, 197, 94, 0.16); border: 1px solid #22c55e; color: #bbf7d0; }
-    .btn-translate-3d { width: 100%; background: linear-gradient(135deg, #22c55e, #16a34a); color: #052e16; border: none; padding: 11px 16px; border-radius: 8px; font-size: 0.95rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25); transition: transform 0.1s, filter 0.15s; }
+    .btn-translate-3d { width: 100%; background: linear-gradient(135deg, #22c55e, #16a34a); color: #052e16; border: none; padding: 12px 16px; border-radius: 9px; font-size: 0.95rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
     .btn-translate-3d:hover { filter: brightness(1.08); }
     .btn-translate-3d:active { transform: scale(0.99); }
     .panel-center { position: relative; background: #090e17; }
-    #three-container { width: 100%; height: 100%; }
+    #three-container { width: 100%; height: 100%; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+    #three-container canvas { display: block; touch-action: none; }
     #labels-3d { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; }
     .label-3d { position: absolute; transform: translate(-50%, -50%); background: rgba(15, 23, 42, 0.88); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.55); padding: 1px 6px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; }
-    .overlay-top { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; justify-content: space-between; pointer-events: none; flex-wrap: wrap; gap: 8px; }
-    .overlay-pill { pointer-events: auto; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); border: 1px solid var(--border); padding: 6px 10px; border-radius: 8px; display: flex; gap: 6px; align-items: center; font-size: 0.76rem; }
-    .mini-btn { background: rgba(51, 65, 85, 0.65); border: 1px solid var(--border); color: var(--text-main); padding: 4px 8px; border-radius: 5px; font-size: 0.74rem; cursor: pointer; }
+    .overlay-top { position: absolute; top: 10px; left: 10px; right: 10px; display: flex; justify-content: space-between; pointer-events: none; flex-wrap: wrap; gap: 8px; z-index: 2; }
+    .overlay-pill { pointer-events: auto; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid var(--border); padding: 5px 8px; border-radius: 8px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 0.76rem; }
+    .mini-btn { background: rgba(51, 65, 85, 0.65); border: 1px solid var(--border); color: var(--text-main); padding: 5px 9px; border-radius: 6px; font-size: 0.76rem; cursor: pointer; }
     .mini-btn.active { background: rgba(56, 189, 248, 0.25); border-color: var(--accent); font-weight: 600; }
-    #empty-3d-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(9, 14, 23, 0.86); color: var(--text-muted); text-align: center; padding: 24px; pointer-events: none; opacity: 0; transition: opacity 0.2s; }
+    .only-org, .only-inorg { display: none; }
+    body[data-mode="org"] .only-org, body[data-mode="inorg"] .only-inorg { display: inline-block; }
+    #name-pill { display: none; position: absolute; left: 10px; right: 10px; bottom: 10px; z-index: 2; pointer-events: none; text-align: center; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(56, 189, 248, 0.5); border-radius: 12px; padding: 8px 12px; }
+    #name-pill .np-name { font-size: 1.1rem; font-weight: 800; color: #fff; word-break: break-word; }
+    #name-pill .np-sub { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+    #empty-3d-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(9, 14, 23, 0.86); color: var(--text-muted); text-align: center; padding: 24px; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 1; }
     #empty-3d-overlay.visible { opacity: 1; }
     .mode-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: var(--panel-card); padding: 4px; border-radius: 9px; border: 1px solid var(--border); }
-    .mode-tab { background: transparent; border: none; color: var(--text-muted); padding: 8px; border-radius: 6px; font-size: 0.82rem; font-weight: 600; cursor: pointer; }
+    .mode-tab { background: transparent; border: none; color: var(--text-muted); padding: 9px; border-radius: 6px; font-size: 0.82rem; font-weight: 600; cursor: pointer; }
     .mode-tab.active { background: rgba(56, 189, 248, 0.2); color: #fff; border: 1px solid var(--accent); }
     .iupac-hero { background: linear-gradient(135deg, rgba(14, 165, 233, 0.16), rgba(30, 41, 59, 0.9)); border: 1px solid rgba(56, 189, 248, 0.45); border-radius: 12px; padding: 15px; text-align: center; }
     .iupac-class-badge { display: inline-block; font-size: 0.73rem; text-transform: uppercase; letter-spacing: 0.06em; background: rgba(15, 23, 42, 0.75); color: var(--accent); padding: 3px 10px; border-radius: 99px; margin-bottom: 8px; }
     .iupac-name-display { font-size: 1.32rem; font-weight: 800; color: #fff; word-break: break-word; }
     .iupac-alt-name { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
-    .formula-bar { display: flex; justify-content: center; gap: 14px; margin-top: 10px; font-size: 0.82rem; color: #cbd5e1; font-family: monospace; }
+    .formula-bar { display: flex; justify-content: center; flex-wrap: wrap; gap: 4px 14px; margin-top: 10px; font-size: 0.82rem; color: #cbd5e1; font-family: monospace; }
     .quiz-card { background: var(--panel-card); border: 1px solid var(--border); border-radius: 10px; padding: 13px; display: none; flex-direction: column; gap: 9px; }
-    .quiz-input { width: 100%; background: #1e293b; border: 1px solid var(--border); color: #fff; padding: 9px 11px; border-radius: 7px; font-size: 0.92rem; }
+    .quiz-input { width: 100%; background: #1e293b; border: 1px solid var(--border); color: #fff; padding: 10px 11px; border-radius: 7px; font-size: 16px; }
     .quiz-feedback { font-size: 0.84rem; padding: 8px 10px; border-radius: 6px; display: none; line-height: 1.4; }
     .steps-list { display: flex; flex-direction: column; gap: 9px; }
     .step-card { background: var(--panel-card); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 8px; padding: 10px 12px; }
@@ -90,64 +101,110 @@
     .step-card.step-4 { border-left-color: #f97316; }
     .step-head { font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; }
     .step-body { font-size: 0.85rem; line-height: 1.45; color: #e2e8f0; }
-    @media (max-width: 1180px) {
-      body { overflow: auto; height: auto; }
-      .workspace { grid-template-columns: 1fr; height: auto; }
-      .panel-left, .panel-center, .panel-right { height: 580px; }
+
+    .only-editor { display: none; }
+    body[data-editor] input.only-editor { display: block; width: 210px; }
+    body[data-editor] .panel-center, body[data-editor] .panel-right, body[data-editor] #tabbar, body[data-editor] #name-pill, body[data-editor] .btn-translate-3d { display: none !important; }
+    body[data-editor] .workspace { grid-template-columns: 1fr; }
+    body[data-editor] .panel-left { display: flex !important; border-right: none; }
+
+    /* Tablets & Handys: ein Bereich pro Reiter */
+    @media (max-width: 1100px) {
+      #tabbar { display: flex; }
+      .workspace { display: block; }
+      .panel { display: none; position: absolute; inset: 0; border: none !important; }
+      body[data-tab="draw"] .panel-left { display: flex; }
+      body[data-tab="3d"] .panel-center { display: block; }
+      body[data-tab="name"] .panel-right { display: flex; }
+      #name-pill.has-content { display: block; }
+      .panel-header { display: none; }
     }
-  
-    /* Kleine Bildschirme */
     @media (max-width: 900px) {
-      header { height: auto; flex-wrap: wrap; padding: 8px 12px; row-gap: 8px; }
-      .brand { flex-wrap: wrap; }
-      .course-switch { width: 100%; box-sizing: border-box; }
-      .course-btn { flex: 1; }
-      .header-actions { width: 100%; flex-wrap: wrap; }
-      .header-actions .action-btn { flex: 1 1 auto; }
+      header { padding: 6px 10px; row-gap: 6px; }
+      .brand h1 { font-size: 1rem; }
+      .mode-switch { flex: 1; min-width: 0; }
+      .mode-btn { flex: 1; padding: 7px 6px; font-size: 0.84rem; }
+      .menu-btn { display: inline-block; font-size: 1.1rem; padding: 4px 12px; }
+      .header-actions { display: none; width: 100%; flex-wrap: wrap; }
+      body.menu-open .header-actions { display: flex; }
+      .header-actions .action-btn, .header-actions select { flex: 1 1 auto; padding: 10px 11px; font-size: 0.88rem; }
+      .header-actions select, body[data-editor] input.only-editor { flex: 1 1 100%; width: auto; }
     }
-    </style>
+    @media (max-width: 1100px), (pointer: coarse) {
+      .tool-row-label { display: none; }
+      .tool-btn { min-width: 44px; height: 44px; font-size: 0.95rem; }
+      #paper-tools button { width: 46px; height: 46px; }
+      #paper-status-pill { font-size: 0.72rem; padding: 4px 8px; }
+      .mini-btn { padding: 8px 11px; font-size: 0.8rem; }
+      .btn-translate-3d { padding: 13px 14px; }
+    }
+    @media (max-width: 700px) {
+      .tool-palette.scroll { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 2px; touch-action: pan-x; }
+      .tool-palette.scroll::-webkit-scrollbar { display: none; }
+    }
+    @media (max-width: 520px) {
+      .b-txt { display: none; }
+      #paper-wrapper { padding: 6px; }
+      .toolbar { padding: 6px 8px; }
+      .translate-bar { padding: 6px 8px; }
+      .panel-right { padding: 10px; }
+      .overlay-top { top: 6px; left: 6px; right: 6px; }
+    }
+  </style>
 </head>
-<body>
+<body data-mode="org" data-tab="draw">
+  <script>if (/[?&]vorzeichner/.test(location.search)) { document.body.dataset.editor = "1"; document.title = "Vorzeichner"; }</script>
 
   <header>
     <div class="brand">
-      <h1>⚗️ Molekülbuilder</h1>
-      <span class="brand-badge" id="course-badge">Einsteigerkurs: Alkane</span>
+      <h1><span id="brand-ico">⚗️</span><span class="b-txt" id="brand-txt"> Teilchenbuilder</span></h1>
     </div>
-    <div class="course-switch">
-      <button class="course-btn active" id="btn-course-basic">1. Einsteigerkurs (Nur Alkane)</button>
-      <button class="course-btn" id="btn-course-adv">2. Fortgeschrittenenkurs (Alle Gruppen &amp; Ringe)</button>
+    <div class="mode-switch" role="tablist" aria-label="Modus">
+      <button class="mode-btn active" id="btn-mode-org" type="button">🧪 Organisch</button>
+      <button class="mode-btn" id="btn-mode-inorg" type="button">💧 Anorganisch</button>
     </div>
-   <div class="header-actions">
-      <button class="action-btn" id="btn-start-example" type="button" title="Startbeispiel auf das Blatt laden">📌 Startbeispiel: Methan (CH₄)</button>
+    <button class="action-btn menu-btn" id="btn-menu" type="button" aria-label="Menü">☰</button>
+    <div class="header-actions" id="header-actions">
+      <input type="text" id="filename-input" class="only-editor action-btn" placeholder="Dateiname (z. B. Schwefelsäure)" value="vorlage" autocomplete="off" />
+      <select id="preset-select" title="Beispielmolekül auf das Blatt laden"><option value="">📌 Beispiel laden …</option></select>
       <button class="action-btn" type="button" onclick="window.saveMoleculeFile()">💾 Speichern</button>
       <input type="file" id="file-input" style="display:none" accept=".json" onchange="window.loadMoleculeFile(event)" />
       <button class="action-btn" type="button" onclick="document.getElementById('file-input').click()">📂 Laden</button>
-      <button class="action-btn" id="btn-clear-paper" title="Zeichenblatt komplett leeren">📄 Leeres Blatt</button>
-    </div></select>
-
+      <button class="action-btn" id="btn-clear-paper" type="button" title="Zeichenblatt komplett leeren">📄 Leeres Blatt</button>
+    </div>
   </header>
+
+  <nav id="tabbar">
+    <button type="button" data-tab="draw" class="active">✏️ Zeichnen</button>
+    <button type="button" data-tab="3d">🧊 3D</button>
+    <button type="button" data-tab="name">🏷️ Name</button>
+  </nav>
 
   <div class="workspace">
     <!-- LINKS: KARRIERTES ZEICHENBLATT -->
     <section class="panel panel-left">
       <div class="panel-header">
-        <span class="panel-title">1. Lewis-Formel auf kariertem A4-Blatt</span>
+        <span class="panel-title">1. Lewis-Formel auf kariertem Blatt</span>
         <button class="mini-btn" id="btn-center-formula" title="Gezeichnete Formel in die Blattmitte rücken">🎯 Formel zentrieren</button>
       </div>
       <div class="toolbar" id="toolbar-container"></div>
       <div id="paper-wrapper">
         <div id="paper-sheet">
           <div id="paper-status-pill">
-            <span id="status-hint">Wähle ein Werkzeug und klicke auf das Blatt oder eine markierte Zone.</span>
+            <span id="status-hint">Wähle ein Werkzeug und tippe auf das Blatt oder eine markierte Zone.</span>
           </div>
           <canvas id="lewis-canvas"></canvas>
+          <div id="paper-tools">
+            <button type="button" id="btn-zoom-in" aria-label="Vergrößern">＋</button>
+            <button type="button" id="btn-zoom-out" aria-label="Verkleinern">－</button>
+            <button type="button" id="btn-fit" aria-label="Formel zentrieren" title="Formel zentrieren">🎯</button>
+          </div>
         </div>
       </div>
       <div class="translate-bar">
         <div id="validation-msg"></div>
         <button class="btn-translate-3d" id="btn-translate-3d">
-          🚀 3D-Ansicht &amp; IUPAC-Namen generieren
+          🚀 3D-Ansicht &amp; Namen generieren
         </button>
       </div>
     </section>
@@ -156,33 +213,35 @@
     <section class="panel panel-center">
       <div class="overlay-top">
         <div class="overlay-pill">
-          <span>Darstellung:</span>
           <button class="mini-btn active" id="btn-3d-ball">Kugel-Stab</button>
           <button class="mini-btn" id="btn-3d-space">Kalotten</button>
-          <button class="mini-btn" id="btn-3d-highlight">Hilfe: Hauptkette färben</button>
+          <button class="mini-btn only-org" id="btn-3d-highlight">Hauptkette färben</button>
+          <button class="mini-btn only-inorg active" id="btn-3d-lp">Freie Paare</button>
         </div>
         <div class="overlay-pill">
-          <button class="mini-btn" id="btn-3d-labels">Hilfe: C-Nummern</button>
+          <button class="mini-btn only-org" id="btn-3d-labels">C-Nummern</button>
           <button class="mini-btn active" id="btn-3d-spin">Rotation</button>
+          <button class="mini-btn" id="btn-3d-reset" title="Ansicht zurücksetzen">⟲</button>
         </div>
       </div>
       <div id="three-container"></div>
       <div id="labels-3d"></div>
+      <div id="name-pill"><div class="np-name" id="np-name"></div><div class="np-sub" id="np-sub"></div></div>
       <div id="empty-3d-overlay">
         <div style="font-size:2rem; margin-bottom:8px;">✏️ ➡️ 🧊</div>
         <div style="font-size:0.95rem; font-weight:600; color:#e2e8f0;">Lewis-Formel wurde bearbeitet</div>
-        <div style="font-size:0.82rem; margin-top:4px;">Klicke unten links auf <strong>„3D-Ansicht &amp; IUPAC-Namen generieren“</strong>, sobald deine Struktur fertig ist.</div>
+        <div style="font-size:0.82rem; margin-top:4px;">Tippe im Reiter „Zeichnen“ auf <strong>„3D-Ansicht &amp; Namen generieren“</strong>, sobald deine Struktur fertig ist.</div>
       </div>
     </section>
 
-    <!-- RECHTS: DEUTSCHER IUPAC-TRAINER -->
+    <!-- RECHTS: NAMEN-TRAINER -->
     <section class="panel panel-right">
       <div class="mode-tabs">
         <button class="mode-tab active" id="tab-learn">📖 Lern-Modus (Erklärung)</button>
         <button class="mode-tab" id="tab-quiz">✍️ Selbst-Test (Name prüfen)</button>
       </div>
       <div class="iupac-hero">
-        <span class="iupac-class-badge" id="out-class">Alkan</span>
+        <span class="iupac-class-badge" id="out-class">—</span>
         <div class="iupac-name-display" id="out-name">—</div>
         <div class="iupac-alt-name" id="out-alt"></div>
         <div class="formula-bar">
@@ -192,9 +251,9 @@
       </div>
       <div class="quiz-card" id="quiz-box">
         <div style="font-size:0.84rem; color:#cbd5e1;">
-          Wie lautet der korrekte <strong>deutsche IUPAC-Name</strong> des Moleküls?
+          Wie lautet der korrekte <strong>deutsche Name</strong> des Teilchens?
         </div>
-        <input type="text" class="quiz-input" id="quiz-input" placeholder="z. B. Methan, Ethanol oder 1,2-Dithiacyclohepta-3,5-dien" autocomplete="off" />
+        <input type="text" class="quiz-input" id="quiz-input" placeholder="z. B. Methan, Ethanol oder 1,2-Dithiacyclohepta-3,5-dien" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" />
         <div style="display:flex; gap:8px;">
           <button class="action-btn" id="btn-check-quiz" style="flex:1; background:var(--accent); color:#090d16; font-weight:700;">✔ Prüfen</button>
           <button class="action-btn" id="btn-hint-quiz">💡 Tipp</button>
@@ -229,26 +288,51 @@
           this.domElement = domElement;
           this.target = new THREE.Vector3(0, 0, 0);
           this.offset = camera.position.clone().sub(this.target);
+          this.homeOffset = this.offset.clone();
           this.camera.up.set(0, 1, 0);
-          let isDown = false, btn = 0, lx = 0, ly = 0;
+          const ptrs = new Map();
+          let btn = 0, lx = 0, ly = 0, prev = null;
+          const info = () => {
+            const p = [...ptrs.values()], dx = p[1].x - p[0].x, dy = p[1].y - p[0].y;
+            return { dist: Math.hypot(dx, dy) || 1, ang: Math.atan2(dy, dx), mx: (p[0].x + p[1].x) / 2, my: (p[0].y + p[1].y) / 2 };
+          };
 
           domElement.addEventListener('contextmenu', e => e.preventDefault());
           domElement.addEventListener('pointerdown', e => {
-            isDown = true; btn = e.button; lx = e.clientX; ly = e.clientY;
-            domElement.setPointerCapture(e.pointerId);
+            ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+            try { domElement.setPointerCapture(e.pointerId); } catch (_) {}
+            if (ptrs.size === 1) { btn = e.button; lx = e.clientX; ly = e.clientY; prev = null; }
+            else if (ptrs.size === 2) prev = info();
           });
           domElement.addEventListener('pointermove', e => {
-            if (!isDown) return;
-            const dx = e.clientX - lx, dy = e.clientY - ly;
-            lx = e.clientX; ly = e.clientY;
+            if (!ptrs.has(e.pointerId)) return;
+            ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
             // Aktuelle Kamera-Achsen im Raum bestimmen
             const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion).normalize();
             const up = new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion).normalize();
             const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion).normalize();
 
+            if (ptrs.size >= 2) {
+              // Zwei Finger: Pinch = Zoom, gemeinsames Verschieben = Molekül verschieben, Fingerdrehung = Kippen
+              const cur = info();
+              if (prev) {
+                this.offset.setLength(Math.max(2.5, Math.min(35, this.offset.length() * prev.dist / cur.dist)));
+                const k = this.offset.length() * 0.0017;
+                this.target.addScaledVector(right, -(cur.mx - prev.mx) * k).addScaledVector(up, (cur.my - prev.my) * k);
+                let d = cur.ang - prev.ang;
+                if (d > Math.PI) d -= Math.PI * 2; if (d < -Math.PI) d += Math.PI * 2;
+                const qRoll = new THREE.Quaternion().setFromAxisAngle(forward, -d);
+                this.camera.up.copy(up).applyQuaternion(qRoll).normalize();
+              }
+              prev = cur;
+              return;
+            }
+
+            const dx = e.clientX - lx, dy = e.clientY - ly;
+            lx = e.clientX; ly = e.clientY;
             if (btn === 0 && !e.shiftKey) {
-              // Linke Maustaste: Freies 360°-Drehen und Kippen ohne Pol-Sperre
+              // Linke Maustaste / ein Finger: Freies 360°-Drehen und Kippen ohne Pol-Sperre
               const qYaw = new THREE.Quaternion().setFromAxisAngle(up, -dx * 0.007);
               const qPitch = new THREE.Quaternion().setFromAxisAngle(right, -dy * 0.007);
               const q = new THREE.Quaternion().multiplyQuaternions(qYaw, qPitch);
@@ -263,15 +347,22 @@
               this.target.addScaledVector(right, -dx * 0.012).addScaledVector(up, dy * 0.012);
             }
           });
-          domElement.addEventListener('pointerup', e => {
-            isDown = false;
+          const end = e => {
+            ptrs.delete(e.pointerId);
             try { domElement.releasePointerCapture(e.pointerId); } catch (_) {}
-          });
+            prev = null;
+            if (ptrs.size === 1) { const p = [...ptrs.values()][0]; lx = p.x; ly = p.y; btn = 0; }
+          };
+          domElement.addEventListener('pointerup', end);
+          domElement.addEventListener('pointercancel', end);
           domElement.addEventListener('wheel', e => {
             e.preventDefault();
             const newLen = Math.max(2.5, Math.min(35, this.offset.length() + e.deltaY * 0.005));
             this.offset.setLength(newLen);
           }, { passive: false });
+        }
+        resetView() {
+          this.offset.copy(this.homeOffset); this.target.set(0, 0, 0); this.camera.up.set(0, 1, 0);
         }
         update() {
           this.camera.position.copy(this.target).add(this.offset);
@@ -285,18 +376,40 @@
       const MULT_PREFIX = ["", "", "di", "tri", "tetra", "penta", "hexa", "hepta", "octa"];
 
       const ELEMENT_SPECS = {
-        C:  { valence: 4, lonePairs: 0, mass: 12.011, color2D: '#0f172a', color3D: 0x334155, radius3D: 0.42, vdw: 1.52, name: 'Kohlenstoff (C)' },
-        H:  { valence: 1, lonePairs: 0, mass: 1.008,  color2D: '#475569', color3D: 0xf8fafc, radius3D: 0.25, vdw: 1.02, name: 'Wasserstoff (H)' },
-        O:  { valence: 2, lonePairs: 2, mass: 15.999, color2D: '#dc2626', color3D: 0xef4444, radius3D: 0.40, vdw: 1.40, name: 'Sauerstoff (O)' },
-        N:  { valence: 3, lonePairs: 1, mass: 14.007, color2D: '#2563eb', color3D: 0x3b82f6, radius3D: 0.40, vdw: 1.45, name: 'Stickstoff (N)' },
-        S:  { valence: 2, lonePairs: 2, mass: 32.06,  color2D: '#ca8a04', color3D: 0xeab308, radius3D: 0.46, vdw: 1.70, name: 'Schwefel (S)' },
-        F:  { valence: 1, lonePairs: 3, mass: 18.998, color2D: '#16a34a', color3D: 0x22c55e, radius3D: 0.36, vdw: 1.35, name: 'Fluor (F)' },
-        Cl: { valence: 1, lonePairs: 3, mass: 35.45,  color2D: '#15803d', color3D: 0x16a34a, radius3D: 0.45, vdw: 1.65, name: 'Chlor (Cl)' },
-        Br: { valence: 1, lonePairs: 3, mass: 79.904, color2D: '#9a3412', color3D: 0xb45309, radius3D: 0.48, vdw: 1.75, name: 'Brom (Br)' },
-        I:  { valence: 1, lonePairs: 3, mass: 126.90, color2D: '#7e22ce', color3D: 0x9333ea, radius3D: 0.52, vdw: 1.90, name: 'Iod (I)' }
+        C:  { valence: 4, lonePairs: 0, mass: 12.011, color2D: '#0f172a', color3D: 0x334155, radius3D: 0.42, vdw: 1.52, name: 'Kohlenstoff (C)', de: 'Kohlenstoff', ve: 4, rc: 0.76, period: 2 },
+        H:  { valence: 1, lonePairs: 0, mass: 1.008,  color2D: '#475569', color3D: 0xf8fafc, radius3D: 0.25, vdw: 1.02, name: 'Wasserstoff (H)', de: 'Wasserstoff', ve: 1, rc: 0.31, period: 1 },
+        O:  { valence: 2, lonePairs: 2, mass: 15.999, color2D: '#dc2626', color3D: 0xef4444, radius3D: 0.40, vdw: 1.40, name: 'Sauerstoff (O)', de: 'Sauerstoff', ve: 6, rc: 0.66, period: 2 },
+        N:  { valence: 3, lonePairs: 1, mass: 14.007, color2D: '#2563eb', color3D: 0x3b82f6, radius3D: 0.40, vdw: 1.45, name: 'Stickstoff (N)', de: 'Stickstoff', ve: 5, rc: 0.71, period: 2 },
+        S:  { valence: 2, lonePairs: 2, mass: 32.06,  color2D: '#ca8a04', color3D: 0xeab308, radius3D: 0.46, vdw: 1.70, name: 'Schwefel (S)', de: 'Schwefel', ve: 6, rc: 1.05, period: 3 },
+        F:  { valence: 1, lonePairs: 3, mass: 18.998, color2D: '#16a34a', color3D: 0x22c55e, radius3D: 0.36, vdw: 1.35, name: 'Fluor (F)', de: 'Fluor', ve: 7, rc: 0.57, period: 2 },
+        Cl: { valence: 1, lonePairs: 3, mass: 35.45,  color2D: '#15803d', color3D: 0x16a34a, radius3D: 0.45, vdw: 1.65, name: 'Chlor (Cl)', de: 'Chlor', ve: 7, rc: 1.02, period: 3 },
+        Br: { valence: 1, lonePairs: 3, mass: 79.904, color2D: '#9a3412', color3D: 0xb45309, radius3D: 0.48, vdw: 1.75, name: 'Brom (Br)', de: 'Brom', ve: 7, rc: 1.20, period: 4 },
+        I:  { valence: 1, lonePairs: 3, mass: 126.90, color2D: '#7e22ce', color3D: 0x9333ea, radius3D: 0.52, vdw: 1.90, name: 'Iod (I)', de: 'Iod', ve: 7, rc: 1.39, period: 5 },
+        B:  { valence: 3, lonePairs: 0, mass: 10.81,  color2D: '#be185d', color3D: 0xf9a8d4, radius3D: 0.40, vdw: 1.92, name: 'Bor (B)', de: 'Bor', ve: 3, rc: 0.84, period: 2 },
+        Si: { valence: 4, lonePairs: 0, mass: 28.085, color2D: '#92400e', color3D: 0xc2a27a, radius3D: 0.50, vdw: 2.10, name: 'Silicium (Si)', de: 'Silicium', ve: 4, rc: 1.11, period: 3 },
+        P:  { valence: 3, lonePairs: 1, mass: 30.974, color2D: '#ea580c', color3D: 0xfb923c, radius3D: 0.46, vdw: 1.80, name: 'Phosphor (P)', de: 'Phosphor', ve: 5, rc: 1.07, period: 3 },
+        Xe: { valence: 0, lonePairs: 4, mass: 131.29, color2D: '#0e7490', color3D: 0x22d3ee, radius3D: 0.55, vdw: 2.16, name: 'Xenon (Xe)', de: 'Xenon', ve: 8, rc: 1.40, period: 5 },
+        Li: { valence: 1, lonePairs: 0, mass: 6.94,   color2D: '#7c3aed', color3D: 0xc4b5fd, radius3D: 0.50, vdw: 1.82, name: 'Lithium (Li)', de: 'Lithium', ve: 1, rc: 1.28, period: 2, metal: true },
+        Na: { valence: 1, lonePairs: 0, mass: 22.990, color2D: '#6d28d9', color3D: 0xa78bfa, radius3D: 0.58, vdw: 2.27, name: 'Natrium (Na)', de: 'Natrium', ve: 1, rc: 1.66, period: 3, metal: true },
+        K:  { valence: 1, lonePairs: 0, mass: 39.098, color2D: '#5b21b6', color3D: 0x8b5cf6, radius3D: 0.65, vdw: 2.75, name: 'Kalium (K)', de: 'Kalium', ve: 1, rc: 2.03, period: 4, metal: true },
+        Be: { valence: 2, lonePairs: 0, mass: 9.012,  color2D: '#15803d', color3D: 0x86efac, radius3D: 0.40, vdw: 1.53, name: 'Beryllium (Be)', de: 'Beryllium', ve: 2, rc: 0.96, period: 2, metal: true },
+        Mg: { valence: 2, lonePairs: 0, mass: 24.305, color2D: '#166534', color3D: 0x4ade80, radius3D: 0.52, vdw: 1.73, name: 'Magnesium (Mg)', de: 'Magnesium', ve: 2, rc: 1.41, period: 3, metal: true },
+        Ca: { valence: 2, lonePairs: 0, mass: 40.078, color2D: '#14532d', color3D: 0x34d399, radius3D: 0.60, vdw: 2.31, name: 'Calcium (Ca)', de: 'Calcium', ve: 2, rc: 1.76, period: 4, metal: true },
+        Al: { valence: 3, lonePairs: 0, mass: 26.982, color2D: '#475569', color3D: 0x94a3b8, radius3D: 0.50, vdw: 1.84, name: 'Aluminium (Al)', de: 'Aluminium', ve: 3, rc: 1.21, period: 3, metal: true }
       };
+      const EDITOR = document.body.dataset.editor === '1';
+      const ORG_ELEMENTS = ['C', 'H', 'N', 'O', 'F', 'Cl', 'Br', 'I', 'S'];
+      const inorgMaxBonds = el => ({ H: 1, F: 1, Li: 1, Na: 1, K: 1 }[el] || 8);
+      const capacityOf = atom => currentCourse === 'inorg' ? inorgMaxBonds(atom.el) : ELEMENT_SPECS[atom.el].valence;
+      const touchUI = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
+      const EL_BTN_COLOR = { C: '#e2e8f0', H: '#f1f5f9', N: '#60a5fa', O: '#f87171', F: '#4ade80', Cl: '#22c55e', Br: '#fb923c', I: '#c084fc', S: '#facc15', B: '#f9a8d4', Si: '#d6b98c', P: '#fb923c', Xe: '#22d3ee', Li: '#c4b5fd', Na: '#c4b5fd', K: '#c4b5fd', Be: '#86efac', Mg: '#86efac', Ca: '#86efac', Al: '#cbd5e1' };
 
-      const capFirstLetter = str => str ? str.replace(/[a-zA-ZäöüÄÖÜ]/, m => m.toUpperCase()) : "";
+      const capFirstLetter = str => {
+        if (!str) return "";
+        const mN = str.match(/^(N[N,']*-)(.*)$/);
+        if (mN) return mN[1] + capFirstLetter(mN[2]);
+        return str.replace(/[a-zA-ZäöüÄÖÜ]/, m => m.toUpperCase());
+      };
       const normAngle = rad => ((rad % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
       const angleDiff = (a, b) => {
         let d = normAngle(a - b);
@@ -309,7 +422,9 @@
       // ==========================================================================
       const SUB_GRID = 24, BOND_LEN_HEAVY = 70, BOND_LEN_H = 34, STUB_LEN = 38, ZONE_DIST = 24;
       let atoms = [], bonds = [], nextId = 1;
-      let currentCourse = 'basic', activeTool = 'C', hoverTarget = null;
+      let currentCourse = 'org', activeTool = 'C', hoverTarget = null;
+      let HIT_SCALE = 1, panAcc = { x: 0, y: 0 };
+      const undoStack = [];
       let mouseCanvasPos = { x: -100, y: -100, inside: false };
       let invalidAtomIds = new Set(), invalidBondIds = new Set();
       let isDraggingFormula = false, dragLastPos = { x: 0, y: 0 };
@@ -433,14 +548,14 @@
         if (!sourceAtom || sourceAtom.el === 'H') return null;
         const srcSpec = ELEMENT_SPECS[sourceAtom.el];
         const srcStubs = getAtomBonds(sourceAtom.id).filter(b => b.b === null).length;
-        if (getUsedValence(sourceAtom.id) - srcStubs >= srcSpec.valence) return null;
+        if (getUsedValence(sourceAtom.id) - srcStubs >= capacityOf(sourceAtom)) return null;
 
         let bestCand = null, bestDist = Infinity;
         atoms.forEach(cand => {
           if (cand.id === sourceAtom.id || cand.el === 'H' || getBondBetween(sourceAtom.id, cand.id)) return;
           const candSpec = ELEMENT_SPECS[cand.el];
           const candStubs = getAtomBonds(cand.id).filter(b => b.b === null).length;
-          if (getUsedValence(cand.id) - candStubs >= candSpec.valence) return;
+          if (getUsedValence(cand.id) - candStubs >= capacityOf(cand)) return;
           const d = Math.hypot(cand.x - sourceAtom.x, cand.y - sourceAtom.y);
           if (d < bestDist) { bestDist = d; bestCand = cand; }
         });
@@ -455,6 +570,7 @@
           const bList = getAtomBonds(atom.id);
           return bList.length > 0 ? [getBondAngleFrom(bList[0], atom.id)] : [0];
         }
+        if (currentCourse === 'inorg') return computeInorgSlots(atom);
         const piBonds = getPiBondCount(atom.id);
         const totalSlots = Math.max(2, 4 - piBonds);
         const attached = getAtomBonds(atom.id);
@@ -496,9 +612,20 @@
         return [refAngle, normAngle(refAngle + Math.PI / 2), normAngle(refAngle + Math.PI), normAngle(refAngle + (3 * Math.PI) / 2)];
       }
 
+      // Anorganik: 90°-Raster; bei vielen Bindungen/Paaren (erweitertes Oktett) zusätzlich die 45°-Diagonalen
+      function computeInorgSlots(atom) {
+        const occ = [...getAtomBonds(atom.id).map(b => getBondAngleFrom(b, atom.id)), ...(atom.lonePairs || [])];
+        if (occ.length === 0) return [0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2];
+        const ref = occ[0];
+        const grid4 = [0, 1, 2, 3].map(k => normAngle(ref + k * Math.PI / 2));
+        const off = occ.some(o => !grid4.some(g => angleDiff(g, o) < 0.2));
+        if (off || occ.length >= 4) return [0, 1, 2, 3, 4, 5, 6, 7].map(k => normAngle(ref + k * Math.PI / 4));
+        return grid4;
+      }
+
       function getFreeZonesForAtom(atom, forTool = 'bond') {
         const spec = ELEMENT_SPECS[atom.el];
-        if (forTool === 'bond' && getUsedValence(atom.id) >= spec.valence) return [];
+        if (forTool === 'bond' && getUsedValence(atom.id) >= capacityOf(atom)) return [];
         if (forTool === 'lonepair' && atom.el === 'H') return [];
 
         const slots = computeIdealSlotsForAtom(atom);
@@ -590,72 +717,78 @@
 
       function renderToolbar() {
         const container = document.getElementById('toolbar-container');
-        if (currentCourse === 'basic') {
-          container.innerHTML = `
-            <div class="tool-row-label"><span>Einsteiger-Werkzeuge (Alkane: C &amp; H)</span></div>
-            <div class="tool-palette">
-              <button class="tool-btn" data-tool="C">C</button>
-              <button class="tool-btn" data-tool="H">H</button>
-              <button class="tool-btn eraser" data-tool="eraser">🧽 Radierer</button>
-              <button class="tool-btn" data-tool="hand">✋ Hand</button>
-            </div>`;
-          if (!['C', 'H', 'eraser', 'hand'].includes(activeTool)) activeTool = 'C';
-        } else {
-          container.innerHTML = `
-            <div class="tool-row-label"><span>Fortgeschrittenen-Werkzeuge (Elemente, Mehrfachbindungen &amp; Ringschluss)</span></div>
-            <div class="tool-palette">
-              <button class="tool-btn" data-tool="C">C</button>
-              <button class="tool-btn" data-tool="H">H</button>
-              <button class="tool-btn" data-tool="N" style="color:#60a5fa">N</button>
-              <button class="tool-btn" data-tool="O" style="color:#f87171">O</button>
-              <button class="tool-btn" data-tool="F" style="color:#4ade80">F</button>
-              <button class="tool-btn" data-tool="Cl" style="color:#22c55e">Cl</button>
-              <button class="tool-btn" data-tool="Br" style="color:#fb923c">Br</button>
-              <button class="tool-btn" data-tool="I" style="color:#c084fc">I</button>
-              <button class="tool-btn" data-tool="S" style="color:#facc15">S</button>
-              <button class="tool-btn" data-tool="bond">─ Bindung</button>
-              <button class="tool-btn ring-btn" data-tool="ringclose">⬡ Ringschluss</button>
-              <button class="tool-btn" data-tool="lonepair"><span class="dots-icon"><span></span><span></span></span> Elektronenpaar</button>
-              <button class="tool-btn eraser" data-tool="eraser">🧽 Radierer</button>
-              <button class="tool-btn" data-tool="hand">✋ Hand</button>
-            </div>`;
-        }
-        container.querySelectorAll('.tool-btn').forEach(btn => {
+        const inorg = currentCourse === 'inorg';
+        const elems = inorg ? ['H', 'B', 'C', 'N', 'O', 'F', 'Si', 'P', 'S', 'Cl', 'Br', 'I', 'Xe', 'Li', 'Na', 'K', 'Be', 'Mg', 'Ca', 'Al'] : ['C', 'H', 'N', 'O', 'F', 'Cl', 'Br', 'I', 'S'];
+        const elBtns = elems.map(el => `<button class="tool-btn" data-tool="${el}" style="color:${EL_BTN_COLOR[el] || '#e2e8f0'}">${el}</button>`).join('');
+        container.innerHTML = `
+          <div class="tool-row-label"><span>Elemente</span></div>
+          <div class="tool-palette scroll">${elBtns}</div>
+          <div class="tool-row-label"><span>Werkzeuge</span></div>
+          <div class="tool-palette scroll">
+            <button class="tool-btn" data-tool="bond">─ Bindung</button>
+            <button class="tool-btn ring-btn" data-tool="ringclose">⬡ Ring</button>
+            <button class="tool-btn" data-tool="lonepair"><span class="dots-icon"><span></span><span></span></span> Paar</button>
+            ${inorg ? `<button class="tool-btn charge" data-tool="chargeplus">＋ Ladung</button>
+            <button class="tool-btn charge" data-tool="chargeminus">－ Ladung</button>
+            <button class="tool-btn action" id="btn-autolp" title="Ergänzt alle freien Elektronenpaare aus Bindungen und Ladung">✨ Paare ergänzen</button>` : ''}
+            <button class="tool-btn eraser" data-tool="eraser">🧽 Radierer</button>
+            <button class="tool-btn" data-tool="hand">✋ Hand</button>
+            <button class="tool-btn action" id="btn-undo" title="Letzte Änderung rückgängig">↩ Zurück</button>
+            ${EDITOR ? '<button class="tool-btn action" id="btn-auto-h" title="Füllt offene Bindungsstriche und freie Bindungsplätze mit H-Atomen auf">⚡ H auffüllen</button>' : ''}
+          </div>`;
+        if (!container.querySelector(`[data-tool="${activeTool}"]`)) activeTool = 'C';
+        container.querySelectorAll('[data-tool]').forEach(btn => {
           btn.classList.toggle('active', btn.dataset.tool === activeTool);
           btn.addEventListener('click', () => {
             activeTool = btn.dataset.tool;
-            container.querySelectorAll('.tool-btn').forEach(b => b.classList.toggle('active', b === btn));
+            container.querySelectorAll('[data-tool]').forEach(b => b.classList.toggle('active', b === btn));
             hoverTarget = null;
             updateCursorAndStatus();
             drawPaper();
           });
         });
+        document.getElementById('btn-undo').addEventListener('click', undoLast);
+        const alp = document.getElementById('btn-autolp');
+        if (alp) alp.addEventListener('click', () => { pushUndo(snapshotState()); autoFillLonePairs(); hoverTarget = null; markDirty(); });
+        const ah = document.getElementById('btn-auto-h');
+        if (ah) ah.addEventListener('click', () => { pushUndo(snapshotState()); autoFillH(); hoverTarget = null; markDirty(); });
+        updateUndoBtn();
         updateCursorAndStatus();
+      }
+
+      // Vorzeichner: offene Striche und (organisch) freie Valenzen mit H füllen
+      function autoFillH() {
+        bonds.forEach(b => {
+          if (b.b === null) {
+            const p = atoms.find(a => a.id === b.a), hId = nextId++;
+            atoms.push({ id: hId, el: 'H', x: p.x + Math.cos(b.angle) * BOND_LEN_H, y: p.y + Math.sin(b.angle) * BOND_LEN_H, charge: 0, lonePairs: [] });
+            b.b = hId;
+          }
+        });
+        if (currentCourse !== 'org') return;
+        [...atoms].forEach(a => {
+          if (a.el === 'H') return;
+          const need = Math.max(0, ELEMENT_SPECS[a.el].valence - getUsedValence(a.id)), zones = getFreeZonesForAtom(a, 'bond');
+          for (let i = 0; i < Math.min(need, zones.length); i++) {
+            const z = zones[i], hId = nextId++;
+            atoms.push({ id: hId, el: 'H', x: a.x + Math.cos(z.angle) * BOND_LEN_H, y: a.y + Math.sin(z.angle) * BOND_LEN_H, charge: 0, lonePairs: [] });
+            bonds.push({ id: nextId++, a: a.id, b: hId, angle: z.angle, order: 1 });
+          }
+        });
       }
 
       function updateCursorAndStatus() {
         const hintEl = document.getElementById('status-hint');
-        if (activeTool === 'hand') {
-          lewisCanvas.style.cursor = isDraggingFormula ? 'grabbing' : 'grab';
-          hintEl.textContent = "✋ Hand-Modus: Halte die Maustaste gedrückt, um die Formel über das Blatt zu schieben.";
-        } else if (activeTool === 'eraser') {
-          lewisCanvas.style.cursor = 'crosshair';
-          hintEl.textContent = "🧽 Radierer: Halte das Fadenkreuz direkt auf eine Bindung, ein H oder ein Atom.";
-        } else if (activeTool === 'ringclose') {
-          lewisCanvas.style.cursor = 'crosshair';
-          hintEl.textContent = "⬡ Ringschluss: Klicke auf ein Atom – es verbindet sich automatisch mit dem nächstgelegenen Nicht-H-Atom.";
-        } else if (activeTool === 'bond') {
-          lewisCanvas.style.cursor = 'crosshair';
-          hintEl.textContent = currentCourse === 'basic'
-            ? "─ Bindung: Klicke auf eine blaue Zone am Atom, um dort eine Einfachbindung anzusetzen."
-            : "─ Bindung: Klicke auf eine blaue Zone für eine Bindung – oder auf eine Bindung für Doppel- (120°) / Dreifachbindung (180°).";
-        } else if (activeTool === 'lonepair') {
-          lewisCanvas.style.cursor = 'crosshair';
-          hintEl.textContent = "•• Elektronenpaar: Klicke auf eine rote Zone rund um ein Atom, um dort ein freies Elektronenpaar zu setzen.";
-        } else {
-          lewisCanvas.style.cursor = 'crosshair';
-          hintEl.textContent = `Element [${activeTool}]: Klicke auf das Blatt oder in den offenen Zielkreis am Ende einer Bindung.`;
-        }
+        const tap = touchUI ? 'Tippe' : 'Klicke';
+        lewisCanvas.style.cursor = activeTool === 'hand' ? (isDraggingFormula ? 'grabbing' : 'grab') : 'crosshair';
+        if (activeTool === 'hand') hintEl.textContent = touchUI ? "✋ Hand: Ziehe die Formel mit einem Finger über das Blatt." : "✋ Hand-Modus: Halte die Maustaste gedrückt, um die Formel über das Blatt zu schieben.";
+        else if (activeTool === 'eraser') hintEl.textContent = `🧽 Radierer: ${tap} auf eine Bindung, ein H, ein Elektronenpaar oder ein Atom.`;
+        else if (activeTool === 'ringclose') hintEl.textContent = `⬡ Ringschluss: ${tap} auf ein Atom – es verbindet sich mit dem nächsten freien Nicht-H-Atom.`;
+        else if (activeTool === 'bond') hintEl.textContent = `─ Bindung: ${tap} auf eine Bindung: Einfach → Doppel → Dreifach.`;
+        else if (activeTool === 'lonepair') hintEl.textContent = `•• Elektronenpaar: ${tap} auf eine rote Zone am Atom (oder auf das Atom selbst).`;
+        else if (activeTool === 'chargeplus') hintEl.textContent = `＋ Ladung: ${tap} auf ein Atom, um seine Ladung um 1 zu erhöhen.`;
+        else if (activeTool === 'chargeminus') hintEl.textContent = `－ Ladung: ${tap} auf ein Atom, um seine Ladung um 1 zu verringern.`;
+        else hintEl.textContent = `Element ${activeTool}: ${tap} auf eine blaue Zone am Atom – oder auf freie Fläche für ein neues Atom.`;
       }
 
       // ==========================================================================
@@ -684,15 +817,15 @@
           atoms.forEach(atom => {
             (atom.lonePairs || []).forEach((ang, idx) => {
               const d = Math.hypot(m.x - (atom.x + Math.cos(ang) * 15), m.y - (atom.y + Math.sin(ang) * 15));
-              if (d <= 11) cands.push({ dist: d - 1, target: { type: 'lonepair', atom, lpIndex: idx, angle: ang } });
+              if (d <= 11 * HIT_SCALE) cands.push({ dist: d - 1, target: { type: 'lonepair', atom, lpIndex: idx, angle: ang } });
             });
             const dA = Math.hypot(m.x - atom.x, m.y - atom.y);
-            if (dA <= 14) cands.push({ dist: dA, target: { type: 'atom', atom } });
+            if (dA <= 14 * HIT_SCALE) cands.push({ dist: dA, target: { type: 'atom', atom } });
           });
           bonds.forEach(b => {
             const ep = getBondEndpoints2D(b);
             const { dist } = distToSegmentExact(m.x, m.y, ep.x1, ep.y1, ep.x2, ep.y2);
-            if (dist <= 10) cands.push({ dist, target: { type: 'bond', bond: b } });
+            if (dist <= 10 * HIT_SCALE) cands.push({ dist, target: { type: 'bond', bond: b } });
           });
           if (!cands.length) return null;
           cands.sort((a, b) => a.dist - b.dist);
@@ -700,7 +833,7 @@
         }
 
         if (tool === 'ringclose') {
-          let bestAtom = null, bestDist = 18;
+          let bestAtom = null, bestDist = 18 * HIT_SCALE;
           atoms.forEach(atom => {
             if (atom.el === 'H') return;
             const d = Math.hypot(m.x - atom.x, m.y - atom.y);
@@ -711,7 +844,7 @@
 
         if (ELEMENT_SPECS[tool] || tool === 'lonepair') {
           const zoneMode = tool === 'lonepair' ? 'lonepair' : 'bond';
-          let bestZone = null, bestDist = 16;
+          let bestZone = null, bestDist = 16 * (HIT_SCALE > 1 ? 1.3 : 1);
           atoms.forEach(atom => {
             getFreeZonesForAtom(atom, zoneMode).forEach(z => {
               const d = Math.hypot(m.x - z.zx, m.y - z.zy);
@@ -722,7 +855,7 @@
         }
 
         if (ELEMENT_SPECS[tool]) {
-          let bestOpen = null, bestDist = 18;
+          let bestOpen = null, bestDist = 18 * HIT_SCALE;
           bonds.forEach(b => {
             if (b.b === null) {
               const ep = getBondEndpoints2D(b);
@@ -733,13 +866,13 @@
           if (bestOpen) return { type: 'openBondEnd', bond: bestOpen };
         }
 
-        let bestAtom = null, bestAtomDist = 14;
+        let bestAtom = null, bestAtomDist = 14 * HIT_SCALE;
         atoms.forEach(atom => {
           const d = Math.hypot(m.x - atom.x, m.y - atom.y);
           if (d < bestAtomDist) { bestAtomDist = d; bestAtom = atom; }
         });
 
-        let bestBond = null, bestBondDist = 10;
+        let bestBond = null, bestBondDist = 10 * HIT_SCALE;
         bonds.forEach(b => {
           const ep = getBondEndpoints2D(b);
           const { dist } = distToSegmentExact(m.x, m.y, ep.x1, ep.y1, ep.x2, ep.y2);
@@ -806,7 +939,7 @@
               ctx.fillStyle = showLPZones ? (isHovered ? "rgba(220,38,38,0.24)" : "rgba(220,38,38,0.08)") : (isHovered ? "rgba(2,132,199,0.24)" : "rgba(2,132,199,0.07)");
               ctx.lineWidth = isHovered ? 2.2 : 1.4;
               ctx.setLineDash(isHovered ? [] : [3, 2]);
-              ctx.beginPath(); ctx.arc(sp.x, sp.y, isHovered ? 9 : 7.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+              ctx.beginPath(); ctx.arc(sp.x, sp.y, isHovered ? (touchUI ? 12 : 9) : (touchUI ? 10 : 7.5), 0, Math.PI * 2); ctx.fill(); ctx.stroke();
 
               if (isHovered && activeTool === 'bond') {
                 const pAtom = toScreen(atom.x, atom.y), endPos = toScreen(atom.x + Math.cos(z.angle) * STUB_LEN, atom.y + Math.sin(z.angle) * STUB_LEN);
@@ -890,6 +1023,16 @@
           ctx.fillStyle = spec.color2D; ctx.font = "bold 17px system-ui, sans-serif";
           ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(atom.el, p.x, p.y);
 
+          if (atom.charge) {
+            const qx = p.x + 15, qy = p.y - 14;
+            ctx.save();
+            ctx.fillStyle = "#ffffff"; ctx.strokeStyle = "#b45309"; ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.arc(qx, qy, 8, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+            ctx.fillStyle = "#b45309"; ctx.font = "bold 11px system-ui, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.fillText((atom.charge > 0 ? '+' : '−') + (Math.abs(atom.charge) > 1 ? Math.abs(atom.charge) : ''), qx, qy + 0.5);
+            ctx.restore();
+          }
+
           (atom.lonePairs || []).forEach((ang, idx) => {
             const isHoveredLP = hoverTarget && hoverTarget.type === 'lonepair' && hoverTarget.atom.id === atom.id && hoverTarget.lpIndex === idx;
             const lx = p.x + Math.cos(ang) * 15, ly = p.y + Math.sin(ang) * 15, tx = -Math.sin(ang) * 6, ty = Math.cos(ang) * 6;
@@ -940,7 +1083,7 @@
         const url = URL.createObjectURL(blob);
 
         // Dateiname automatisch nach dem aktuellen IUPAC-Namen benennen (falls vorhanden)
-        const rawName = (currentAnalysis && currentAnalysis.iupacName) ? currentAnalysis.iupacName : "molekuel";
+        const rawName = EDITOR ? (document.getElementById('filename-input').value.trim().replace(/\.json$/i, '') || 'vorlage') : ((currentAnalysis && currentAnalysis.iupacName) ? currentAnalysis.iupacName : "molekuel");
         const safeName = rawName.replace(/[^a-zA-Z0-9äöüÄÖÜß\-_,]/g, "_");
 
         const a = document.createElement("a");
@@ -969,18 +1112,15 @@
               throw new Error("Ungültiges Format");
             }
 
-            // Falls das Molekül aus dem Fortgeschrittenenkurs stammt, Modus automatisch passend schalten
-            if (data.course === "adv" && currentCourse !== "adv") {
-              currentCourse = "adv";
-              document.getElementById("btn-course-adv").classList.add("active");
-              document.getElementById("btn-course-basic").classList.remove("active");
-              document.getElementById("course-badge").textContent = "Fortgeschrittenenkurs: Alle Gruppen & Ringe";
-              renderToolbar();
-              populatePresets();
-            }
+            // Modus passend zur Datei schalten (alte Dateien: 'basic'/'adv' = organisch)
+            pushUndo(snapshotState());
+            const wantMode = data.course === 'inorg' ? 'inorg' : 'org';
+            if (wantMode !== currentCourse) setMode(wantMode, { keep: true });
 
             atoms = data.atoms;
             bonds = data.bonds;
+            panAcc = { x: 0, y: 0 };
+            if (EDITOR) document.getElementById('filename-input').value = file.name.replace(/\.json$/i, '');
             nextId = Math.max(100, ...atoms.map(a => a.id || 0), ...bonds.map(b => b.id || 0)) + 1;
             hoverTarget = null;
 
@@ -994,28 +1134,102 @@
           }
         };
         reader.readAsText(file);
-      }; function markDirty() {
+      };
+
+      function markDirty() {
         invalidAtomIds.clear(); invalidBondIds.clear();
         document.getElementById('validation-msg').style.display = 'none';
         document.getElementById('empty-3d-overlay').classList.add('visible');
+        const np = document.getElementById('name-pill'); if (np) np.classList.remove('has-content');
         drawPaper();
+        if (EDITOR && atoms.length) editorCheck();
       }
 
-      lewisCanvas.addEventListener('pointerenter', () => { mouseCanvasPos.inside = true; });
-      lewisCanvas.addEventListener('pointerleave', () => { mouseCanvasPos.inside = false; hoverTarget = null; drawPaper(); });
+      function editorCheck() {
+        const ok = validateLewisStructure();
+        if (ok) showValidationMessage('✔ Vorlage ist chemisch vollständig und bereit zum Speichern.', 'success');
+        return ok;
+      }
+
+      // ---- Formel verschieben / zoomen (Hand-Werkzeug, Zwei-Finger-Geste, Zoom-Knöpfe) ----
+      function panFormulaBy(dxScreen, dyScreen) {
+        const dx = dxScreen / paperZoom, dy = dyScreen / paperZoom;
+        atoms.forEach(a => { a.x += dx; a.y += dy; });
+        panAcc.x += dx; panAcc.y += dy;
+      }
+      function zoomPaperAt(mx, my, factor) {
+        const old = paperZoom, nz = Math.max(0.3, Math.min(3, old * factor));
+        if (nz === old) return;
+        const { cx, cy } = paperCenter();
+        const dx = (mx - cx) / nz - (mx - cx) / old, dy = (my - cy) / nz - (my - cy) / old;
+        atoms.forEach(a => { a.x += dx; a.y += dy; });
+        panAcc.x += dx; panAcc.y += dy;
+        paperZoom = nz;
+      }
+      const canvasPos = e => { const r = lewisCanvas.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+
+      lewisCanvas.addEventListener('pointerenter', e => { if (e.pointerType !== 'touch') mouseCanvasPos.inside = true; });
+      lewisCanvas.addEventListener('pointerleave', e => { if (e.pointerType === 'touch') return; mouseCanvasPos.inside = false; hoverTarget = null; drawPaper(); });
+
+      // ---- Touch: Tippen = Aktion, ein Finger ziehen = Formel schieben, zwei Finger = Zoom + Verschieben ----
+      const touchPtrs = new Map();
+      let touchG = null;
+      function onTouchDown(e) {
+        const p = canvasPos(e);
+        touchPtrs.set(e.pointerId, p);
+        try { lewisCanvas.setPointerCapture(e.pointerId); } catch (_) {}
+        if (touchPtrs.size === 1) {
+          touchG = { sx: p.x, sy: p.y, lx: p.x, ly: p.y, t: Date.now(), moved: false, multi: false, pd: null };
+          mouseCanvasPos = { x: p.x, y: p.y, inside: false };
+          HIT_SCALE = 1.5; hoverTarget = findHitTarget(p.x, p.y, activeTool); HIT_SCALE = 1;
+          drawPaper();
+        } else if (touchG) {
+          touchG.multi = true; touchG.moved = true; touchG.pd = null; hoverTarget = null; drawPaper();
+        }
+      }
+      function twoFingers() {
+        const v = [...touchPtrs.values()], dx = v[1].x - v[0].x, dy = v[1].y - v[0].y;
+        return { d: Math.hypot(dx, dy) || 1, mx: (v[0].x + v[1].x) / 2, my: (v[0].y + v[1].y) / 2 };
+      }
+      function onTouchMove(e) {
+        if (!touchPtrs.has(e.pointerId) || !touchG) return;
+        const p = canvasPos(e); touchPtrs.set(e.pointerId, p);
+        if (touchPtrs.size >= 2) {
+          const cur = twoFingers();
+          if (touchG.pd) { zoomPaperAt(cur.mx, cur.my, cur.d / touchG.pd.d); panFormulaBy(cur.mx - touchG.pd.mx, cur.my - touchG.pd.my); }
+          touchG.pd = cur; drawPaper(); return;
+        }
+        if (!touchG.moved && Math.hypot(p.x - touchG.sx, p.y - touchG.sy) > 10) { touchG.moved = true; hoverTarget = null; touchG.lx = p.x; touchG.ly = p.y; }
+        else if (touchG.moved && !touchG.multi) { panFormulaBy(p.x - touchG.lx, p.y - touchG.ly); touchG.lx = p.x; touchG.ly = p.y; drawPaper(); }
+      }
+      function onTouchUp(e, cancelled) {
+        if (!touchPtrs.has(e.pointerId)) return;
+        touchPtrs.delete(e.pointerId);
+        try { lewisCanvas.releasePointerCapture(e.pointerId); } catch (_) {}
+        if (touchPtrs.size === 0 && touchG) {
+          const g = touchG; touchG = null;
+          if (!g.moved && !cancelled && Date.now() - g.t < 900) {
+            HIT_SCALE = 1.5; const hit = findHitTarget(g.sx, g.sy, activeTool); HIT_SCALE = 1;
+            handleCanvasAction(g.sx, g.sy, hit);
+          }
+          hoverTarget = null; drawPaper();
+        } else if (touchPtrs.size === 1 && touchG) {
+          const rest = [...touchPtrs.values()][0]; touchG.lx = rest.x; touchG.ly = rest.y; touchG.pd = null;
+        }
+      }
+      lewisCanvas.addEventListener('pointerup', e => { if (e.pointerType === 'touch') onTouchUp(e, false); });
+      lewisCanvas.addEventListener('pointercancel', e => { if (e.pointerType === 'touch') onTouchUp(e, true); });
 
       lewisCanvas.addEventListener('pointermove', (e) => {
+        if (e.pointerType === 'touch') { onTouchMove(e); return; }
         const rect = lewisCanvas.getBoundingClientRect();
         const mx = e.clientX - rect.left, my = e.clientY - rect.top;
         mouseCanvasPos = { x: mx, y: my, inside: true };
 
-       if (isDraggingFormula) {
+        if (isDraggingFormula) {
           const dx = mx - dragLastPos.x, dy = my - dragLastPos.y;
           dragLastPos = { x: mx, y: my };
-          atoms.forEach(a => { 
-            a.x = Math.round(a.x + dx); 
-            a.y = Math.round(a.y + dy); 
-          });
+          panFormulaBy(dx, dy);
           drawPaper();
           return;
         }
@@ -1039,6 +1253,7 @@
       });
 
       lewisCanvas.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'touch') { onTouchDown(e); return; }
         const rect = lewisCanvas.getBoundingClientRect();
         const mx = e.clientX - rect.left, my = e.clientY - rect.top;
         if (activeTool === 'hand') {
@@ -1051,7 +1266,36 @@
         if (isDraggingFormula) { isDraggingFormula = false; updateCursorAndStatus(); }
       });
 
+      // ---- Rückgängig ----
+      function snapshotState() { return JSON.stringify({ atoms, bonds, nextId, pan: panAcc }); }
+      function updateUndoBtn() { const b = document.getElementById('btn-undo'); if (b) b.disabled = undoStack.length === 0; }
+      function pushUndo(snap) {
+        undoStack.push(snap); if (undoStack.length > 60) undoStack.shift(); updateUndoBtn();
+      }
+      function undoLast() {
+        if (!undoStack.length) return;
+        const st = JSON.parse(undoStack.pop());
+        atoms = st.atoms; bonds = st.bonds; nextId = st.nextId;
+        const sx = panAcc.x - st.pan.x, sy = panAcc.y - st.pan.y;
+        if (sx || sy) atoms.forEach(a => { a.x += sx; a.y += sy; });
+        hoverTarget = null; updateUndoBtn(); markDirty();
+      }
+
       function handleCanvasAction(mx, my, hit) {
+        const before = snapshotState();
+        handleCanvasActionCore(mx, my, hit);
+        if (snapshotState() !== before) pushUndo(before);
+      }
+
+
+      function handleCanvasActionCore(mx, my, hit) {
+        if (activeTool === 'chargeplus' || activeTool === 'chargeminus') {
+          if (hit && hit.type === 'atom') {
+            hit.atom.charge = Math.max(-4, Math.min(4, (hit.atom.charge || 0) + (activeTool === 'chargeplus' ? 1 : -1)));
+            hoverTarget = null; markDirty();
+          }
+          return;
+        }
         if (ELEMENT_SPECS[activeTool]) {
           // Klick direkt in eine blaue Zone -> Bindung + neues Atom gleichzeitig erzeugen!
           if (hit && hit.type === 'zone') {
@@ -1089,7 +1333,7 @@
             const src = hit.atom, dst = hit.partner;
             for (const node of [src, dst]) {
               const spec = ELEMENT_SPECS[node.el];
-              while (getUsedValence(node.id) >= spec.valence) {
+              while (getUsedValence(node.id) >= capacityOf(node)) {
                 const stub = getAtomBonds(node.id).find(b => b.b === null);
                 if (stub) bonds = bonds.filter(b => b.id !== stub.id); else break;
               }
@@ -1145,13 +1389,12 @@
         // Bindungs-Button ändert nur noch bestehende Bindungen (1x -> 2x -> 3x)
         if (activeTool === 'bond') {
           if (hit && hit.type === 'bond') {
-            if (currentCourse === 'basic') {
-              showValidationMessage("Im Einsteigerkurs (Alkane) gibt es nur Einfachbindungen.", "error"); return;
-            }
             const b = hit.bond;
             b.order = (b.order % 3) + 1;
-            const atomA = getAtom(b.a); if (atomA) enforceHybridizationAnglesAtAtom(atomA, b);
-            if (b.b !== null) { const atomB = getAtom(b.b); if (atomB) enforceHybridizationAnglesAtAtom(atomB, b); }
+            if (currentCourse === 'org') {
+              const atomA = getAtom(b.a); if (atomA) enforceHybridizationAnglesAtAtom(atomA, b);
+              if (b.b !== null) { const atomB = getAtom(b.b); if (atomB) enforceHybridizationAnglesAtAtom(atomB, b); }
+            }
             hoverTarget = null; markDirty(); return;
           }
         }
@@ -1215,7 +1458,13 @@
       function validateLewisStructure() {
         invalidAtomIds.clear(); invalidBondIds.clear();
         if (atoms.length === 0) { showValidationMessage("⚠️ Das Zeichenblatt ist noch leer. Zeichne zuerst eine Lewis-Formel!", "error"); return false; }
-        if (!atoms.some(a => a.el === 'C')) { showValidationMessage("⚠️ Ein organisches Molekül muss mindestens ein Kohlenstoffatom (C) enthalten.", "error"); return false; }
+        if (currentCourse === 'org') {
+          const alien = atoms.find(a => !ORG_ELEMENTS.includes(a.el));
+          if (alien) { invalidAtomIds.add(alien.id); drawPaper(); showValidationMessage(`⚠️ <strong>${ELEMENT_SPECS[alien.el].name}</strong> gehört in den Modus <strong>Anorganisch</strong>. Wechsle oben den Modus oder entferne das Atom.`, "error"); return false; }
+          const charged = atoms.find(a => a.charge);
+          if (charged) { invalidAtomIds.add(charged.id); drawPaper(); showValidationMessage("⚠️ Geladene Teilchen (Ionen) gibt es im Modus <strong>Anorganisch</strong>.", "error"); return false; }
+          if (!atoms.some(a => a.el === 'C')) { showValidationMessage("⚠️ Ein organisches Molekül muss mindestens ein Kohlenstoffatom (C) enthalten. Moleküle ohne C (z. B. H₂O, NH₃) und Ionen baust du im Modus <strong>Anorganisch</strong>.", "error"); return false; }
+        }
 
         const openBonds = bonds.filter(b => b.b === null);
         if (openBonds.length > 0) {
@@ -1240,6 +1489,8 @@
           }
         }
 
+        if (currentCourse === 'inorg') return validateInorgElectrons();
+
         for (const atom of atoms) {
           const spec = ELEMENT_SPECS[atom.el], usedVal = getUsedValence(atom.id);
           if (usedVal !== spec.valence) {
@@ -1249,13 +1500,6 @@
             showValidationMessage(`⚠️ <strong>Valenzfehler am ${spec.name}:</strong> Aktuell ${usedVal} statt ${spec.valence} Bindungen. ${hint}`, "error");
             return false;
           }
-        }
-
-        const heavyAtoms = atoms.filter(a => a.el !== 'H');
-        const heavyBonds = bonds.filter(b => getAtom(b.a).el !== 'H' && getAtom(b.b).el !== 'H');
-        if (currentCourse === 'basic' && heavyBonds.length >= heavyAtoms.length) {
-          showValidationMessage("⚠️ Im Einsteigerkurs sind nur offenkettige Alkane (ohne Ringe) vorgesehen.", "error");
-          return false;
         }
 
         if (atoms.some(a => a.lonePairs && a.lonePairs.length > 0)) {
@@ -1339,6 +1583,14 @@
         return neigh.length === 1 && neigh[0].atom.el === 'O' && neigh[0].bond.order === 2 && getAttachedHCount(cId) === 1;
       }
 
+      // N ist ein "echtes" Amin-N: nur C-Nachbarn (und H), nicht an einer C=O-Gruppe (kein Amid)
+      function isPlainAmineN(nId) {
+        const nb = getHeavyNeighbors(nId);
+        if (nb.length === 0) return false;
+        return nb.every(x => x.atom.el === 'C' && x.bond.order === 1 &&
+          !getHeavyNeighbors(x.atom.id).some(y => y.atom.el === 'O' && y.bond.order === 2));
+      }
+
       function nameAminoGroup(nAtomId, parentCId, blockedSet) {
         const nOthers = getHeavyNeighbors(nAtomId).filter(x => x.atom.id !== parentCId && !blockedSet.has(x.atom.id));
         if (nOthers.length === 0) return 'amino';
@@ -1394,22 +1646,33 @@
               }
             }
           } else if (n.atom.el === 'N' && n.bond.order === 1) {
-            if (excludePrincipalType !== 'amine' || getAttachedHCount(n.atom.id) < 2) {
-              subs.push(nameAminoGroup(n.atom.id, cId, blockedSet));
-            }
+            if (isAcidOrAldehydeC && excludePrincipalType === 'amide') return;
+            if (excludePrincipalType === 'amine' && isPlainAmineN(n.atom.id)) return;
+            subs.push(nameAminoGroup(n.atom.id, cId, blockedSet));
+          } else if (n.atom.el === 'N' && n.bond.order === 3) {
+            if (!(isAcidOrAldehydeC && excludePrincipalType === 'nitrile')) subs.push('cyano');
           }
         });
         return subs;
       }
 
-      function formatPrefixString(subGroups) {
+      function formatPrefixString(subGroups, omitLocs = false) {
+        const locKey = l => (l === 'N' ? -1 : l);
         const sortedSubNames = sortSubNames(Object.keys(subGroups));
         const prefixParts = sortedSubNames.map(sName => {
-          const locs = subGroups[sName].sort((a, b) => a - b);
+          const locs = subGroups[sName].slice().sort((x, y) => locKey(x) - locKey(y));
           const isComplex = sName.startsWith('(');
-          return `${locs.join(',')}-${getMultPrefix(locs.length, isComplex)}${sName}`;
+          const mult = getMultPrefix(locs.length, isComplex);
+          if (omitLocs && !locs.includes('N')) return `${mult}${sName}`;
+          return `${locs.join(',')}-${mult}${sName}`;
         });
-        return { prefixParts, prefixStr: prefixParts.join('-') };
+        const hasLoc = x => /^(\d|N)/.test(x);
+        let prefixStr = '';
+        prefixParts.forEach((part, i) => {
+          if (i > 0 && (hasLoc(part) || hasLoc(prefixParts[i - 1]))) prefixStr += '-';
+          prefixStr += part;
+        });
+        return { prefixParts, prefixStr };
       }
 
       function analyzeMolecule() {
@@ -1446,26 +1709,32 @@
         }
 
         const cAtoms = atoms.filter(a => a.el === 'C');
-        const acids = [], aldehydes = [], ketones = [], alcohols = [], thiols = [], amines = [], halogens = [];
+        const acids = [], amides = [], nitriles = [], aldehydes = [], ketones = [], alcohols = [], thiols = [], amines = [], halogens = [];
         const bridgeHeteros = atoms.filter(a => ['O', 'S'].includes(a.el) && getHeavyNeighbors(a.id).length === 2);
 
         cAtoms.forEach(c => {
           const neigh = getHeavyNeighbors(c.id), cNeighbors = neigh.filter(n => n.atom.el === 'C');
           const oxo = neigh.find(n => n.atom.el === 'O' && n.bond.order === 2);
           const oh = neigh.find(n => n.atom.el === 'O' && n.bond.order === 1 && getAttachedHCount(n.atom.id) === 1);
+          const amideN = oxo ? neigh.find(n => n.atom.el === 'N' && n.bond.order === 1) : null;
+          const nitrileN = neigh.find(n => n.atom.el === 'N' && n.bond.order === 3);
           if (oxo && oh && cNeighbors.length <= 1) acids.push(c.id);
+          else if (oxo && amideN && cNeighbors.length <= 1) amides.push(c.id);
+          else if (nitrileN && cNeighbors.length <= 1) nitriles.push(c.id);
           else if (oxo) { if (cNeighbors.length <= 1) aldehydes.push(c.id); else ketones.push(c.id); }
 
           neigh.forEach(n => {
             if (n.atom.el === 'O' && n.bond.order === 1 && getAttachedHCount(n.atom.id) === 1 && !(oxo && cNeighbors.length <= 1)) alcohols.push(c.id);
             else if (n.atom.el === 'S' && n.bond.order === 1 && getAttachedHCount(n.atom.id) === 1) thiols.push(c.id);
-            else if (n.atom.el === 'N' && n.bond.order === 1 && getAttachedHCount(n.atom.id) === 2) amines.push(c.id);
+            else if (n.atom.el === 'N' && n.bond.order === 1 && isPlainAmineN(n.atom.id)) amines.push(c.id);
             else if (['F', 'Cl', 'Br', 'I'].includes(n.atom.el)) halogens.push({ cId: c.id, name: { F: 'fluor', Cl: 'chlor', Br: 'brom', I: 'iod' }[n.atom.el] });
           });
         });
 
         let principalType = 'alkane', classLabel = 'Alkan (Gesättigter Kohlenwasserstoff)', principalCIds = [];
         if (acids.length > 0) { principalType = 'acid'; classLabel = 'Alkansäure (Carbonsäure)'; principalCIds = acids; }
+        else if (amides.length > 0) { principalType = 'amide'; classLabel = 'Alkanamid (Carbonsäureamid)'; principalCIds = amides; }
+        else if (nitriles.length > 0) { principalType = 'nitrile'; classLabel = 'Alkannitril (Nitril)'; principalCIds = nitriles; }
         else if (aldehydes.length > 0) { principalType = 'alkanal'; classLabel = 'Alkanal (Aldehyd)'; principalCIds = aldehydes; }
         else if (ketones.length > 0) { principalType = 'alkanone'; classLabel = 'Alkanon (Keton)'; principalCIds = ketones; }
         else if (alcohols.length > 0) { principalType = 'alkanol'; classLabel = 'Alkanol (Alkohol)'; principalCIds = alcohols; }
@@ -1482,7 +1751,7 @@
           else if (halogens.length > 0) classLabel = 'Halogenalkan';
         }
 
-        const acidOrAldSet = new Set([...acids, ...aldehydes]);
+        const acidOrAldSet = new Set([...acids, ...amides, ...nitriles, ...aldehydes]);
         const allPaths = findAllCarbonPaths();
         let bestCandidate = null;
         for (const path of allPaths) {
@@ -1505,34 +1774,77 @@
 
         mainChain.forEach((cId, idx) => {
           const loc = idx + 1;
-          const isPrincipalAcidOrAld = (principalType === 'acid' && acids.includes(cId)) || (principalType === 'alkanal' && aldehydes.includes(cId));
+          const isPrincipalAcidOrAld = (principalType === 'acid' && acids.includes(cId)) || (principalType === 'alkanal' && aldehydes.includes(cId)) || (principalType === 'amide' && amides.includes(cId)) || (principalType === 'nitrile' && nitriles.includes(cId));
           const subs = collectSubstituentsAtCarbon(cId, mainSet, principalType, isPrincipalAcidOrAld);
           subs.forEach(s => addSub(s, loc));
         });
 
-        const { prefixParts, prefixStr } = formatPrefixString(subGroups);
-
-        let unsatPart = "an";
-        if (doubleLocs.length > 0 || tripleLocs.length > 0) {
-          const parts = [];
-          if (doubleLocs.length > 0) parts.push(`${doubleLocs.length > 1 ? "a" : ""}-${doubleLocs.join(',')}-${getMultPrefix(doubleLocs.length)}en`);
-          if (tripleLocs.length > 0) parts.push(`${(doubleLocs.length === 0 && tripleLocs.length > 1) ? "a" : ""}-${tripleLocs.join(',')}-${getMultPrefix(tripleLocs.length)}in`);
-          unsatPart = parts.join('');
+        // N-Substituenten an Amin- bzw. Amid-Stickstoff ("N-Methyl-...")
+        const seenN = new Set();
+        const addNSubs = (nId, fromCId) => {
+          if (seenN.has(nId)) return; seenN.add(nId);
+          getHeavyNeighbors(nId).forEach(o => {
+            if (o.atom.id === fromCId || mainSet.has(o.atom.id)) return;
+            if (o.atom.el === 'C') addSub(nameAlkylSubtree(o.atom.id, nId, new Set([...mainSet])), 'N');
+          });
+        };
+        if (principalType === 'amine') {
+          mainChain.forEach(cId => getHeavyNeighbors(cId).forEach(n => {
+            if (n.atom.el === 'N' && n.bond.order === 1 && isPlainAmineN(n.atom.id)) addNSubs(n.atom.id, cId);
+          }));
+        } else if (principalType === 'amide') {
+          mainChain.forEach(cId => { if (amides.includes(cId)) getHeavyNeighbors(cId).forEach(n => {
+            if (n.atom.el === 'N' && n.bond.order === 1) addNSubs(n.atom.id, cId);
+          }); });
         }
 
         const funcLocs = principalCIds.map(id => mainChain.indexOf(id) + 1).filter(l => l > 0).sort((a, b) => a - b);
-        let suffixStr = "";
-        if (principalType === 'acid') suffixStr = funcLocs.length > 1 ? "disäure" : "säure";
-        else if (principalType === 'alkanal') suffixStr = funcLocs.length > 1 ? "dial" : "al";
-        else if (principalType === 'alkanone') suffixStr = `-${funcLocs.join(',')}-${getMultPrefix(funcLocs.length)}on`;
-        else if (principalType === 'alkanol') {
-          suffixStr = (chainLen <= 2 && funcLocs.length === 1 && prefixParts.length === 0 && unsatPart === "an") ? "ol" : `-${funcLocs.join(',')}-${getMultPrefix(funcLocs.length)}ol`;
-        } else if (principalType === 'thiol') suffixStr = `-${funcLocs.join(',')}-${getMultPrefix(funcLocs.length)}thiol`;
-        else if (principalType === 'amine') suffixStr = `-${funcLocs.join(',')}-${getMultPrefix(funcLocs.length)}amin`;
+        const nPrincipal = principalType === 'amine' ? Math.max(funcLocs.length, 1) : funcLocs.length;
+        const nSubCount = Object.keys(subGroups).reduce((t, k) => t + subGroups[k].filter(l => l !== 'N').length, 0);
+        const hasNLoc = Object.keys(subGroups).some(k => subGroups[k].includes('N'));
+        const oneGroupOnly = (nSubCount + (principalCIds.length ? funcLocs.length : 0)) <= 1;
+        // Schulübliche Kurzschreibweise: Lokanten weglassen, wenn sie eindeutig sind
+        const omitSubLocs = chainLen === 1 || (chainLen === 2 && oneGroupOnly);
+        const omitFuncLoc = chainLen === 1 || (chainLen === 2 && oneGroupOnly && funcLocs.length <= 1) ||
+          (principalType === 'alkanone' && chainLen <= 4 && funcLocs.length === 1 && nSubCount === 0 && doubleLocs.length + tripleLocs.length === 0);
+        const unsatOnly = ['alkene', 'alkyne'].includes(principalType) || principalType === 'alkane';
+        const omitUnsatLocs = chainLen <= 2 || (chainLen === 3 && unsatOnly && doubleLocs.length + tripleLocs.length === 1);
+
+        const { prefixParts, prefixStr } = formatPrefixString(subGroups, omitSubLocs);
+        const { prefixStr: prefixStrStrict } = formatPrefixString(subGroups, chainLen === 1);
+
+        const buildUnsat = (omitLoc) => {
+          if (doubleLocs.length === 0 && tripleLocs.length === 0) return "an";
+          const parts = [];
+          const L = (arr) => omitLoc ? '' : `-${arr.join(',')}-`;
+          if (doubleLocs.length > 0) parts.push(`${doubleLocs.length > 1 ? "a" : ""}${doubleLocs.length > 1 || !omitLoc ? L(doubleLocs) : ''}${getMultPrefix(doubleLocs.length)}en`);
+          if (tripleLocs.length > 0) parts.push(`${(doubleLocs.length === 0 && tripleLocs.length > 1) ? "a" : ""}${tripleLocs.length > 1 || !omitLoc ? L(tripleLocs) : ''}${getMultPrefix(tripleLocs.length)}in`);
+          return parts.join('');
+        };
+        const unsatPart = buildUnsat(omitUnsatLocs && !(principalCIds.length && chainLen > 2));
+        const unsatStrict = buildUnsat(chainLen <= 2);
+
+        const buildSuffix = (omitF) => {
+          const L = funcLocs.length ? (omitF ? '' : `-${funcLocs.join(',')}-`) : '';
+          const M = getMultPrefix(funcLocs.length);
+          if (principalType === 'acid') return funcLocs.length > 1 ? "disäure" : "säure";
+          if (principalType === 'alkanal') return funcLocs.length > 1 ? "dial" : "al";
+          if (principalType === 'amide') return funcLocs.length > 1 ? "diamid" : "amid";
+          if (principalType === 'nitrile') return funcLocs.length > 1 ? "dinitril" : "nitril";
+          if (principalType === 'alkanone') return `${L}${M}on`;
+          if (principalType === 'alkanol') return `${L}${M}ol`;
+          if (principalType === 'thiol') return `${L}${M}thiol`;
+          if (principalType === 'amine') return `${L}${M}amin`;
+          return "";
+        };
+        const suffixStr = buildSuffix(omitFuncLoc);
+        const suffixStrict = buildSuffix(chainLen === 1);
 
         const coreNameRaw = `${stem}${unsatPart}${suffixStr}`;
         const fullNameDisplay = capFirstLetter(prefixStr ? `${prefixStr}${coreNameRaw}` : coreNameRaw);
-        const altName = (principalType === 'alkanol' && chainLen === 2 && funcLocs.length === 1 && prefixParts.length === 0) ? "Systematisch auch: Ethan-1-ol" : "";
+        const strictName = capFirstLetter(prefixStrStrict ? `${prefixStrStrict}${stem}${unsatStrict}${suffixStrict}` : `${stem}${unsatStrict}${suffixStrict}`);
+        const accepted = [strictName];
+        const altName = (strictName.toLowerCase() !== fullNameDisplay.toLowerCase()) ? `Strenge IUPAC-Schreibweise: ${strictName}` : "";
 
         const steps = [
           { title: "1. Funktionelle Gruppe & Stoffklasse", text: principalType === 'alkane' ? `Keine Mehrfachbindungen oder vorrangigen Hauptgruppen → Stoffklasse: <strong>${classLabel.split(' ')[0]}</strong>, Endung: <strong>-an</strong>.` : `Höchste Priorität besitzt die Gruppe der <strong>${classLabel.split(' ')[0]}e</strong> → Namensendung (Suffix): <strong>${suffixStr || unsatPart}</strong>.` },
@@ -1541,7 +1853,7 @@
           { title: "4. Seitenketten & Gesamtname", text: prefixParts.length > 0 ? `Alphabetisch geordnete Vorsilben: <strong>${capFirstLetter(prefixStr)}-</strong> + Stamm &amp; Endung <strong>${capFirstLetter(coreNameRaw)}</strong> = <strong>${fullNameDisplay}</strong>.` : `Keine Seitenketten vorhanden → vollständiger IUPAC-Name: <strong>${fullNameDisplay}</strong>.` }
         ];
 
-        return { classLabel, iupacName: fullNameDisplay, altName, formulaStr, molarMass, mainChain, chainLabels, steps };
+        return { classLabel, iupacName: fullNameDisplay, altName, accepted, formulaStr, molarMass, mainChain, chainLabels, steps };
       }
 
       function analyzeRingSystem(ringIds, formulaStr, molarMass) {
@@ -1611,10 +1923,14 @@
           });
         });
 
-        const { prefixParts: subPrefixParts, prefixStr: subPrefixStr } = formatPrefixString(subGroups);
+        const ringUnsat = best.doubleLocs.length + best.tripleLocs.length;
+        const subTotal = Object.keys(subGroups).reduce((t, k) => t + subGroups[k].length, 0);
+        const omitRingLocs = !isHeterocycle && ringUnsat === 0 && best.principalLocs.length === 0 && subTotal === 1;
+        const { prefixParts: subPrefixParts, prefixStr: subPrefixStr } = formatPrefixString(subGroups, omitRingLocs);
+        const { prefixStr: subPrefixStrStrict } = formatPrefixString(subGroups, false);
 
         const dLocs = best.doubleLocs, tLocs = best.tripleLocs;
-        const needUnsatLocs = isHeterocycle || dLocs.length + tLocs.length > 1 || subPrefixParts.length > 0 || best.principalLocs.length > 0;
+        const needUnsatLocs = isHeterocycle || dLocs.length + tLocs.length > 1 || best.principalLocs.length > 0;
 
         let unsatPart = "an";
         if (dLocs.length > 0 || tLocs.length > 0) {
@@ -1626,7 +1942,7 @@
 
         let suffixStr = "";
         const pLocs = best.principalLocs;
-        const needPLocs = isHeterocycle || pLocs.length > 1 || dLocs.length + tLocs.length > 0 || subPrefixParts.length > 0;
+        const needPLocs = isHeterocycle || pLocs.length > 1 || dLocs.length + tLocs.length > 0;
         if (best.principalType === 'ringAcid') suffixStr = `${needPLocs ? '-' + pLocs.join(',') + '-' : ''}${getMultPrefix(pLocs.length)}carbonsäure`;
         else if (best.principalType === 'ringAldehyde') suffixStr = `${needPLocs ? '-' + pLocs.join(',') + '-' : ''}${getMultPrefix(pLocs.length)}carbaldehyd`;
         else if (best.principalType === 'alkanone') suffixStr = `${needPLocs ? '-' + pLocs.join(',') + '-' : ''}${getMultPrefix(pLocs.length)}on`;
@@ -1634,7 +1950,10 @@
         else if (best.principalType === 'thiol') suffixStr = `-${pLocs.join(',')}-${getMultPrefix(pLocs.length)}thiol`;
         else if (best.principalType === 'amine') suffixStr = `-${pLocs.join(',')}-${getMultPrefix(pLocs.length)}amin`;
 
-        const allPrefixes = [subPrefixStr, heteroPrefixStr].filter(Boolean).join('-');
+        const heteroLocOmit = isHeterocycle && heteroParts.length === 1 && heteroParts[0].startsWith('1-') && !heteroParts[0].includes(',') && subPrefixParts.length === 0 && dLocs.length + tLocs.length === 0 && pLocs.length === 0;
+        const heteroPrefixFinal = heteroLocOmit ? heteroParts[0].slice(2) : heteroPrefixStr;
+        const allPrefixes = [subPrefixStr, heteroPrefixFinal].filter(Boolean).join('-');
+        const strictPrefixes = [subPrefixStrStrict, heteroPrefixStr].filter(Boolean).join('-');
         const cycloCore = `cyclo${stem}${unsatPart}${suffixStr}`;
         const fullNameDisplay = capFirstLetter(allPrefixes ? `${allPrefixes}${cycloCore}` : cycloCore);
         const hwName = isHeterocycle ? computeHantzschWidmanName(orderedRing, dLocs, tLocs, subPrefixStr, suffixStr) : "";
@@ -1650,7 +1969,10 @@
           { title: "4. Gesamtname nach IUPAC", text: hwName ? `Systematischer IUPAC-Name: <strong>${fullNameDisplay}</strong> (Hantzsch-Widman-Name: <strong>${hwName}</strong>).` : `Vollständiger deutscher IUPAC-Name: <strong>${fullNameDisplay}</strong>.` }
         ];
 
-        return { classLabel, iupacName: fullNameDisplay, altName: hwName ? `Hantzsch-Widman-Name: ${hwName}` : "", formulaStr, molarMass, mainChain: orderedRing, chainLabels, steps };
+        const strictRing = capFirstLetter(strictPrefixes ? `${strictPrefixes}${cycloCore}` : cycloCore);
+        const ringAccepted = [strictRing, hwName, (!needPLocs && pLocs.length === 1) ? strictRing.replace(/an(ol|on|thiol|amin)$/, 'an-1-$1') : ''].filter(Boolean);
+        const ringAlt = hwName ? `Hantzsch-Widman-Name: ${hwName}` : (strictRing.toLowerCase() !== fullNameDisplay.toLowerCase() ? `Strenge IUPAC-Schreibweise: ${strictRing}` : "");
+        return { classLabel, iupacName: fullNameDisplay, altName: ringAlt, accepted: ringAccepted, formulaStr, molarMass, mainChain: orderedRing, chainLabels, steps };
       }
 
       function evaluateRingOrientation(ordered, ringSet, HETERO_RANK) {
@@ -1787,22 +2109,23 @@
           getHeavyNeighbors(cId).forEach(n => {
             if (!ringSet.has(n.atom.id)) {
               let subName = "", trivialBase = "";
-              if (n.atom.el === 'O' && n.bond.order === 1 && getAttachedHCount(n.atom.id) === 1) { subName = "hydroxy"; trivialBase = "Phenol"; }
-              else if (n.atom.el === 'S' && n.bond.order === 1 && getAttachedHCount(n.atom.id) === 1) { subName = "sulfanyl"; trivialBase = "Thiophenol (Benzolthiol)"; }
+              let kind = "";
+              if (n.atom.el === 'O' && n.bond.order === 1 && getAttachedHCount(n.atom.id) === 1) { subName = "hydroxy"; trivialBase = "Phenol"; kind = 'OH'; }
+              else if (n.atom.el === 'S' && n.bond.order === 1 && getAttachedHCount(n.atom.id) === 1) { subName = "sulfanyl"; trivialBase = "Thiophenol (Benzolthiol)"; kind = 'SH'; }
               else if (n.atom.el === 'N' && n.bond.order === 1) {
                 subName = nameAminoGroup(n.atom.id, cId, ringSet);
-                if (subName === 'amino') trivialBase = "Anilin";
+                if (subName === 'amino') { trivialBase = "Anilin"; kind = 'NH2'; }
               } else if (['F', 'Cl', 'Br', 'I'].includes(n.atom.el)) {
                 subName = { F: 'fluor', Cl: 'chlor', Br: 'brom', I: 'iod' }[n.atom.el];
               } else if (n.atom.el === 'C') {
-                if (isRingCarboxylC(n.atom.id, cId)) { subName = "carboxy"; trivialBase = "Benzoesäure (Benzolcarbonsäure)"; }
-                else if (isRingFormylC(n.atom.id, cId)) { subName = "formyl"; trivialBase = "Benzaldehyd (Benzolcarbaldehyd)"; }
+                if (isRingCarboxylC(n.atom.id, cId)) { subName = "carboxy"; trivialBase = "Benzoesäure (Benzolcarbonsäure)"; kind = 'COOH'; }
+                else if (isRingFormylC(n.atom.id, cId)) { subName = "formyl"; trivialBase = "Benzaldehyd (Benzolcarbaldehyd)"; kind = 'CHO'; }
                 else {
                   subName = nameAlkylSubtree(n.atom.id, cId, ringSet);
                   if (subName === 'methyl') trivialBase = "Toluol";
                 }
               }
-              if (subName) ringSubs.push({ ringIndex: idx, name: subName, trivialBase });
+              if (subName) ringSubs.push({ ringIndex: idx, name: subName, trivialBase, kind });
             }
           });
         });
@@ -1815,6 +2138,54 @@
               { title: "2. Stammname", text: "Der aromatische Sechsring trägt den IUPAC-Namen <strong>Benzol</strong> (als Rest: <strong>Phenyl-</strong>)." },
               { title: "3. Nummerierung", text: "Alle 6 Ring-Kohlenstoffatome (C1 bis C6) sind äquivalent." },
               { title: "4. Gesamtname", text: "Vollständiger IUPAC-Name: <strong>Benzol</strong>." }
+            ]
+          };
+        }
+        const PRIO = ['COOH', 'CHO', 'OH', 'SH', 'NH2'];
+        const pk = PRIO.find(k => ringSubs.some(x => x.kind === k));
+        if (pk) {
+          const BASE = {
+            COOH: ['benzoesäure', 'carbonsäure', 'benzolcarbonsäure', 'Aromatische Carbonsäure'],
+            CHO: ['benzaldehyd', 'carbaldehyd', 'benzolcarbaldehyd', 'Aromatischer Aldehyd'],
+            OH: ['phenol', 'ol', 'phenol', 'Phenol (aromatischer Alkohol)'],
+            SH: ['thiophenol', 'thiol', 'benzolthiol', 'Thiophenol (aromatisches Thiol)'],
+            NH2: ['anilin', 'amin', 'benzolamin', 'Aromatisches Amin']
+          }[pk];
+          let bestP = null, bestAll = null, bestAlpha = null, bestItems = null;
+          for (let start = 0; start < 6; start++) {
+            for (const dir of [1, -1]) {
+              const items = ringSubs.map(x => ({ loc: ((x.ringIndex - start) * dir + 60) % 6 + 1, name: x.name, kind: x.kind }));
+              const pL = items.filter(i => i.kind === pk).map(i => i.loc).sort((a, b) => a - b);
+              const allL = items.filter(i => i.kind !== pk).map(i => i.loc).sort((a, b) => a - b);
+              const alpha = items.filter(i => i.kind !== pk).sort((a, b) => cleanSubForSort(a.name).localeCompare(cleanSubForSort(b.name), 'de')).map(i => i.loc);
+              let better = false;
+              if (!bestP) better = true;
+              else {
+                let c = compareLocantArrays(pL, bestP);
+                if (c === 0) c = compareLocantArrays(allL, bestAll);
+                if (c === 0) c = compareLocantArrays(alpha, bestAlpha);
+                better = c > 0;
+              }
+              if (better) { bestP = pL; bestAll = allL; bestAlpha = alpha; bestItems = items; }
+            }
+          }
+          const others = {};
+          bestItems.filter(i => i.kind !== pk).forEach(i => { if (!others[i.name]) others[i.name] = []; others[i.name].push(i.loc); });
+          const { prefixStr: pref } = formatPrefixString(others, false);
+          const nP = bestP.length;
+          const main = nP === 1 ? `${pref}${BASE[0]}` : `${pref}benzol-${bestP.join(',')}-${getMultPrefix(nP)}${BASE[1]}`;
+          const strict = nP === 1 ? `${pref}${BASE[2]}` : main;
+          const iupac = capFirstLetter(main), iupacStrict = capFirstLetter(strict);
+          const classL = BASE[3];
+          return {
+            classLabel: classL, iupacName: iupac,
+            altName: iupacStrict.toLowerCase() !== iupac.toLowerCase() ? `Systematisch: ${iupacStrict}` : "",
+            accepted: [iupacStrict], formulaStr, molarMass, mainChain: ringIds, chainLabels,
+            steps: [
+              { title: "1. Aromatischer Ring & Hauptgruppe", text: `Sechsgliedriger aromatischer Ring (<strong>Benzol</strong>) mit der ranghöchsten Gruppe: <strong>${classL}</strong>.` },
+              { title: "2. Stammname", text: nP === 1 ? `Mit dieser Gruppe heißt der Grundkörper <strong>${capFirstLetter(BASE[0])}</strong> (systematisch: ${capFirstLetter(BASE[2])}).` : `Mehrere gleiche Hauptgruppen → <strong>Benzol</strong> + Endung <strong>-${getMultPrefix(nP)}${BASE[1]}</strong> mit Lokanten.` },
+              { title: "3. Nummerierung", text: nP === 1 ? "Das Ringatom mit der Hauptgruppe ist <strong>C1</strong>; die Umlaufrichtung ergibt die kleinstmöglichen Lokanten für alle weiteren Substituenten." : `Die Hauptgruppen erhalten die kleinstmöglichen Lokanten (<strong>${bestP.join(', ')}</strong>), danach die übrigen Substituenten.` },
+              { title: "4. Gesamtname", text: `Vorsilben alphabetisch geordnet → <strong>${iupac}</strong>.` }
             ]
           };
         }
@@ -1872,17 +2243,41 @@
         let bestAlkylPath = alkylPaths[0]; for (const p of alkylPaths) if (p.length > bestAlkylPath.length) bestAlkylPath = p;
 
         const acidStem = getStem(bestAcidPath.length);
-        const alkylName = nameAlkylSubtree(alkylStartC.id, bridgeO.id, new Set([acylC.id]));
-        const schoolName = capFirstLetter(`${acidStem}ansäure${alkylName}ester`), iupacAlt = capFirstLetter(`${alkylName}${acidStem}anoat`);
+        const alkylNameRaw = nameAlkylSubtree(alkylStartC.id, bridgeO.id, new Set([acylC.id]));
+        const alkylName = alkylNameRaw === '(1-methylethyl)' ? 'isopropyl' : alkylNameRaw;
+        const alkylJoin = alkylName.startsWith('(') ? `-${alkylName}` : alkylName;
+
+        // Substituenten und Mehrfachbindungen an der Säure-Kette (C1 = Carbonyl-C)
+        const acidSet = new Set(bestAcidPath), blockedForAcid = new Set([...acidSet, bridgeO.id]);
+        const acidSubs = {}, dL = [], tL = [];
+        bestAcidPath.forEach((cId, i) => {
+          if (i > 0) collectSubstituentsAtCarbon(cId, blockedForAcid, 'none', false).forEach(sn => { if (!acidSubs[sn]) acidSubs[sn] = []; acidSubs[sn].push(i + 1); });
+          if (i < bestAcidPath.length - 1) {
+            const bb = getBondBetween(cId, bestAcidPath[i + 1]);
+            if (bb && bb.order === 2) dL.push(i + 1);
+            if (bb && bb.order === 3) tL.push(i + 1);
+          }
+        });
+        const { prefixStr: acidPref } = formatPrefixString(acidSubs, bestAcidPath.length <= 2 && Object.keys(acidSubs).length === 1 && acidSubs[Object.keys(acidSubs)[0]].length === 1 && bestAcidPath.length === 2);
+        let unsat = "an";
+        if (dL.length || tL.length) {
+          const parts = [];
+          if (dL.length) parts.push(`${dL.length > 1 ? 'a' : ''}-${dL.join(',')}-${getMultPrefix(dL.length)}en`);
+          if (tL.length) parts.push(`-${tL.join(',')}-${getMultPrefix(tL.length)}in`);
+          unsat = parts.join('');
+        }
+        const acidCore = `${acidPref}${acidStem}${unsat}säure`;
+        const schoolName = capFirstLetter(`${acidCore}${alkylJoin}ester`);
+        const iupacAlt = capFirstLetter(`${alkylName}${acidPref}${acidStem}${unsat.replace(/^an$/, 'an')}oat`);
         const chainLabels = {};
         bestAcidPath.forEach((id, i) => chainLabels[id] = `C${i + 1}`);
         bestAlkylPath.forEach((id, i) => chainLabels[id] = `C${i + 1}'`);
 
         return {
-          classLabel: "Carbonsäureester (Ester)", iupacName: schoolName, altName: `Alternativer Name: ${iupacAlt}`, formulaStr, molarMass, mainChain: bestAcidPath, chainLabels,
+          classLabel: "Carbonsäureester (Ester)", iupacName: schoolName, altName: `Alternativer Name: ${iupacAlt}`, accepted: [iupacAlt], formulaStr, molarMass, mainChain: bestAcidPath, chainLabels,
           steps: [
             { title: "1. Funktionelle Gruppe: Carbonsäureester", text: "Die Estergruppe <strong>–C(=O)–O–</strong> verbindet einen Säureteil mit einem Alkohol-Rest." },
-            { title: "2. Säurekomponente (Hauptkette)", text: `Vom Carbonyl-Kohlenstoff (<strong>C1</strong>) aus zählt die Säurekette <strong>${bestAcidPath.length} C-Atome</strong> → <strong>${capFirstLetter(acidStem)}ansäure</strong>.` },
+            { title: "2. Säurekomponente (Hauptkette)", text: `Vom Carbonyl-Kohlenstoff (<strong>C1</strong>) aus zählt die Säurekette <strong>${bestAcidPath.length} C-Atome</strong> → <strong>${capFirstLetter(acidCore)}</strong>.` },
             { title: "3. Alkyl-Rest am Estersauerstoff", text: `Am einfach gebundenen Sauerstoffatom (–O–) hängt ein <strong>${capFirstLetter(alkylName)}</strong>-Rest.` },
             { title: "4. Gesamtname", text: `Deutscher IUPAC-Name: <strong>${schoolName}</strong> (alternativ: <strong>${iupacAlt}</strong>).` }
           ]
@@ -1930,7 +2325,7 @@
         const subLocs = [], subPairs = [];
         path.forEach((cId, idx) => {
           const loc = idx + 1;
-          const isPrincipalAcidOrAld = (principalType === 'acid' || principalType === 'alkanal') && acidOrAldSet.has(cId);
+          const isPrincipalAcidOrAld = ['acid', 'alkanal', 'amide', 'nitrile'].includes(principalType) && acidOrAldSet.has(cId);
           const subs = collectSubstituentsAtCarbon(cId, pathSet, principalType, isPrincipalAcidOrAld);
           subs.forEach(s => {
             subLocs.push(loc);
@@ -2022,7 +2417,7 @@
       const dLight2 = new THREE.DirectionalLight(0x38bdf8, 0.35); dLight2.position.set(-8, -6, -6); scene.add(dLight2);
       const molGroup = new THREE.Group(); scene.add(molGroup);
 
-      let mode3D = 'ball', highlightMain3D = false, showLabels3D = false, spin3D = true;
+      let mode3D = 'ball', highlightMain3D = false, showLabels3D = false, spin3D = true, showLP3D = true;
       let label3DItems = [], currentAnalysis = null;
       const S3 = 1 / Math.sqrt(3);
       const TETRA_DIRS = [new THREE.Vector3(S3, S3, S3), new THREE.Vector3(S3, -S3, -S3), new THREE.Vector3(-S3, S3, -S3), new THREE.Vector3(-S3, -S3, S3)];
@@ -2186,8 +2581,11 @@
         labels3DContainer.innerHTML = ''; label3DItems = [];
         if (!atoms.length) return;
 
-        const posMap = computeCollisionFree3DPositions();
-        const center = new THREE.Vector3(), heavyAtoms = atoms.filter(a => a.el !== 'H');
+        const inorg3D = Boolean(currentAnalysis && currentAnalysis.inorg);
+        let posMap, lpMap = {};
+        if (inorg3D) { const r = computeInorganic3D(); posMap = r.posMap; lpMap = r.lpMap; }
+        else posMap = computeCollisionFree3DPositions();
+        const center = new THREE.Vector3(), heavyAtoms = inorg3D ? atoms.slice() : atoms.filter(a => a.el !== 'H');
         heavyAtoms.forEach(a => center.add(posMap[a.id]));
         center.divideScalar(Math.max(1, heavyAtoms.length));
         Object.values(posMap).forEach(v => v.sub(center));
@@ -2215,6 +2613,16 @@
           }
         });
 
+        if (inorg3D && showLP3D && mode3D === 'ball') {
+          atoms.forEach(a => (lpMap[a.id] || []).forEach(d => {
+            const lobe = new THREE.Mesh(new THREE.SphereGeometry(0.3, 20, 20), new THREE.MeshStandardMaterial({ color: 0xfef9c3, transparent: true, opacity: 0.32, roughness: 0.3, depthWrite: false }));
+            lobe.scale.set(0.75, 0.75, 1.5);
+            lobe.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), d);
+            lobe.position.copy(posMap[a.id]).addScaledVector(d, (ELEMENT_SPECS[a.el].radius3D || 0.4) + 0.12);
+            molGroup.add(lobe);
+          }));
+        }
+
         if (mode3D === 'ball') {
           bonds.forEach(b => {
             const pA = posMap[b.a], pB = posMap[b.b]; if (!pA || !pB) return;
@@ -2241,6 +2649,7 @@
 
       function resizeThree() {
         const rect = threeContainer.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
         camera.aspect = rect.width / rect.height; camera.updateProjectionMatrix();
         renderer.setSize(rect.width, rect.height);
       }
@@ -2261,25 +2670,412 @@
       }
 
       // ==========================================================================
+      // 10b. ANORGANIK: ELEKTRONEN-PRÜFUNG, VSEPR-GEOMETRIE, NAMEN
+      // ==========================================================================
+      const SUP_CH = { '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
+      const subDig = n => String(n).replace(/[0-9]/g, d => '₀₁₂₃₄₅₆₇₈₉'[d]);
+      const chargeSup = q => q === 0 ? '' : (Math.abs(q) > 1 ? String(Math.abs(q)).replace(/[0-9]/g, d => SUP_CH[d]) : '') + (q > 0 ? '⁺' : '⁻');
+      const chargeText = q => q === 0 ? '0' : (q > 0 ? '+' : '−') + Math.abs(q);
+      const ANION_STEM = { H: 'Hydrid', B: 'Borid', C: 'Carbid', Si: 'Silicid', N: 'Nitrid', P: 'Phosphid', O: 'Oxid', S: 'Sulfid', F: 'Fluorid', Cl: 'Chlorid', Br: 'Bromid', I: 'Iodid' };
+      const FORMULA_ORDER = ['Li', 'Na', 'K', 'Be', 'Mg', 'Ca', 'Al', 'B', 'Si', 'C', 'P', 'N', 'H', 'Xe', 'S', 'I', 'Br', 'Cl', 'O', 'F'];
+      const MULT_NAMES = ['', 'mono', 'di', 'tri', 'tetra', 'penta', 'hexa', 'hepta', 'octa', 'nona', 'deca'];
+
+      // [Formel (so wird sie angezeigt), Ladung, Name, [weitere akzeptierte Namen], Klasse, Hinweis zur Namensbildung]
+      const INORG_TABLE = [
+        ['H2', 0, 'Wasserstoff', ['Dihydrogen'], 'Element (Molekül)'],
+        ['N2', 0, 'Stickstoff', ['Distickstoff'], 'Element (Molekül)'],
+        ['O2', 0, 'Sauerstoff', ['Disauerstoff'], 'Element (Molekül)'],
+        ['O3', 0, 'Ozon', ['Trisauerstoff'], 'Element (Molekül)'],
+        ['F2', 0, 'Fluor', ['Difluor'], 'Element (Molekül)'],
+        ['Cl2', 0, 'Chlor', ['Dichlor'], 'Element (Molekül)'],
+        ['Br2', 0, 'Brom', ['Dibrom'], 'Element (Molekül)'],
+        ['I2', 0, 'Iod', ['Diiod'], 'Element (Molekül)'],
+        ['P4', 0, 'Weißer Phosphor', ['Tetraphosphor', 'Phosphor'], 'Element (Molekül)'],
+        ['H2O', 0, 'Wasser', ['Dihydrogenoxid'], 'Hydroxid-Verbindung / Oxid', 'Trivialname; systematisch: Dihydrogenoxid.'],
+        ['H2O2', 0, 'Wasserstoffperoxid', ['Dihydrogendioxid'], 'Peroxid'],
+        ['H2S', 0, 'Schwefelwasserstoff', ['Dihydrogensulfid'], 'Wasserstoffverbindung'],
+        ['NH3', 0, 'Ammoniak', ['Azan'], 'Wasserstoffverbindung', 'Trivialname; systematisch: Azan.'],
+        ['N2H4', 0, 'Hydrazin', ['Diazan'], 'Wasserstoffverbindung'],
+        ['PH3', 0, 'Phosphan', ['Phosphin', 'Phosphorwasserstoff'], 'Wasserstoffverbindung'],
+        ['SiH4', 0, 'Silan', ['Siliciumwasserstoff'], 'Wasserstoffverbindung'],
+        ['BH3', 0, 'Boran', ['Bortrihydrid'], 'Wasserstoffverbindung'],
+        ['HF', 0, 'Fluorwasserstoff', ['Flusssäure'], 'Halogenwasserstoff'],
+        ['HCl', 0, 'Chlorwasserstoff', ['Salzsäure'], 'Halogenwasserstoff', 'In Wasser gelöst heißt die Lösung Salzsäure.'],
+        ['HBr', 0, 'Bromwasserstoff', ['Bromwasserstoffsäure'], 'Halogenwasserstoff'],
+        ['HI', 0, 'Iodwasserstoff', ['Iodwasserstoffsäure'], 'Halogenwasserstoff'],
+        ['CO', 0, 'Kohlenstoffmonooxid', ['Kohlenstoffmonoxid', 'Kohlenmonoxid', 'Kohlenmonooxid'], 'Nichtmetalloxid'],
+        ['CO2', 0, 'Kohlenstoffdioxid', ['Kohlendioxid'], 'Nichtmetalloxid'],
+        ['CS2', 0, 'Kohlenstoffdisulfid', ['Schwefelkohlenstoff'], 'Nichtmetallsulfid'],
+        ['CCl4', 0, 'Tetrachlormethan', ['Kohlenstofftetrachlorid'], 'Halogenverbindung'],
+        ['CF4', 0, 'Tetrafluormethan', ['Kohlenstofftetrafluorid'], 'Halogenverbindung'],
+        ['HCN', 0, 'Blausäure', ['Cyanwasserstoff', 'Methannitril'], 'Säure'],
+        ['COCl2', 0, 'Phosgen', ['Carbonyldichlorid', 'Kohlenstoffoxiddichlorid'], 'Halogenverbindung'],
+        ['H2CO3', 0, 'Kohlensäure', ['Trioxidocarbonsäure'], 'Oxosäure', 'Oxosäuren bestehen aus einem Zentralatom mit O-Atomen; saure H-Atome sitzen an O.'],
+        ['N2O', 0, 'Distickstoffmonooxid', ['Distickstoffmonoxid', 'Lachgas'], 'Stickstoffoxid'],
+        ['N2O3', 0, 'Distickstofftrioxid', [], 'Stickstoffoxid'],
+        ['N2O4', 0, 'Distickstofftetraoxid', ['Distickstofftetroxid'], 'Stickstoffoxid'],
+        ['N2O5', 0, 'Distickstoffpentaoxid', ['Distickstoffpentoxid'], 'Stickstoffoxid'],
+        ['NF3', 0, 'Stickstofftrifluorid', [], 'Halogenverbindung'],
+        ['NCl3', 0, 'Stickstofftrichlorid', [], 'Halogenverbindung'],
+        ['OF2', 0, 'Sauerstoffdifluorid', ['Sauerstoffdifluorid'], 'Halogenverbindung'],
+        ['Cl2O', 0, 'Dichlormonooxid', ['Dichlormonoxid', 'Dichloroxid'], 'Halogenoxid'],
+        ['SO2', 0, 'Schwefeldioxid', [], 'Nichtmetalloxid'],
+        ['SO3', 0, 'Schwefeltrioxid', [], 'Nichtmetalloxid'],
+        ['SF4', 0, 'Schwefeltetrafluorid', [], 'Halogenverbindung'],
+        ['SF6', 0, 'Schwefelhexafluorid', [], 'Halogenverbindung'],
+        ['SCl2', 0, 'Schwefeldichlorid', [], 'Halogenverbindung'],
+        ['SOCl2', 0, 'Thionylchlorid', ['Schwefeloxiddichlorid'], 'Halogenverbindung'],
+        ['H2SO4', 0, 'Schwefelsäure', ['Tetraoxidoschwefelsäure'], 'Oxosäure', 'Oxosäure: Zentralatom S mit O-Atomen, zwei H-Atome sitzen an O und sind sauer.'],
+        ['H2SO3', 0, 'Schweflige Säure', ['Schwefligesäure'], 'Oxosäure'],
+        ['H2S2O3', 0, 'Thioschwefelsäure', [], 'Oxosäure'],
+        ['HNO3', 0, 'Salpetersäure', [], 'Oxosäure'],
+        ['HNO2', 0, 'Salpetrige Säure', ['Salpetrigesäure'], 'Oxosäure'],
+        ['H3PO4', 0, 'Phosphorsäure', [], 'Oxosäure'],
+        ['H3PO3', 0, 'Phosphorige Säure', ['Phosphonsäure', 'Phosphorigesäure'], 'Oxosäure'],
+        ['H3BO3', 0, 'Borsäure', [], 'Oxosäure'],
+        ['HClO', 0, 'Hypochlorige Säure', ['Hypochlorigesäure'], 'Oxosäure'],
+        ['HClO2', 0, 'Chlorige Säure', ['Chorigesäure'], 'Oxosäure'],
+        ['HClO3', 0, 'Chlorsäure', [], 'Oxosäure'],
+        ['HClO4', 0, 'Perchlorsäure', [], 'Oxosäure'],
+        ['BF3', 0, 'Bortrifluorid', [], 'Halogenverbindung'],
+        ['BCl3', 0, 'Bortrichlorid', [], 'Halogenverbindung'],
+        ['AlCl3', 0, 'Aluminiumchlorid', ['Aluminiumtrichlorid'], 'Halogenverbindung'],
+        ['BeCl2', 0, 'Berylliumchlorid', ['Berylliumdichlorid'], 'Halogenverbindung'],
+        ['BeF2', 0, 'Berylliumfluorid', ['Berylliumdifluorid'], 'Halogenverbindung'],
+        ['SiCl4', 0, 'Siliciumtetrachlorid', [], 'Halogenverbindung'],
+        ['SiF4', 0, 'Siliciumtetrafluorid', [], 'Halogenverbindung'],
+        ['PCl3', 0, 'Phosphortrichlorid', [], 'Halogenverbindung'],
+        ['PCl5', 0, 'Phosphorpentachlorid', [], 'Halogenverbindung'],
+        ['PF5', 0, 'Phosphorpentafluorid', [], 'Halogenverbindung'],
+        ['ClF3', 0, 'Chlortrifluorid', [], 'Interhalogen'],
+        ['IF5', 0, 'Iodpentafluorid', [], 'Interhalogen'],
+        ['XeF2', 0, 'Xenondifluorid', [], 'Edelgasverbindung'],
+        ['XeF4', 0, 'Xenontetrafluorid', [], 'Edelgasverbindung'],
+        ['OH', -1, 'Hydroxid-Ion', [], 'Anion'],
+        ['H3O', 1, 'Oxonium-Ion', ['Hydronium-Ion'], 'Kation'],
+        ['NH4', 1, 'Ammonium-Ion', [], 'Kation'],
+        ['NH2', -1, 'Amid-Ion', [], 'Anion'],
+        ['CN', -1, 'Cyanid-Ion', [], 'Anion'],
+        ['SCN', -1, 'Thiocyanat-Ion', ['Rhodanid-Ion'], 'Anion'],
+        ['N3', -1, 'Azid-Ion', [], 'Anion'],
+        ['NO2', 1, 'Nitronium-Ion', [], 'Kation'],
+        ['NO', 1, 'Nitrosyl-Ion', [], 'Kation'],
+        ['NO2', -1, 'Nitrit-Ion', [], 'Anion (Säurerest)', 'Säurerest der Salpetrigen Säure: Endung -it.'],
+        ['NO3', -1, 'Nitrat-Ion', [], 'Anion (Säurerest)', 'Säurerest der Salpetersäure: Endung -at.'],
+        ['SO3', -2, 'Sulfit-Ion', [], 'Anion (Säurerest)', 'Säurerest der Schwefligen Säure: Endung -it.'],
+        ['SO4', -2, 'Sulfat-Ion', [], 'Anion (Säurerest)', 'Säurerest der Schwefelsäure: Endung -at.'],
+        ['HSO3', -1, 'Hydrogensulfit-Ion', [], 'Anion (Säurerest)'],
+        ['HSO4', -1, 'Hydrogensulfat-Ion', [], 'Anion (Säurerest)', 'Es ist noch ein saures H-Atom vorhanden → Vorsilbe „Hydrogen“.'],
+        ['S2O3', -2, 'Thiosulfat-Ion', [], 'Anion (Säurerest)', 'Ein O-Atom des Sulfat-Ions ist durch S ersetzt → Vorsilbe „Thio“.'],
+        ['CO3', -2, 'Carbonat-Ion', [], 'Anion (Säurerest)', 'Säurerest der Kohlensäure: Endung -at.'],
+        ['HCO3', -1, 'Hydrogencarbonat-Ion', [], 'Anion (Säurerest)'],
+        ['PO4', -3, 'Phosphat-Ion', [], 'Anion (Säurerest)', 'Säurerest der Phosphorsäure: Endung -at.'],
+        ['HPO4', -2, 'Hydrogenphosphat-Ion', [], 'Anion (Säurerest)'],
+        ['H2PO4', -1, 'Dihydrogenphosphat-Ion', [], 'Anion (Säurerest)'],
+        ['ClO', -1, 'Hypochlorit-Ion', [], 'Anion (Säurerest)'],
+        ['ClO2', -1, 'Chlorit-Ion', [], 'Anion (Säurerest)'],
+        ['ClO3', -1, 'Chlorat-Ion', [], 'Anion (Säurerest)'],
+        ['ClO4', -1, 'Perchlorat-Ion', [], 'Anion (Säurerest)'],
+        ['BrO3', -1, 'Bromat-Ion', [], 'Anion (Säurerest)'],
+        ['IO3', -1, 'Iodat-Ion', [], 'Anion (Säurerest)'],
+        ['O2', -2, 'Peroxid-Ion', [], 'Anion'],
+        ['BF4', -1, 'Tetrafluoroborat-Ion', [], 'Komplex-Ion'],
+        ['BH4', -1, 'Tetrahydridoborat-Ion', ['Boranat-Ion'], 'Komplex-Ion'],
+        ['I3', -1, 'Triiodid-Ion', [], 'Polyhalogenid-Ion'],
+        ['ICl2', -1, 'Dichloroiodat(I)-Ion', ['Dichloridoiodat(I)-Ion'], 'Polyhalogenid-Ion'],
+        ['PF6', -1, 'Hexafluorophosphat-Ion', [], 'Komplex-Ion'],
+        ['SiF6', -2, 'Hexafluorosilicat-Ion', [], 'Komplex-Ion']
+      ];
+      const INORG_DB = {};
+      const inorgKeyFromCounts = (cnt, q) => Object.keys(cnt).sort().map(e => e + (cnt[e] > 1 ? cnt[e] : '')).join('') + '|' + q;
+      INORG_TABLE.forEach(row => {
+        const cnt = {};
+        row[0].replace(/([A-Z][a-z]?)(\d*)/g, (m, el, n) => { cnt[el] = (cnt[el] || 0) + (n ? +n : 1); return m; });
+        const formula = row[0].replace(/([A-Z][a-z]?)(\d*)/g, (m, el, n) => el + (n ? subDig(n) : '')) + chargeSup(row[1]);
+        INORG_DB[inorgKeyFromCounts(cnt, row[1])] = { formula, name: row[2], alts: row[3] || [], cls: row[4], hint: row[5] || '' };
+      });
+
+      function inorgCounts() {
+        const cnt = {}; atoms.forEach(a => { cnt[a.el] = (cnt[a.el] || 0) + 1; });
+        return cnt;
+      }
+      const totalCharge = () => atoms.reduce((s, a) => s + (a.charge || 0), 0);
+
+      function genericFormula(cnt, q) {
+        const els = Object.keys(cnt).sort((a, b) => FORMULA_ORDER.indexOf(a) - FORMULA_ORDER.indexOf(b));
+        return els.map(e => e + (cnt[e] > 1 ? subDig(cnt[e]) : '')).join('') + chargeSup(q);
+      }
+
+      // Soll das organische Namensprogramm benutzt werden? (neutrale C-Verbindungen mit C–H- oder C–C-Bindung, die nicht in der Tabelle stehen)
+      function useOrganicEngine() {
+        if (currentCourse !== 'inorg') return true;
+        if (totalCharge() !== 0) return false;
+        if (INORG_DB[inorgKeyFromCounts(inorgCounts(), 0)]) return false;
+        if (!atoms.every(a => ORG_ELEMENTS.includes(a.el))) return false;
+        if (!atoms.some(a => a.el === 'C')) return false;
+        return bonds.some(b => {
+          if (b.b === null) return false;
+          const e1 = getAtom(b.a).el, e2 = getAtom(b.b).el;
+          return (e1 === 'C' && (e2 === 'H' || e2 === 'C')) || (e2 === 'C' && e1 === 'H');
+        });
+      }
+
+      // ---- Elektronen-Prüfung (Oktett / erweitertes Oktett / Formalladung) ----
+      function inorgMaxElectrons(el) {
+        const sp = ELEMENT_SPECS[el];
+        if (el === 'H') return 2;
+        if (sp.period === 2) return 8;
+        if (sp.metal) return 8;
+        return 14;
+      }
+      function inorgMinElectrons(el) {
+        const sp = ELEMENT_SPECS[el];
+        if (el === 'H') return 2;
+        if (sp.metal || ['B', 'Be', 'Al'].includes(el)) return 0;
+        return 8;
+      }
+      function formalChargeOf(atom) {
+        return ELEMENT_SPECS[atom.el].ve - 2 * (atom.lonePairs ? atom.lonePairs.length : 0) - getUsedValence(atom.id);
+      }
+      function validateInorgElectrons() {
+        for (const atom of atoms) {
+          const spec = ELEMENT_SPECS[atom.el], bs = getUsedValence(atom.id), lp = atom.lonePairs ? atom.lonePairs.length : 0, q = atom.charge || 0;
+          const el2 = 2 * (bs + lp);
+          const isHplus = atom.el === 'H' && el2 === 0 && q === 1;
+          if (!isHplus && el2 > inorgMaxElectrons(atom.el)) {
+            invalidAtomIds.add(atom.id); drawPaper();
+            showValidationMessage(`⚠️ <strong>Zu viele Elektronen am ${spec.name}:</strong> ${el2} Elektronen in Bindungen und freien Paaren (erlaubt: höchstens ${inorgMaxElectrons(atom.el)}).`, "error");
+            return false;
+          }
+          if (!isHplus && el2 < inorgMinElectrons(atom.el)) {
+            invalidAtomIds.add(atom.id); drawPaper();
+            const need = (inorgMinElectrons(atom.el) - el2) / 2;
+            showValidationMessage(atom.el === 'H'
+              ? `⚠️ <strong>Wasserstoff</strong> braucht ein Elektronenpaar (eine Bindung).`
+              : `⚠️ <strong>Oktett nicht erfüllt am ${spec.name}:</strong> nur ${el2} Elektronen. Es fehlen noch ${need} Elektronenpaar${need > 1 ? 'e' : ''} (freie Paare oder Bindungen).`, "error");
+            return false;
+          }
+          const fc = spec.ve - 2 * lp - bs;
+          if (fc !== q) {
+            invalidAtomIds.add(atom.id); drawPaper();
+            showValidationMessage(`⚠️ <strong>Ladung am ${spec.name}:</strong> Aus Bindungen und freien Paaren ergibt sich die Formalladung <strong>${chargeText(fc)}</strong>, eingetragen ist <strong>${chargeText(q)}</strong>. Mit dem Werkzeug ＋/− stellst du die Ladung ein.`, "error");
+            return false;
+          }
+        }
+        const q = totalCharge();
+        drawPaper();
+        showValidationMessage(`✔ Lewis-Formel ist gültig${q !== 0 ? ` (Gesamtladung ${chargeText(q)})` : ''}! 3D-Modell und Name wurden generiert.`, "success");
+        return true;
+      }
+
+      // Freie Elektronenpaare automatisch ergänzen (aus Bindungen und eingetragener Ladung)
+      function autoFillLonePairs() {
+        atoms.forEach(a => {
+          if (a.el === 'H') return;
+          const spec = ELEMENT_SPECS[a.el];
+          const want = (spec.ve - getUsedValence(a.id) - (a.charge || 0)) / 2;
+          if (!Number.isInteger(want) || want < 0 || want > 6) return;
+          a.lonePairs = [];
+          const zones = getFreeZonesForAtom(a, 'lonepair');
+          // Bei weniger Zonen als Paaren: Zonen laufend neu berechnen
+          for (let i = 0; i < want; i++) {
+            const z = getFreeZonesForAtom(a, 'lonepair');
+            if (!z.length) break;
+            a.lonePairs.push(z[0].angle);
+          }
+        });
+      }
+
+      // ---- VSEPR ----
+      const VSEPR_TABLE = {
+        '1,0': ['—', 'linear', '—'], '1,1': ['—', 'linear', '—'], '1,2': ['—', 'linear', '—'], '1,3': ['—', 'linear', '—'],
+        '2,0': ['linear', 'linear', '180°'],
+        '3,0': ['trigonal-planar', 'trigonal-planar', '120°'],
+        '2,1': ['trigonal-planar', 'gewinkelt', 'etwas kleiner als 120°'],
+        '4,0': ['tetraedrisch', 'tetraedrisch', '109,5°'],
+        '3,1': ['tetraedrisch', 'trigonal-pyramidal', 'etwa 107°'],
+        '2,2': ['tetraedrisch', 'gewinkelt', 'etwa 104,5°'],
+        '5,0': ['trigonal-bipyramidal', 'trigonal-bipyramidal', '90° und 120°'],
+        '4,1': ['trigonal-bipyramidal', 'wippenförmig', 'etwa 90° und 120°'],
+        '3,2': ['trigonal-bipyramidal', 'T-förmig', 'etwa 90°'],
+        '2,3': ['trigonal-bipyramidal', 'linear', '180°'],
+        '6,0': ['oktaedrisch', 'oktaedrisch', '90°'],
+        '5,1': ['oktaedrisch', 'quadratisch-pyramidal', 'etwa 90°'],
+        '4,2': ['oktaedrisch', 'quadratisch-planar', '90°']
+      };
+      function vseprOf(atom) {
+        const X = getAtomBonds(atom.id).filter(b => b.b !== null).length, E = atom.lonePairs ? atom.lonePairs.length : 0;
+        const row = VSEPR_TABLE[`${X},${E}`];
+        return { X, E, eg: row ? row[0] : '—', mg: row ? row[1] : '—', ang: row ? row[2] : '—' };
+      }
+
+      const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
+      function domainDirs(sn) {
+        const s3 = Math.sqrt(3) / 2;
+        if (sn <= 1) return [V3(1, 0, 0)];
+        if (sn === 2) return [V3(1, 0, 0), V3(-1, 0, 0)];
+        if (sn === 3) return [V3(1, 0, 0), V3(-0.5, s3, 0), V3(-0.5, -s3, 0)];
+        if (sn === 4) return [V3(1, 1, 1), V3(1, -1, -1), V3(-1, 1, -1), V3(-1, -1, 1)].map(v => v.normalize());
+        if (sn === 5) return [V3(1, 0, 0), V3(-0.5, s3, 0), V3(-0.5, -s3, 0), V3(0, 0, 1), V3(0, 0, -1)];
+        if (sn === 6) return [V3(0, 0, 1), V3(0, 0, -1), V3(1, 0, 0), V3(-1, 0, 0), V3(0, 1, 0), V3(0, -1, 0)];
+        const pent = [0, 1, 2, 3, 4].map(k => V3(Math.cos(k * 2 * Math.PI / 5), Math.sin(k * 2 * Math.PI / 5), 0));
+        return [V3(0, 0, 1), V3(0, 0, -1), ...pent];
+      }
+      function bondLen3D(a1, a2, order) {
+        const base = ELEMENT_SPECS[a1.el].rc + ELEMENT_SPECS[a2.el].rc;
+        return base * (order === 1 ? 1 : (order === 2 ? 0.86 : 0.78));
+      }
+
+      function computeInorganic3D() {
+        const posMap = {}, lpMap = {};
+        const nbrs = id => getAtomBonds(id).filter(b => b.b !== null).map(b => ({ atom: getAtom(b.a === id ? b.b : b.a), bond: b }));
+
+        if (findAllHeavyCycles().length > 0) {
+          const sc = 1.6 / BOND_LEN_HEAVY;
+          atoms.forEach((a, i) => { posMap[a.id] = V3(a.x * sc, -a.y * sc, (i % 2 ? 1 : -1) * 0.15); });
+          return { posMap, lpMap };
+        }
+        const sorted = atoms.slice().sort((a, b) => (nbrs(b.id).length - nbrs(a.id).length) || ((a.el === 'H') - (b.el === 'H')));
+        const root = sorted[0];
+        posMap[root.id] = V3(0, 0, 0);
+        const visited = new Set([root.id]), queue = [{ id: root.id, parent: null }];
+        while (queue.length) {
+          const { id, parent } = queue.shift();
+          const atom = getAtom(id), pos = posMap[id];
+          const all = nbrs(id), E = atom.lonePairs ? atom.lonePairs.length : 0, sn = all.length + E;
+          const base = domainDirs(sn);
+          const lpSlots = [], ligSlots = [];
+          base.forEach((_, i) => (i < E ? lpSlots : ligSlots).push(i));
+          let dirs = base.map(d => d.clone());
+          let kids = all.filter(n => !visited.has(n.atom.id) && n.atom.id !== parent);
+          let kidSlots = ligSlots.slice();
+          let axis = null;
+          if (parent !== null) {
+            const v = new THREE.Vector3().subVectors(posMap[parent], pos).normalize();
+            const q = new THREE.Quaternion().setFromUnitVectors(base[kidSlots[0]], v);
+            dirs = base.map(d => d.clone().applyQuaternion(q));
+            kidSlots = kidSlots.slice(1); axis = v;
+          }
+          // Verdrehung um die Achse zur Elternbindung: so wählen, dass die Nachbarn möglichst weit von anderen Atomen entfernt sind
+          let bestT = 0;
+          if (axis && (kids.length > 0 || lpSlots.length > 0)) {
+            let bestScore = -1;
+            for (let t = 0; t < 12; t++) {
+              const rq = new THREE.Quaternion().setFromAxisAngle(axis, t * Math.PI / 6);
+              let score = Infinity;
+              kids.forEach((k, i) => {
+                const slot = kidSlots[i]; if (slot === undefined) return;
+                const p = pos.clone().addScaledVector(dirs[slot].clone().applyQuaternion(rq), bondLen3D(atom, k.atom, k.bond.order));
+                Object.keys(posMap).forEach(oid => { if (+oid === id) return; score = Math.min(score, p.distanceTo(posMap[oid])); });
+              });
+              if (score > bestScore + 1e-6) { bestScore = score; bestT = t; }
+            }
+            const rq = new THREE.Quaternion().setFromAxisAngle(axis, bestT * Math.PI / 6);
+            dirs = dirs.map(d => d.applyQuaternion(rq));
+          }
+          kids.forEach((k, i) => {
+            const slot = kidSlots[i] !== undefined ? kidSlots[i] : kidSlots[kidSlots.length - 1];
+            posMap[k.atom.id] = pos.clone().addScaledVector(dirs[slot], bondLen3D(atom, k.atom, k.bond.order));
+            visited.add(k.atom.id); queue.push({ id: k.atom.id, parent: id });
+          });
+          lpMap[id] = lpSlots.map(s => dirs[s].clone().normalize());
+        }
+        atoms.forEach(a => { if (!posMap[a.id]) posMap[a.id] = V3(0, 0, 0); });
+        return { posMap, lpMap };
+      }
+
+      // ---- Analyse / Namen ----
+      function analyzeInorganic() {
+        const cnt = inorgCounts(), q = totalCharge();
+        const key = inorgKeyFromCounts(cnt, q), entry = INORG_DB[key];
+        const els = Object.keys(cnt).sort((a, b) => FORMULA_ORDER.indexOf(a) - FORMULA_ORDER.indexOf(b));
+        const molarMass = atoms.reduce((s, a) => s + ELEMENT_SPECS[a.el].mass, 0).toFixed(2).replace('.', ',');
+        let formulaStr = entry ? entry.formula : genericFormula(cnt, q);
+        let name = null, alts = [], cls = q > 0 ? 'Kation' : (q < 0 ? 'Anion' : 'Anorganisches Molekül'), hint = '', how = '';
+
+        if (entry) {
+          name = entry.name; alts = entry.alts.slice(); cls = entry.cls; hint = entry.hint;
+          how = `Dieses Teilchen hat den eingeführten Namen <strong>${name}</strong>.${hint ? ' ' + hint : ''}${alts.length ? ` Weitere gebräuchliche Namen: ${alts.join(', ')}.` : ''}`;
+        } else if (atoms.length === 1) {
+          const a = atoms[0], sp = ELEMENT_SPECS[a.el];
+          if (q > 0) { name = `${sp.de}-Ion`; cls = 'Kation (einatomig)'; how = `Einatomiges Kation: Elementname + „-Ion“ → <strong>${name}</strong>.`; }
+          else if (q < 0 && ANION_STEM[a.el]) { name = `${ANION_STEM[a.el]}-Ion`; cls = 'Anion (einatomig)'; how = `Einatomiges Anion: Endung <strong>-id</strong> am Elementstamm + „-Ion“ → <strong>${name}</strong>.`; }
+          else if (q === 0) { name = sp.de; cls = 'Edelgas'; how = `Einzelnes ungeladenes Atom: <strong>${name}</strong>.`; }
+        } else if (els.length === 1 && q === 0) {
+          name = `${MULT_NAMES[cnt[els[0]]] ? MULT_NAMES[cnt[els[0]]] : cnt[els[0]] + '-'}${ELEMENT_SPECS[els[0]].de.toLowerCase()}`;
+          name = name.charAt(0).toUpperCase() + name.slice(1);
+          cls = 'Element (Molekül)';
+          how = `Molekül aus ${cnt[els[0]]} gleichen Atomen: Zahlwort + Elementname → <strong>${name}</strong>.`;
+        } else if (els.length === 2 && q === 0 && ANION_STEM[els[1]]) {
+          const [e1, e2] = els, m1 = cnt[e1] > 1 ? MULT_NAMES[cnt[e1]] : '', m2 = MULT_NAMES[cnt[e2]] || String(cnt[e2]);
+          name = (m1 + ELEMENT_SPECS[e1].de.toLowerCase() + m2 + ANION_STEM[e2].toLowerCase());
+          name = name.charAt(0).toUpperCase() + name.slice(1);
+          cls = 'Binäre Verbindung';
+          how = `Zweielementverbindung: Zahlwort + Name des 1. Elements, dann Zahlwort + Elementstamm mit Endung <strong>-id</strong> (${ELEMENT_SPECS[e1].de}: ${cnt[e1]}×, ${ELEMENT_SPECS[e2].de}: ${cnt[e2]}×) → <strong>${name}</strong>. „Mono“ wird beim ersten Element weggelassen.`;
+        }
+
+        const nameKnown = Boolean(name);
+        const accepted = [];
+        const addAcc = n => { if (n) { accepted.push(n); if (/-Ion$/.test(n)) { accepted.push(n.replace(/-Ion$/, '')); accepted.push(n.replace(/-Ion$/, 'ion')); accepted.push(n.replace(/-Ion$/, '-ion')); } } };
+        addAcc(name); alts.forEach(addAcc);
+
+        // Schritt-Texte
+        const bondsList = bonds.filter(b => b.b !== null), nSingle = bondsList.filter(b => b.order === 1).length, nDouble = bondsList.filter(b => b.order === 2).length, nTriple = bondsList.filter(b => b.order === 3).length;
+        const lpTotal = atoms.reduce((s, a) => s + (a.lonePairs ? a.lonePairs.length : 0), 0);
+        const veSum = atoms.reduce((s, a) => s + ELEMENT_SPECS[a.el].ve, 0) - q;
+        const compText = els.map(e => `${cnt[e]} × ${ELEMENT_SPECS[e].de} (${e})`).join(', ');
+        const bondTxt = [nSingle ? `${nSingle} Einfachbindung${nSingle > 1 ? 'en' : ''}` : '', nDouble ? `${nDouble} Doppelbindung${nDouble > 1 ? 'en' : ''}` : '', nTriple ? `${nTriple} Dreifachbindung${nTriple > 1 ? 'en' : ''}` : ''].filter(Boolean).join(', ');
+        const charged = atoms.filter(a => (a.charge || 0) !== 0);
+        const centers = atoms.filter(a => a.el !== 'H' && getAtomBonds(a.id).filter(b => b.b !== null).length >= 2)
+          .sort((a, b) => getAtomBonds(b.id).length - getAtomBonds(a.id).length).slice(0, 4);
+        let geo;
+        if (atoms.length === 1) geo = 'Einzelnes Atom bzw. Ion – es gibt keine Molekülgeometrie.';
+        else if (atoms.length === 2) geo = 'Zweiatomige Teilchen sind immer <strong>linear</strong>.';
+        else if (centers.length === 0) geo = 'Kein Atom mit mindestens zwei Bindungspartnern.';
+        else geo = centers.map(c => {
+          const v = vseprOf(c);
+          return `<strong>${ELEMENT_SPECS[c.el].de} (${c.el})</strong>: ${v.X} Bindungspartner + ${v.E} freie${v.E === 1 ? 's' : ''} Elektronenpaar${v.E === 1 ? '' : 'e'} = ${v.X + v.E} Bereiche → Elektronenpaare ordnen sich <strong>${v.eg}</strong> an → Teilchenform: <strong>${v.mg}</strong>${v.ang !== '—' ? ` (Bindungswinkel: ${v.ang})` : ''}`;
+        }).join('<br>');
+
+        const steps = [
+          { title: '1. Zusammensetzung & Ladung', text: `${compText}. Gesamtladung: <strong>${chargeText(q)}</strong>.` },
+          { title: '2. Lewis-Formel', text: `${bondTxt} und ${lpTotal} freie Elektronenpaare. Valenzelektronen insgesamt: <strong>${veSum}</strong>${charged.length ? `. Formalladungen: ${charged.map(a => `${a.el} ${chargeText(a.charge)}`).join(', ')}` : ''}.` },
+          { title: '3. Geometrie (EPA-Modell)', text: `Elektronenpaare stoßen sich ab und gehen möglichst weit auseinander.<br>${geo}` },
+          { title: '4. Name & Formel', text: nameKnown ? `${how}<br>Summenformel: <strong>${formulaStr}</strong>` : `Für dieses Teilchen ist im Builder noch kein Name hinterlegt. Summenformel: <strong>${formulaStr}</strong>.` }
+        ];
+        return {
+          inorg: true, classLabel: cls, iupacName: nameKnown ? name : formulaStr,
+          altName: nameKnown ? (alts.length ? `Auch: ${alts.join(', ')}` : '') : 'Kein Name hinterlegt',
+          accepted, formulaStr, molarMass, mainChain: [], chainLabels: {}, steps
+        };
+      }
+
+      // ==========================================================================
       // 11. VORLAGEN & UI-STEUERUNG
       // ==========================================================================
-      function loadTemplateMolecule(heavyAtoms, heavyBonds) {
-        atoms = []; bonds = []; nextId = 100;
-        heavyAtoms.forEach(ha => atoms.push({ id: ha.id, el: ha.el, x: ha.x, y: ha.y, lonePairs: ha.lonePairs ? [...ha.lonePairs] : [] }));
+      function loadTemplateMolecule(heavyAtoms, heavyBonds, opts = {}) {
+        if (atoms.length) pushUndo(snapshotState());
+        atoms = []; bonds = []; nextId = 100; panAcc = { x: 0, y: 0 }; paperZoom = 1.0;
+        heavyAtoms.forEach(ha => atoms.push({ id: ha.id, el: ha.el, x: ha.x, y: ha.y, charge: ha.charge || 0, lonePairs: ha.lonePairs ? [...ha.lonePairs] : [] }));
         heavyBonds.forEach(hb => bonds.push({ id: nextId++, a: hb.a, b: hb.b, angle: 0, order: hb.order }));
-        autoAdjust2DBondLengths();
+        if (!opts.noAutoH && !opts.noAdjust) autoAdjust2DBondLengths();
 
         const baseAtoms = [...atoms];
         baseAtoms.forEach(a => {
-          const spec = ELEMENT_SPECS[a.el], neededH = Math.max(0, spec.valence - getUsedValence(a.id));
-          const freeZones = getFreeZonesForAtom(a, 'bond');
-          for (let i = 0; i < Math.min(neededH, freeZones.length); i++) {
-            const z = freeZones[i], hId = nextId++;
-            atoms.push({ id: hId, el: 'H', x: a.x + Math.cos(z.angle) * BOND_LEN_H, y: a.y + Math.sin(z.angle) * BOND_LEN_H, lonePairs: [] });
-            bonds.push({ id: nextId++, a: a.id, b: hId, angle: z.angle, order: 1 });
+          const spec = ELEMENT_SPECS[a.el];
+          if (!opts.noAutoH) {
+            const neededH = Math.max(0, spec.valence - getUsedValence(a.id));
+            const freeZones = getFreeZonesForAtom(a, 'bond');
+            for (let i = 0; i < Math.min(neededH, freeZones.length); i++) {
+              const z = freeZones[i], hId = nextId++;
+              atoms.push({ id: hId, el: 'H', x: a.x + Math.cos(z.angle) * BOND_LEN_H, y: a.y + Math.sin(z.angle) * BOND_LEN_H, charge: 0, lonePairs: [] });
+              bonds.push({ id: nextId++, a: a.id, b: hId, angle: z.angle, order: 1 });
+            }
           }
           if (heavyAtoms.find(x => x.id === a.id && x.autoLP)) {
-            a.lonePairs = getFreeZonesForAtom(a, 'lonepair').slice(0, spec.lonePairs).map(z => z.angle);
+            const n = opts.noAutoH ? (spec.ve - getUsedValence(a.id) - (a.charge || 0)) / 2 : spec.lonePairs;
+            a.lonePairs = [];
+            for (let i = 0; i < n; i++) { const z = getFreeZonesForAtom(a, 'lonepair'); if (!z.length) break; a.lonePairs.push(z[0].angle); }
           }
         });
 
@@ -2291,23 +3087,50 @@
         translateTo3DAndNomenclature();
       }
 
-      const L = BOND_LEN_HEAVY;
+      // Kleiner Baukasten: Zentralatom + Liganden mit Winkel (Grad, 0 = rechts, 90 = unten)
+      const L = BOND_LEN_HEAVY, LH = 38;
+      function star(root, inorg) {
+        const A = [], B = []; let id = 1;
+        (function add(node, x, y, parentId) {
+          const me = id++;
+          A.push({ id: me, el: node.el, x, y, charge: node.charge || 0, autoLP: inorg ? node.el !== 'H' : !['C', 'H'].includes(node.el) });
+          if (parentId) B.push({ a: parentId, b: me, order: node.order || 1 });
+          (node.ligs || []).forEach(l => {
+            const r = l.ang * Math.PI / 180, len = l.el === 'H' ? LH : L;
+            add(l, x + Math.cos(r) * len, y + Math.sin(r) * len, me);
+          });
+        })(root, 0, 0, 0);
+        return { atoms: A, bonds: B, noAutoH: Boolean(inorg) };
+      }
+      const benzene = () => {
+        const A = [], B = [];
+        for (let k = 0; k < 6; k++) { const a = k * Math.PI / 3 - Math.PI / 2; A.push({ id: k + 1, el: 'C', x: Math.cos(a) * L, y: Math.sin(a) * L }); }
+        for (let k = 0; k < 6; k++) B.push({ a: k + 1, b: ((k + 1) % 6) + 1, order: k % 2 === 0 ? 2 : 1 });
+        return { atoms: A, bonds: B, noAutoH: false, noAdjust: true };
+      };
       const PRESETS = {
-        basic: [
-          {
-            name: "Methan (CH₄)",
-            atoms: [{ id: 1, el: 'C', x: 0, y: 0 }],
-            bonds: []
-          }
+        org: [
+          { name: 'CH₄', ...star({ el: 'C' }, false) },
+          { name: 'C₂H₆O', ...star({ el: 'C', ligs: [{ el: 'C', ang: 180 }, { el: 'O', ang: 0 }] }, false) },
+          { name: 'C₃H₆', ...star({ el: 'C', ligs: [{ el: 'C', ang: 180, order: 2 }, { el: 'C', ang: 60 }] }, false) },
+          { name: 'C₂H₄O₂', ...star({ el: 'C', ligs: [{ el: 'C', ang: 180 }, { el: 'O', ang: 60, order: 2 }, { el: 'O', ang: -60 }] }, false) },
+          { name: 'C₆H₆', ...benzene() }
         ],
-        adv: [
-          {
-            name: "Ethanol (C₂H₆O)",
-            atoms: [{ id: 1, el: 'C', x: -L, y: 0 }, { id: 2, el: 'C', x: 0, y: 0 }, { id: 3, el: 'O', x: L, y: 0, autoLP: true }],
-            bonds: [{ a: 1, b: 2, order: 1 }, { a: 2, b: 3, order: 1 }]
-          }
+        inorg: [
+          { name: 'H₂O', ...star({ el: 'O', ligs: [{ el: 'H', ang: 180 }, { el: 'H', ang: 90 }] }, true) },
+          { name: 'NH₃', ...star({ el: 'N', ligs: [{ el: 'H', ang: 180 }, { el: 'H', ang: 0 }, { el: 'H', ang: 90 }] }, true) },
+          { name: 'CO₂', ...star({ el: 'C', ligs: [{ el: 'O', ang: 180, order: 2 }, { el: 'O', ang: 0, order: 2 }] }, true) },
+          { name: 'SO₂', ...star({ el: 'S', ligs: [{ el: 'O', ang: 180, order: 2 }, { el: 'O', ang: 0, order: 2 }] }, true) },
+          { name: 'H₂SO₄', ...star({ el: 'S', ligs: [{ el: 'O', ang: -90, order: 2 }, { el: 'O', ang: 90, order: 2 }, { el: 'O', ang: 180, ligs: [{ el: 'H', ang: 180 }] }, { el: 'O', ang: 0, ligs: [{ el: 'H', ang: 0 }] }] }, true) },
+          { name: 'SO₄²⁻', ...star({ el: 'S', ligs: [{ el: 'O', ang: -90, order: 2 }, { el: 'O', ang: 90, order: 2 }, { el: 'O', ang: 180, charge: -1 }, { el: 'O', ang: 0, charge: -1 }] }, true) },
+          { name: 'NH₄⁺', ...star({ el: 'N', charge: 1, ligs: [{ el: 'H', ang: 180 }, { el: 'H', ang: 0 }, { el: 'H', ang: 90 }, { el: 'H', ang: -90 }] }, true) },
+          { name: 'H₃O⁺', ...star({ el: 'O', charge: 1, ligs: [{ el: 'H', ang: 180 }, { el: 'H', ang: 0 }, { el: 'H', ang: 90 }] }, true) },
+          { name: 'OH⁻', ...star({ el: 'O', charge: -1, ligs: [{ el: 'H', ang: 0 }] }, true) },
+          { name: 'XeF₂', ...star({ el: 'Xe', ligs: [{ el: 'F', ang: 180 }, { el: 'F', ang: 0 }] }, true) },
+          { name: 'SF₆', ...star({ el: 'S', ligs: [{ el: 'F', ang: 0 }, { el: 'F', ang: 90 }, { el: 'F', ang: 180 }, { el: 'F', ang: 270 }, { el: 'F', ang: 45 }, { el: 'F', ang: 225 }] }, true) }
         ]
       };
+      const loadPreset = p => loadTemplateMolecule(p.atoms, p.bonds, { noAutoH: p.noAutoH, noAdjust: p.noAdjust });
 
       let isQuizMode = false, revealedSteps = 4;
 
@@ -2417,12 +3240,12 @@
         "methoxymethan": "Dimethylether",
         "ethoxyethan": "Diethylether (Äther)",
         "methoxyethan": "Ethylmethyl-ether",
-        "methan-1-amin": "Methylamin",
-        "ethan-1-amin": "Ethylamin",
+        "methanamin": "Methylamin",
+        "ethanamin": "Ethylamin",
         "butan-1,4-diamin": "Putrescin",
         "pentan-1,5-diamin": "Cadaverin",
-        "methan-1-thiol": "Methylmercaptan",
-        "ethan-1-thiol": "Ethylmercaptan",
+        "methanthiol": "Methylmercaptan",
+        "ethanthiol": "Ethylmercaptan",
 
         // Typische Ester (Aromastoffe & Lösungsmittel)
         "ethansäureethylester": "Essigsäureethylester (Ethylacetat)",
@@ -2438,6 +3261,12 @@
         "1,3-dimethylbenzol": "meta-Xylol (m-Xylol)",
         "1,4-dimethylbenzol": "para-Xylol (p-Xylol)",
         "1,2-dihydroxybenzol": "Brenzcatechin",
+        "benzol-1,2-diol": "Brenzcatechin",
+        "benzol-1,3-diol": "Resorcin",
+        "benzol-1,4-diol": "Hydrochinon",
+        "2-hydroxybenzoesäure": "Salicylsäure",
+        "benzol-1,2-dicarbonsäure": "Phthalsäure",
+        "benzol-1,4-dicarbonsäure": "Terephthalsäure",
         "1,3-dihydroxybenzol": "Resorcin",
         "1,4-dihydroxybenzol": "Hydrochinon",
         "1-carboxy-2-hydroxybenzol": "Salicylsäure",
@@ -2474,12 +3303,14 @@
       }
 
       function translateTo3DAndNomenclature() {
-        if (!validateLewisStructure()) return;
+        if (EDITOR) return editorCheck();
+        if (!validateLewisStructure()) return false;
         document.getElementById('empty-3d-overlay').classList.remove('visible');
-        currentAnalysis = analyzeMolecule();
-        applyTrivialName(currentAnalysis);
+        currentAnalysis = useOrganicEngine() ? analyzeMolecule() : analyzeInorganic();
+        if (!currentAnalysis.inorg) applyTrivialName(currentAnalysis);
         build3DMolecule();
         renderNomenclaturePanel();
+        return true;
       }
 
       function renderNomenclaturePanel() {
@@ -2490,6 +3321,10 @@
         document.getElementById('out-mass').textContent = `M = ${a.molarMass} g/mol`;
         document.getElementById('out-name').textContent = isQuizMode ? "??? (Selbst-Test)" : a.iupacName;
         document.getElementById('out-alt').textContent = isQuizMode ? "Gib deine Lösung unten ein!" : a.altName;
+        const np = document.getElementById('name-pill');
+        document.getElementById('np-name').textContent = isQuizMode ? "??? (Selbst-Test)" : a.iupacName;
+        document.getElementById('np-sub').textContent = `${a.formulaStr} · ${a.classLabel}`;
+        np.classList.add('has-content');
 
         const stepsContainer = document.getElementById('steps-container');
         stepsContainer.innerHTML = '';
@@ -2503,52 +3338,74 @@
       }
 
       function populatePresets() {
-        const btn = document.getElementById('btn-start-example');
-        const startMol = currentCourse === 'basic' ? PRESETS.basic[0] : PRESETS.adv[0];
-        btn.textContent = `📌 Startbeispiel: ${startMol.name}`;
-        btn.onclick = () => loadTemplateMolecule(startMol.atoms, startMol.bonds);
+        const sel = document.getElementById('preset-select');
+        sel.innerHTML = '<option value="">📌 Beispiel laden …</option>' + PRESETS[currentCourse].map((p, i) => `<option value="${i}">${p.name}</option>`).join('');
+        sel.onchange = () => {
+          if (sel.value === '') return;
+          loadPreset(PRESETS[currentCourse][+sel.value]);
+          sel.value = '';
+          document.body.classList.remove('menu-open');
+        };
       }
 
-      document.getElementById('btn-translate-3d').onclick = () => translateTo3DAndNomenclature();
-   document.getElementById('btn-clear-paper').onclick = () => {
+      document.getElementById('btn-translate-3d').onclick = () => { if (translateTo3DAndNomenclature() && isTabLayout()) activateTab('3d'); };
+      document.getElementById('btn-clear-paper').onclick = () => {
+        if (atoms.length) pushUndo(snapshotState());
         atoms = [];
         bonds = [];
         hoverTarget = null;
+        panAcc = { x: 0, y: 0 };
+        document.body.classList.remove('menu-open');
+        markDirty();
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.clearRect(0, 0, lewisCanvas.width, lewisCanvas.height);
         resizePaperCanvas();
       };
-      document.getElementById('btn-center-formula').onclick = () => {
+      const centerFormula = () => {
         if (atoms.length > 0) {
           const avgX = atoms.reduce((s, a) => s + a.x, 0) / atoms.length;
           const avgY = atoms.reduce((s, a) => s + a.y, 0) / atoms.length;
           atoms.forEach(a => { a.x -= avgX; a.y -= avgY; });
+          panAcc.x -= avgX; panAcc.y -= avgY;
           drawPaper();
         }
       };
+      document.getElementById('btn-center-formula').onclick = centerFormula;
+      document.getElementById('btn-fit').onclick = centerFormula;
+      document.getElementById('btn-zoom-in').onclick = () => { const { cx, cy } = paperCenter(); zoomPaperAt(cx, cy, 1.25); drawPaper(); };
+      document.getElementById('btn-zoom-out').onclick = () => { const { cx, cy } = paperCenter(); zoomPaperAt(cx, cy, 1 / 1.25); drawPaper(); };
 
-      document.getElementById('btn-course-basic').onclick = () => {
-        currentCourse = 'basic';
-        document.getElementById('btn-course-basic').classList.add('active');
-        document.getElementById('btn-course-adv').classList.remove('active');
-        document.getElementById('course-badge').textContent = "Einsteigerkurs: Alkane";
-        renderToolbar(); populatePresets();
-        loadTemplateMolecule(PRESETS.basic[0].atoms, PRESETS.basic[0].bonds);
-      };
+      // ---- Reiter (Handy/Tablet) & Menü ----
+      const isTabLayout = () => window.matchMedia('(max-width: 1100px)').matches;
+      function activateTab(t) {
+        document.body.dataset.tab = t;
+        document.querySelectorAll('#tabbar button').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
+        requestAnimationFrame(() => { resizePaperCanvas(); resizeThree(); });
+      }
+      document.querySelectorAll('#tabbar button').forEach(b => b.addEventListener('click', () => activateTab(b.dataset.tab)));
+      document.getElementById('btn-menu').onclick = () => document.body.classList.toggle('menu-open');
 
-      document.getElementById('btn-course-adv').onclick = () => {
-        currentCourse = 'adv';
-        document.getElementById('btn-course-adv').classList.add('active');
-        document.getElementById('btn-course-basic').classList.remove('active');
-        document.getElementById('course-badge').textContent = "Fortgeschrittenenkurs: Alle Gruppen & Ringe";
+      function setMode(m, opts = {}) {
+        currentCourse = m;
+        document.body.dataset.mode = m;
+        document.getElementById('btn-mode-org').classList.toggle('active', m === 'org');
+        document.getElementById('btn-mode-inorg').classList.toggle('active', m === 'inorg');
+        document.getElementById('quiz-input').placeholder = m === 'org' ? 'z. B. Methan, Ethanol oder Propan-2-ol' : 'z. B. Wasser, Schwefelsäure oder Sulfat-Ion';
         renderToolbar(); populatePresets();
-        loadTemplateMolecule(PRESETS.adv[0].atoms, PRESETS.adv[0].bonds);
-      };
+        if (opts.keep) return;
+        if (atoms.length === 0 && !EDITOR) loadPreset(PRESETS[m][0]);
+        else { markDirty(); translateTo3DAndNomenclature(); }
+        drawPaper();
+      }
+      document.getElementById('btn-mode-org').onclick = () => { if (currentCourse !== 'org') setMode('org'); };
+      document.getElementById('btn-mode-inorg').onclick = () => { if (currentCourse !== 'inorg') setMode('inorg'); };
 
       document.getElementById('btn-3d-ball').onclick = (e) => { mode3D = 'ball'; e.target.classList.add('active'); document.getElementById('btn-3d-space').classList.remove('active'); build3DMolecule(); };
       document.getElementById('btn-3d-space').onclick = (e) => { mode3D = 'space'; e.target.classList.add('active'); document.getElementById('btn-3d-ball').classList.remove('active'); build3DMolecule(); };
       document.getElementById('btn-3d-highlight').onclick = (e) => { highlightMain3D = !highlightMain3D; e.target.classList.toggle('active', highlightMain3D); build3DMolecule(); };
       document.getElementById('btn-3d-labels').onclick = (e) => { showLabels3D = !showLabels3D; e.target.classList.toggle('active', showLabels3D); };
+      document.getElementById('btn-3d-lp').onclick = (e) => { showLP3D = !showLP3D; e.target.classList.toggle('active', showLP3D); build3DMolecule(); };
+      document.getElementById('btn-3d-reset').onclick = () => { controls.resetView(); molGroup.rotation.set(0, 0, 0); };
       document.getElementById('btn-3d-spin').onclick = (e) => { spin3D = !spin3D; e.target.classList.toggle('active', spin3D); };
 
       document.getElementById('tab-learn').onclick = () => {
@@ -2573,7 +3430,11 @@
         if (!currentAnalysis) return;
         const u = norm(document.getElementById('quiz-input').value), t1 = norm(currentAnalysis.iupacName);
         const fb = document.getElementById('quiz-feedback'); fb.style.display = 'block';
-        if (u && (u === t1 || (currentAnalysis.altName && currentAnalysis.altName.toLowerCase().includes(u)))) {
+        const okNames = [currentAnalysis.iupacName, ...(currentAnalysis.accepted || [])];
+        const tm = (currentAnalysis.altName || '').match(/:\s*([^•]+)/g) || [];
+        tm.forEach(x => okNames.push(x.replace(/^:\s*/, '')));
+        const okNorm = okNames.filter(Boolean).flatMap(n => { const inner = (n.match(/\(([^)]*)\)/) || [])[1]; return [norm(n), norm(n.replace(/\s*\(.*?\)\s*/g, ' ')), inner && inner.length > 2 && !/^\d/.test(inner) ? norm(inner) : ''].filter(Boolean); });
+        if (u && okNorm.includes(u)) {
           fb.style.background = "rgba(34, 197, 94, 0.2)"; fb.style.border = "1px solid #22c55e"; fb.style.color = "#bbf7d0";
           fb.innerHTML = `🎉 <strong>Richtig!</strong> Der korrekte Name lautet <strong>${currentAnalysis.iupacName}</strong>.`;
           revealedSteps = 4; document.getElementById('out-name').textContent = currentAnalysis.iupacName; renderNomenclaturePanel();
@@ -2591,9 +3452,19 @@
       };
 
       window.addEventListener('resize', () => { resizePaperCanvas(); resizeThree(); });
+      if (window.ResizeObserver) {
+        new ResizeObserver(() => resizePaperCanvas()).observe(document.getElementById('paper-sheet'));
+        new ResizeObserver(() => resizeThree()).observe(threeContainer);
+      }
 
       renderToolbar(); populatePresets(); resizePaperCanvas(); resizeThree();
-      loadTemplateMolecule(PRESETS.basic[0].atoms, PRESETS.basic[0].bonds);
+      if (EDITOR) {
+        document.getElementById('brand-ico').textContent = '✏️';
+        document.getElementById('brand-txt').textContent = ' Vorzeichner';
+        document.querySelector('[onclick^="window.saveMoleculeFile"]').textContent = '💾 JSON speichern';
+        document.querySelector('[onclick^="document.getElementById(\'file-input\')"]').textContent = '📂 JSON laden';
+        showValidationMessage('✏️ Zeichne eine Formel und speichere sie als Vorlage (.json) – der Teilchenbuilder kann sie mit „Laden“ öffnen.', 'success');
+      } else loadPreset(PRESETS.org[0]);
       animateThree();
     }
   </script>

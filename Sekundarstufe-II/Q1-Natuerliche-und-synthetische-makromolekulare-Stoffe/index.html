@@ -51,6 +51,12 @@
     .link-1 { left: 6.3%;  top: 34.9%; width: 28.8%; height: 50.2%; }  /* Proteine (Modell + Ei) */
     .link-2 { left: 70.6%; top: 41.2%; width: 20.8%; height: 43.5%; }  /* Kunststoffe (Flasche, Granulat, Baustein) */
 
+
+    /* Arbeitentraining und Wiederholung (Klemmbrett) */
+    .link-train { left: 46%; top: 44%; width: 11%; height: 20%; }
+    .link-train svg { display: block; width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 6px 6px rgba(0,0,0,.28)); }
+    .label.train { max-width: calc(var(--w) * 0.19); }
+
     .back-link {
       position: absolute;
       left: 50%;
@@ -80,6 +86,21 @@
 
     <a href="./1-Proteine/index.html" class="item link-1" title="Proteine: Aufbau und Struktur"><span class="label">Proteine</span></a>
     <a href="./2-Kunststoffe-problematische-Alleskönner/index.html" class="item link-2" title="Kunststoffe: Problematische Alleskönner"><span class="label">Kunststoffe</span></a>
+
+    <a href="./3-Arbeitentraining-und-Wiederholung/index.html" class="item link-train" title="Arbeitentraining und Wiederholung">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <ellipse cx="50" cy="93" rx="32" ry="5" fill="rgba(0,0,0,.14)"/>
+        <g transform="rotate(-6 50 50)">
+          <rect x="16" y="10" width="68" height="82" rx="8" fill="#8a5a33"/>
+          <rect x="22" y="18" width="56" height="68" rx="4" fill="#fffaf0"/>
+          <rect x="38" y="5" width="24" height="12" rx="4" fill="#c9ced6" stroke="#8b93a0" stroke-width="1.5"/>
+          <g fill="none" stroke="#3ddbc0" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M28 34l4 4 7-8"/><path d="M28 52l4 4 7-8"/></g>
+          <g stroke="#b9b3a4" stroke-width="2.4" stroke-linecap="round"><path d="M45 34h26"/><path d="M45 52h26"/><path d="M28 70h43"/></g>
+        </g>
+        <g transform="rotate(38 76 64)"><rect x="72" y="36" width="8" height="46" rx="2" fill="#ffc24d"/><polygon points="72,82 80,82 76,92" fill="#f2d3a5"/><polygon points="74.6,87.5 77.4,87.5 76,92" fill="#333"/><rect x="72" y="36" width="8" height="7" fill="#ff7a90"/></g>
+      </svg>
+      <span class="label train">Arbeitentraining und Wiederholung</span>
+    </a>
 
     <a href="../index.html" class="back-link">← Zurück zur Q-Phasen Übersicht</a>
   </div>

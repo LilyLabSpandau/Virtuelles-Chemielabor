@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lewis-Werkstatt - Virtuelles Chemielabor</title>
+  <link rel="stylesheet" href="../pinnwand.css">
+</head>
+<body>
+
+  <div class="stage">
+    <img class="board" src="../pinnwand.jpg" alt="">
+
+    <!-- Blatt: Beschreibung -->
+    <section class="paper">
+      <h1>Lewis-Werkstatt</h1>
+      <p>Lewis-Formeln zeichnen, daraus Moleküle und Ionen in 3D bauen und benennen – organisch und anorganisch.</p>
+    </section>
+
+    <!-- Zettel: erscheinen nur, wenn die Seite existiert (data-optional) -->
+    <div class="notes">
+      <a class="note" data-optional data-tag="Werkzeug" href="./Teilchenbuilder/index.html"><b>Teilchen&shy;builder</b></a>
+      <a class="note" data-optional data-tag="Werkzeug" href="./Vorzeichner/index.html"><b>Vorzeichner</b></a>
+    </div>
+    <p class="leer" hidden>Hier hängen bald Zettel zum Thema.</p>
+
+    <a href="../index.html" class="back-link">← Zurück zum Labortisch</a>
+  </div>
+
+  <script src="../pinnwand.js"></script>
+<a href="/Virtuelles-Chemielabor/impressum.html" style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-family: sans-serif; font-size: 12px; z-index: 9999;">Impressum & Datenschutz</a>
+</body>
+</html>
