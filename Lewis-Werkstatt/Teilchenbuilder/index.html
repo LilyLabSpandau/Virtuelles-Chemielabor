@@ -75,6 +75,13 @@
     .overlay-pill { pointer-events: auto; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid var(--border); padding: 5px 8px; border-radius: 8px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 0.76rem; }
     .mini-btn { background: rgba(51, 65, 85, 0.65); border: 1px solid var(--border); color: var(--text-main); padding: 5px 9px; border-radius: 6px; font-size: 0.76rem; cursor: pointer; }
     .mini-btn.active { background: rgba(56, 189, 248, 0.25); border-color: var(--accent); font-weight: 600; }
+    #gen-slot { display: none; flex: 1; min-width: 0; }
+    @media (max-width: 1100px) {
+      #gen-slot { display: block; }
+      #gen-slot .btn-translate-3d { position: static; width: 100%; border-radius: 10px !important; padding: 9px 10px; font-size: 0.92rem; box-shadow: none; white-space: nowrap; }
+      #validation-msg { bottom: 10px; }
+    }
+    body[data-editor] #gen-slot { display: none; }
     .only-org { display: none; }
     body[data-engine="org"] .only-org { display: inline-block; }
     #name-pill { display: none; position: absolute; left: 10px; right: 10px; bottom: 10px; z-index: 2; pointer-events: none; text-align: center; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(56, 189, 248, 0.5); border-radius: 12px; padding: 8px 12px; }
@@ -159,6 +166,7 @@
     <div class="brand">
       <h1><span id="brand-ico">⚗️</span><span class="b-txt" id="brand-txt"> Teilchenbuilder</span></h1>
     </div>
+    <div id="gen-slot"></div>
     <button class="action-btn menu-btn" id="btn-menu" type="button" aria-label="Menü">☰</button>
     <div class="header-actions" id="header-actions">
       <input type="text" id="filename-input" class="only-editor action-btn" placeholder="Dateiname (z. B. Schwefelsäure)" value="vorlage" autocomplete="off" />
@@ -3361,6 +3369,13 @@
         };
       }
 
+      // Auf Tablet/Handy sitzt der Knopf in der Kopfzeile, am Rechner im Zeichenblatt
+      function placeGenButton() {
+        const btn = document.getElementById('btn-translate-3d');
+        const target = isTabLayout() ? document.getElementById('gen-slot') : document.getElementById('paper-sheet');
+        if (btn.parentElement !== target) target.appendChild(btn);
+      }
+      window.addEventListener('resize', placeGenButton);
       document.getElementById('btn-translate-3d').onclick = () => { if (translateTo3DAndNomenclature() && isTabLayout()) activateTab('3d'); };
       document.getElementById('btn-clear-paper').onclick = () => {
         if (atoms.length) pushUndo(snapshotState());
@@ -3457,6 +3472,7 @@
         new ResizeObserver(() => resizeThree()).observe(threeContainer);
       }
 
+      placeGenButton();
       renderToolbar(); populatePresets(); resizePaperCanvas(); resizeThree();
       if (EDITOR) {
         document.getElementById('brand-ico').textContent = '✏️';
