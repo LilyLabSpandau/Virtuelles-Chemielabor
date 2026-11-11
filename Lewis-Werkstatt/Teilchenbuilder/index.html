@@ -1438,6 +1438,21 @@
       // ==========================================================================
       // 8. CHEMISCHE VALIDIERUNG
       // ==========================================================================
+      // Zusammenhängende Teilchen (Komponenten) des Blatts
+      function getComponents() {
+        const seen = new Set(), out = [];
+        atoms.forEach(a => {
+          if (seen.has(a.id)) return;
+          const comp = [], q = [a.id]; seen.add(a.id);
+          while (q.length) {
+            const id = q.shift(); comp.push(id);
+            getAtomBonds(id).forEach(b => { const n = b.a === id ? b.b : b.a; if (n !== null && !seen.has(n)) { seen.add(n); q.push(n); } });
+          }
+          out.push(comp);
+        });
+        return out;
+      }
+
       // ---- Ladungen automatisch erkennen ----
       // Mit eingezeichneten freien Paaren: Formalladung = Valenzelektronen − 2·Paare − Bindungen.
       // Ohne eingezeichnete Paare: die Ladung wählen, bei der das Atom ein vollständiges Elektronen-Oktett (bzw. erweitertes Oktett) hat.
@@ -1478,6 +1493,7 @@
 
       function validateLewisStructure() {
         invalidAtomIds.clear(); invalidBondIds.clear();
+        refreshCharges();
         if (atoms.length === 0) { showValidationMessage("⚠️ Das Zeichenblatt ist noch leer. Zeichne zuerst eine Lewis-Formel!", "error"); return false; }
         const openBonds = bonds.filter(b => b.b === null);
         if (openBonds.length > 0) {
@@ -1496,9 +1512,20 @@
             });
           }
           if (visited.size < atoms.length) {
-            atoms.forEach(a => { if (!visited.has(a.id)) invalidAtomIds.add(a.id); }); drawPaper();
-            showValidationMessage("⚠️ <strong>Nicht verbunden:</strong> Alle gezeichneten Atome müssen zu einem einzigen Molekül verbunden sein.", "error");
-            return false;
+            // Mehrere getrennte Teilchen sind nur als Ionenverbindung erlaubt: jedes Teilchen geladen, insgesamt neutral
+            const comps = getComponents();
+            const compQ = ids => ids.reduce((sum, id) => sum + (getAtom(id).charge || 0), 0);
+            if (comps.every(c => compQ(c) !== 0)) {
+              const qTot = totalCharge();
+              if (qTot !== 0) {
+                showValidationMessage(`⚠️ <strong>Ionenverbindung nicht neutral:</strong> Die Ladungen ergeben zusammen <strong>${chargeText(qTot)}</strong>. Eine Ionenverbindung ist insgesamt ungeladen – ergänze passende Ionen.`, "error");
+                return false;
+              }
+            } else {
+              atoms.forEach(a => { if (!visited.has(a.id)) invalidAtomIds.add(a.id); }); drawPaper();
+              showValidationMessage("⚠️ <strong>Nicht verbunden:</strong> Alle Atome müssen zu einem Teilchen verbunden sein. (Getrennt zeichnest du nur Ionen einer Ionenverbindung, z. B. Mg²⁺ und O²⁻.)", "error");
+              return false;
+            }
           }
         }
 
@@ -2949,7 +2976,9 @@
           atoms.forEach((a, i) => { posMap[a.id] = V3(a.x * sc, -a.y * sc, (i % 2 ? 1 : -1) * 0.15); });
           return { posMap, lpMap };
         }
-        const sorted = atoms.slice().sort((a, b) => (nbrs(b.id).length - nbrs(a.id).length) || ((a.el === 'H') - (b.el === 'H')));
+        let offX = 0;
+        getComponents().sort((x, y) => y.length - x.length).forEach(comp => {
+        const sorted = comp.map(getAtom).sort((a, b) => (nbrs(b.id).length - nbrs(a.id).length) || ((a.el === 'H') - (b.el === 'H')));
         const root = sorted[0];
         posMap[root.id] = V3(0, 0, 0);
         const visited = new Set([root.id]), queue = [{ id: root.id, parent: null }];
@@ -2994,12 +3023,59 @@
           });
           lpMap[id] = lpSlots.map(s => dirs[s].clone().normalize());
         }
+        let minX = Infinity, maxX = -Infinity;
+        comp.forEach(id => { minX = Math.min(minX, posMap[id].x); maxX = Math.max(maxX, posMap[id].x); });
+        comp.forEach(id => { posMap[id].x += offX - minX; });
+        offX += (maxX - minX) + 2.0;
+        });
         atoms.forEach(a => { if (!posMap[a.id]) posMap[a.id] = V3(0, 0, 0); });
         return { posMap, lpMap };
       }
 
       // ---- Analyse / Namen ----
+      const gcd = (x, y) => y ? gcd(y, x % y) : x;
+      function analyzeIonic(comps) {
+        const types = {};
+        comps.forEach(ids => {
+          const cnt = {}; let q = 0;
+          ids.forEach(id => { const a = getAtom(id); cnt[a.el] = (cnt[a.el] || 0) + 1; q += a.charge || 0; });
+          const key = inorgKeyFromCounts(cnt, q);
+          (types[key] = types[key] || { key, cnt, q, n: 0 }).n++;
+        });
+        const list = Object.values(types);
+        const g = list.reduce((x, t) => gcd(x, t.n), 0);
+        list.forEach(t => { t.m = t.n / g; });
+        const cations = list.filter(t => t.q > 0), anions = list.filter(t => t.q < 0);
+        const ionName = t => {
+          const e = INORG_DB[t.key]; if (e) return e.name.replace(/-Ion$/, '');
+          const els = Object.keys(t.cnt);
+          if (els.length === 1 && t.cnt[els[0]] === 1) return t.q > 0 ? ELEMENT_SPECS[els[0]].de : (ANION_STEM[els[0]] || null);
+          return null;
+        };
+        const ionFormula = t => { const e = INORG_DB[t.key]; return e ? e.formula : genericFormula(t.cnt, t.q); };
+        const bare = t => ionFormula(t).replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻]+$/, '');
+        const part = t => { const f = bare(t), multi = Object.values(t.cnt).reduce((x, y) => x + y, 0) > 1; return t.m > 1 ? (multi ? `(${f})` : f) + subDig(t.m) : f; };
+        const names = [...cations, ...anions].map(ionName);
+        const nameKnown = names.every(Boolean);
+        const name = nameKnown ? cations.map(ionName).join('') + anions.map(t => ionName(t).toLowerCase()).join('') : null;
+        const formulaStr = cations.map(part).join('') + anions.map(part).join('');
+        const mass = list.reduce((sum, t) => sum + t.m * Object.keys(t.cnt).reduce((x, el) => x + t.cnt[el] * ELEMENT_SPECS[el].mass, 0), 0);
+        const molarMass = mass.toFixed(2).replace('.', ',');
+        const side = ts => ts.map(t => `${t.m} × ${ionFormula(t)}`).join(' und ');
+        const plus = cations.reduce((x, t) => x + t.m * t.q, 0), minus = anions.reduce((x, t) => x + t.m * -t.q, 0);
+        const steps = [
+          { title: '1. Ionen im Gitter', text: `Kationen: <strong>${side(cations)}</strong><br>Anionen: <strong>${side(anions)}</strong><br>Zwischen Metall- und Nichtmetall-Ionen gibt es keine Elektronenpaarbindung, sondern die Anziehung entgegengesetzter Ladungen (Ionenbindung). Deshalb werden die Ionen getrennt gezeichnet.` },
+          { title: '2. Ladungsausgleich', text: `Positive Ladung: <strong>+${plus}</strong>, negative Ladung: <strong>−${minus}</strong>. Die Ionenverbindung ist nach außen neutral. Das kleinste Zahlenverhältnis der Ionen ergibt die <strong>Verhältnisformel ${formulaStr}</strong>.` },
+          { title: '3. Benennung', text: nameKnown ? `Name des Kations (Metall) + Name des Anions (Endung <strong>-id</strong> bei einatomigen Anionen). Zahlwörter werden bei Ionenverbindungen nicht verwendet → <strong>${name}</strong>.` : 'Für mindestens eines dieser Ionen ist im Builder noch kein Name hinterlegt.' },
+          { title: '4. Name & Formel', text: `${nameKnown ? `Name: <strong>${name}</strong><br>` : ''}Verhältnisformel: <strong>${formulaStr}</strong>` }
+        ];
+        const accepted = nameKnown ? [name, name.replace(/id$/, 'id')] : [];
+        return { inorg: true, ionic: true, classLabel: 'Ionenverbindung (Salz)', iupacName: nameKnown ? name : formulaStr, altName: nameKnown ? '' : 'Kein Name hinterlegt', accepted, formulaStr, molarMass, mainChain: [], chainLabels: {}, steps };
+      }
+
       function analyzeInorganic() {
+        const comps = getComponents();
+        if (comps.length > 1) return analyzeIonic(comps);
         const cnt = inorgCounts(), q = totalCharge();
         const key = inorgKeyFromCounts(cnt, q), entry = INORG_DB[key];
         const els = Object.keys(cnt).sort((a, b) => FORMULA_ORDER.indexOf(a) - FORMULA_ORDER.indexOf(b));
@@ -3021,11 +3097,12 @@
           cls = 'Element (Molekül)';
           how = `Molekül aus ${cnt[els[0]]} gleichen Atomen: Zahlwort + Elementname → <strong>${name}</strong>.`;
         } else if (els.length === 2 && q === 0 && ANION_STEM[els[1]]) {
-          const [e1, e2] = els, m1 = cnt[e1] > 1 ? MULT_NAMES[cnt[e1]] : '', m2 = MULT_NAMES[cnt[e2]] || String(cnt[e2]);
+          const [e1, e2] = els, metal1 = Boolean(ELEMENT_SPECS[e1].metal);
+          const m1 = !metal1 && cnt[e1] > 1 ? MULT_NAMES[cnt[e1]] : '', m2 = metal1 ? '' : (MULT_NAMES[cnt[e2]] || String(cnt[e2]));
           name = (m1 + ELEMENT_SPECS[e1].de.toLowerCase() + m2 + ANION_STEM[e2].toLowerCase());
           name = name.charAt(0).toUpperCase() + name.slice(1);
-          cls = 'Binäre Verbindung';
-          how = `Zweielementverbindung: Zahlwort + Name des 1. Elements, dann Zahlwort + Elementstamm mit Endung <strong>-id</strong> (${ELEMENT_SPECS[e1].de}: ${cnt[e1]}×, ${ELEMENT_SPECS[e2].de}: ${cnt[e2]}×) → <strong>${name}</strong>. „Mono“ wird beim ersten Element weggelassen.`;
+          cls = metal1 ? 'Ionenverbindung' : 'Binäre Verbindung';
+          how = metal1 ? `Metall + Nichtmetall: Das ist eine <strong>Ionenverbindung</strong>. Name des Metalls + Elementstamm des Nichtmetalls mit Endung <strong>-id</strong>, ohne Zahlwörter → <strong>${name}</strong>. Tipp: Zeichne die Ionen getrennt (z. B. Mg und O einzeln), dann stellt der Builder den Ladungsausgleich dar.` : `Zweielementverbindung: Zahlwort + Name des 1. Elements, dann Zahlwort + Elementstamm mit Endung <strong>-id</strong> (${ELEMENT_SPECS[e1].de}: ${cnt[e1]}×, ${ELEMENT_SPECS[e2].de}: ${cnt[e2]}×) → <strong>${name}</strong>. „Mono“ wird beim ersten Element weggelassen.`;
         }
 
         const nameKnown = Boolean(name);
@@ -3142,6 +3219,9 @@
           { name: 'OH⁻', ...star({ el: 'O', charge: -1, ligs: [{ el: 'H', ang: 0 }] }, true) },
           { name: 'XeF₂', ...star({ el: 'Xe', ligs: [{ el: 'F', ang: 180 }, { el: 'F', ang: 0 }] }, true) },
           { name: 'SF₆', ...star({ el: 'S', ligs: [{ el: 'F', ang: 0 }, { el: 'F', ang: 90 }, { el: 'F', ang: 180 }, { el: 'F', ang: 270 }, { el: 'F', ang: 45 }, { el: 'F', ang: 225 }] }, true) }
+          ,{ name: 'NaCl', atoms: [{ id: 1, el: 'Na', x: -45, y: 0 }, { id: 2, el: 'Cl', x: 45, y: 0 }], bonds: [], noAutoH: true }
+          ,{ name: 'MgO', atoms: [{ id: 1, el: 'Mg', x: -45, y: 0 }, { id: 2, el: 'O', x: 45, y: 0 }], bonds: [], noAutoH: true }
+          ,{ name: 'CaCl₂', atoms: [{ id: 1, el: 'Cl', x: -80, y: 0 }, { id: 2, el: 'Ca', x: 0, y: 0 }, { id: 3, el: 'Cl', x: 80, y: 0 }], bonds: [], noAutoH: true }
         ]
       };
       const loadPreset = p => loadTemplateMolecule(p.atoms, p.bonds, { noAutoH: p.noAutoH, noAdjust: p.noAdjust });
