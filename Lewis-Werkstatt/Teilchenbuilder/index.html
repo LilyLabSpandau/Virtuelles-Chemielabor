@@ -16,7 +16,7 @@
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { -webkit-text-size-adjust: 100%; }
-    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg-dark); color: var(--text-main); height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; overscroll-behavior: none; touch-action: manipulation; -webkit-tap-highlight-color: transparent; padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px)); }
+    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg-dark); color: var(--text-main); height: 100vh; height: 100dvh; height: var(--app-h, 100dvh); display: flex; flex-direction: column; overflow: hidden; overscroll-behavior: none; touch-action: manipulation; -webkit-tap-highlight-color: transparent; padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px)); }
     button, select { font-family: inherit; touch-action: manipulation; }
     header { min-height: 54px; background: #090d16; border-bottom: 1px solid var(--border); padding: 6px 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-shrink: 0; flex-wrap: wrap; }
     .brand { display: flex; align-items: center; gap: 10px; }
@@ -138,7 +138,8 @@
       .header-actions select, body[data-editor] input.only-editor { flex: 1 1 100%; width: auto; }
     }
     /* Touch: Die Formel lässt sich mit einem Finger verschieben, das Hand-Werkzeug ist überflüssig */
-    @media (pointer: coarse) { .tool-btn[data-tool="hand"] { display: none; } }
+    @media (pointer: coarse), (hover: none) { .tool-btn[data-tool="hand"] { display: none; } }
+    body.touch-device .tool-btn[data-tool="hand"] { display: none; }
     @media (max-width: 1100px), (pointer: coarse) {
       .tool-row-label { display: none; }
       .tool-btn { min-width: 44px; height: 44px; font-size: 0.95rem; }
@@ -162,6 +163,16 @@
   </style>
 </head>
 <body data-engine="org" data-tab="draw">
+  <script>
+    // Sichtbare Fensterhöhe (Handy-Browser: Adressleiste ein-/ausgeblendet) und Touch-Erkennung
+    (function () {
+      function setH() { document.documentElement.style.setProperty('--app-h', window.innerHeight + 'px'); }
+      setH(); [100, 400, 1000].forEach(t => setTimeout(setH, t));
+      window.addEventListener('resize', setH); window.addEventListener('orientationchange', () => setTimeout(setH, 150)); window.addEventListener('pageshow', setH);
+      if (window.visualViewport) window.visualViewport.addEventListener('resize', setH);
+      if (navigator.maxTouchPoints > 0 && window.matchMedia && !matchMedia('(hover: hover) and (pointer: fine)').matches) document.body.classList.add('touch-device');
+    })();
+  </script>
   <script>if (/[?&]vorzeichner/.test(location.search)) { document.body.dataset.editor = "1"; document.title = "Vorzeichner"; }</script>
 
   <header>
