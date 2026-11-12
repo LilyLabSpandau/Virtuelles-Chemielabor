@@ -15,6 +15,12 @@ nav { display: flex; gap: 6px; flex-wrap: wrap; }
 nav button { border: 1px solid #2f3b50; background: #1a212c; color: #c5d0e0; padding: 7px 13px; border-radius: 9px; font-size: 13.5px; font-weight: 600; cursor: pointer; }
 nav button.on { background: #2f5fd0; border-color: #4d7df0; color: #fff; }
 nav button small { opacity: .7; font-weight: 500; }
+#mode { display: flex; border: 1px solid #2f3b50; border-radius: 9px; overflow: hidden; }
+#mode button { border: 0; background: #1a212c; color: #c5d0e0; padding: 7px 12px; font-size: 13px; font-weight: 600; cursor: pointer; }
+#mode button.on { background: #7b3fe4; color: #fff; }
+body[data-mode=gk] .lk, body[data-mode=lk] .gk { display: none !important; }
+.gloss dt { font-weight: 700; color: #90caf9; margin-top: 7px; }
+.gloss dd { margin: 2px 0 0 0; }
 main { flex: 1; min-height: 0; position: relative; }
 .tab { display: none; position: absolute; inset: 0; grid-template-columns: minmax(0, 1fr) 410px; }
 .tab.on { display: grid; }
@@ -97,6 +103,7 @@ label.chk { display: inline-flex; align-items: center; gap: 6px; margin: 3px 12p
     <button data-t="3">3 Tertiär<small> · 3D</small></button>
     <button data-t="4">4 Quartär<small> · 3D</small></button>
   </nav>
+  <div id="mode" title="Schwierigkeitsgrad"><button data-m="gk">Grundkurs</button><button data-m="lk">Leistungskurs</button></div>
   <a class="back" href="../index.html">← Zurück zu Proteine</a>
 </header>
 <main>
@@ -113,12 +120,30 @@ label.chk { display: inline-flex; align-items: center; gap: 6px; margin: 3px 12p
   </div>
   <div class="side">
     <h2>Primärstruktur: die Aminosäure-Sequenz</h2>
-    <details class="expl" open>
+    <details class="expl gk" open>
+      <summary>Was ist die Primärstruktur?</summary>
+      <p>Proteine sind lange Ketten aus Bausteinen, den <b>Aminosäuren</b>. Die <b>Primärstruktur</b> ist einfach die <b>Reihenfolge</b> dieser Bausteine in der Kette.</p>
+      <p>Zwei Aminosäuren sind jeweils durch eine feste Verbindung verknüpft, die <b>Peptidbindung</b> (im Bild gelb umrahmt). Dabei wird ein Wasser-Molekül abgespalten.</p>
+      <p>Jede Kette hat einen Anfang (links, <b>H₂N</b>) und ein Ende (rechts, <b>COOH</b>). Gelesen wird von links nach rechts. Darunter steht die Kurzschreibweise mit je drei Buchstaben pro Aminosäure.</p>
+      <p>Die Reihenfolge entscheidet, wie sich die Kette später faltet und welche Aufgabe das Protein im Körper hat.</p>
+    </details>
+    <details class="expl lk" open>
       <summary>Was ist die Primärstruktur?</summary>
       <p>Die <b>Primärstruktur</b> eines Proteins ist die <b>Reihenfolge (Sequenz) der Aminosäuren</b> in der Peptidkette.</p>
       <p>Benachbarte Aminosäuren sind durch <b>Peptidbindungen</b> (–CO–NH–) verknüpft: Die Carboxygruppe der einen Aminosäure reagiert mit der Aminogruppe der nächsten unter Abspaltung von Wasser (<b>Kondensation</b>).</p>
       <p>Gelesen wird immer vom <b>N-Terminus</b> (freie Aminogruppe) zum <b>C-Terminus</b> (freie Carboxygruppe). Kurz notiert wird im <b>Drei-Buchstaben-Code</b>, z. B. H₂N–Ala–Gly–Ser–COOH.</p>
       <p>Die Reihenfolge der Reste R legt fest, wie sich die Kette später faltet – sie bestimmt damit alle höheren Strukturebenen und die Funktion des Proteins.</p>
+    </details>
+    <details class="expl lk">
+      <summary>Begriffe erklärt</summary>
+      <dl class="gloss">
+        <dt>Aminosäure</dt><dd>Baustein mit einer Aminogruppe (–NH₂), einer Carboxygruppe (–COOH) und einem Rest R am zentralen C-Atom (Cα). Der Rest R unterscheidet die 20 proteinogenen Aminosäuren.</dd>
+        <dt>Peptidbindung</dt><dd>Säureamid-Bindung –CO–NH– zwischen der Carboxygruppe der einen und der Aminogruppe der nächsten Aminosäure. Sie hat teilweise Doppelbindungscharakter (Mesomerie) und ist deshalb planar und nicht frei drehbar.</dd>
+        <dt>Kondensation</dt><dd>Zwei Moleküle verbinden sich unter Abspaltung eines kleinen Moleküls, hier H₂O. Die Umkehrung ist die Hydrolyse.</dd>
+        <dt>N-/C-Terminus</dt><dd>Die Enden der Kette: N-Terminus mit freier Aminogruppe, C-Terminus mit freier Carboxygruppe.</dd>
+        <dt>Sequenz</dt><dd>Aminosäure-Reihenfolge, immer vom N- zum C-Terminus gelesen.</dd>
+        <dt>Oligo-/Polypeptid</dt><dd>Kette aus wenigen (Oligo-) bzw. vielen (Poly-) Aminosäuren; Proteine bestehen aus einem oder mehreren Polypeptiden.</dd>
+      </dl>
     </details>
     <h3>Aminosäuren auswählen</h3>
     <div class="legend" id="lw-leg"></div>
@@ -131,7 +156,13 @@ label.chk { display: inline-flex; align-items: center; gap: 6px; margin: 3px 12p
     <label class="chk"><input type="checkbox" id="lw-plane" checked> Peptidbindung markieren</label>
     <label class="chk"><input type="checkbox" id="lw-col" checked> Reste nach Eigenschaft einfärben</label>
     <div class="box hi" id="lw-info" style="display:none"></div>
-    <details class="expl">
+    <details class="expl gk">
+      <summary>So liest du das Bild</summary>
+      <p>Striche sind <b>Bindungen</b>. Ecken ohne Buchstaben sind Kohlenstoff-Atome (C). Farben der Buchstaben: <b style="color:#6ea8ff">N</b> Stickstoff, <b style="color:#ff6b6b">O</b> Sauerstoff, <b style="color:#f4d03f">S</b> Schwefel, <b>H</b> Wasserstoff.</p>
+      <p>Der <b>gelbe Rahmen</b> markiert die Peptidbindung zwischen zwei Aminosäuren.</p>
+      <p>Das farbige Schild an jeder Aminosäure zeigt ihre Eigenschaft (z. B. unpolar, sauer). Tippe auf eine Aminosäure, um mehr über sie zu erfahren.</p>
+    </details>
+    <details class="expl lk">
       <summary>Hinweise zur Darstellung</summary>
       <p>Die Lewis-Formel zeigt <b>Valenzstriche</b> (Bindungen); freie Elektronenpaare sind der Übersichtlichkeit halber weggelassen. Kohlenstoff-Atome sind als Ecken gezeichnet; die Reste sind in ungeladener Form dargestellt.</p>
       <p>Die gelb markierte Peptidbindung ist <b>starr</b>: C, O, N und H liegen in einer Ebene, die C–N-Bindung ist nicht frei drehbar.</p>
@@ -151,7 +182,27 @@ label.chk { display: inline-flex; align-items: center; gap: 6px; margin: 3px 12p
   </div>
   <div class="side">
     <h2>Sekundärstruktur: α-Helix und β-Faltblatt</h2>
-    <details class="expl" open>
+    <details class="expl gk" open>
+      <summary>Was ist die Sekundärstruktur?</summary>
+      <p>Die Kette faltet sich in kleinen Abschnitten zu regelmäßigen Mustern. Es gibt zwei wichtige Muster:</p>
+      <ul>
+        <li><b>α-Helix</b> – eine Spirale wie eine Wendeltreppe.</li>
+        <li><b>β-Faltblatt</b> – mehrere Stränge liegen nebeneinander, wie ein gefaltetes Papier.</li>
+      </ul>
+      <p>Zusammengehalten werden beide durch <b>Wasserstoffbrücken</b>: schwache Anziehungen zwischen einem C=O und einem N–H der Kette (im Bild gelb gestrichelt).</p>
+    </details>
+    <details class="expl gk" open>
+      <summary>So liest du das Bild</summary>
+      <ul>
+        <li><b>Kugeln und Stäbe:</b> die Atome der Kette. Große bunte Kugeln sind die <b>Reste</b> der Aminosäuren (Farbe wie im Reiter 1).</li>
+        <li><b style="color:#4cd964">Grünes Band:</b> α-Helix (Spirale).</li>
+        <li><b style="color:#ff6b61">Roter Pfeil:</b> ein Strang des Faltblatts. Die <b>Pfeilspitze</b> zeigt die Richtung der Kette (vom Anfang zum Ende). Mehrere Pfeile nebeneinander bilden das Faltblatt.</li>
+        <li><b style="color:#a0a7b4">Grauer Schlauch:</b> Schleife – ein Abschnitt ohne feste Form.</li>
+        <li><b style="color:#ffee58">Gelb gestrichelt:</b> Wasserstoffbrücke.</li>
+      </ul>
+      <p class="muted">Mit „Atome ausblenden“ siehst du nur das Band.</p>
+    </details>
+    <details class="expl lk" open>
       <summary>Was ist die Sekundärstruktur?</summary>
       <p>Die <b>Sekundärstruktur</b> beschreibt die regelmäßige räumliche Anordnung kurzer Abschnitte des Peptid-<b>Rückgrats</b> (N–Cα–C). Sie wird durch <b>Wasserstoffbrücken</b> zwischen der C=O-Gruppe der einen und der N–H-Gruppe einer anderen Peptidbindung stabilisiert (Oδ⁻ ··· H–Nδ⁺).</p>
       <ul>
@@ -160,6 +211,57 @@ label.chk { display: inline-flex; align-items: center; gap: 6px; margin: 3px 12p
       </ul>
     </details>
     <details class="expl" open>
+      <summary>β-Faltblatt: Lehrbuch-Bild und Pfeile</summary>
+      <svg viewBox="0 0 372 150" width="100%" style="display:block;background:#10151d;border-radius:8px" role="img" aria-label="Faltblatt: Lehrbuch-Darstellung und Pfeil-Darstellung">
+        <defs><marker id="ah" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 z" fill="#9fb0c8"/></marker></defs>
+        <g font-size="10" font-family="inherit" text-anchor="middle">
+          <text x="92" y="10" fill="#cdd7e6" font-weight="700">Lehrbuch-Darstellung</text>
+          <polyline points="10,40 35,26 60,40 85,26 110,40 135,26 160,40" fill="none" stroke="#9fb0c8" stroke-width="2.2" marker-end="url(#ah)"/>
+          <polyline points="160,100 135,114 110,100 85,114 60,100 35,114 10,100" fill="none" stroke="#9fb0c8" stroke-width="2.2" marker-end="url(#ah)"/>
+          <g fill="#6ea8ff"><text x="10" y="56">H</text><text x="110" y="56">H</text><text x="160" y="84">H</text><text x="60" y="84">H</text></g>
+          <g fill="#ff6b6b"><text x="60" y="56">O</text><text x="160" y="56">O</text><text x="110" y="84">O</text><text x="10" y="84">O</text></g>
+          <g fill="#8fa0b8"><text x="35" y="22">R</text><text x="85" y="22">R</text><text x="135" y="22">R</text><text x="35" y="130">R</text><text x="85" y="130">R</text><text x="135" y="130">R</text></g>
+          <g stroke="#ffee58" stroke-width="1.6" stroke-dasharray="2 3"><line x1="10" y1="60" x2="10" y2="72"/><line x1="60" y1="60" x2="60" y2="72"/><line x1="110" y1="60" x2="110" y2="72"/><line x1="160" y1="60" x2="160" y2="72"/></g>
+          <text x="92" y="146" fill="#8fa0b8" font-size="9">N → C (oben) · C ← N (unten)</text>
+          <text x="282" y="10" fill="#cdd7e6" font-weight="700">Pfeil-Darstellung</text>
+          <path d="M200,32 H320 V24 L352,40 L320,56 V48 H200 Z" fill="#e57373"/>
+          <path d="M352,92 H232 V84 L200,100 L232,116 V108 H352 Z" fill="#ef9a9a"/>
+          <g stroke="#ffee58" stroke-width="1.6" stroke-dasharray="2 3"><line x1="220" y1="52" x2="220" y2="88"/><line x1="255" y1="52" x2="255" y2="88"/><line x1="290" y1="52" x2="290" y2="88"/><line x1="325" y1="52" x2="325" y2="88"/></g>
+          <text x="282" y="146" fill="#8fa0b8" font-size="9">Spitze = Richtung N → C</text>
+        </g>
+      </svg>
+      <div class="gk">
+        <p><b>Links (wie im Schulbuch):</b> Die Kette verläuft im <b>Zickzack</b> – von der Seite sieht das Blatt wie gefaltetes Papier aus, daher der Name. Zwei Stränge liegen nebeneinander und laufen in <b>entgegengesetzte Richtung</b>. Die <b style="color:#ff6b6b">C=O</b>-Gruppen des einen Strangs und die <b style="color:#6ea8ff">N–H</b>-Gruppen des anderen ziehen sich an: das sind die <b>Wasserstoffbrücken</b> (gelb gepunktet). Die Reste R stehen abwechselnd nach oben und unten.</p>
+        <p><b>Rechts (wie im 3D-Modell):</b> Dasselbe vereinfacht. Jeder Strang wird als <b>Pfeil</b> gezeichnet. Die <b>Pfeilspitze</b> zeigt, in welche Richtung die Kette läuft (vom N-Ende zum C-Ende). Nebeneinander liegende Pfeile zeigen in entgegengesetzte Richtungen. Die gepunkteten Linien sind dieselben Wasserstoffbrücken.</p>
+      </div>
+      <div class="lk">
+        <p><b>Lehrbuch-Darstellung (links):</b> Das Rückgrat N–Cα–C ist gefaltet („pleated sheet“): Die Cα-Atome liegen abwechselnd oberhalb und unterhalb der Blattebene, die Reste R stehen deshalb abwechselnd nach oben und unten. Die Wasserstoffbrücken (C=O ··· H–N) verlaufen <i>zwischen</i> den Strängen, bei <b>antiparallelen</b> Strängen nahezu senkrecht zur Kettenrichtung. Bei <b>parallelen</b> Strängen (gleiche Richtung) sind sie schräg und der Abstand der Partner ist größer.</p>
+        <p><b>Pfeil-Darstellung (rechts, „Cartoon“):</b> Jeder β-Strang wird als Pfeil gezeichnet, die Spitze markiert die Richtung N → C. Die Atome werden weggelassen, damit Verlauf und Anordnung der Stränge im ganzen Protein erkennbar bleiben. Das Modell zeigt antiparallele Stränge; im Reiter 3 sind vier Pfeile zum Faltblatt zusammengefasst.</p>
+      </div>
+    </details>
+    <details class="expl lk">
+      <summary>Begriffe erklärt</summary>
+      <dl class="gloss">
+        <dt>Rückgrat</dt><dd>Die sich wiederholende Folge N–Cα–C der Kette, ohne die Reste R.</dd>
+        <dt>Wasserstoffbrücke</dt><dd>Anziehung zwischen einem positiv polarisierten H (N–H) und einem Atom mit freiem Elektronenpaar, hier dem O der C=O-Gruppe. Einzeln schwach, in großer Zahl stabilisierend.</dd>
+        <dt>rechtsgängig, Ganghöhe</dt><dd>Die Helix dreht sich wie eine normale Schraube im Uhrzeigersinn nach oben. Die Ganghöhe ist der Abstand einer vollen Windung entlang der Achse.</dd>
+        <dt>i → i+4</dt><dd>Die Aminosäuren sind entlang der Kette nummeriert. In der α-Helix bindet das C=O der Aminosäure i an das N–H der Aminosäure i+4 (vier Positionen weiter).</dd>
+        <dt>Strang, Pfeil</dt><dd>Einzelner gestreckter Abschnitt eines β-Faltblatts. Die Pfeilspitze zeigt die Richtung N → C.</dd>
+        <dt>antiparallel / parallel</dt><dd>Benachbarte Stränge verlaufen in entgegengesetzter (anti-) bzw. gleicher Richtung. Das Modell zeigt antiparallele Stränge.</dd>
+        <dt>Neigungswerte (Chou–Fasman)</dt><dd>Zahlen dafür, wie häufig eine Aminosäure in Helices bzw. Faltblättern vorkommt. Werte über 1 bedeuten „bevorzugt“; auf ihnen beruht die vereinfachte Vorhersage im Modell.</dd>
+        <dt>Schleife / Knäuel</dt><dd>Abschnitt ohne regelmäßige Sekundärstruktur (auch „Coil“).</dd>
+      </dl>
+    </details>
+    <details class="expl gk" open>
+      <summary>Welche Aminosäuren passen wohin?</summary>
+      <ul>
+        <li><b style="color:#4cd964">α-Helix:</b> Glu, Ala, Leu, Met, Gln, Lys, Arg</li>
+        <li><b style="color:#ff6b61">β-Faltblatt:</b> Val, Ile, Tyr, Phe, Trp, Thr, Cys (große Reste)</li>
+        <li><b style="color:#a0a7b4">Schleifen / Knicke:</b> Gly, Pro, Asn, Asp, Ser – <b>Pro</b> ist starr und knickt die Kette, <b>Gly</b> ist sehr beweglich. Beide stören eine Spirale.</li>
+      </ul>
+      <p class="muted">Das Modell berechnet aus der Reihenfolge deiner Aminosäuren, wo α-Helix und β-Faltblatt entstehen (Balken unten).</p>
+    </details>
+    <details class="expl lk" open>
       <summary>Welche Aminosäuren bevorzugen welche Struktur?</summary>
       <ul>
         <li><b style="color:#4cd964">Helix-Bildner:</b> Glu, Ala, Leu, Met, Gln, Lys, Arg</li>
@@ -193,7 +295,27 @@ label.chk { display: inline-flex; align-items: center; gap: 6px; margin: 3px 12p
   </div>
   <div class="side">
     <h2>Tertiärstruktur: die Faltung der ganzen Kette</h2>
-    <details class="expl" open>
+    <details class="expl gk" open>
+      <summary>Was ist die Tertiärstruktur?</summary>
+      <p>Die <b>ganze Kette</b> faltet sich zu einer festen 3D-Form. α-Helices, β-Faltblätter und Schleifen legen sich dabei zusammen.</p>
+      <p>Gehalten wird die Form durch Anziehungen zwischen den Resten der Aminosäuren – auch wenn sie in der Kette weit auseinander liegen:</p>
+      <ul>
+        <li><b>Wasserstoffbrücken</b> zwischen polaren Resten</li>
+        <li><b>Salzbrücke:</b> Plus- und Minus-Ladung ziehen sich an</li>
+        <li><b>Hydrophober Kern:</b> unpolare („wasserscheue“) Reste meiden Wasser und lagern sich innen zusammen</li>
+        <li><b>Disulfidbrücke</b> (S–S): feste Atombindung zwischen zwei Cystein-Resten</li>
+      </ul>
+    </details>
+    <details class="expl gk" open>
+      <summary>So liest du das Bild</summary>
+      <ul>
+        <li><b style="color:#4cd964">Grünes Band:</b> α-Helix (Spirale). <b style="color:#ff6b61">Roter Pfeil:</b> ein Strang des β-Faltblatts – die Spitze zeigt die Richtung der Kette. <b style="color:#a0a7b4">Grauer Schlauch:</b> Schleife.</li>
+        <li><b>N</b> ist der Anfang, <b>C</b> das Ende der Kette.</li>
+        <li><b>Farbige Kugeln mit gestrichelter Linie:</b> zwei Reste, die sich verbinden (gelb = Disulfidbrücke, rosa = Salzbrücke, türkis = Wasserstoffbrücke).</li>
+        <li><b style="color:#ffa726">Orange Wolke:</b> der hydrophobe Kern im Inneren.</li>
+      </ul>
+    </details>
+    <details class="expl lk" open>
       <summary>Was ist die Tertiärstruktur?</summary>
       <p>Die <b>Tertiärstruktur</b> ist die vollständige dreidimensionale Faltung <i>einer</i> Peptidkette: Sie beschreibt, wie Helices, Faltblätter und Schleifen im Raum zueinander liegen.</p>
       <p>Sie entsteht durch Wechselwirkungen zwischen den <b>Resten R</b> der Aminosäuren – auch zwischen solchen, die in der Sequenz weit auseinander liegen:</p>
@@ -204,6 +326,18 @@ label.chk { display: inline-flex; align-items: center; gap: 6px; margin: 3px 12p
         <li><b>Disulfidbrücke</b> –S–S– (Atombindung) zwischen zwei Cystein-Resten</li>
       </ul>
       <p>Ein <b>schematisches Modell</b> eines α/β-Proteins (zwei Helices auf einem vierfachen Faltblatt) dient hier als Beispiel.</p>
+    </details>
+    <details class="expl lk">
+      <summary>Begriffe erklärt</summary>
+      <dl class="gloss">
+        <dt>Disulfidbrücke</dt><dd>Kovalente Bindung R–S–S–R, entsteht durch Oxidation zweier –SH-Gruppen von Cystein. Die stärkste Wechselwirkung der Tertiärstruktur.</dd>
+        <dt>Salzbrücke (Ionenbindung)</dt><dd>Elektrostatische Anziehung zwischen –NH₃⁺ (z. B. Lys) und –COO⁻ (z. B. Glu, Asp).</dd>
+        <dt>hydrophober Effekt</dt><dd>Unpolare Reste meiden Wasser und lagern sich im Inneren zusammen; das ist die wichtigste treibende Kraft der Faltung.</dd>
+        <dt>Van-der-Waals-Kräfte</dt><dd>Schwache Anziehung zwischen eng benachbarten unpolaren Resten (induzierte Dipole).</dd>
+        <dt>β-Turn / Haarnadel</dt><dd>Kurze Schleife, die die Kettenrichtung umkehrt und zwei Stränge verbindet.</dd>
+        <dt>α/β-Protein</dt><dd>Protein aus Helices und Faltblatt. Das Modell ist eine vereinfachte, ferredoxin-ähnliche Faltung (β α β β α β).</dd>
+        <dt>antiparallel</dt><dd>Benachbarte Stränge verlaufen in entgegengesetzter Richtung (Reihenfolge im Modell β4 – β1 – β3 – β2).</dd>
+      </dl>
     </details>
     <h3>Strukturelemente anklicken</h3>
     <div class="eltn" id="te-list"></div>
@@ -221,12 +355,38 @@ label.chk { display: inline-flex; align-items: center; gap: 6px; margin: 3px 12p
   </div>
   <div class="side">
     <h2>Quartärstruktur: mehrere Untereinheiten</h2>
-    <details class="expl" open>
+    <details class="expl gk" open>
+      <summary>Was ist die Quartärstruktur?</summary>
+      <p>Manche Proteine bestehen aus <b>mehreren Ketten</b> (Untereinheiten). Die <b>Quartärstruktur</b> zeigt, wie sich diese Ketten zu einem Ganzen zusammenlagern.</p>
+      <p>Zusammengehalten werden sie durch dieselben Anziehungen wie in der Tertiärstruktur – nur eben zwischen <b>verschiedenen Ketten</b>.</p>
+      <p>Beispiel <b>Hämoglobin</b> (transportiert Sauerstoff im Blut): vier Ketten, jede mit einem <b>Häm</b> (roter Ring mit einem Eisen-Ion). Daran bindet je ein O₂-Molekül, insgesamt also vier.</p>
+    </details>
+    <details class="expl gk" open>
+      <summary>So liest du das Bild</summary>
+      <ul>
+        <li>Jede der <b>vier Ketten</b> hat eine eigene Farbe (blau, orange, dunkelblau, rot).</li>
+        <li>Die <b>Bänder</b> sind α-Helices (Spiralen), die Röhren verbinden sie.</li>
+        <li><b style="color:#e53935">Roter Ring:</b> das Häm mit Eisen (orange) und O₂.</li>
+        <li><b>Farbige Scheiben:</b> Kontaktflächen zwischen zwei Ketten.</li>
+      </ul>
+      <p class="muted">Das Modell ist vereinfacht: Die Ketten sind aus α-Helices nachgebaut.</p>
+    </details>
+    <details class="expl lk" open>
       <summary>Was ist die Quartärstruktur?</summary>
       <p>Viele Proteine bestehen aus <b>mehreren Peptidketten</b> (<b>Untereinheiten</b>). Die <b>Quartärstruktur</b> beschreibt, wie sich diese Ketten zu einem funktionsfähigen Komplex zusammenlagern.</p>
       <p>Zusammengehalten werden die Untereinheiten durch dieselben Wechselwirkungen wie in der Tertiärstruktur – nur eben <b>zwischen Resten verschiedener Ketten</b>: hydrophobe Wechselwirkungen, Wasserstoffbrücken und Salzbrücken.</p>
       <p>Beispiel <b>Hämoglobin</b> (Sauerstofftransport im Blut): vier Untereinheiten (2 × α, 2 × β), jede mit einer <b>Häm-Gruppe</b>, die ein Fe²⁺-Ion enthält und ein O₂-Molekül bindet. Die Untereinheiten beeinflussen sich gegenseitig (Kooperativität).</p>
       <p>Schematisches Modell: Die Untereinheiten sind vereinfacht aus Helices aufgebaut.</p>
+    </details>
+    <details class="expl lk">
+      <summary>Begriffe erklärt</summary>
+      <dl class="gloss">
+        <dt>Untereinheit</dt><dd>Eine einzelne Peptidkette in einem Protein aus mehreren Ketten. Hämoglobin ist ein Heterotetramer (2 α + 2 β).</dd>
+        <dt>Häm / prosthetische Gruppe</dt><dd>Nicht-peptidischer Bestandteil des Proteins: ein Porphyrin-Ring mit Fe²⁺, der O₂ reversibel bindet.</dd>
+        <dt>Kontaktfläche</dt><dd>Bereich, in dem sich zwei Untereinheiten berühren und durch hydrophobe Kontakte, H-Brücken und Salzbrücken zusammenhalten.</dd>
+        <dt>Kooperativität</dt><dd>Die Bindung von O₂ an eine Untereinheit erleichtert die Bindung an die anderen, weil sich die Quartärstruktur ändert. Dadurch ist die Sauerstoffbindungskurve S-förmig.</dd>
+        <dt>Dimer</dt><dd>Paar aus zwei Untereinheiten (hier α₁β₁), das als Einheit zusammenbleibt.</dd>
+      </dl>
     </details>
     <h3>Elemente anklicken</h3>
     <div class="eltn" id="qu-list"></div>
@@ -288,6 +448,12 @@ const AAby = {}; AA.forEach((a, i) => { a.i = i; AAby[a.c] = a; });
 const pepName = n => ['', 'Aminosäure', 'Dipeptid', 'Tripeptid', 'Tetrapeptid', 'Pentapeptid', 'Hexapeptid', 'Heptapeptid', 'Octapeptid', 'Nonapeptid', 'Decapeptid'][n] || (n < 50 ? 'Oligopeptid' : 'Polypeptid');
 const sub = s => String(s).replace(/\d/g, d => '₀₁₂₃₄₅₆₇₈₉'[d]);
 const tabHooks = {};
+
+// ----- Modus: Grundkurs (gk) / Leistungskurs (lk) -----
+const MODE = { m: 'gk' };
+try { const _m = localStorage.getItem('prot-mode'); if (_m === 'lk' || _m === 'gk') MODE.m = _m; } catch (e) {}
+const isGK = () => MODE.m === 'gk';
+document.body.dataset.mode = MODE.m;
 
 // ===== 2. PRIMÄRSTRUKTUR: Lewis-Formel der Peptidkette ======================
 const LW = { colorSC: true, sc: 40, valence: { N: 5, O: 6, S: 6 }, hmax: { N: 3, O: 2, S: 2 } };
@@ -435,7 +601,7 @@ function lwRender() {
   else code.innerHTML = '<span class="term">H₂N</span>' + lw.seq.map((a, i) => `–<span class="chip${lw.sel === i ? ' sel' : ''}" data-i="${i}" style="background:${CLS[a.cls].col}">${a.c}</span>`).join('') + '–<span class="term">COOH</span>';
   code.querySelectorAll('.chip').forEach(c => c.onclick = () => { lw.sel = lw.sel === +c.dataset.i ? -1 : +c.dataset.i; lwRender(); });
   document.getElementById('lw-one').textContent = n ? 'Ein-Buchstaben-Code: ' + lw.seq.map(a => a.o).join('–') : '';
-  document.getElementById('lw-facts').innerHTML = n ? `<b>${pepName(n)}</b> aus ${n} Aminosäure${n > 1 ? 'n' : ''} · <b>${Math.max(0, n - 1)}</b> Peptidbindung${n === 2 ? '' : 'en'} · ${Math.max(0, n - 1)} H₂O abgespalten · M ≈ ${lwMass().toFixed(1).replace('.', ',')} g/mol` : '';
+  document.getElementById('lw-facts').innerHTML = n ? (isGK() ? `<b>${pepName(n)}</b> aus ${n} Aminosäure${n > 1 ? 'n' : ''} · <b>${Math.max(0, n - 1)}</b> Peptidbindung${n === 2 ? '' : 'en'} · ${Math.max(0, n - 1)} Wasser-Molekül${n === 3 ? '' : 'e'} abgespalten` : `<b>${pepName(n)}</b> aus ${n} Aminosäure${n > 1 ? 'n' : ''} · <b>${Math.max(0, n - 1)}</b> Peptidbindung${n === 2 ? '' : 'en'} · ${Math.max(0, n - 1)} H₂O abgespalten · M ≈ ${lwMass().toFixed(1).replace('.', ',')} g/mol`) : '';
   // Info zum markierten Rest
   const info = document.getElementById('lw-info');
   if (lw.sel >= 0 && lw.seq[lw.sel]) { const a = lw.seq[lw.sel]; info.style.display = 'block'; info.innerHTML = `<b style="color:${CLS[a.cls].col}">${a.n} (${a.c}, ${a.o})</b> · Position ${lw.sel + 1}<br>Rest R: <b>${a.rf}</b> · ${CLS[a.cls].n}<br><span class="muted">${a.note}</span><br><button class="mini" id="lw-del">Diese Aminosäure entfernen</button>`; document.getElementById('lw-del').onclick = () => { lw.seq.splice(lw.sel, 1); lw.sel = -1; lwRender(); }; }
@@ -681,6 +847,7 @@ const SC_PRE = [
   ['Knäuel: Gly/Pro/Ser', ['Gly', 'Pro', 'Ser', 'Gly', 'Asn', 'Pro', 'Gly', 'Ser', 'Asp', 'Gly']]
 ];
 
+const SC_PRE_GK = ['α-Helix: passende Aminosäuren', 'β-Faltblatt: Val/Ile/Tyr/Thr', 'α-Helix + β-Faltblatt', 'Pro in der α-Helix', 'Knäuel: Gly/Pro/Ser'];
 // ----- Vorhersage (vereinfacht nach Chou & Fasman) -----
 function predictSS(seq) {
   const n = seq.length, Pa = seq.map(a => a.pa), Pb = seq.map(a => a.pb), pro = seq.map(a => a.c === 'Pro');
@@ -845,28 +1012,30 @@ function scUI() {
   const sCol = { H: '#4cd964', E: '#ff453a', C: '#a0a7b4' };
   chain.innerHTML = n ? '<span class="muted" style="font-size:12px;margin-right:2px">N</span>' + sc.seq.map((a, i) => `<span class="cc${sc.sel === i ? ' sel' : ''}" data-i="${i}" style="background:${CLS[a.cls].col};--s:${sCol[st[i] || 'C']}">${a.c}</span>`).join('') + '<span class="muted" style="font-size:12px;margin-left:2px">C</span>' : '<span class="chips hud" style="position:static;padding:6px 10px;background:rgba(13,17,23,.82);border:1px solid #2a3547;border-radius:10px;font-size:12.5px;color:#b6c3d6">Wähle rechts Aminosäuren oder ein Beispiel.</span>';
   chain.querySelectorAll('.cc').forEach(c => c.onclick = () => { sc.sel = sc.sel === +c.dataset.i ? -1 : +c.dataset.i; scBuild(); });
-  document.getElementById('sc-legend').innerHTML = `<span style="color:#4cd964">■</span> α-Helix &nbsp; <span style="color:#ff453a">■</span> β-Faltblatt &nbsp; <span style="color:#a0a7b4">■</span> Schleife/Knäuel &nbsp; <span style="color:#ffee58">┅</span> H-Brücke`;
+  document.getElementById('sc-legend').innerHTML = (isGK() ? `<span style="color:#4cd964">■</span> α-Helix (Spirale) &nbsp; <span style="color:#ff453a">■</span> β-Faltblatt (Pfeil) &nbsp; <span style="color:#a0a7b4">■</span> Schleife &nbsp; <span style="color:#ffee58">┅</span> Wasserstoffbrücke` : `<span style="color:#4cd964">■</span> α-Helix &nbsp; <span style="color:#ff453a">■</span> β-Faltblatt &nbsp; <span style="color:#a0a7b4">■</span> Schleife/Knäuel &nbsp; <span style="color:#ffee58">┅</span> H-Brücke`);
   // Neigungsbalken
   const bars = document.getElementById('sc-bars'); bars.style.display = n ? 'block' : 'none';
-  bars.innerHTML = n ? `<div style="display:flex;justify-content:space-between;margin-bottom:3px"><span><b style="color:#4cd964">▮</b> Neigung zur Helix</span><span><b style="color:#ff453a">▮</b> Neigung zum Faltblatt</span><span class="muted">(Balken über der Linie = bevorzugt)</span></div><div class="row">${sc.seq.map((a, i) => `<div class="col" data-i="${i}"><div class="bar" style="position:relative"><i style="height:${Math.min(30, a.pa / 1.6 * 30)}px;background:#4cd964"></i><i style="height:${Math.min(30, a.pb / 1.6 * 30)}px;background:#ff453a"></i><span style="position:absolute;left:0;right:0;bottom:${1.0 / 1.6 * 30}px;border-top:1px dashed rgba(255,255,255,.45)"></span></div><div class="lbl" style="${sc.sel === i ? 'color:#fff;font-weight:700' : ''}">${a.c}</div></div>`).join('')}</div>` : '';
+  bars.innerHTML = n ? `<div style="display:flex;justify-content:space-between;margin-bottom:3px">${isGK() ? '<span><b style="color:#4cd964">▮</b> passt zur α-Helix</span><span><b style="color:#ff453a">▮</b> passt zum β-Faltblatt</span><span class="muted">(Balken über der Linie = passt gut)</span>' : '<span><b style="color:#4cd964">▮</b> Neigung zur Helix</span><span><b style="color:#ff453a">▮</b> Neigung zum Faltblatt</span><span class="muted">(Balken über der Linie = bevorzugt)</span>'}</div><div class="row">${sc.seq.map((a, i) => `<div class="col" data-i="${i}"><div class="bar" style="position:relative"><i style="height:${Math.min(30, a.pa / 1.6 * 30)}px;background:#4cd964"></i><i style="height:${Math.min(30, a.pb / 1.6 * 30)}px;background:#ff453a"></i><span style="position:absolute;left:0;right:0;bottom:${1.0 / 1.6 * 30}px;border-top:1px dashed rgba(255,255,255,.45)"></span></div><div class="lbl" style="${sc.sel === i ? 'color:#fff;font-weight:700' : ''}">${a.c}</div></div>`).join('')}</div>` : '';
   bars.querySelectorAll('.col').forEach(c => c.onclick = () => { sc.sel = sc.sel === +c.dataset.i ? -1 : +c.dataset.i; scBuild(); });
   // Info
   const info = document.getElementById('sc-info'); let h = '';
   if (n < 6) h = n ? 'Für eine erkennbare Sekundärstruktur braucht es mindestens 5–6 Aminosäuren. Füge weitere hinzu.' : 'Baue eine Kette (mindestens 6 Aminosäuren) oder wähle ein Beispiel.';
   else {
     const runs = []; { let i = 0; while (i < n) { let j = i; while (j < n && st[j] === st[i]) j++; runs.push({ t: st[i], a: i, b: j - 1 }); i = j; } }
-    const nm = { H: 'α-Helix', E: 'β-Faltblatt (Strang)', C: 'Schleife / Knäuel' }, hs = runs.filter(r => r.t === 'H').length, es = runs.filter(r => r.t === 'E').length;
+    const nm = isGK() ? { H: 'α-Helix (Spirale)', E: 'β-Faltblatt (Strang, Pfeil)', C: 'Schleife / Knäuel' } : { H: 'α-Helix', E: 'β-Faltblatt (Strang)', C: 'Schleife / Knäuel' }, hs = runs.filter(r => r.t === 'H').length, es = runs.filter(r => r.t === 'E').length;
     h = `<b>Ergebnis für deine Kette (${n} Aminosäuren):</b><br>` + runs.map(r => `<span style="color:${sCol[r.t]}">■</span> ${nm[r.t]}: Aminosäure ${r.a + 1}${r.b > r.a ? '–' + (r.b + 1) : ''} <span class="muted">(${seqText(r.a, r.b)})</span>`).join('<br>');
-    if (hs) h += `<br><br>Helix: <b>${sc.hbCount.H}</b> Wasserstoffbrücke${sc.hbCount.H === 1 ? '' : 'n'} – jede verbindet C=O der Aminosäure <i>i</i> mit N–H der Aminosäure <i>i</i>+4.`;
-    if (es > 1) h += `<br>Faltblatt: <b>${sc.hbCount.E}</b> Wasserstoffbrücken zwischen den ${es} benachbarten Strängen (antiparallel).`;
-    else if (es === 1) h += `<br>Ein einzelner Strang hat noch <b>keine</b> Partner für Wasserstoffbrücken – ein Faltblatt entsteht erst durch mehrere nebeneinander liegende Stränge.`;
-    if (!hs && !es) h += `<br><span class="muted">Hier fehlen Helix- oder Faltblatt-Bildner; die Kette bleibt ungeordnet (Knäuel). Rückgrat schematisch dargestellt.</span>`;
+    if (hs) h += isGK() ? `<br><br>α-Helix: <b>${sc.hbCount.H}</b> Wasserstoffbrücke${sc.hbCount.H === 1 ? '' : 'n'} – jede verbindet ein C=O mit einem N–H, das vier Aminosäuren weiter liegt.` : `<br><br>Helix: <b>${sc.hbCount.H}</b> Wasserstoffbrücke${sc.hbCount.H === 1 ? '' : 'n'} – jede verbindet C=O der Aminosäure <i>i</i> mit N–H der Aminosäure <i>i</i>+4.`;
+    if (es > 1) h += isGK() ? `<br>Faltblatt: <b>${sc.hbCount.E}</b> Wasserstoffbrücken zwischen den ${es} Pfeilen, die nebeneinander liegen.` : `<br>Faltblatt: <b>${sc.hbCount.E}</b> Wasserstoffbrücken zwischen den ${es} benachbarten Strängen (antiparallel).`;
+    else if (es === 1) h += isGK() ? `<br>Ein einzelner Pfeil ist noch kein Faltblatt – dafür braucht es mehrere Pfeile nebeneinander.` : `<br>Ein einzelner Strang hat noch <b>keine</b> Partner für Wasserstoffbrücken – ein Faltblatt entsteht erst durch mehrere nebeneinander liegende Stränge.`;
+    if (!hs && !es) h += `<br><span class="muted">${isGK() ? 'Hier passt keine Aminosäure zu α-Helix oder β-Faltblatt; die Kette bleibt ungeordnet (Knäuel).' : 'Hier fehlen Helix- oder Faltblatt-Bildner; die Kette bleibt ungeordnet (Knäuel). Rückgrat schematisch dargestellt.'}</span>`;
     else h += `<br><span class="muted">Schleifen sind schematisch dargestellt; die Elemente liegen zur Übersicht nebeneinander.</span>`;
   }
-  if (sc.sel >= 0 && sc.seq[sc.sel]) { const a = sc.seq[sc.sel]; h += `<br><br><b style="color:${CLS[a.cls].col}">${a.n} (${a.c})</b>, Pos. ${sc.sel + 1}: Rest ${a.rf}<br>Helix-Neigung <b>${a.pa.toFixed(2).replace('.', ',')}</b> · Faltblatt-Neigung <b>${a.pb.toFixed(2).replace('.', ',')}</b><br><span class="muted">${a.note}</span> <button class="mini" id="sc-del">Entfernen</button>`; }
+  if (sc.sel >= 0 && sc.seq[sc.sel]) { const a = sc.seq[sc.sel]; h += `<br><br><b style="color:${CLS[a.cls].col}">${a.n} (${a.c})</b>, Pos. ${sc.sel + 1}: Rest ${a.rf}<br>${isGK() ? `Passt zur α-Helix: <b>${lvl(a.pa)}</b> · passt zum β-Faltblatt: <b>${lvl(a.pb)}</b>` : `Helix-Neigung <b>${a.pa.toFixed(2).replace('.', ',')}</b> · Faltblatt-Neigung <b>${a.pb.toFixed(2).replace('.', ',')}</b>`}<br><span class="muted">${a.note}</span> <button class="mini" id="sc-del">Entfernen</button>`; }
   info.innerHTML = h; const d = document.getElementById('sc-del'); if (d) d.onclick = () => { sc.seq.splice(sc.sel, 1); sc.sel = -1; scBuild(); };
 }
+const lvl = p => p >= 1.15 ? 'gut' : p >= 0.95 ? 'mittel' : 'schlecht';
 const seqText = (a, b) => sc.seq.slice(a, b + 1).map(x => x.c).join('–');
+function scPresets() { const pre = document.getElementById('sc-pre'); pre.innerHTML = ''; SC_PRE.forEach(([nm, list], i) => { const b = document.createElement('button'); b.textContent = isGK() ? SC_PRE_GK[i] : nm; b.onclick = () => { sc.seq = list.map(c => AAby[c]); sc.sel = -1; scBuild(); }; pre.appendChild(b); }); }
 function scInit() {
   const view = document.getElementById('sc-view'), cam = new THREE.PerspectiveCamera(40, 1, 0.5, 600), scene = newScene();
   sc.view = { scene, camera: cam, el: view, orbit: new Orbit(cam, V3(0, 0, 0), 40, 0.25, 0.8), tick: null };
@@ -874,7 +1043,7 @@ function scInit() {
   AA.forEach(a => { const b = document.createElement('button'); b.className = 'aa'; b.style.setProperty('--c', CLS[a.cls].col); b.innerHTML = `<b>${a.c}</b><small>${a.o}</small>`; b.title = `${a.n} – Helix ${a.pa} / Faltblatt ${a.pb}`; b.onclick = () => { if (sc.seq.length >= 30) { flash('Höchstens 30 Aminosäuren.'); return; } sc.seq.push(a); sc.sel = -1; scBuild(); }; pal.appendChild(b); });
   document.getElementById('sc-undo').onclick = () => { sc.seq.pop(); sc.sel = -1; scBuild(); };
   document.getElementById('sc-clear').onclick = () => { sc.seq = []; sc.sel = -1; scBuild(); };
-  const pre = document.getElementById('sc-pre'); SC_PRE.forEach(([nm, list]) => { const b = document.createElement('button'); b.textContent = nm; b.onclick = () => { sc.seq = list.map(c => AAby[c]); sc.sel = -1; scBuild(); }; pre.appendChild(b); });
+  scPresets();
   document.getElementById('sc-hb').onchange = e => { sc.hb = e.target.checked; scApplyVis(); };
   document.getElementById('sc-side').onchange = e => { sc.side = e.target.checked; scApplyVis(); };
   document.getElementById('sc-rib').onchange = e => { sc.rib = e.target.checked; scApplyVis(); };
@@ -1063,18 +1232,23 @@ function makeExplorer(cfg) {
     if (ex.hl) ex.hl(ex.sel);
     cfg.listEl.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.id === ex.sel));
     const it = ex.sel ? cfg.items[ex.sel] : null;
-    cfg.infoEl.innerHTML = it ? `<b style="color:${it.col}">${it.name}</b><br>${it.html}` : cfg.idle;
+    cfg.infoEl.innerHTML = it ? `<b style="color:${it.col}">${ex.txt(it, 'name')}</b><br>${ex.txt(it, 'html')}` : ex.idleTxt();
     // Detailansicht
     if (it && it.build) {
       const d = it.build(), sc = newScene(), c = new THREE.PerspectiveCamera(40, 1, 0.5, 400); sc.add(d.g);
       const v = { scene: sc, camera: c, el: cfg.detailEl, orbit: new Orbit(c, V3(0, 0, 0), d.r * 1.9, 0.6, 1.2), tick: dt => { if (!v.touched) { v.orbit.az += dt * 0.35; v.orbit.update(); } } };
       v.orbit.min = d.r * 0.8; v.orbit.max = d.r * 6; ex.detail = v; cfg.detailEl.style.display = 'block';
-      cfg.detailLabel.textContent = it.name + ' – Detailansicht (Aminosäuren)'; showDetail(v);
-      cfg.detailInfo.innerHTML = (d.info || '') + (it.seq ? `<div class="seqline">${it.seq}</div>` : '');
+      cfg.detailLabel.textContent = ex.txt(it, 'name') + ' – Detailansicht (Aminosäuren)'; showDetail(v);
+      const gi = isGK() && it.gk && it.gk.dinfo, di = gi ? (typeof gi === 'function' ? gi(d) : gi) : (d.info || '');
+      cfg.detailInfo.innerHTML = di + (it.seq ? `<div class="seqline">${it.seq}</div>` : '');
     } else { cfg.detailInfo.innerHTML = ''; cfg.detailEl.style.display = 'none'; if (ex.detail) { showDetail(null); stage.detail = null; ex.detail = null; cfg.detailEl.querySelectorAll('canvas').forEach(c => c.remove()); } }
   };
-  Object.entries(cfg.items).forEach(([id, it]) => { const b = document.createElement('button'); b.dataset.id = id; b.innerHTML = `<i style="background:${it.col}"></i>${it.name}`; b.onclick = () => ex.select(id); cfg.listEl.appendChild(b); });
-  cfg.infoEl.innerHTML = cfg.idle;
+  ex.txt = (it, k) => (isGK() && it.gk && it.gk[k] != null) ? it.gk[k] : it[k];
+  ex.idleTxt = () => (isGK() && cfg.idleGK) ? cfg.idleGK : cfg.idle;
+  ex.relist = () => { cfg.listEl.innerHTML = ''; Object.entries(cfg.items).forEach(([id, it]) => { const b = document.createElement('button'); b.dataset.id = id; b.innerHTML = `<i style="background:${it.col}"></i>${ex.txt(it, 'name')}`; b.onclick = () => ex.select(id); if (id === ex.sel) b.classList.add('on'); cfg.listEl.appendChild(b); }); };
+  ex.refresh = () => { const s0 = ex.sel; ex.sel = null; ex.relist(); ex.select(s0); };
+  ex.relist();
+  cfg.infoEl.innerHTML = ex.idleTxt();
   { const x = document.createElement('button'); x.className = 'dx'; x.textContent = '✕'; x.title = 'Detailansicht schließen'; x.onclick = () => ex.select(ex.sel); cfg.detailEl.appendChild(x); }
   return ex;
 }
@@ -1106,6 +1280,7 @@ function teBuild() {
   const M = teModel(), ex = makeExplorer({
     viewEl: document.getElementById('te-view'), listEl: document.getElementById('te-list'), infoEl: document.getElementById('te-info'), detailEl: document.getElementById('te-detail'), detailLabel: document.getElementById('te-dl'), detailInfo: document.getElementById('te-dinfo'), dist: 56,
     idle: 'Tippe im Modell auf ein Element (Helix, Faltblatt, Schleife, Verbrückung …) oder wähle es hier aus. Dann erscheint ein Ausschnitt mit den beteiligten Aminosäuren.',
+    idleGK: 'Tippe im Modell auf einen Teil (Spirale, Pfeile, Schleife, Verbindung …) oder wähle ihn aus der Liste. Dann siehst du einen Ausschnitt mit den Aminosäuren.',
     items: {}
   });
   const { P, T, idx } = M, g = new THREE.Group(); ex.scene.add(g);
@@ -1139,7 +1314,17 @@ function teBuild() {
     hb: { name: 'H-Brücke zwischen Resten', col: '#4dd0e1', seq: hb ? `${rn(hb.a)} ↔ ${rn(hb.b)}` : '', build: () => detDock('Ser', 'Asp', 'hb'), html: `Polare Reste wie <b>${hb ? rn(hb.a) : 'Ser'}</b> und <b>${hb ? rn(hb.b) : 'Asp'}</b> bilden Wasserstoffbrücken über ihre –OH-, –NH- oder –COO⁻-Gruppen – hier zwischen Resten verschiedener Abschnitte (Tertiärstruktur, nicht Rückgrat).` },
     core: { name: 'Hydrophober Kern', col: '#ffa726', seq: 'z. B. Ala, Leu, Ile, Val, Phe', build: detCore, html: `Im Inneren (orange) lagern sich <b>unpolare Reste</b> zusammen, weil sie das Wasser meiden (hydrophober Effekt). Zwischen ihnen wirken <b>Van-der-Waals-Kräfte</b>. Dieser Kern ist die treibende Kraft der Faltung wasserlöslicher Proteine.` }
   };
-  ex.cfg.items = ex.items; ex.cfg.listEl.innerHTML = ''; Object.entries(ex.items).forEach(([id, it]) => { const b = document.createElement('button'); b.dataset.id = id; b.innerHTML = `<i style="background:${it.col}"></i>${it.name}`; b.onclick = () => ex.select(id); ex.cfg.listEl.appendChild(b); });
+
+  const gkI = (id, name, html, dinfo) => { ex.items[id].gk = { name, html, dinfo }; };
+  gkI('a1', 'α-Helix 1', `Eine <b>α-Helix</b> (Spirale) aus <b>12 Aminosäuren</b> (Nr. ${idx.a1[0].k + 1}–${idx.a1[11].k + 1}). Die Kette windet sich wie eine Wendeltreppe; Wasserstoffbrücken halten die Windungen zusammen. Die Reste zeigen nach außen, die unpolaren (Ala, Leu, Ile) zur Seite des Faltblatts – sie gehören zum hydrophoben Kern.`, d => `${d.hb.length} Wasserstoffbrücken (gelb gestrichelt) halten die Windungen der α-Helix zusammen.`);
+  gkI('a2', 'α-Helix 2', `Die zweite α-Helix (Nr. ${idx.a2[0].k + 1}–${idx.a2[11].k + 1}). Beide Helices liegen auf derselben Seite des Faltblatts.`, d => `${d.hb.length} Wasserstoffbrücken (gelb gestrichelt) halten die Windungen der α-Helix zusammen.`);
+  gkI('sheet', 'β-Faltblatt (4 Stränge)', `Vier <b>Stränge</b> (als Pfeile gezeichnet) liegen nebeneinander und bilden das <b>β-Faltblatt</b>. Die Pfeilspitze zeigt die Richtung der Kette (vom Anfang N zum Ende C); benachbarte Pfeile zeigen in entgegengesetzte Richtungen. Zwischen den Pfeilen halten Wasserstoffbrücken sie zusammen. Die Reste stehen abwechselnd nach oben und unten.`, d => `Zwei Stränge nebeneinander. Die gelben Linien sind ${d.hb.length} Wasserstoffbrücken zwischen den Strängen. Die Reste zeigen abwechselnd nach oben und unten.`);
+  gkI('turn', 'Schleife', `Schleifen verbinden Spiralen und Pfeile. Die <b>Haarnadel-Kurve</b> zwischen Pfeil 2 und 3 (${idx.L3.map(rn).join('–')}) kehrt die Richtung der Kette um. Pro und Gly kommen hier oft vor: Pro knickt die Kette, Gly ist sehr beweglich.`, 'Eine Schleife kehrt die Richtung der Kette um. Pro (Ringform) und Gly (ganz klein) sind hier typisch.');
+  gkI('ss', 'Disulfidbrücke', `<b>${ss ? rn(ss.a) : ''}</b> und <b>${ss ? rn(ss.b) : ''}</b> liegen in der Kette weit auseinander, im gefalteten Protein aber dicht nebeneinander. Ihre –SH-Gruppen verbinden sich zu einer festen <b>Disulfidbrücke</b> (–S–S–, eine Atombindung) – wie eine Klammer.`, 'Zwei Cystein-Reste sind durch eine Disulfidbrücke (–S–S–) verbunden (feste Atombindung, gelb). Vorher hatte jeder eine –SH-Gruppe.');
+  gkI('salt', 'Salzbrücke', `Hier stehen sich <b>${salt ? rn(salt.a) : 'Lys'}</b> (positiv geladen, –NH₃⁺) und <b>${salt ? rn(salt.b) : 'Glu'}</b> (negativ geladen, –COO⁻) gegenüber. Plus und Minus ziehen sich an – das ist die <b>Salzbrücke</b>.`, 'Die positive –NH₃⁺-Gruppe von Lys und die negative –COO⁻-Gruppe von Glu ziehen sich an.');
+  gkI('hb', 'Wasserstoffbrücke', `<b>${hb ? rn(hb.a) : 'Ser'}</b> und <b>${hb ? rn(hb.b) : 'Asp'}</b> ziehen sich über eine <b>Wasserstoffbrücke</b> an (schwache Anziehung zwischen O und H). Sie liegen in der Kette weit auseinander.`, 'Die OH-Gruppe von Ser bindet an ein Sauerstoff-Atom von Asp (gestrichelte Linie = Wasserstoffbrücke).');
+  gkI('core', 'Hydrophober Kern', `Im Inneren (orange) liegt der <b>hydrophobe Kern</b>: <b>unpolare</b> („wasserscheue“) Reste wie Leu, Ile, Val und Phe. Sie meiden Wasser und lagern sich innen zusammen – das zieht die Kette in Form. Polare Reste liegen eher außen.`, 'Unpolare Reste lagern sich im Inneren zusammen (blasse Hüllen = Platzbedarf der Reste, sie berühren sich).');
+  ex.cfg.items = ex.items; ex.relist();
   ex.view.orbit.t.set(0, 4, 0); ex.view.orbit.update();
   document.getElementById('te-leg').innerHTML = '<span><i style="background:#2fbf63"></i>α-Helix</span><span><i style="background:#e5534b"></i>β-Faltblatt</span><span><i style="background:#b7bdc9"></i>Schleife</span><span><i style="background:#ffd600"></i>S–S</span><span><i style="background:#ff80ab"></i>Salzbrücke</span><span><i style="background:#ffa726"></i>Kern</span>';
   return ex;
@@ -1179,7 +1364,7 @@ function hemeMini(reg, id) {
 }
 function quBuild() {
   const SP = { a: globinSpec(11, 7), b: globinSpec(23, 8) };
-  const ex = makeExplorer({ viewEl: document.getElementById('qu-view'), listEl: document.getElementById('qu-list'), infoEl: document.getElementById('qu-info'), detailEl: document.getElementById('qu-detail'), detailLabel: document.getElementById('qu-dl'), detailInfo: document.getElementById('qu-dinfo'), dist: 66, idle: 'Tippe im Modell auf eine Untereinheit, die Häm-Gruppe oder eine Kontaktfläche – oder wähle sie hier aus.', items: {} });
+  const ex = makeExplorer({ viewEl: document.getElementById('qu-view'), listEl: document.getElementById('qu-list'), infoEl: document.getElementById('qu-info'), detailEl: document.getElementById('qu-detail'), detailLabel: document.getElementById('qu-dl'), detailInfo: document.getElementById('qu-dinfo'), dist: 66, idleGK: 'Tippe auf eine Kette, den roten Ring (Häm) oder eine Farbscheibe (Kontaktfläche) – oder wähle sie aus der Liste.', idle: 'Tippe im Modell auf eine Untereinheit, die Häm-Gruppe oder eine Kontaktfläche – oder wähle sie hier aus.', items: {} });
   const root = new THREE.Group(); ex.scene.add(root);
   const col = { a1: [0x4fc3f7, 0x1e88e5], b1: [0xffb74d, 0xf57c00], a2: [0x7986cb, 0x3949ab], b2: [0xff8a80, 0xe53935] };
   const place = { a1: [-12.5, -12.5, 0, 'a'], b1: [12.5, -12.5, 0, 'b'], a2: [12.5, 12.5, Math.PI, 'a'], b2: [-12.5, 12.5, Math.PI, 'b'] };
@@ -1198,7 +1383,13 @@ function quBuild() {
     if11: { name: 'Kontaktfläche α₁β₁', col: '#69f0ae', seq: '', build: detInterface, html: 'Die Kontaktfläche zwischen <b>α₁ und β₁</b> (grün) ist groß und fest: viele <b>hydrophobe Kontakte</b> halten dieses Paar (Dimer) zusammen. Bei der O₂-Bindung verschiebt sie sich kaum.' },
     if12: { name: 'Kontaktfläche α₁β₂', col: '#ea80fc', seq: '', build: detInterface, html: 'An der Kontaktfläche <b>α₁β₂</b> (violett) gleiten die Untereinheiten bei der O₂-Aufnahme gegeneinander. Dabei werden <b>Salzbrücken</b> gelöst; die übrigen Häm-Gruppen binden dann leichter O₂ – <b>Kooperativität</b>: Die Untereinheiten beeinflussen sich gegenseitig (nur durch die Quartärstruktur möglich).' }
   };
-  ex.cfg.items = ex.items; ex.cfg.listEl.innerHTML = ''; Object.entries(ex.items).forEach(([id, it]) => { const b = document.createElement('button'); b.dataset.id = id; b.innerHTML = `<i style="background:${it.col}"></i>${it.name}`; b.onclick = () => ex.select(id); ex.cfg.listEl.appendChild(b); });
+  const gkI = (id, html, dinfo) => { ex.items[id].gk = { html, dinfo }; };
+  const subGK = (nm, n, nh, letters) => `Eine eigene Kette aus <b>${n} Aminosäuren</b> mit <b>${nh} α-Helices</b> (A–${letters}). Jede Kette ist für sich schon gefaltet (Tertiärstruktur). Erst das Zusammenlagern aller vier Ketten ist die <b>Quartärstruktur</b>.`;
+  [['a1', 141, 7, 'G'], ['b1', 146, 8, 'H'], ['a2', 141, 7, 'G'], ['b2', 146, 8, 'H']].forEach(([id, n, nh, L]) => gkI(id, subGK('', n, nh, L), `Die Helices (Buchstaben A–${L}) umschließen das <b>Häm</b> (roter Ring) mit dem Eisen-Ion und gebundenem O₂.`));
+  gkI('heme', 'Jede der vier Ketten trägt ein <b>Häm</b> (roter Ring mit einem Eisen-Ion). Dort wird je ein O₂-Molekül gebunden – das ganze Hämoglobin transportiert also <b>4 O₂</b>. Das Häm ist kein Teil der Aminosäure-Kette.', 'Ein flacher Ring (Häm) hält ein Eisen-Ion (Fe²⁺, orange). Auf einer Seite bindet das O₂-Molekül (rot), auf der anderen hält ein Histidin der Kette das Eisen fest. Pro Kette ein Häm, im ganzen Molekül also 4 O₂.');
+  gkI('if11', 'Hier berühren sich zwei Ketten (<b>α₁ und β₁</b>, grüne Scheibe). Viele <b>hydrophobe Kontakte</b> halten sie fest zusammen. Beim Aufnehmen von O₂ bewegt sich diese Stelle kaum.', 'Zwei α-Helices aus verschiedenen Ketten (blau und orange) an der Kontaktfläche. Sie halten durch hydrophobe Kontakte (graue Linien) sowie Wasserstoff- und Salzbrücken (gelb) zusammen.');
+  gkI('if12', 'Zwischen <b>α₁ und β₂</b> (violette Scheibe) können die Ketten beim Aufnehmen von O₂ gegeneinander gleiten. Dadurch binden die anderen Häm-Gruppen leichter O₂: Die vier Ketten „sprechen miteinander“ (Kooperativität). Das geht nur dank der Quartärstruktur.', 'Zwei α-Helices aus verschiedenen Ketten (blau und orange) an der Kontaktfläche. Sie halten durch hydrophobe Kontakte (graue Linien) sowie Wasserstoff- und Salzbrücken (gelb) zusammen.');
+  ex.cfg.items = ex.items; ex.relist();
   document.getElementById('qu-leg').innerHTML = '<span><i style="background:#4fc3f7"></i>α-Ketten</span><span><i style="background:#ffb74d"></i>β-Ketten</span><span><i style="background:#c62828"></i>Häm</span><span><i style="background:#69f0ae"></i>Kontaktfläche α₁β₁</span><span><i style="background:#ea80fc"></i>Kontaktfläche α₁β₂</span>';
   ex.view.orbit.t.set(0, 0, 0); ex.view.orbit.r = 118; ex.view.orbit.update();
   return ex;
@@ -1217,6 +1408,16 @@ document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.id === 't' + b.dataset.t));
   const h = tabHooks[b.dataset.t]; if (h) h();
 });
+function setMode(m) {
+  MODE.m = m; document.body.dataset.mode = m; try { localStorage.setItem('prot-mode', m); } catch (e) {}
+  document.querySelectorAll('#mode button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+  lwRender();
+  if (sc.view) { scPresets(); scUI(); }
+  if (te) te.refresh();
+  if (qu) qu.refresh();
+}
+document.querySelectorAll('#mode button').forEach(b => b.onclick = () => setMode(b.dataset.m));
+document.querySelectorAll('#mode button').forEach(b => b.classList.toggle('on', b.dataset.m === MODE.m));
 lwInit();
 
 </script>
