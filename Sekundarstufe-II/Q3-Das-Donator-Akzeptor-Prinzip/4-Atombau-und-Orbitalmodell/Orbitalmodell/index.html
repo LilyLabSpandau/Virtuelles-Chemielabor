@@ -340,7 +340,8 @@ function wl2rgb(w) {
   f = w < 420 ? 0.3 + 0.7 * (w - 380) / 40 : w > 700 ? 0.3 + 0.7 * (780 - w) / 80 : 1;
   return [Math.round(255 * Math.pow(r * f, 0.8)), Math.round(255 * Math.pow(g * f, 0.8)), Math.round(255 * Math.pow(b * f, 0.8))];
 }
-function jump(n1, n2) { var lam = 1e9 / (1.0968e7 * (1 / (n2 * n2) - 1 / (n1 * n1))); EN.from = n1; EN.to = n2; EN.t = 0; EN.lam = lam; EN.col = lam < 380 ? [170, 150, 220] : wl2rgb(lam); EN.doneJ[n1 + '-' + n2] = true; S.en.done = EN.doneJ; var l = $('jinfo'); if (l) l.innerHTML = 'Sprung <b>n = ' + n1 + ' → ' + n2 + '</b>: ' + (lam < 380 ? 'UV-Licht (nicht sichtbar), λ ≈ ' + Math.round(lam) + ' nm' : 'sichtbares Licht, λ ≈ ' + Math.round(lam) + ' nm <i class="sw" style="background:rgb(' + EN.col.join(',') + ')"></i>'); setTimeout(taskTick, 1500); }
+function jump(n1, n2) { var lam = 1e9 / (1.0968e7 * (1 / (n2 * n2) - 1 / (n1 * n1))); EN.from = n1; EN.to = n2; EN.t = 0; EN.lam = lam; EN.col = lam < 380 ? [170, 150, 220] : wl2rgb(lam); EN.doneJ[n1 + '-' + n2] = true; S.en.done = EN.doneJ; var l = $('jinfo'); if (l) l.innerHTML = 'Sprung <b>n = ' + n1 + ' → ' + n2 + '</b>: ' + (lam < 380 ? 'UV-Licht (nicht sichtbar), λ ≈ ' + Math.round(lam) + ' nm' : 'sichtbares Licht, λ ≈ ' + Math.round(lam) + ' nm <i class="sw" style="background:rgb(' + EN.col.join(',') + ')"></i>'); energyTick(); }
+function energyTick() { var nj = Object.keys(EN.doneJ).length, tp = $('tprog'); if (S.step === 4 && tp) tp.textContent = Math.min(nj, 3) + ' / 3 Sprünge'; if (S.step === 4 && nj >= 3 && !S.fx.enq) { S.fx.enq = 1; panel(); } }
 function drawEnergy(dt) {
   var c = $('en'); if (!c || S.step !== 4) return; var w = c.clientWidth || 600, h = 360, dpr = window.devicePixelRatio || 1;
   if (c.width !== Math.round(w * dpr)) { c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); }
