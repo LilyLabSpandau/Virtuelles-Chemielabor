@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Aminosäuren – Aufbau, Eigenschaften, Zwitterion</title>
+<style>
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; height: 100%; }
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #12161d; color: #e8edf5; display: flex; flex-direction: column; overflow: hidden; }
+header { flex: none; display: flex; align-items: center; gap: 12px; padding: 8px 14px; background: #0d1117; border-bottom: 1px solid #263041; flex-wrap: wrap; }
+header h1 { font-size: 17px; margin: 0; color: #64b5f6; white-space: nowrap; }
+header a.back { color: #90a4be; font-size: 12.5px; text-decoration: none; margin-left: auto; }
+nav { display: flex; gap: 6px; flex-wrap: wrap; }
+nav button { border: 1px solid #2f3b50; background: #1a212c; color: #c5d0e0; padding: 7px 12px; border-radius: 9px; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+nav button.on { background: #2f5fd0; border-color: #4d7df0; color: #fff; }
+nav button small { opacity: .7; font-weight: 500; }
+#mode { display: flex; border: 1px solid #2f3b50; border-radius: 9px; overflow: hidden; }
+#mode button { border: 0; background: #1a212c; color: #c5d0e0; padding: 7px 12px; font-size: 13px; font-weight: 600; cursor: pointer; }
+#mode button.on { background: #7b3fe4; color: #fff; }
+body[data-mode=gk] .lk, body[data-mode=lk] .gk { display: none !important; }
+main { flex: 1; min-height: 0; position: relative; }
+.tab { display: none; position: absolute; inset: 0; grid-template-columns: minmax(0, 1fr) 420px; }
+.tab.on { display: grid; }
+.view { position: relative; min-width: 0; min-height: 0; overflow: hidden; background: radial-gradient(ellipse at 50% 40%, #1d2735, #10141b 75%); }
+.view .stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 52px 10px 74px; }
+.view .stage svg { width: min(100%, 700px); height: auto; max-height: 100%; }
+.view.lab { background: #0d1117; }
+.view.lab .stage { padding: 0; }
+.view.lab .stage svg { width: 100%; height: 100%; }
+.ov { position: absolute; z-index: 3; }
+.hud { background: rgba(13,17,23,.86); border: 1px solid #2a3547; border-radius: 10px; padding: 6px 10px; font-size: 12.5px; }
+.side { overflow-y: auto; padding: 12px 14px 60px; background: #161b24; border-left: 1px solid #263041; font-size: 13.5px; line-height: 1.5; }
+.side h2 { font-size: 15px; margin: 4px 0 8px; color: #ffd54f; }
+.side h3 { font-size: 13px; margin: 14px 0 6px; color: #90caf9; text-transform: uppercase; letter-spacing: .04em; }
+.muted { color: #8d9bb0; }
+.expl { background: #1c2430; border: 1px solid #2a3547; border-radius: 10px; padding: 8px 12px; margin: 8px 0; }
+.expl summary { cursor: pointer; font-weight: 700; color: #ffd54f; }
+.expl p { margin: 7px 0; }
+.expl ul, .expl ol { margin: 6px 0; padding-left: 20px; }
+.expl li { margin: 3px 0; }
+.gloss dt { font-weight: 700; color: #90caf9; margin-top: 7px; }
+.gloss dd { margin: 2px 0 0 0; }
+.task { background: #1d2a22; border: 1px solid #355a45; }
+.task summary { color: #8fe0b0; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 12px; margin: 6px 0; }
+.legend i, .dot { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+button.aa { --c: #888; border: 0; border-radius: 9px; background: var(--c); color: #10151c; padding: 5px 4px; cursor: pointer; display: flex; flex-direction: column; align-items: center; line-height: 1.1; min-width: 0; }
+button.aa b { font-size: 13.5px; } button.aa small { font-size: 10.5px; opacity: .75; }
+button.aa.on { outline: 3px solid #fff; transform: scale(1.04); }
+button.aa:active { transform: scale(.94); }
+.pal { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin: 6px 0; }
+.btns { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+button.mini, .btns button { border: 1px solid #38465e; background: #232d3c; color: #dbe4f2; border-radius: 8px; padding: 7px 11px; font-size: 12.5px; cursor: pointer; }
+button.mini:active, .btns button:active { background: #2f3c52; }
+.btns button.on { background: #2f5fd0; border-color: #4d7df0; color: #fff; }
+.btns button.del { border-color: #7a3a3a; color: #ffb4ab; }
+.btns button.go { background: #2a6a3f; border-color: #3f9a5b; color: #fff; }
+label.chk { display: inline-flex; align-items: center; gap: 6px; margin: 3px 12px 3px 0; font-size: 12.5px; cursor: pointer; }
+.box { background: #1c2430; border: 1px solid #2a3547; border-radius: 10px; padding: 8px 12px; margin: 8px 0; }
+.box.hi { border-color: #64b5f6; }
+.box:empty { display: none; }
+select, input[type=range] { font: inherit; }
+select { background: #232d3c; color: #e8edf5; border: 1px solid #38465e; border-radius: 8px; padding: 6px 8px; font-size: 13px; }
+table.res { border-collapse: collapse; width: 100%; font-size: 12.5px; margin: 6px 0; }
+table.res th, table.res td { border-bottom: 1px solid #2a3547; padding: 4px 6px; text-align: left; }
+table.res th { color: #90caf9; font-weight: 700; }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 999px; color: #10151c; font-weight: 700; font-size: 12px; }
+.grp { margin: 8px 0 2px; font-weight: 700; font-size: 12.5px; }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.chips button { border: 0; border-radius: 8px; padding: 5px 9px; font-weight: 700; font-size: 12.5px; cursor: pointer; color: #10151c; }
+.chips button.on { outline: 3px solid #fff; }
+.sw { display: inline-flex; align-items: center; gap: 6px; }
+#toast { position: fixed; left: 50%; bottom: 70px; transform: translateX(-50%); background: #2f3c52; color: #fff; padding: 8px 14px; border-radius: 10px; font-size: 13px; opacity: 0; transition: opacity .25s; pointer-events: none; z-index: 20; }
+#toast.on { opacity: 1; }
+/* Lewis-Anzeige */
+.lwbar { position: absolute; left: 0; right: 0; bottom: 0; background: rgba(13,17,23,.94); border-top: 1px solid #263041; padding: 8px 14px; z-index: 4; }
+.lwbar .t1 { font-size: 20px; font-weight: 800; }
+.lwbar .t2 { font-size: 13px; color: #b6c3d6; margin-top: 2px; }
+.cap { position: absolute; left: 12px; top: 10px; z-index: 3; display: flex; gap: 8px; flex-wrap: wrap; max-width: calc(100% - 24px); }
+.cap .hud b { color: #fff; }
+.gchips { display: flex; flex-wrap: wrap; gap: 6px; }
+.gchips button { border: 1px solid currentColor; background: rgba(13,17,23,.85); border-radius: 999px; padding: 4px 11px; font-size: 12.5px; font-weight: 700; cursor: pointer; }
+.gchips button.on { background: currentColor; }
+.gchips button.on span { color: #10151c; }
+/* pH-Regler */
+.phbar { position: absolute; left: 12px; right: 12px; bottom: 10px; z-index: 4; background: rgba(13,17,23,.92); border: 1px solid #2a3547; border-radius: 12px; padding: 8px 12px 10px; }
+.phbar .row { display: flex; align-items: center; gap: 10px; }
+.phbar input[type=range] { flex: 1; accent-color: #7b3fe4; height: 26px; }
+.phgrad { height: 12px; border-radius: 6px; margin: 4px 0 2px; background: linear-gradient(90deg, #e53935 0%, #fb8c00 17%, #fdd835 30%, #7cb342 45%, #00897b 55%, #1e88e5 70%, #5e35b1 85%, #4a148c 100%); position: relative; }
+.phtick { position: absolute; top: -3px; width: 3px; height: 18px; background: #fff; border-radius: 2px; transform: translateX(-1.5px); }
+.zone { display: flex; font-size: 11.5px; font-weight: 700; text-align: center; margin-top: 3px; }
+.zone div { padding: 3px 2px; border-radius: 4px; margin-right: 2px; color: #10151c; overflow: hidden; white-space: nowrap; }
+@media (max-width: 900px) {
+  .tab, .tab.on { grid-template-columns: 1fr; }
+  .tab.on { grid-template-rows: 56% 44%; }
+  .side { border-left: 0; border-top: 1px solid #263041; }
+  header h1 { font-size: 15px; }
+  .cap .hud { font-size: 11.5px; }
+}
+@keyframes fall { 0% { transform: translateY(-190px); opacity: 1; } 85% { opacity: 1; } 100% { transform: translateY(0); opacity: .9; } }
+@keyframes dashmove { to { stroke-dashoffset: -64; } }
+@keyframes drift { 0% { transform: translate(0, 0); } 50% { transform: translate(6px, -8px); } 100% { transform: translate(0, 0); } }
+@keyframes bubble { 0% { transform: translateY(0); opacity: .9; } 100% { transform: translateY(-70px); opacity: 0; } }
+@keyframes dropfall { 0% { transform: translateY(0); opacity: 1; } 80% { opacity: 1; } 100% { transform: translateY(var(--dy, 120px)); opacity: 0; } }
+.fall { animation: fall .85s ease-in forwards; }
+.swirl ellipse { animation: dashmove 1.1s linear infinite; }
+.drift { animation: drift 2.4s ease-in-out infinite; }
+.bub { animation: bubble 1.4s ease-out infinite; }
+.dfall { animation: dropfall .7s ease-in forwards; }
+.a4lab { width: min(100%, 700px); margin: 0 auto 4px; }
+.a4lab svg { width: 100%; border-radius: 12px; }
+.chart { width: 100%; max-width: 460px; display: block; margin: 4px 0; }
+.btn { background: #2a3547; color: #e8edf5; border: 1px solid #3a4a63; border-radius: 8px; padding: 6px 12px; font: inherit; cursor: pointer; margin-top: 6px; }
+#a4-stage { flex-direction: column; gap: 6px; }
+#a4-stage .a4lab { width: min(100%, 640px); flex: 0 0 auto; }
+#a4-stage > svg { width: auto; max-width: min(100%, 520px); height: auto; max-height: 52%; flex: 0 1 auto; }
+.spw { width: 190px; }
+@media (max-width: 900px) { .spw { width: 108px; } #a5-species { padding: 4px 6px !important; } }
+#a6-stage { gap: 14px; flex-wrap: wrap; }
+#a6-stage svg { width: auto; max-width: 56%; max-height: 88%; }
+#a6-stage svg:last-child:not(:first-child) { max-width: 34%; }
+@media (max-width: 900px) { #a6-stage { flex-direction: row; flex-wrap: nowrap; gap: 4px; padding-left: 4px; padding-right: 4px; } #a6-stage svg { max-width: 62%; max-height: 92%; } #a6-stage svg:last-child:not(:first-child) { max-width: 36%; max-height: 80%; } }
+.lanerow { display: flex; align-items: center; gap: 8px; margin: 4px 0; font-size: 13px; }
+.lanerow span { min-width: 46px; color: #8d9bb0; }
+.lanerow select { flex: 1; background: #232d3c; color: #e8edf5; border: 1px solid #38465e; border-radius: 8px; padding: 6px; font: inherit; }
+.chips button.sel { outline: 3px solid #fff; }
+.btns button:disabled { opacity: .45; cursor: default; }
+</style>
+</head>
+<body>
+<header>
+  <h1>⚗️ Aminosäuren</h1>
+  <nav id="tabs">
+    <button data-t="1" class="on">1 Aufbau</button>
+    <button data-t="2">2 Eigenschaften</button>
+    <button data-t="3">3 Löslichkeit <small>· Versuch</small></button>
+    <button data-t="4">4 Zwitterion &amp; pI</button>
+    <button data-t="5">5 pH-Wert <small>· Versuch</small></button>
+    <button data-t="6" class="lk">6 Chiralität</button>
+    <button data-t="7" class="lk">7 Elektrophorese <small>· Versuch</small></button>
+  </nav>
+  <div id="mode" title="Schwierigkeitsgrad"><button data-m="gk">Grundkurs</button><button data-m="lk">Leistungskurs</button></div>
+  <a class="back" href="../index.html">← Zurück zu Proteine</a>
+</header>
+<main>
+
+<!-- ============ 1 AUFBAU ============ -->
+<section class="tab on" id="t1">
+  <div class="view" id="a1-view">
+    <div class="cap"><div class="hud gchips" id="a1-grp"></div></div>
+    <div class="stage" id="a1-stage"></div>
+    <div class="lwbar" id="a1-bar"></div>
+  </div>
+  <div class="side">
+    <h2>Aufbau der α-Aminosäuren</h2>
+    <details class="expl gk" open>
+      <summary>Was sind Aminosäuren?</summary>
+      <p>Aminosäuren sind die <b>Bausteine der Proteine</b> (Eiweiße). Jede Aminosäure ist ein kleines Molekül mit zwei wichtigen funktionellen Gruppen:</p>
+      <ul>
+        <li>der <b>Aminogruppe –NH₂</b>: Sie ist <b>basisch</b>, kann also ein H⁺-Ion aufnehmen.</li>
+        <li>der <b>Carboxygruppe –COOH</b>: Sie ist <b>sauer</b>, kann also ein H⁺-Ion abgeben.</li>
+      </ul>
+      <p>Bei den Aminosäuren der Proteine sitzen beide Gruppen am <b>selben Kohlenstoff-Atom</b>, dem <b>α-C-Atom</b> (Cα). Es liegt direkt neben der Carboxygruppe. Man nennt sie deshalb <b>α-Aminosäuren</b>.</p>
+      <p>Das α-C-Atom trägt außerdem ein <b>H-Atom</b> und einen <b>Rest R</b> (auch Seitenkette genannt). Daraus ergibt sich die allgemeine Formel <b>H₂N–CH(R)–COOH</b>.</p>
+      <p>Nur der Rest R ist bei jeder Aminosäure anders. Er legt fest, welche Eigenschaften die Aminosäure hat (zum Beispiel sauer, basisch oder wasserabweisend – siehe Reiter 2).</p>
+      <p>Insgesamt bauen <b>20 verschiedene Aminosäuren</b> die Proteine auf (proteinogene Aminosäuren). Acht davon kann der menschliche Körper nicht selbst herstellen; sie müssen mit der Nahrung aufgenommen werden (<b>essentielle Aminosäuren</b>: Val, Leu, Ile, Met, Phe, Trp, Thr, Lys).</p>
+    </details>
+    <details class="expl gk" open>
+      <summary>So liest du die Lewis-Formel</summary>
+      <ul>
+        <li><b>Striche</b> sind Bindungen (gemeinsame Elektronenpaare), ein <b>Doppelstrich</b> ist eine Doppelbindung.</li>
+        <li>Wo kein Buchstabe steht, sitzt ein <b>C-Atom</b> (Ecken und Enden der Linien). Die H-Atome an den C-Atomen des Rests sind der Übersicht halber nicht gezeichnet; jedes C-Atom hat insgesamt vier Bindungen.</li>
+        <li>Freie Elektronenpaare sind ebenfalls nicht eingezeichnet.</li>
+        <li><b style="color:#6ea8ff">N</b> Stickstoff, <b style="color:#ff6b6b">O</b> Sauerstoff, <b style="color:#f4d03f">S</b> Schwefel, <b style="color:#aebbd0">H</b> Wasserstoff.</li>
+        <li>Tippe oben auf eine Gruppe, um sie in der Formel hervorzuheben.</li>
+      </ul>
+    </details>
+    <details class="expl lk" open>
+      <summary>Aufbau der α-Aminosäuren</summary>
+      <p><b>α-Aminosäuren</b> sind Carbonsäuren mit einer Aminogruppe am C-Atom 2 (α-Position, direkt neben der Carboxygruppe). Allgemeine Formel: <b>H₂N–C*H(R)–COOH</b>. Sie sind die Monomere der Proteine; bei der Peptidbindung reagieren die Aminogruppe der einen und die Carboxygruppe der nächsten Aminosäure unter Wasserabspaltung (Kondensation).</p>
+      <p>Der Rest R unterscheidet die <b>20 proteinogenen Aminosäuren</b>. Das α-C-Atom trägt bei allen außer Glycin (R = H) vier verschiedene Substituenten und ist deshalb ein <b>Stereozentrum</b> – siehe Reiter 6 (Chiralität). Prolin ist eine Besonderheit: Der Rest ist mit der Aminogruppe zu einem Ring verknüpft, die Aminogruppe ist damit ein <b>sekundäres Amin</b>.</p>
+      <p>Man benennt die Aminosäuren meist mit Trivialnamen (Dreibuchstabencode, z. B. Ala; Einbuchstabencode, z. B. A). Systematisch ist z. B. Alanin die 2-Aminopropansäure, Valin die 2-Amino-3-methylbutansäure.</p>
+      <p><b>Essentiell</b> sind für den Menschen Val, Leu, Ile, Met, Phe, Trp, Thr und Lys; Arg und His sind für Säuglinge und Kinder semi-essentiell.</p>
+    </details>
+    <details class="expl lk">
+      <summary>So liest du die Lewis-Formel</summary>
+      <p>Valenzstriche stellen bindende Elektronenpaare dar, Doppelstriche Doppelbindungen. Kohlenstoff-Atome sind als Ecken gezeichnet; ihre H-Atome sind – außer am α-C-Atom – weggelassen (jedes C-Atom ist vierbindig). Freie Elektronenpaare sind der Übersicht halber nicht gezeichnet. Formale Ladungen sind als ⊕ und ⊖ markiert.</p>
+    </details>
+    <details class="expl lk">
+      <summary>Begriffe erklärt</summary>
+      <dl class="gloss">
+        <dt>funktionelle Gruppe</dt><dd>Atomgruppe, die das chemische Verhalten festlegt, hier –NH₂ (Aminogruppe, Base), –COOH (Carboxygruppe, Säure).</dd>
+        <dt>α-, β-, γ-Aminosäure</dt><dd>Stellung der Aminogruppe relativ zur Carboxygruppe: am direkt benachbarten C-Atom (α), am übernächsten (β) usw. Proteine enthalten nur α-Aminosäuren.</dd>
+        <dt>proteinogen</dt><dd>„Proteine bildend“: die 20 Aminosäuren, die der genetische Code für den Aufbau der Proteine festlegt.</dd>
+        <dt>essentiell</dt><dd>Lebensnotwendig, aber vom Körper nicht selbst herstellbar; muss mit der Nahrung zugeführt werden.</dd>
+        <dt>Stereozentrum</dt><dd>Atom mit vier verschiedenen Substituenten (siehe Reiter 6).</dd>
+        <dt>Rest R / Seitenkette</dt><dd>Der variable Teil der Aminosäure am α-C-Atom.</dd>
+      </dl>
+    </details>
+    <h3>Aminosäure wählen</h3>
+    <div class="legend" id="a1-leg"></div>
+    <div class="pal" id="a1-pal"></div>
+    <div class="btns"><button id="a1-gen">Allgemeine Formel (R)</button></div>
+    <div class="box hi" id="a1-info"></div>
+    <details class="expl task gk" open>
+      <summary>Aufgaben</summary>
+      <ol>
+        <li>Wähle Glycin, Alanin und Serin. Was haben alle drei Formeln gemeinsam, und worin unterscheiden sie sich?</li>
+        <li>Markiere bei Cystein die Aminogruppe, die Carboxygruppe und den Rest. Welches Element kommt nur im Rest vor?</li>
+        <li>Suche eine Aminosäure, deren Rest einen Ring enthält.</li>
+      </ol>
+    </details>
+    <details class="expl task lk" open>
+      <summary>Aufgaben</summary>
+      <ol>
+        <li>Vergleiche Gly, Ala und Ser. Leite aus den Formeln ab, bei welcher dieser Aminosäuren das α-C-Atom kein Stereozentrum ist.</li>
+        <li>Stelle die Reaktionsgleichung für die Bildung des Dipeptids Gly–Ala auf (Lewis-Formeln).</li>
+        <li>Prolin gilt oft als „Sonderfall“. Beschreibe anhand der Formel, worin er besteht.</li>
+      </ol>
+    </details>
+  </div>
+</section>
+
+<!-- ============ 2 EIGENSCHAFTEN ============ -->
+<section class="tab" id="t2">
+  <div class="view" id="a2-view">
+    <div class="cap"><div class="hud" id="a2-cap"></div></div>
+    <div class="stage" id="a2-stage"></div>
+    <div class="lwbar" id="a2-bar"></div>
+  </div>
+  <div class="side">
+    <h2>Eigenschaften: Der Rest R entscheidet</h2>
+    <details class="expl gk" open>
+      <summary>Einteilung der Aminosäuren</summary>
+      <p>Die Eigenschaften einer Aminosäure hängen vor allem vom <b>Rest R</b> ab. Man teilt die 20 Aminosäuren deshalb in vier Gruppen ein:</p>
+      <ul>
+        <li><b style="color:#e0b84c">unpolar (hydrophob):</b> Der Rest besteht nur aus C- und H-Atomen (oder ist sehr klein, wie bei Glycin). Es gibt keine geladenen oder polaren Gruppen. Solche Reste sind <b>wasserabweisend</b> (hydrophob).</li>
+        <li><b style="color:#4dd0e1">neutral, polar:</b> Der Rest enthält polare Gruppen, zum Beispiel –OH, –SH oder –CO–NH₂. Diese können <b>Wasserstoffbrücken</b> zu Wasser bilden (<b>hydrophil</b>, „wasserliebend“), tragen aber keine Ladung.</li>
+        <li><b style="color:#ff8a65">sauer:</b> Der Rest enthält eine zweite <b>Carboxygruppe</b> (Asparaginsäure, Glutaminsäure). In neutraler Lösung gibt sie H⁺ ab und ist negativ geladen (–COO⁻).</li>
+        <li><b style="color:#7f9cf5">basisch:</b> Der Rest enthält eine <b>Aminogruppe</b> oder eine ähnliche basische Gruppe (Lysin, Arginin, Histidin). In neutraler Lösung nimmt sie H⁺ auf und ist positiv geladen (z. B. –NH₃⁺).</li>
+      </ul>
+      <p>Warum ist das wichtig? Eine Peptidkette faltet sich so, dass wasserabweisende Reste innen liegen und geladene oder polare Reste außen, wo sie Kontakt zum Wasser haben. Das legt später die Struktur des Proteins fest.</p>
+    </details>
+    <details class="expl lk" open>
+      <summary>Einteilung der Aminosäuren</summary>
+      <p>Nach der Polarität und dem Säure-Base-Verhalten des Rests R unterscheidet man vier Gruppen:</p>
+      <ul>
+        <li><b style="color:#e0b84c">unpolar (hydrophob):</b> Gly, Ala, Val, Leu, Ile, Pro, Met, Phe, Trp. Alkyl- und Arylreste (nur C–C- und C–H-Bindungen, kaum Elektronegativitätsunterschied) sowie der Thioether von Met bilden keine Wasserstoffbrücken. Sie wechselwirken nur über van-der-Waals-Kräfte. Ihre Wasserabweisung beruht auf dem <b>hydrophoben Effekt</b>.</li>
+        <li><b style="color:#4dd0e1">neutral, polar:</b> Ser, Thr, Tyr (–OH), Cys (–SH), Asn, Gln (Säureamid –CO–NH₂). Die polaren Bindungen O–H, N–H und C=O ermöglichen Wasserstoffbrücken zu Wasser. Die Reste sind bei pH 7 ungeladen. Das Säureamid ist <b>nicht basisch</b>, weil das freie Elektronenpaar des Stickstoffs mit der C=O-Gruppe mesomer wechselwirkt (wie in der Peptidbindung).</li>
+        <li><b style="color:#ff8a65">sauer:</b> Asp (pKs ≈ 3,65) und Glu (pKs ≈ 4,25) tragen eine zweite Carboxygruppe. Bei pH 7 liegen sie als Carboxylat (–COO⁻) vor, die Aminosäure hat dann eine Nettoladung von −1.</li>
+        <li><b style="color:#7f9cf5">basisch:</b> Lys (–NH₃⁺, pKs ≈ 10,5), Arg (Guanidinium-Gruppe, pKs ≈ 12,5; die Ladung ist über drei N-Atome mesomer verteilt) und His (Imidazol-Ring, pKs ≈ 6,0). Lys und Arg sind bei pH 7 positiv geladen. His liegt nahe am physiologischen pH als Gemisch aus ungeladener und protonierter Form vor – deshalb ist His als Puffer und als Protonenüberträger in Enzymen wichtig.</li>
+      </ul>
+      <p>Die Einteilung ist ein Kompromiss: Tyr hat einen aromatischen Ring (unpolar), aber auch eine OH-Gruppe (polar, pKs ≈ 10) und wird üblicherweise zu den polaren gezählt. Cys ist nur schwach polar; die S–H-Gruppe bildet kaum Wasserstoffbrücken. Gly (R = H) wird wegen des fehlenden Rests meist zu den unpolaren gezählt.</p>
+    </details>
+    <details class="expl lk">
+      <summary>Begriffe erklärt</summary>
+      <dl class="gloss">
+        <dt>polar / unpolar</dt><dd>Eine Bindung ist polar, wenn die Bindungspartner sehr unterschiedliche Elektronegativität haben (z. B. O–H, N–H). Ein Rest ist unpolar, wenn er nur aus C–C- und C–H-Bindungen besteht.</dd>
+        <dt>hydrophil / hydrophob</dt><dd>„wasserliebend“ bzw. „wasserabweisend“. Hydrophile Gruppen können mit Wasser Wasserstoffbrücken oder Ion-Dipol-Wechselwirkungen eingehen.</dd>
+        <dt>hydrophober Effekt</dt><dd>Unpolare Teilchen können mit Wasser nicht wechselwirken und stören dessen Wasserstoffbrücken-Netz; sie lagern sich daher zusammen, um die Kontaktfläche zum Wasser klein zu halten.</dd>
+        <dt>pKs-Wert</dt><dd>pH-Wert, bei dem eine Säure zur Hälfte deprotoniert vorliegt: pH = pKs → c(HA) = c(A⁻).</dd>
+        <dt>Mesomerie</dt><dd>Die tatsächliche Elektronenverteilung ist ein Mittel mehrerer Grenzformeln (z. B. im Carboxylat-Ion und in der Guanidinium-Gruppe). Das stabilisiert das Teilchen.</dd>
+      </dl>
+    </details>
+    <h3>Aminosäure wählen</h3>
+    <div id="a2-groups"></div>
+    <div class="box hi" id="a2-info"></div>
+    <details class="expl task gk" open>
+      <summary>Aufgaben</summary>
+      <ol>
+        <li>Wähle je eine Aminosäure aus allen vier Gruppen. Beschreibe, woran du in der Formel erkennst, zu welcher Gruppe sie gehört.</li>
+        <li>Welche Aminosäuren enthalten Schwefel? Gehören sie zur selben Gruppe?</li>
+        <li>Phenylalanin und Tyrosin haben fast den gleichen Rest. Welcher Unterschied führt dazu, dass sie in verschiedenen Gruppen stehen?</li>
+      </ol>
+    </details>
+    <details class="expl task lk" open>
+      <summary>Aufgaben</summary>
+      <ol>
+        <li>Begründe, warum Asparagin nicht zu den basischen Aminosäuren gehört, obwohl der Rest ein Stickstoff-Atom enthält.</li>
+        <li>Zeichne die Strukturformel von His bei pH 2 und bei pH 10 und begründe die Unterschiede mit den pKs-Werten (Reiter 4 hilft).</li>
+        <li>Vergleiche Phe und Tyr: Welche Wechselwirkungen mit Wasser sind jeweils möglich?</li>
+      </ol>
+    </details>
+  </div>
+</section>
+
+<!-- ============ 3 LÖSLICHKEIT ============ -->
+<section class="tab" id="t3">
+  <div class="view lab" id="a3-view">
+    <div class="stage" id="a3-stage"></div>
+  </div>
+  <div class="side">
+    <h2>Versuch: Löslichkeit in Wasser</h2>
+    <details class="expl" open>
+      <summary>Versuchsbeschreibung</summary>
+      <p class="gk"><b>Durchführung:</b> In ein Becherglas mit <b>50 mL Wasser</b> (25 °C) gibst du portionsweise je <b>0,5 g</b> der Aminosäure. Nach jeder Portion wird gerührt. So lange sich der Stoff vollständig löst, ist die Lösung noch nicht gesättigt. Bleibt ungelöster Feststoff am Boden, ist die Lösung <b>gesättigt</b>. Gemessen wird außerdem der <b>pH-Wert</b> der Lösung.</p>
+      <p class="lk"><b>Durchführung:</b> In ein Becherglas mit <b>50 mL Wasser</b> (25 °C, Magnetrührer) gibst du portionsweise je <b>0,5 g</b> der Aminosäure und wartest jeweils bis zur Einstellung des Lösegleichgewichts. Bleibt ein Bodenkörper zurück, ist die Lösung gesättigt. Aus der gelösten Masse ergibt sich die Löslichkeit; zusätzlich wird der pH-Wert der Lösung gemessen. Vergleiche mit den Literaturwerten ist möglich (Angaben ca. bei 25 °C).</p>
+    </details>
+    <h3>1. Aminosäure wählen</h3>
+    <div class="legend" id="a3-leg"></div>
+    <div class="pal" id="a3-pal"></div>
+    <h3>2. Versuch durchführen</h3>
+    <div class="btns">
+      <button id="a3-add" class="go">+ 0,5 g zugeben</button>
+      <button id="a3-add5">+ 2 g zugeben</button>
+      <button id="a3-stir">🌀 Rühren</button>
+      <button id="a3-new" class="del">Neuer Ansatz</button>
+    </div>
+    <div class="box hi" id="a3-status"></div>
+    <h3>Messergebnisse</h3>
+    <div id="a3-table"></div>
+    <details class="expl task gk" open>
+      <summary>Aufgaben</summary>
+      <ol>
+        <li>Teste mindestens Glycin, Leucin, Tyrosin, Lysin und Glutaminsäure. Trage ein, bei welcher Menge Feststoff zurückbleibt.</li>
+        <li>Ordne die getesteten Aminosäuren nach ihrer Löslichkeit. Vergleiche mit den Gruppen aus Reiter 2: Was fällt dir auf? Gibt es Ausnahmen?</li>
+        <li>Alle Aminosäuren haben eine Aminogruppe und eine Carboxygruppe. Warum lösen sie sich im Allgemeinen trotzdem unterschiedlich gut? Formuliere eine Vermutung.</li>
+        <li>Lies den pH-Wert der Lösungen ab. Vergleiche die Werte von Glycin, Glutaminsäure und Lysin. Was fällt dir auf?</li>
+      </ol>
+    </details>
+    <details class="expl task lk" open>
+      <summary>Aufgaben</summary>
+      <ol>
+        <li>Bestimme für Gly, Leu, Tyr, Lys, Glu und Asp die Löslichkeit in g pro 100 g Wasser und in mol/L.</li>
+        <li>Diskutiere, wie Größe und Polarität des Rests mit der Löslichkeit zusammenhängen. Warum ist Tyrosin trotz der OH-Gruppe so schlecht löslich und Prolin so gut?</li>
+        <li>Erkläre die pH-Werte der Lösungen anhand der Protonierungsgleichgewichte (Reiter 4).</li>
+      </ol>
+    </details>
+    <details class="expl">
+      <summary>Erklärung (nach dem Experimentieren öffnen)</summary>
+      <div class="gk">
+        <p>In fester Form und in Wasser liegen Aminosäuren als <b>Zwitterionen</b> vor (Reiter 4): Das Teilchen trägt eine positive (–NH₃⁺) und eine negative Ladung (–COO⁻). Deshalb ähneln Aminosäuren eher Salzen als einfachen organischen Molekülen: Sie bilden im Feststoff ein <b>Ionengitter</b>, haben hohe Schmelztemperaturen (über 200 °C, dabei Zersetzung) und lösen sich schlecht in unpolaren Lösungsmitteln.</p>
+        <p><b>Warum lösen sie sich in Wasser?</b> Wasser-Moleküle sind Dipole. Sie lagern sich mit ihrem negativen Ende (O) an die positive Gruppe und mit ihrem positiven Ende (H) an die negative Gruppe an (<b>Hydratation</b>). Die geladenen und polaren Gruppen bilden außerdem Wasserstoffbrücken zu Wasser.</p>
+        <p><b>Warum unterscheiden sich die Aminosäuren?</b> Polare und geladene Reste (Ser, Lys, Arg) verbessern die Hydratation, deshalb sind diese Aminosäuren gut löslich. Große unpolare Reste (Leu, Phe, Trp) stören die Wasserstoffbrücken des Wassers und lösen sich schlechter. Es gibt aber Ausnahmen: Auch Tyrosin und die sauren Aminosäuren lösen sich schlecht. Wie gut sich ein Feststoff löst, hängt immer auch davon ab, wie stark die Teilchen im Kristall zusammenhalten.</p>
+      </div>
+      <div class="lk">
+        <p>Aminosäuren liegen im Kristall und in Wasser als <b>Zwitterionen</b> vor. Der Feststoff ist ein Ionengitter mit starken elektrostatischen Wechselwirkungen und Wasserstoffbrücken (hohe Schmelztemperaturen > 200 °C, Zersetzung; schlechte Löslichkeit in unpolaren Lösungsmitteln, mäßige in Ethanol).</p>
+        <p>Das Lösen lässt sich als Wechselspiel von <b>Gitterenergie</b> (muss aufgebracht werden) und <b>Hydratationsenthalpie</b> (wird frei) sowie der Entropie beschreiben: Wassermoleküle lagern sich über Ion-Dipol-Wechselwirkungen an –NH₃⁺ und –COO⁻ an und bilden Wasserstoffbrücken zu polaren Gruppen.</p>
+        <p>Polare und geladene Reste erhöhen die Hydratation (Ser, Lys, Arg). Größere unpolare Reste (Leu, Ile, Phe, Trp) verschlechtern die Löslichkeit durch den <b>hydrophoben Effekt</b>. Einfache Regeln gelten nicht immer: Tyr löst sich trotz OH-Gruppe sehr schlecht, weil der Kristall besonders stabil ist (Wasserstoffbrücken über die Phenol-OH-Gruppe, Stapelung der Ringe). Asp und Glu lösen sich schlecht, weil im Kristall (Zwitterion mit –COOH im Rest) ein dichtes Netz aus Wasserstoffbrücken vorliegt. Pro löst sich besonders gut: Der Ring verhindert eine dichte, geordnete Packung im Kristall.</p>
+        <p>Die Löslichkeit ist am <b>isoelektrischen Punkt</b> am kleinsten (Reiter 5).</p>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ============ 4 ZWITTERION & pI ============ -->
+<section class="tab" id="t4">
+  <div class="view" id="a4-view">
+    <div class="cap"><div class="hud" id="a4-cap"></div></div>
+    <div class="stage" id="a4-stage"></div>
+    <div class="phbar" id="a4-ph"></div>
+  </div>
+  <div class="side">
+    <h2>Zwitterion und isoelektrischer Punkt</h2>
+    <details class="expl gk" open>
+      <summary>Das Zwitterion</summary>
+      <p>Eine Aminosäure enthält eine <b>Säure</b> (–COOH) und eine <b>Base</b> (–NH₂) im selben Molekül. Beide reagieren miteinander: Die Carboxygruppe gibt ein H⁺-Ion ab, die Aminogruppe nimmt es auf. Es entsteht ein Teilchen mit <b>zwei Ladungen</b>:</p>
+      <p style="text-align:center"><b>H₂N–CH(R)–COOH ⇌ ⁺H₃N–CH(R)–COO⁻</b></p>
+      <p>Ein solches Teilchen heißt <b>Zwitterion</b> (Zwitter = von zwei Arten). Nach außen ist es <b>ungeladen</b>, weil sich die positive und die negative Ladung ausgleichen. Die ungeladene Form H₂N–CH(R)–COOH kommt praktisch nicht vor. Das erklärt zum Beispiel die hohen Schmelztemperaturen und die gute Wasserlöslichkeit.</p>
+    </details>
+    <details class="expl gk" open>
+      <summary>Abhängigkeit vom pH-Wert</summary>
+      <p>Was ein Aminosäure-Teilchen trägt, hängt von der Lösung ab, in der es sich befindet:</p>
+      <ul>
+        <li><b>Saure Lösung (viel H⁺, niedriger pH):</b> Die Carboxygruppe nimmt ein H⁺ auf und wird zu –COOH. Das Teilchen ist insgesamt <b>positiv</b> (Kation).</li>
+        <li><b>Mittlerer pH-Bereich:</b> Zwitterion, insgesamt ungeladen.</li>
+        <li><b>Basische Lösung (viel OH⁻, hoher pH):</b> Die –NH₃⁺-Gruppe gibt ein H⁺ ab und wird zu –NH₂. Das Teilchen ist insgesamt <b>negativ</b> (Anion).</li>
+      </ul>
+      <p>Das Zwitterion kann also als <b>Säure und als Base</b> reagieren. Man nennt solche Stoffe <b>Ampholyte</b>. Deshalb können Aminosäuren in Lösung Säuren und Basen abpuffern.</p>
+    </details>
+    <details class="expl gk" open>
+      <summary>Der isoelektrische Punkt (pI)</summary>
+      <p>Der <b>isoelektrische Punkt (pI)</b> ist der pH-Wert, bei dem die Aminosäure <b>insgesamt ungeladen</b> ist, also fast nur als Zwitterion vorliegt.</p>
+      <ul>
+        <li><b>Neutrale Aminosäuren</b> (z. B. Gly, Ala, Leu): pI bei etwa <b>5,5 bis 6,5</b></li>
+        <li><b>Saure Aminosäuren</b> (Asp, Glu): pI bei etwa <b>3</b>. Sie haben eine zweite –COOH-Gruppe, das Gleichgewicht liegt deshalb im sauren Bereich.</li>
+        <li><b>Basische Aminosäuren</b> (Lys, Arg, His): pI bei etwa <b>7,5 bis 11</b>. Hier macht die zweite basische Gruppe die Lösung basisch.</li>
+      </ul>
+      <p>Am isoelektrischen Punkt ist die Löslichkeit am kleinsten. Das nutzt Reiter 5 im Versuch.</p>
+    </details>
+    <details class="expl lk" open>
+      <summary>Zwitterion, Ampholyt und Protonierungsgleichgewichte</summary>
+      <p>Aminosäuren sind <b>Ampholyte</b>: Sie enthalten eine Säure (–COOH, pKs ≈ 2) und eine Base (–NH₂, die konjugierte Säure –NH₃⁺ hat pKs ≈ 9–10). Die Carboxygruppe ist deutlich saurer als eine einfache Carbonsäure, weil die benachbarte –NH₃⁺-Gruppe die Ladung stabilisiert (−I-Effekt). In Wasser überträgt die Carboxygruppe ihr Proton auf die Aminogruppe: Es entsteht das <b>Zwitterion</b> (neutrales Molekül mit zwei Ladungen).</p>
+      <p style="text-align:center">⁺H₃N–CHR–COOH <b>⇌</b> ⁺H₃N–CHR–COO⁻ <b>⇌</b> H₂N–CHR–COO⁻<br><span class="muted">Kation (pH &lt; pK<sub>1</sub>) · Zwitterion · Anion (pH &gt; pK<sub>2</sub>)</span></p>
+      <p>Mit der Henderson-Hasselbalch-Gleichung gilt für jedes Gleichgewicht: pH = pK<sub>s</sub> + lg ( c(Base) / c(Säure) ). Bei pH = pK<sub>s</sub> liegen beide Formen zu gleichen Teilen vor. Die Form ohne Nettoladung (Zwitterion) dominiert zwischen den beiden pK<sub>s</sub>-Werten.</p>
+    </details>
+    <details class="expl lk" open>
+      <summary>Isoelektrischer Punkt: Berechnung</summary>
+      <p>Der <b>isoelektrische Punkt pI</b> ist der pH-Wert, bei dem die mittlere Nettoladung null ist (die Konzentrationen von Kation und Anion sind gleich). Er liegt in der Mitte der beiden pK<sub>s</sub>-Werte, die das ungeladene Zwitterion einschließen:</p>
+      <ul>
+        <li><b>neutrale Aminosäuren:</b> pI = ½ · (pK<sub>1</sub> + pK<sub>2</sub>), z. B. Gly: ½ · (2,34 + 9,60) ≈ 5,97</li>
+        <li><b>saure Aminosäuren:</b> pI = ½ · (pK<sub>1</sub> + pK<sub>R</sub>), z. B. Asp: ½ · (1,88 + 3,65) ≈ 2,77</li>
+        <li><b>basische Aminosäuren:</b> pI = ½ · (pK<sub>2</sub> + pK<sub>R</sub>), z. B. Lys: ½ · (8,95 + 10,53) ≈ 9,74</li>
+      </ul>
+      <p>Allgemein: Man betrachtet die Spezies, die insgesamt ungeladen ist, und mittelt die pK<sub>s</sub>-Werte der Stufen, die sie begrenzen. Am pI ist die Löslichkeit minimal (Zwitterionen ziehen sich im Kristall am stärksten an), und die Aminosäure wandert im elektrischen Feld nicht (Elektrophorese, Reiter 7).</p>
+      <p>Wichtig für die Praxis: Aminosäuren wirken in der Nähe ihrer pK<sub>s</sub>-Werte als <b>Puffer</b>; His (pK<sub>R</sub> ≈ 6) puffert im physiologischen Bereich.</p>
+    </details>
+    <details class="expl lk">
+      <summary>Begriffe erklärt</summary>
+      <dl class="gloss">
+        <dt>Ampholyt</dt><dd>Teilchen, das sowohl Protonen abgeben (Säure) als auch aufnehmen (Base) kann.</dd>
+        <dt>Zwitterion</dt><dd>Teilchen, das gleichzeitig positive und negative Ladungen trägt, nach außen aber ungeladen ist.</dd>
+        <dt>Nettoladung</dt><dd>Summe aller Ladungen eines Teilchens.</dd>
+        <dt>pKs und pK<sub>R</sub></dt><dd>pKs-Wert einer Gruppe (pK₁: α-COOH, pK₂: α-NH₃⁺, pK<sub>R</sub>: Rest). Je kleiner der Wert, desto stärker die Säure.</dd>
+        <dt>Kation / Anion</dt><dd>positiv bzw. negativ geladenes Teilchen (wandert im elektrischen Feld zur Kathode bzw. Anode).</dd>
+      </dl>
+    </details>
+    <h3>Aminosäure wählen</h3>
+    <div class="legend" id="a4-leg"></div>
+    <div class="pal" id="a4-pal"></div>
+    <div class="box hi" id="a4-info"></div>
+    <div class="lk" id="a4-charts"></div>
+    <details class="expl task gk" open>
+      <summary>Aufgaben</summary>
+      <ol>
+        <li>Stelle Glycin auf pH 1, pH 6 und pH 12 ein. Zeichne jeweils die Formel ab und gib die Gesamtladung an.</li>
+        <li>Bestimme für Glycin, Glutaminsäure und Lysin den pI. Was fällt dir auf, wenn du die Reste vergleichst?</li>
+        <li>Bei welchem pH-Wert sollte die Glutaminsäure am schlechtesten löslich sein? Begründe.</li>
+      </ol>
+    </details>
+    <details class="expl task lk" open>
+      <summary>Aufgaben</summary>
+      <ol>
+        <li>Zeichne alle Spezies von Alanin und gib für pH 1, 6 und 12 die jeweils überwiegende Form an.</li>
+        <li>Leite den pI von Histidin aus den pK<sub>s</sub>-Werten ab und begründe, welche Gruppen dafür herangezogen werden.</li>
+        <li>Berechne mit der Henderson-Hasselbalch-Gleichung das Konzentrationsverhältnis von Anion zu Zwitterion bei pH 10 für Glycin (pK₂ = 9,60).</li>
+      </ol>
+    </details>
+  </div>
+</section>
+
+<!-- ============ 5 pH-EXPERIMENT ============ -->
+<section class="tab" id="t5">
+  <div class="view lab" id="a5-view">
+    <div class="stage" id="a5-stage"></div>
+    <div class="ov hud" id="a5-species" style="right:10px;top:10px;padding:6px 8px"></div>
+  </div>
+  <div class="side">
+    <h2>Versuch: pH-Abhängigkeit</h2>
+    <details class="expl" open>
+      <summary>Versuchsbeschreibung</summary>
+      <p class="gk"><b>Durchführung:</b> In einem Becherglas befinden sich <b>50 mL Wasser</b> und <b>1,0 g</b> der gewählten Aminosäure. Mit den Tropfflaschen gibst du <b>Salzsäure</b> (HCl, 1 mol/L) oder <b>Natronlauge</b> (NaOH, 1 mol/L) zu und beobachtest: das <b>pH-Messgerät</b>, die Trübung der Lösung (ungelöster Feststoff) und die <b>Teilchen</b> in der Lösung (Lewis-Formel links oben).</p>
+      <p class="lk"><b>Durchführung:</b> 1,0 g der gewählten Aminosäure wird in 50 mL Wasser aufgeschlämmt. Aus Tropfflaschen wird Salzsäure (c = 1 mol/L) oder Natronlauge (c = 1 mol/L) zugegeben, der pH-Wert wird mit einem pH-Meter gemessen. Zu beobachten sind Löslichkeit, pH-Wert und die überwiegende Teilchenform. Aus den Messwerten entsteht die Titrationskurve (rechts unten).</p>
+    </details>
+    <h3>1. Aminosäure wählen</h3>
+    <div class="legend" id="a5-leg"></div>
+    <div class="pal" id="a5-pal"></div>
+    <h3>2. Säure oder Lauge zugeben</h3>
+    <div class="btns">
+      <button id="a5-h1" style="border-color:#e57373">+ 0,5 mL HCl</button>
+      <button id="a5-h2" style="border-color:#e57373">+ 2 mL HCl</button>
+      <button id="a5-o1" style="border-color:#64b5f6">+ 0,5 mL NaOH</button>
+      <button id="a5-o2" style="border-color:#64b5f6">+ 2 mL NaOH</button>
+      <button id="a5-new" class="del">Neuer Ansatz</button>
+    </div>
+    <div class="box hi" id="a5-status"></div>
+    <div class="lk" id="a5-curve"></div>
+    <details class="expl task gk" open>
+      <summary>Aufgaben</summary>
+      <ol>
+        <li>Wähle <b>Glutaminsäure</b>. Notiere pH-Wert und Aussehen der Lösung am Anfang. Gib dann schrittweise <b>Salzsäure</b> zu und danach in einem neuen Ansatz <b>Natronlauge</b>. Was geschieht jeweils mit dem Feststoff?</li>
+        <li>Bei welchem pH-Wert ist die Lösung am trübsten? Vergleiche mit dem pI aus Reiter 4.</li>
+        <li>Erkläre mit Hilfe der Teilchenformeln, warum sich der Feststoff in saurer und in basischer Lösung auflöst.</li>
+        <li>Wiederhole den Versuch mit Tyrosin und mit Glycin. Welche Unterschiede beobachtest du?</li>
+      </ol>
+    </details>
+    <details class="expl task lk" open>
+      <summary>Aufgaben</summary>
+      <ol>
+        <li>Nimm für Glutaminsäure eine Titrationskurve (pH gegen zugegebenes Volumen) mit NaOH auf (HCl vorher bis ca. pH 1 zugeben).</li>
+        <li>Bestimme aus der Kurve die Pufferbereiche und vergleiche mit den pK<sub>s</sub>-Werten und mit dem pI.</li>
+        <li>Erkläre den Löslichkeitsverlauf. Wie hängt die Gesamtlöslichkeit mit dem Anteil des Zwitterions zusammen?</li>
+        <li>Warum steigt der pH-Wert beim Zutropfen von NaOH zu einer Glycin-Lösung um pH 9,6 nur langsam?</li>
+      </ol>
+    </details>
+    <details class="expl">
+      <summary>Erklärung (nach dem Experimentieren öffnen)</summary>
+      <div class="gk">
+        <p>Eine schlecht lösliche Aminosäure wie die Glutaminsäure liegt am <b>isoelektrischen Punkt</b> überwiegend als Zwitterion vor. Zwitterionen sind nach außen ungeladen und ziehen sich im Kristall gegenseitig stark an. Es löst sich nur wenig.</p>
+        <p>Gibst du <b>Säure</b> (H⁺) zu, werden die –COO⁻-Gruppen zu –COOH protoniert. Das Teilchen wird zum <b>Kation</b>. Gibst du <b>Lauge</b> (OH⁻) zu, geben die –NH₃⁺-Gruppen H⁺ ab. Das Teilchen wird zum <b>Anion</b>. Kationen und Anionen sind geladen und werden von Wasser-Molekülen gut hydratisiert. Außerdem stoßen sich gleich geladene Teilchen ab und können deshalb keinen stabilen Kristall bilden. Der Feststoff löst sich auf.</p>
+        <p>Löslichkeit hängt also vom <b>pH-Wert</b> ab. Am pI ist sie am kleinsten.</p>
+      </div>
+      <div class="lk">
+        <p>Im Gleichgewicht mit dem Bodenkörper liegt die Konzentration des ungeladenen Zwitterions konstant bei S₀ (Löslichkeit des Zwitterions). Die Gesamtlöslichkeit ergibt sich aus der Summe aller Spezies: S(pH) = S₀ / α<sub>0</sub>(pH), wobei α<sub>0</sub> der Anteil der Spezies ohne Nettoladung ist. Am pI ist α<sub>0</sub> maximal, die Löslichkeit also minimal. Bei Zugabe von H⁺ oder OH⁻ entstehen die gut hydratisierten, geladenen Spezies (Kation bzw. Anion), die sich im Gitter abstoßen würden; die Gesamtlöslichkeit steigt stark.</p>
+        <p>Der Verlauf der pH-Kurve entspricht der Titration einer mehrprotonigen Säure: In der Nähe der pK<sub>s</sub>-Werte gibt es Pufferbereiche (flache Abschnitte), bei den Äquivalenzpunkten steile Anstiege. Das Modell rechnet die Teilchenverteilung mit den pK<sub>s</sub>-Werten und löst für jeden Zustand die Ladungsbilanz c(H⁺) + c(Na⁺) = c(OH⁻) + c(Cl⁻) − c(Aminosäure) · z̄ nach dem pH-Wert auf (z̄: mittlere Ladung der gelösten Aminosäure).</p>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ============ 6 CHIRALITÄT (LK) ============ -->
+<section class="tab" id="t6">
+  <div class="view" id="a6-view">
+    <div class="cap"><div class="hud" id="a6-cap"></div></div>
+    <div class="stage" id="a6-stage"></div>
+    <div class="lwbar" id="a6-bar"></div>
+  </div>
+  <div class="side">
+    <h2>Chiralität: Spiegelbildisomerie</h2>
+    <details class="expl" open>
+      <summary>Warum sind Aminosäuren chiral?</summary>
+      <p>Das α-C-Atom trägt <b>vier verschiedene Substituenten</b>: –NH₂, –COOH, –H und den Rest R. Ein solches Atom heißt <b>Stereozentrum</b> (Chiralitätszentrum, in der Formel oft mit * gekennzeichnet). Das Molekül lässt sich nicht mit seinem Spiegelbild zur Deckung bringen, so wie die linke Hand nicht mit der rechten. Beide Formen sind <b>Spiegelbildisomere (Enantiomere)</b>.</p>
+      <p><b>Ausnahme Glycin:</b> Der Rest ist ein H-Atom, am α-C-Atom sitzen also zwei gleiche Substituenten. Glycin ist <b>achiral</b>.</p>
+      <p>In der <b>Keil-Strich-Schreibweise</b> werden Bindungen, die aus der Zeichenebene auf den Betrachter zeigen, als ausgefüllter Keil (<b>▶</b>) gezeichnet, Bindungen, die nach hinten zeigen, als gestrichelter Keil.</p>
+    </details>
+    <details class="expl" open>
+      <summary>Fischer-Projektion, D- und L-Form</summary>
+      <p>In der <b>Fischer-Projektion</b> steht die Kohlenstoffkette senkrecht, das am stärksten oxidierte C-Atom (–COOH) oben, der Rest R unten. Die senkrechten Bindungen weisen von dir weg, die waagerechten auf dich zu. Steht die Aminogruppe <b>links</b>, nennt man die Aminosäure <b>L-Form</b> (lat. laevus, links), steht sie <b>rechts</b>, <b>D-Form</b> (dexter, rechts). Die Bezeichnung geht auf den Vergleich mit L- und D-Glycerinaldehyd zurück.</p>
+      <p>In den Proteinen aller Lebewesen kommen (nahezu) nur <b>L-Aminosäuren</b> vor. D-Aminosäuren finden sich z. B. in der Zellwand von Bakterien (Peptidoglycan) und in einigen Antibiotika.</p>
+    </details>
+    <details class="expl" open>
+      <summary>R/S-Nomenklatur (CIP-Regeln)</summary>
+      <p>Die <b>absolute Konfiguration</b> wird mit den Cahn-Ingold-Prelog-Regeln als <b>R</b> oder <b>S</b> angegeben:</p>
+      <ol>
+        <li>Die vier Substituenten werden nach der <b>Ordnungszahl</b> des direkt gebundenen Atoms gereiht (hohe Zahl = hohe Priorität). Bei Gleichheit entscheidet die nächste Atomschicht.</li>
+        <li>Man blickt so auf das Stereozentrum, dass der Substituent mit der <b>niedrigsten Priorität (H)</b> <b>nach hinten</b> zeigt.</li>
+        <li>Verläuft die Reihenfolge 1 → 2 → 3 <b>im Uhrzeigersinn</b>, ist die Konfiguration <b>R</b> (rectus), <b>gegen den Uhrzeigersinn S</b> (sinister).</li>
+      </ol>
+      <p>Bei den meisten Aminosäuren gilt die Reihenfolge –NH₂ &gt; –COOH &gt; –R &gt; –H. Die L-Aminosäuren haben deshalb meist die Konfiguration <b>S</b>. <b>Ausnahme Cystein:</b> Der Rest –CH₂–SH enthält Schwefel (Z = 16) und hat dadurch eine höhere Priorität als –COOH; L-Cystein ist deshalb (R)-konfiguriert, obwohl es räumlich zu den anderen L-Aminosäuren passt. Isoleucin und Threonin haben zwei Stereozentren (vier Stereoisomere).</p>
+    </details>
+    <details class="expl">
+      <summary>Eigenschaften der Enantiomere</summary>
+      <p>Enantiomere haben die <b>gleichen physikalischen und chemischen Eigenschaften</b> (Schmelztemperatur, Löslichkeit, pKs-Werte) – außer gegenüber <b>chiralen Umgebungen</b>. Sie drehen die Schwingungsebene von linear polarisiertem Licht gleich stark, aber in entgegengesetzte Richtung (<b>optische Aktivität</b>). Ein 1:1-Gemisch beider Enantiomere (<b>Racemat</b>) ist optisch inaktiv. Die Bezeichnung L/D sagt nichts über die Drehrichtung (+/−) aus.</p>
+      <p>In biologischen Systemen wirken die Enantiomere verschieden: Enzyme und Rezeptoren sind selbst aus L-Aminosäuren aufgebaut und „passen“ nur zu einer Form. Beispiel: D-Aminosäuren schmecken oft süß, die entsprechenden L-Formen eher bitter oder neutral.</p>
+      <p>Bei der Synthese im Labor (z. B. Strecker-Synthese) entsteht ohne chirale Hilfsmittel stets ein <b>Racemat</b>.</p>
+    </details>
+    <details class="expl">
+      <summary>Begriffe erklärt</summary>
+      <dl class="gloss">
+        <dt>chiral / achiral</dt><dd>Ein Teilchen ist chiral, wenn es sich nicht mit seinem Spiegelbild zur Deckung bringen lässt (griech. cheir = Hand).</dd>
+        <dt>Enantiomere</dt><dd>Zwei Stereoisomere, die sich wie Bild und Spiegelbild verhalten.</dd>
+        <dt>Diastereomere</dt><dd>Stereoisomere, die keine Spiegelbilder voneinander sind (z. B. L-Isoleucin und L-Allo-Isoleucin).</dd>
+        <dt>Konfiguration</dt><dd>Räumliche Anordnung der Substituenten am Stereozentrum.</dd>
+        <dt>Racemat</dt><dd>Gemisch gleicher Stoffmengen beider Enantiomere.</dd>
+      </dl>
+    </details>
+    <h3>Aminosäure wählen</h3>
+    <div class="legend" id="a6-leg"></div>
+    <div class="pal" id="a6-pal"></div>
+    <div class="btns"><button id="a6-flip">⇄ Spiegelbild (D ↔ L)</button></div>
+    <div class="box hi" id="a6-info"></div>
+    <details class="expl task" open>
+      <summary>Aufgaben</summary>
+      <ol>
+        <li>Wähle Alanin und bestimme die Prioritäten der vier Substituenten. Ordne die Konfiguration von L-Alanin zu (R oder S).</li>
+        <li>Begründe, warum für L-Cystein der Buchstabe R angegeben wird, obwohl es räumlich wie L-Alanin gebaut ist.</li>
+        <li>Zeichne die Fischer-Projektion von D-Serin und gib die Konfiguration an.</li>
+      </ol>
+    </details>
+  </div>
+</section>
+
+<!-- ============ 7 ELEKTROPHORESE (LK) ============ -->
+<section class="tab" id="t7">
+  <div class="view lab" id="a7-view">
+    <div class="stage" id="a7-stage"></div>
+  </div>
+  <div class="side">
+    <h2>Versuch: Elektrophorese von Aminosäuren</h2>
+    <details class="expl" open>
+      <summary>Prinzip</summary>
+      <p>Bei der <b>Elektrophorese</b> wandern geladene Teilchen im <b>elektrischen Feld</b>: <b>Kationen</b> zur <b>Kathode (−)</b>, <b>Anionen</b> zur <b>Anode (+)</b>. Ungeladene Teilchen wandern nicht. Welche Ladung eine Aminosäure trägt, hängt vom <b>pH-Wert</b> des Puffers ab (Reiter 4): Bei pH &lt; pI ist sie positiv, bei pH &gt; pI negativ, bei pH = pI ungeladen. Die Wanderungsgeschwindigkeit hängt von der <b>Nettoladung</b> (je größer, desto schneller) und von der <b>Größe</b> des Teilchens (je größer, desto langsamer) ab.</p>
+      <p>Eine <b>Pufferlösung</b> hält den pH-Wert konstant. Das ist nötig, weil an den Elektroden Wasser elektrolysiert wird (Kathode: 2 H₂O + 2 e⁻ → H₂ + 2 OH⁻; Anode: 2 H₂O → O₂ + 4 H⁺ + 4 e⁻) und sich der pH-Wert sonst ändern würde.</p>
+      <p>Die Aminosäuren sind farblos. Erst mit <b>Ninhydrin</b> entstehen farbige Produkte: die meisten Aminosäuren ergeben <b>blauviolette</b> Flecken (Ruhemanns Violett), Prolin einen <b>gelben</b>.</p>
+    </details>
+    <details class="expl">
+      <summary>Durchführung (virtuell)</summary>
+      <ol>
+        <li>Wähle einen <b>Puffer</b> (pH-Wert).</li>
+        <li>Wähle für jede Spur eine <b>Referenz-Aminosäure</b>. Die letzte Spur („?“) enthält ein <b>unbekanntes Gemisch</b> aus zwei Aminosäuren.</li>
+        <li>Gib <b>Spannung</b> (Gleichstrom) für die gewählte Laufzeit und <b>entwickle</b> mit Ninhydrin.</li>
+        <li>Vergleiche die Laufstrecken der Flecken der unbekannten Probe mit denen der Referenzen. Wiederhole mit einem anderen pH-Wert.</li>
+      </ol>
+      <p class="muted">Das Modell berechnet die Wanderung aus der mittleren Ladung z̄(pH) und der Molekülmasse (Näherung: Geschwindigkeit ∝ z̄ / M<sup>2/3</sup>); Endosmose und Diffusion bleiben unberücksichtigt.</p>
+    </details>
+    <h3>1. Puffer wählen</h3>
+    <div class="btns" id="a7-ph"></div>
+    <h3>2. Referenzspuren belegen</h3>
+    <div id="a7-lanes"></div>
+    <h3>3. Lauf starten</h3>
+    <div class="btns">
+      <button id="a7-run" class="go">⚡ Spannung anlegen</button>
+      <button id="a7-dev">🧪 Mit Ninhydrin entwickeln</button>
+      <button id="a7-reset" class="del">Zurücksetzen</button>
+    </div>
+    <div class="box hi" id="a7-status"></div>
+    <h3>Unbekannte Probe bestimmen</h3>
+    <div class="muted" style="margin-bottom:4px">Welche zwei Aminosäuren sind in der Spur „?“?</div>
+    <div class="chips" id="a7-guess"></div>
+    <div class="btns"><button id="a7-check">Prüfen</button><button id="a7-newmix">Neues Gemisch</button></div>
+    <div class="box" id="a7-fb"></div>
+    <details class="expl task" open>
+      <summary>Aufgaben</summary>
+      <ol>
+        <li>Lege je eine saure, eine basische und eine neutrale Aminosäure in die Referenzspuren und führe die Elektrophorese bei pH 6 aus. Beschreibe und erkläre die Laufrichtung.</li>
+        <li>Bei welchem pH-Wert würde Glycin nicht wandern? Überprüfe deine Vermutung im Versuch.</li>
+        <li>Trenne ein Gemisch aus Lys und His: Wähle einen geeigneten pH-Wert und begründe die Wahl.</li>
+        <li>Bestimme die zwei Aminosäuren der unbekannten Probe.</li>
+      </ol>
+    </details>
+  </div>
+</section>
+
+</main>
+<div id="toast"></div>
+
+<script>
+// ===== 1. DATEN: die 20 proteinogenen Aminosäuren ==========================
+const CLS = {
+  un: { n: 'unpolar (hydrophob)', col: '#e0b84c' },
+  po: { n: 'neutral, polar', col: '#4dd0e1' },
+  ac: { n: 'sauer', col: '#ff8a65' },
+  ba: { n: 'basisch', col: '#7f9cf5' }
+};
+// Seitenketten für die Lewis-Formel: [Element, Elternatom (-1 = Cα), Winkel in °, Bindungsordnung, (x, y) absolut]
+// Winkel: 90° = senkrecht vom Rückgrat weg. Ringschlüsse stehen in rc: [i, j, Ordnung].
+const _pent = (k) => { const a = [-90, -18, 54, 126, 198][k] * Math.PI / 180; return [0.8507 * Math.cos(a), 2.8507 + 0.8507 * Math.sin(a)]; };
+function _indole() {
+  const P = [0, 1, 2, 3, 4].map(_pent), e2 = P[3], d2 = P[4], mid = [(e2[0] + d2[0]) / 2, (e2[1] + d2[1]) / 2], pc = [0, 2.8507];
+  let dx = mid[0] - pc[0], dy = mid[1] - pc[1]; const n = Math.hypot(dx, dy); dx /= n; dy /= n;
+  const hc = [mid[0] + 0.866 * dx, mid[1] + 0.866 * dy], a1 = Math.atan2(e2[1] - hc[1], e2[0] - hc[0]), a2 = Math.atan2(d2[1] - hc[1], d2[0] - hc[0]);
+  const wrap = a => { while (a > Math.PI) a -= 2 * Math.PI; while (a < -Math.PI) a += 2 * Math.PI; return a; };
+  const s = Math.abs(wrap(a1 - Math.PI / 3 - a2)) < 0.01 ? 1 : -1;   // a2 = a1 - s*60°
+  const V = k => { const a = a1 + s * k * Math.PI / 3; return [hc[0] + Math.cos(a), hc[1] + Math.sin(a)]; };
+  return [['C', -1, 90, 1], ['C', 0, 90, 1], ['C', 1, null, 2, ...P[1]], ['N', 2, null, 1, ...P[2]], ['C', 3, null, 1, ...P[3]],
+    ['C', 4, null, 2, ...V(1)], ['C', 5, null, 1, ...V(2)], ['C', 6, null, 2, ...V(3)], ['C', 7, null, 1, ...V(4)], ['C', 8, null, 2, ...P[4]]];
+}
+const _ph = [['C', -1, 90, 1], ['C', 0, 90, 1], ['C', 1, 30, 2], ['C', 2, 90, 1], ['C', 3, 150, 2], ['C', 4, 210, 1], ['C', 5, 270, 2]];
+const AA = [
+  { c: 'Gly', o: 'G', n: 'Glycin', cls: 'un', pa: .57, pb: .75, m: 57.05, rf: '–H', sc: [], note: 'kleinster Rest (nur H) – macht die Kette sehr beweglich' },
+  { c: 'Ala', o: 'A', n: 'Alanin', cls: 'un', pa: 1.42, pb: .83, m: 71.08, rf: '–CH₃', sc: [['C', -1, 90, 1]], note: 'kleiner, unpolarer Rest – passt gut in die α-Helix' },
+  { c: 'Val', o: 'V', n: 'Valin', cls: 'un', pa: 1.06, pb: 1.70, m: 99.13, rf: '–CH(CH₃)₂', sc: [['C', -1, 90, 1], ['C', 0, 150, 1], ['C', 0, 30, 1]], note: 'verzweigt direkt am Cβ – stark Faltblatt-bildend' },
+  { c: 'Leu', o: 'L', n: 'Leucin', cls: 'un', pa: 1.21, pb: 1.30, m: 113.16, rf: '–CH₂–CH(CH₃)₂', sc: [['C', -1, 90, 1], ['C', 0, 90, 1], ['C', 1, 150, 1], ['C', 1, 30, 1]], note: 'unpolar, bildet im Protein-Inneren den „hydrophoben Kern“' },
+  { c: 'Ile', o: 'I', n: 'Isoleucin', cls: 'un', pa: 1.08, pb: 1.60, m: 113.16, rf: '–CH(CH₃)–CH₂–CH₃', sc: [['C', -1, 90, 1], ['C', 0, 30, 1], ['C', 0, 150, 1], ['C', 2, 90, 1]], note: 'verzweigt am Cβ – bevorzugt das Faltblatt' },
+  { c: 'Pro', o: 'P', n: 'Prolin', cls: 'un', pa: .57, pb: .55, m: 97.12, rf: 'Ring (an N gebunden)', sc: [], pro: true, note: 'Ringschluss zum Stickstoff, kein N–H: „Helixbrecher“, knickt die Kette' },
+  { c: 'Met', o: 'M', n: 'Methionin', cls: 'un', pa: 1.45, pb: 1.05, m: 131.19, rf: '–CH₂–CH₂–S–CH₃', sc: [['C', -1, 90, 1], ['C', 0, 30, 1], ['S', 1, 90, 1], ['C', 2, 30, 1]], note: 'enthält Schwefel (Thioether), bildet gern Helices' },
+  { c: 'Phe', o: 'F', n: 'Phenylalanin', cls: 'ar', pa: 1.13, pb: 1.38, m: 147.18, rf: '–CH₂–C₆H₅', sc: _ph, rc: [[6, 1, 1]], note: 'großer, unpolarer Benzolring' },
+  { c: 'Trp', o: 'W', n: 'Tryptophan', cls: 'ar', pa: 1.08, pb: 1.37, m: 186.21, rf: '–CH₂–Indolyl', sc: _indole(), rc: [[9, 1, 1], [9, 4, 1]], note: 'größte Aminosäure (Indolring)' },
+  { c: 'Tyr', o: 'Y', n: 'Tyrosin', cls: 'ar', pa: .69, pb: 1.47, m: 163.18, rf: '–CH₂–C₆H₄–OH', sc: [..._ph, ['O', 4, 90, 1]], rc: [[6, 1, 1]], note: 'aromatisch mit OH-Gruppe – kann Wasserstoffbrücken bilden' },
+  { c: 'Ser', o: 'S', n: 'Serin', cls: 'po', pa: .77, pb: .75, m: 87.08, rf: '–CH₂–OH', sc: [['C', -1, 90, 1], ['O', 0, 30, 1]], note: 'OH-Gruppe: hydrophil, Wasserstoffbrücken' },
+  { c: 'Thr', o: 'T', n: 'Threonin', cls: 'po', pa: .83, pb: 1.19, m: 101.10, rf: '–CH(OH)–CH₃', sc: [['C', -1, 90, 1], ['O', 0, 150, 1], ['C', 0, 30, 1]], note: 'OH-Gruppe, am Cβ verzweigt – neigt zum Faltblatt' },
+  { c: 'Cys', o: 'C', n: 'Cystein', cls: 'po', pa: .70, pb: 1.19, m: 103.14, rf: '–CH₂–SH', sc: [['C', -1, 90, 1], ['S', 0, 30, 1]], note: 'SH-Gruppe: zwei Cys können eine Disulfidbrücke (–S–S–) bilden' },
+  { c: 'Asn', o: 'N', n: 'Asparagin', cls: 'po', pa: .67, pb: .89, m: 114.10, rf: '–CH₂–CO–NH₂', sc: [['C', -1, 90, 1], ['C', 0, 90, 1], ['O', 1, 150, 2], ['N', 1, 30, 1]], note: 'Säureamid, bildet Wasserstoffbrücken; häufig in Schleifen' },
+  { c: 'Gln', o: 'Q', n: 'Glutamin', cls: 'po', pa: 1.11, pb: 1.10, m: 128.13, rf: '–CH₂–CH₂–CO–NH₂', sc: [['C', -1, 90, 1], ['C', 0, 30, 1], ['C', 1, 90, 1], ['O', 2, 150, 2], ['N', 2, 30, 1]], note: 'Säureamid, bildet Wasserstoffbrücken' },
+  { c: 'Asp', o: 'D', n: 'Asparaginsäure', cls: 'ac', pa: 1.01, pb: .54, m: 115.09, rf: '–CH₂–COOH', sc: [['C', -1, 90, 1], ['C', 0, 90, 1], ['O', 1, 150, 2], ['O', 1, 30, 1]], note: 'Carboxygruppe, im Körper meist als –COO⁻ geladen' },
+  { c: 'Glu', o: 'E', n: 'Glutaminsäure', cls: 'ac', pa: 1.51, pb: .37, m: 129.12, rf: '–CH₂–CH₂–COOH', sc: [['C', -1, 90, 1], ['C', 0, 30, 1], ['C', 1, 90, 1], ['O', 2, 150, 2], ['O', 2, 30, 1]], note: 'Carboxygruppe, im Körper meist als –COO⁻ geladen – starker Helixbildner' },
+  { c: 'Lys', o: 'K', n: 'Lysin', cls: 'ba', pa: 1.16, pb: .74, m: 128.17, rf: '–(CH₂)₄–NH₂', sc: [['C', -1, 90, 1], ['C', 0, 30, 1], ['C', 1, 90, 1], ['C', 2, 30, 1], ['N', 3, 90, 1]], note: 'Aminogruppe, im Körper meist als –NH₃⁺ geladen' },
+  { c: 'Arg', o: 'R', n: 'Arginin', cls: 'ba', pa: .98, pb: .93, m: 156.19, rf: '–(CH₂)₃–NH–C(=NH)–NH₂', sc: [['C', -1, 90, 1], ['C', 0, 30, 1], ['C', 1, 90, 1], ['N', 2, 30, 1], ['C', 3, 90, 1], ['N', 4, 150, 2], ['N', 4, 30, 1]], note: 'Guanidiniumgruppe, stark basisch' },
+  { c: 'His', o: 'H', n: 'Histidin', cls: 'ba', pa: 1.00, pb: .87, m: 137.14, rf: '–CH₂–Imidazolyl', sc: [['C', -1, 90, 1], ['C', 0, 90, 1], ['N', 1, null, 1, ..._pent(1)], ['C', 2, null, 1, ..._pent(2)], ['N', 3, null, 2, ..._pent(3)], ['C', 4, null, 1, ..._pent(4)]], rc: [[5, 1, 2]], note: 'Imidazolring – kann je nach pH Protonen aufnehmen oder abgeben' }
+];
+const AAby = {}; AA.forEach((a, i) => { a.i = i; AAby[a.c] = a; });
+const pepName = n => ['', 'Aminosäure', 'Dipeptid', 'Tripeptid', 'Tetrapeptid', 'Pentapeptid', 'Hexapeptid', 'Heptapeptid', 'Octapeptid', 'Nonapeptid', 'Decapeptid'][n] || (n < 50 ? 'Oligopeptid' : 'Polypeptid');
+const sub = s => String(s).replace(/\d/g, d => '₀₁₂₃₄₅₆₇₈₉'[d]);
+
+
+// ----- Zusatzdaten für dieses Modul -----
+AA.forEach(a => { if (a.cls === 'ar') { a.aro = true; a.cls = a.c === 'Tyr' ? 'po' : 'un'; } });
+// pK-Werte (Lehrbuchwerte, Lehninger), Löslichkeit in g/L Wasser (L-Form, ca. 25 °C, gerundet)
+const PKD = {
+  Gly: [2.34, 9.60, null, 250], Ala: [2.34, 9.69, null, 167], Val: [2.32, 9.62, null, 89], Leu: [2.36, 9.60, null, 24], Ile: [2.36, 9.68, null, 41],
+  Pro: [1.99, 10.96, null, 1600], Met: [2.28, 9.21, null, 57], Phe: [1.83, 9.13, null, 28], Trp: [2.38, 9.39, null, 11], Tyr: [2.20, 9.11, 10.07, 0.45],
+  Ser: [2.21, 9.15, null, 250], Thr: [2.11, 9.62, null, 98], Cys: [1.96, 10.28, 8.18, 280], Asn: [2.02, 8.80, null, 25], Gln: [2.17, 9.13, null, 41],
+  Asp: [1.88, 9.60, 3.65, 5], Glu: [2.19, 9.67, 4.25, 8.6], Lys: [2.18, 8.95, 10.53, 1000], Arg: [2.17, 9.04, 12.48, 150], His: [1.82, 9.17, 6.00, 43]
+};
+AA.forEach(a => {
+  const [k1, k2, kr, sol] = PKD[a.c]; a.k1 = k1; a.k2 = k2; a.kr = kr; a.sol = sol;
+  // Abgabeschritte der Protonen in aufsteigender pK-Reihenfolge
+  const st = [{ pk: k1, g: 'cooh' }, { pk: k2, g: 'nh' }]; if (kr != null) st.push({ pk: kr, g: 'r' });
+  st.sort((x, y) => x.pk - y.pk); a.steps = st;
+  a.z0 = (a.cls === 'ba') ? 2 : 1;                      // Ladung der vollständig protonierten Form
+  a.pI = (st[a.z0 - 1].pk + st[a.z0].pk) / 2;
+  a.rIon = a.kr != null;
+});
+// Teilchenverteilung: Anteil jeder Spezies k (k = Zahl abgegebener H⁺) bei gegebenem pH
+function aaFrac(a, pH) {
+  const w = [1]; let cum = 0;
+  a.steps.forEach(s => { cum += pH - s.pk; w.push(Math.pow(10, cum)); });   // relative Häufigkeit ~ Π 10^(pH − pK)
+  const sum = w.reduce((x, y) => x + y, 0);
+  return w.map(x => x / sum);
+}
+const aaCharge = (a, k) => a.z0 - k;
+function aaMeanCharge(a, pH) { const f = aaFrac(a, pH); return f.reduce((s, x, k) => s + x * aaCharge(a, k), 0); }
+function aaDominant(a, pH) { const f = aaFrac(a, pH); let b = 0; f.forEach((x, k) => { if (x > f[b]) b = k; }); return b; }
+const sgn = z => (z > 0 ? '+' : z < 0 ? '−' : '') + (Math.abs(z) > 1 ? Math.abs(z) : '');
+const fmt = (x, d = 1) => x.toFixed(d).replace('.', ',');
+const tabHooks = {};
+// ----- Modus: Grundkurs (gk) / Leistungskurs (lk) -----
+const MODE = { m: 'gk' };
+try { const _m = localStorage.getItem('prot-mode'); if (_m === 'lk' || _m === 'gk') MODE.m = _m; } catch (e) {}
+const isGK = () => MODE.m === 'gk';
+document.body.dataset.mode = MODE.m;
+
+// ===== 2. LEWIS-FORMELN einzelner Aminosäuren (mit Ladungszuständen) ========
+const LW = { sc: 56, valence: { N: 5, O: 6, S: 6 }, hmax: { N: 3, O: 2, S: 2 } };
+const lw = { seq: [], sel: -1, showPlane: false, colorSC: true };
+
+function lewisBuild(seq) {
+  const atoms = [], bonds = [], res = [];
+  const add = o => { o.id = atoms.length; o.H = o.H || 0; atoms.push(o); return o; };
+  const bond = (a, b, o = 1, kind = 'bb', ri = -1) => bonds.push({ a, b, o, kind, ri });
+  const n = seq.length, P = g => ({ x: 0.866 * g, y: (g % 2 === 0) ? 0.5 : 0 }), D = g => (g % 2 === 0) ? 1 : -1;
+  let prevC = null;
+  seq.forEach((aa, i) => {
+    const gN = 3 * i, gA = gN + 1, gC = gN + 2, dA = D(gA);
+    const N = add({ el: 'N', ...P(gN), res: i, kind: 'bb' });
+    const A = add({ el: 'C', ...P(gA), res: i, kind: 'bb', cA: true });
+    const C = add({ el: 'C', ...P(gC), res: i, kind: 'bb' });
+    const O = add({ el: 'O', x: P(gC).x, y: P(gC).y + D(gC), res: i, kind: 'bb' });
+    res.push({ aa, N, A, C, O, atoms: [N, A, C, O], sc: [] });
+    if (prevC) bond(prevC, N, 1, 'pep', i);
+    bond(N, A, 1, 'bb', i); bond(A, C, 1, 'bb', i); bond(C, O, 2, 'bb', i);
+    // Wasserstoffatome am Stickstoff
+    const dN = D(gN), hN = aa.pro ? (i === 0 ? 1 : 0) : (i === 0 ? 2 : 1);
+    const addH = (p, x, y, kind) => { const H = add({ el: 'H', x, y, res: i, kind }); bond(p, H, 1, kind, i); res[i].atoms.push(H); return H; };
+    if (hN >= 1) res[i].Nh = addH(N, N.x, N.y + dN, 'bb');
+    if (hN === 2) addH(N, N.x - 1, N.y, 'bb');
+    // H am Cα (gegenüber der Seitenkette)
+    if (aa.c === 'Gly') { addH(A, A.x, A.y + 1, 'bb'); addH(A, A.x, A.y - 1, 'bb'); } else addH(A, A.x, A.y - dA, 'bb');
+    // Seitenkette
+    if (aa.pro) {
+      const a = N, b = A, mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2, nx = 0, ny = dA, R = 0.8507, ap = 0.688;
+      const cx = mx + nx * ap, cy = my + ny * ap, aB = Math.atan2(b.y - cy, b.x - cx), aA = Math.atan2(a.y - cy, a.x - cx);
+      let d = aA - aB; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
+      const s = d > 0 ? -1 : 1, V = k => ({ x: cx + R * Math.cos(aB + s * k * 1.2566), y: cy + R * Math.sin(aB + s * k * 1.2566) });
+      const cb = add({ el: 'C', ...V(1), res: i, kind: 'sc' }), cg = add({ el: 'C', ...V(2), res: i, kind: 'sc' }), cd = add({ el: 'C', ...V(3), res: i, kind: 'sc' });
+      bond(A, cb, 1, 'sc', i); bond(cb, cg, 1, 'sc', i); bond(cg, cd, 1, 'sc', i); bond(cd, N, 1, 'sc', i);
+      res[i].sc = [cb, cg, cd];
+    } else {
+      const loc = [];
+      aa.sc.forEach((s, k) => {
+        const [el, p, ang, o, ax, ay] = s, par = p < 0 ? { x: 0, y: 0 } : loc[p];
+        const L = ax !== undefined ? { x: ax, y: ay } : { x: par.x + Math.cos(ang * Math.PI / 180), y: par.y + Math.sin(ang * Math.PI / 180) };
+        loc.push(L);
+        const at = add({ el, x: A.x + L.x, y: A.y + dA * L.y, res: i, kind: 'sc' });
+        res[i].sc.push(at); bond(p < 0 ? A : res[i].sc[p], at, o, 'sc', i);
+      });
+      (aa.rc || []).forEach(([a, b, o]) => bond(res[i].sc[a], res[i].sc[b], o, 'sc', i));
+    }
+    prevC = C;
+  });
+  // C-terminus: –OH
+  if (n) {
+    const last = res[n - 1], g = 3 * n, OH = add({ el: 'O', ...P(g), res: n - 1, kind: 'bb' });
+    bond(last.C, OH, 1, 'bb', n - 1); last.OH = OH; last.atoms.push(OH); OH.H = 1; OH.hSide = 1;
+  }
+  // implizite H (nur Seitenketten-Heteroatome) + Elektronenpaare
+  const adj = atoms.map(() => []);
+  bonds.forEach(b => { adj[b.a.id].push({ o: b.b, ord: b.o }); adj[b.b.id].push({ o: b.a, ord: b.o }); });
+  atoms.forEach(a => {
+    if (!LW.valence[a.el]) return;
+    const sum = adj[a.id].reduce((s, x) => s + x.ord, 0);
+    if (a.kind === 'sc' || a.el !== 'N') { a.H = Math.max(0, LW.hmax[a.el] - sum); if (a.el === 'N' && a.kind === 'bb') a.H = 0; }
+    if (a.id === (res.length ? res[res.length - 1].OH.id : -1)) a.H = 1;
+    const explicitH = adj[a.id].filter(x => x.o.el === 'H').length;
+    a.pairs = Math.max(0, Math.round((LW.valence[a.el] - sum - a.H) / 2));
+    a.dirs = adj[a.id].map(x => Math.atan2(-(x.o.y - a.y), x.o.x - a.x));   // Bildschirmwinkel (y nach oben)
+    // Seite der H-Beschriftung (SC-Heteroatome): gegenüber der mittleren Bindungsrichtung
+    if (a.H > 0) {
+      if (a.hSide === undefined) { const mx = adj[a.id].reduce((s, x) => s + (x.o.x - a.x), 0); a.hSide = mx > 0.05 ? -1 : 1; }
+      a.dirs.push(a.hSide > 0 ? 0 : Math.PI);
+    }
+  });
+  return { atoms, bonds, res, adj };
+}
+
+
+// ----- Zustand: welche Gruppen sind protoniert? -----
+// st = { cooh: true|false, nh: true|false, r: true|false }   (true = protoniert)
+const R_ION = { Asp: 3, Glu: 4, Lys: 4, Arg: 5, His: 4, Tyr: 7, Cys: 1 };
+// H-Zahl und Ladung des ionisierbaren Rest-Atoms: [H protoniert, H deprotoniert, Ladung protoniert, Ladung deprotoniert]
+const R_H = { Asp: [1, 0, 0, -1], Glu: [1, 0, 0, -1], Tyr: [1, 0, 0, -1], Cys: [1, 0, 0, -1], Lys: [3, 2, 1, 0], Arg: [2, 1, 1, 0], His: [1, 0, 1, 0] };
+function aaModel(aa, st) {
+  const m = lewisBuild([aa]), r = m.res[0], N = r.N, add = (el, x, y) => { const H = { el, x, y, H: 0, res: 0, kind: 'bb', id: m.atoms.length }; m.atoms.push(H); m.bonds.push({ a: N, b: H, o: 1, kind: 'bb', ri: 0 }); return H; };
+  if (st.nh) {
+    if (aa.pro) add('H', N.x - 1, N.y); else add('H', N.x, N.y - 1);
+    N.chg = 1;
+  }
+  if (!st.cooh) { r.OH.H = 0; r.OH.chg = -1; }
+  if (aa.rIon && R_ION[aa.c] !== undefined) {
+    const at = r.sc[R_ION[aa.c]], h = R_H[aa.c], p = st.r;
+    at.H = p ? h[0] : h[1]; at.chg = p ? h[2] : h[3];
+    if (at.H > 0 && at.hSide === undefined) at.hSide = 1;
+  }
+  m.aa = aa; m.st = st;
+  return m;
+}
+// Zustand k (Zahl abgegebener H⁺) -> st
+function stateOf(aa, k) {
+  const st = { cooh: true, nh: true, r: true };
+  aa.steps.slice(0, k).forEach(s => { st[s.g] = false; });
+  return st;
+}
+const ELCOL = { H: '#aebbd0', O: '#ff6b6b', N: '#6ea8ff', S: '#f4d03f', R: '#ffd54f' };
+// SVG: opts = { S, groups: bool, hl: 'amino'|'carboxy'|'rest'|'ca'|null, rcol: bool }
+function aaSVG(m, opts = {}) {
+  const { atoms, bonds, res } = m, S = opts.S || 56, ns = 'http://www.w3.org/2000/svg', aa = m.aa;
+  let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+  atoms.forEach(a => { x0 = Math.min(x0, a.x); x1 = Math.max(x1, a.x); y0 = Math.min(y0, a.y); y1 = Math.max(y1, a.y); });
+  const mx = 0.9, my = 0.9; x0 -= mx; x1 += mx; y0 -= my; y1 += my;
+  const X = x => (x - x0) * S, Y = y => (y1 - y) * S, W = (x1 - x0) * S, Hh = (y1 - y0) * S;
+  const r = res[0], rcol = CLS[aa.cls] ? CLS[aa.cls].col : '#e8edf5';
+  const grp = {
+    amino: atoms.filter(a => a.el === 'H' && a.kind === 'bb' && Math.abs(a.x - r.N.x) < 1.01 && Math.abs(a.y - r.N.y) < 1.01 && a !== undefined && !(a.x === r.A.x)).concat([r.N]),
+    carboxy: [r.C, r.O, r.OH],
+    ca: [r.A].concat(atoms.filter(a => a.el === 'H' && a.x === r.A.x && Math.abs(a.y - r.A.y) <= 1.01)),
+    rest: r.sc
+  };
+  const gcol = { amino: '#6ea8ff', carboxy: '#ff6b6b', ca: '#e8edf5', rest: rcol };
+  const box = (pts, col, on) => {
+    if (!pts.length) return '';
+    const xa = Math.min(...pts.map(p => p.x)) - 0.5, xb = Math.max(...pts.map(p => p.x)) + 0.5, ya = Math.min(...pts.map(p => p.y)) - 0.5, yb = Math.max(...pts.map(p => p.y)) + 0.5;
+    return `<rect x="${X(xa)}" y="${Y(yb)}" width="${(xb - xa) * S}" height="${(yb - ya) * S}" rx="16" fill="${col}" fill-opacity="${on ? .22 : .11}" stroke="${col}" stroke-opacity="${on ? 1 : .55}" stroke-width="${on ? 2.5 : 1.5}" stroke-dasharray="${on ? '' : '6 4'}"/>`;
+  };
+  let s = '';
+  if (opts.groups) Object.keys(grp).forEach(k => { s += box(grp[k], gcol[k], opts.hl === k); });
+  const lab = a => a.el !== 'C';
+  bonds.forEach(b => {
+    const A = b.a, B = b.b, dx = B.x - A.x, dy = B.y - A.y, L = Math.hypot(dx, dy) * S, ux = dx * S / L, uy = -dy * S / L;
+    const ta = lab(A) ? 12 : 0, tb = lab(B) ? 12 : 0;
+    const ax = X(A.x) + ux * ta, ay = Y(A.y) + uy * ta, bx = X(B.x) - ux * tb, by = Y(B.y) - uy * tb;
+    if (opts.stereo && (A === r.A || B === r.A)) {
+      const O = A === r.A ? B : A, hb = O.el === 'H' && O.kind === 'bb' && Math.abs(O.x - r.A.x) < .01, rb = r.sc[0] === O && !aa.pro, ty = hb ? opts.stereo.H : rb ? opts.stereo.R : null;
+      if (ty) {
+        const sx = X(r.A.x), sy = Y(r.A.y), ex = A === r.A ? bx : ax, ey = A === r.A ? by : ay, vx = ex - sx, vy = ey - sy, vl = Math.hypot(vx, vy), nx = -vy / vl, ny = vx / vl, w = 5.5;
+        if (ty === 'solid') s += `<polygon points="${sx},${sy} ${ex + nx * w},${ey + ny * w} ${ex - nx * w},${ey - ny * w}" fill="#e8edf5"/>`;
+        else for (let i = 1; i <= 7; i++) { const t = i / 7, q = w * t; s += `<line x1="${sx + vx * t - nx * q}" y1="${sy + vy * t - ny * q}" x2="${sx + vx * t + nx * q}" y2="${sy + vy * t + ny * q}" stroke="#e8edf5" stroke-width="2.2"/>`; }
+        return;
+      }
+    }
+    const col = (b.kind === 'sc' && opts.rcol !== false) ? rcol : '#e8edf5', wd = 2.6;
+    if (b.o === 2) { const nx = -uy * 3, ny = ux * 3; s += `<line x1="${ax + nx}" y1="${ay + ny}" x2="${bx + nx}" y2="${by + ny}" stroke="${col}" stroke-width="${wd}" stroke-linecap="round"/><line x1="${ax - nx}" y1="${ay - ny}" x2="${bx - nx}" y2="${by - ny}" stroke="${col}" stroke-width="${wd}" stroke-linecap="round"/>`; }
+    else s += `<line x1="${ax}" y1="${ay}" x2="${bx}" y2="${by}" stroke="${col}" stroke-width="${wd}" stroke-linecap="round"/>`;
+  });
+  atoms.forEach(a => {
+    if (a.el === 'C') return;
+    const col = ELCOL[a.el] || '#e8edf5', px = X(a.x), py = Y(a.y);
+    const hl = a.H > 0 ? `<text x="${px + (a.hSide || 1) * 13}" y="${py + 6}" text-anchor="${(a.hSide || 1) > 0 ? 'start' : 'end'}" font-size="18" font-weight="700" fill="${col}">H${a.H > 1 ? `<tspan font-size="13" dy="5">${a.H}</tspan>` : ''}</text>` : '';
+    s += `<text x="${px}" y="${py + 6.5}" text-anchor="middle" font-size="${a.el === 'H' ? 16 : 19}" font-weight="700" fill="${col}">${a.el}</text>${hl}`;
+    if (a.chg) { const cx = px + 13, cy = py - 13; s += `<circle cx="${cx}" cy="${cy}" r="7.5" fill="#10151c" stroke="${a.chg > 0 ? '#80d8ff' : '#ff8a80'}" stroke-width="1.8"/><text x="${cx}" y="${cy + 4.2}" text-anchor="middle" font-size="12.5" font-weight="800" fill="${a.chg > 0 ? '#80d8ff' : '#ff8a80'}">${a.chg > 0 ? '+' : '−'}</text>`; }
+  });
+  if (opts.prio) {
+    const hatom = atoms.find(a => a.el === 'H' && a.kind === 'bb' && Math.abs(a.x - r.A.x) < .01 && Math.abs(a.y - r.A.y) <= 1.01), tgt = { N: r.N, C: r.C, R: r.sc[0], H: hatom };
+    Object.keys(opts.prio).forEach(k => {
+      const t = tgt[k]; if (!t) return;
+      const dx = X(t.x) - X(r.A.x), dy = Y(t.y) - Y(r.A.y), l = Math.hypot(dx, dy), nx = -dy / l, ny = dx / l, side = (opts.prioSide && opts.prioSide[k]) || 1;
+      const cx = X(r.A.x) + dx * .55 + nx * 19 * side, cy = Y(r.A.y) + dy * .55 + ny * 19 * side;
+      s += `<circle cx="${cx}" cy="${cy}" r="11" fill="#10151c" stroke="#ffd54f" stroke-width="2"/><text x="${cx}" y="${cy + 5}" text-anchor="middle" font-size="14" font-weight="800" fill="#ffd54f">${opts.prio[k]}</text>`;
+    });
+  }
+  if (opts.star) s += `<text x="${X(r.A.x) - 24}" y="${Y(r.A.y) + 24}" font-size="24" font-weight="800" fill="#ffd54f">*</text>`;
+  return { svg: `<svg xmlns="${ns}" viewBox="0 0 ${W} ${Hh}" width="${W}" height="${Hh}" style="max-width:100%">${s}</svg>`, w: W, h: Hh };
+}
+
+// ===== 3. GEMEINSAME HILFSFUNKTIONEN ==========================================
+const $ = id => document.getElementById(id);
+function flash(t) { const e = $('toast'); e.textContent = t; e.classList.add('on'); clearTimeout(flash.t); flash.t = setTimeout(() => e.classList.remove('on'), 2200); }
+const classLegend = () => Object.values(CLS).map(c => `<span><i style="background:${c.col}"></i>${c.n}</span>`).join('');
+// Aminosäure-Auswahlfeld: gruppiert nach Klasse; onPick(aa)
+function makePal(el, onPick, opts = {}) {
+  const btns = {};
+  el.innerHTML = '';
+  AA.forEach(a => {
+    const b = document.createElement('button'); b.className = 'aa'; b.style.setProperty('--c', CLS[a.cls].col);
+    b.innerHTML = `<b>${a.c}</b><small>${a.o}</small>`; b.title = `${a.n} (${CLS[a.cls].n})`;
+    b.onclick = () => onPick(a); el.appendChild(b); btns[a.c] = b;
+  });
+  return { set(a) { Object.keys(btns).forEach(k => btns[k].classList.toggle('on', a && a.c === k)); } };
+}
+const neutralState = aa => ({ cooh: true, nh: false, r: ['Asp', 'Glu', 'Tyr', 'Cys'].includes(aa.c) });
+const zwitterState = aa => stateOf(aa, aa.z0);
+const pill = (cls) => `<span class="pill" style="background:${CLS[cls].col}">${CLS[cls].n}</span>`;
+const GENERIC = { c: 'R', o: 'R', n: 'Aminosäure (allgemein)', cls: 'un', m: 0, rf: '–R', sc: [['R', -1, 90, 1]], steps: [], z0: 1, pI: 0 };
+
+// ----- Beschreibung der Reste (Tab 2) -----
+const RESTINFO = {
+  Gly: ['H', 'Der „Rest“ ist nur ein H-Atom. Es gibt keine Seitenkette, die mit Wasser wechselwirken könnte; Glycin ist die kleinste Aminosäure und das einzige achirale Molekül der 20.'],
+  Ala: ['CH₃', 'Eine Methylgruppe: nur C–H-Bindungen, keine Ladung, keine polaren Gruppen. Kein Kontakt zu Wasser über Wasserstoffbrücken.'],
+  Val: ['CH(CH₃)₂', 'Verzweigter Alkylrest aus C und H: unpolar, wasserabweisend.'],
+  Leu: ['CH₂–CH(CH₃)₂', 'Verzweigter Alkylrest aus C und H: unpolar, wasserabweisend. Je größer der unpolare Rest, desto stärker der hydrophobe Charakter.'],
+  Ile: ['CH(CH₃)–CH₂–CH₃', 'Verzweigter Alkylrest aus C und H: unpolar, wasserabweisend. Isomer zu Leucin.'],
+  Pro: ['Ring (CH₂)₃ an N', 'Der Rest ist über drei C-Atome mit dem Stickstoff der Aminogruppe verbunden (Fünfring). Der Rest selbst besteht nur aus C–C- und C–H-Bindungen und ist unpolar; die Aminogruppe ist ein sekundäres Amin.'],
+  Met: ['CH₂–CH₂–S–CH₃', 'Ein Thioether (C–S–C). Die C–S-Bindung ist kaum polar, der Rest bildet keine Wasserstoffbrücken: unpolar.'],
+  Phe: ['CH₂–C₆H₅', 'Ein Benzolring (aromatisch): unpolar, flach, groß – stark wasserabweisend.'],
+  Trp: ['CH₂–Indolyl', 'Ein Indolring (Doppelring aus Benzol und Pyrrol): überwiegend unpolar. Die N–H-Gruppe kann schwach Wasserstoffbrücken bilden, ist aber nicht basisch; die Aminosäure zählt zu den unpolaren.'],
+  Tyr: ['CH₂–C₆H₄–OH', 'Ein Benzolring (unpolar) mit einer polaren OH-Gruppe (Phenol). Die OH-Gruppe bildet Wasserstoffbrücken; die Aminosäure zählt daher zu den neutral-polaren. Der Unterschied zu Phenylalanin ist nur diese OH-Gruppe.'],
+  Ser: ['CH₂–OH', 'Eine Hydroxygruppe (–OH): polare O–H-Bindung, bildet Wasserstoffbrücken mit Wasser. Keine Ladung bei pH 7.'],
+  Thr: ['CH(OH)–CH₃', 'Eine Hydroxygruppe (–OH) an einem verzweigten C-Atom: polar, bildet Wasserstoffbrücken. Keine Ladung bei pH 7.'],
+  Cys: ['CH₂–SH', 'Eine Thiolgruppe (–SH). Sie ist nur schwach polar; sie kann aber oxidiert werden, wobei aus zwei Cystein-Resten eine Disulfidbrücke (–S–S–) entsteht (wichtig für die Tertiärstruktur).'],
+  Asn: ['CH₂–CO–NH₂', 'Ein Säureamid (–CO–NH₂): stark polar, bildet Wasserstoffbrücken (als Donor über N–H und als Akzeptor über C=O). Das Amid ist weder sauer noch basisch.'],
+  Gln: ['CH₂–CH₂–CO–NH₂', 'Ein Säureamid (–CO–NH₂), eine CH₂-Gruppe länger als bei Asparagin: polar, bildet Wasserstoffbrücken, keine Ladung.'],
+  Asp: ['CH₂–COOH', 'Eine zweite Carboxygruppe. Bei pH 7 liegt sie als Carboxylat –COO⁻ vor: negative Ladung, gute Hydratation.'],
+  Glu: ['CH₂–CH₂–COOH', 'Eine zweite Carboxygruppe, eine CH₂-Gruppe länger als bei Asparaginsäure. Bei pH 7 als –COO⁻ negativ geladen.'],
+  Lys: ['(CH₂)₄–NH₂', 'Eine zweite Aminogruppe am Ende einer langen Kette. Bei pH 7 nimmt sie ein H⁺ auf (–NH₃⁺): positive Ladung.'],
+  Arg: ['(CH₂)₃–NH–C(=NH)–NH₂', 'Eine Guanidino-Gruppe: eine sehr starke Base. Bei pH 7 ist sie protoniert (Guanidinium-Ion), die positive Ladung ist über drei Stickstoff-Atome verteilt.'],
+  His: ['CH₂–Imidazol', 'Ein Imidazol-Ring mit zwei Stickstoff-Atomen. Er ist nur schwach basisch (pK<sub>s</sub> ≈ 6): bei pH 7 liegt er zum großen Teil ungeladen vor, im Sauren positiv.']
+};
+function restHTML(a) {
+  const ri = RESTINFO[a.c]; if (!ri) return '';
+  let s = `<b>Rest R:</b> –${ri[0]}${a.c === 'Gly' ? '' : ''}<br>${ri[1]}`;
+  if (!isGK()) {
+    if (a.kr != null) s += `<br><span class="muted">pK<sub>s</sub> des Rests: ${fmt(a.kr, 2)} · pI = ${fmt(a.pI, 2)}</span>`;
+    else s += `<br><span class="muted">pK₁ = ${fmt(a.k1, 2)} · pK₂ = ${fmt(a.k2, 2)} · pI = ${fmt(a.pI, 2)}</span>`;
+  }
+  return s;
+}
+
+// ===== 2,5D-Laborszene (SVG mit Tiefenwirkung) =================================
+const rng = seed => () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+const labDefs = () => `<defs>
+<linearGradient id="gWall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#202a3a"/><stop offset="1" stop-color="#141a24"/></linearGradient>
+<linearGradient id="gTable" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a6275"/><stop offset="1" stop-color="#2c313d"/></linearGradient>
+<linearGradient id="gGlass" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".30"/><stop offset=".18" stop-color="#fff" stop-opacity=".07"/><stop offset=".8" stop-color="#fff" stop-opacity=".04"/><stop offset="1" stop-color="#fff" stop-opacity=".22"/></linearGradient>
+<linearGradient id="gWater" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5fa9e0" stop-opacity=".62"/><stop offset=".45" stop-color="#8fcdf3" stop-opacity=".48"/><stop offset="1" stop-color="#4f97d2" stop-opacity=".68"/></linearGradient>
+<linearGradient id="gMetal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d7dde8"/><stop offset=".5" stop-color="#9aa5b8"/><stop offset="1" stop-color="#6c7688"/></linearGradient>
+<linearGradient id="gBox" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a4357"/><stop offset="1" stop-color="#232a38"/></linearGradient>
+<radialGradient id="gShadow"><stop offset="0" stop-color="#000" stop-opacity=".55"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+<filter id="fBlur" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.2"/></filter>
+</defs>`;
+const labBG = () => `<rect width="900" height="560" fill="url(#gWall)"/>
+<polygon points="0,330 900,330 900,560 0,560" fill="url(#gTable)"/>
+<line x1="0" y1="330" x2="900" y2="330" stroke="#8993a8" stroke-opacity=".55" stroke-width="2"/>
+<g stroke="#000" stroke-opacity=".12">${[0, 1, 2, 3, 4, 5, 6, 7, 8].map(i => `<line x1="${i * 112.5}" y1="330" x2="${450 + (i * 112.5 - 450) * 1.6}" y2="560"/>`).join('')}</g>`;
+const shadow = (cx, cy, rx, ry, op = 1) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="url(#gShadow)" opacity="${op}"/>`;
+// Kristalle (Bodenkörper): n Stück in der elliptischen Bodenfläche
+function crystalsSVG(cx, by, rx, ry, n, seed, col = '#f3f0e6') {
+  const r = rng(seed), out = [];
+  for (let i = 0; i < n; i++) {
+    const a = r() * 6.283, d = Math.sqrt(r()), s = 2.6 + r() * 3.2, layer = Math.floor(i / 26) * 2.4;
+    const x = cx + Math.cos(a) * d * rx * .84, y = by + Math.sin(a) * d * ry * .62 - layer, rot = r() * 360;
+    out.push(`<polygon transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${rot.toFixed(0)})" points="0,${-s} ${s * .9},0 0,${s * .8} ${-s * .8},0" fill="${col}" stroke="#b8b3a2" stroke-width=".5"/>`);
+  }
+  return out.join('');
+}
+// Becherglas (2,5D): cx = Mitte, by = Boden (Mitte der unteren Ellipse), level 0..1
+function beakerSVG(o) {
+  const { cx, by, w, h, level = .5, seed = 1, solid = 0, cloud = 0, stir = false, liquidFill = 'url(#gWater)', marks = true, id = 'b' } = o;
+  const rx = w / 2, ry = w * .1, ly = by - level * h, top = by - h;
+  let s = shadow(cx, by + ry * .9, rx * 1.25, ry * 1.5, .9);
+  s += `<ellipse cx="${cx}" cy="${top}" rx="${rx}" ry="${ry}" fill="#9fb4d0" fill-opacity=".08" stroke="#cfdcf0" stroke-opacity=".35"/>`;
+  if (level > 0) {
+    s += `<path d="M${cx - rx},${ly} L${cx - rx},${by} A${rx},${ry} 0 0 0 ${cx + rx},${by} L${cx + rx},${ly} Z" fill="${liquidFill}"/>`;
+    if (cloud > 0) s += `<path d="M${cx - rx},${ly} L${cx - rx},${by} A${rx},${ry} 0 0 0 ${cx + rx},${by} L${cx + rx},${ly} Z" fill="#f2efe4" fill-opacity="${(cloud * .62).toFixed(2)}"/>`;
+    s += `<ellipse cx="${cx}" cy="${by}" rx="${rx}" ry="${ry}" fill="#2a6fb0" fill-opacity=".22"/>`;
+  }
+  if (solid > 0) s += crystalsSVG(cx, by - 2, rx, ry, solid, seed);
+  if (level > 0) {
+    s += `<ellipse cx="${cx}" cy="${ly}" rx="${rx}" ry="${ry}" fill="#b9e0fa" fill-opacity=".5" stroke="#e3f3ff" stroke-opacity=".6"/>`;
+    if (stir) s += `<g class="swirl"><ellipse cx="${cx}" cy="${ly}" rx="${rx * .55}" ry="${ry * .55}" fill="none" stroke="#fff" stroke-opacity=".6" stroke-dasharray="9 7"/><ellipse cx="${cx}" cy="${ly}" rx="${rx * .25}" ry="${ry * .25}" fill="none" stroke="#fff" stroke-opacity=".6" stroke-dasharray="5 6"/></g>`;
+  }
+  s += `<path d="M${cx - rx},${top} L${cx - rx},${by} A${rx},${ry} 0 0 0 ${cx + rx},${by} L${cx + rx},${top}" fill="url(#gGlass)" stroke="#dbe7f7" stroke-opacity=".75" stroke-width="2"/>`;
+  s += `<path d="M${cx - rx + 8},${top + 8} L${cx - rx + 8},${by - 10}" stroke="#fff" stroke-opacity=".5" stroke-width="5" stroke-linecap="round"/>`;
+  if (marks) for (let i = 1; i <= 4; i++) { const y = by - h * i / 5 + 0; s += `<line x1="${cx + rx - 26}" y1="${y}" x2="${cx + rx - 2}" y2="${y}" stroke="#e8f0fb" stroke-opacity=".7" stroke-width="1.5"/>`; }
+  s += `<path d="M${cx - rx},${top} A${rx},${ry} 0 0 0 ${cx + rx},${top}" fill="none" stroke="#f2f8ff" stroke-opacity=".8" stroke-width="2.2"/>`;
+  return s;
+}
+// Magnetrührer (Quader mit Knopf)
+function stirrerSVG(cx, by, w = 260) {
+  const x = cx - w / 2, y = by + 8;
+  return `${shadow(cx, y + 46, w * .62, 20, .8)}<polygon points="${x + 14},${y} ${x + w - 14},${y} ${x + w},${y + 20} ${x},${y + 20}" fill="#58627a"/><rect x="${x}" y="${y + 20}" width="${w}" height="34" rx="8" fill="url(#gBox)" stroke="#6b768d" stroke-opacity=".6"/><circle cx="${x + w - 34}" cy="${y + 37}" r="9" fill="#cfd6e4" stroke="#6b768d"/><line x1="${x + w - 34}" y1="${y + 37}" x2="${x + w - 38}" y2="${y + 31}" stroke="#2a3040" stroke-width="2"/><circle cx="${x + 28}" cy="${y + 37}" r="3.5" fill="#43d17a"/>`;
+}
+// pH-Messgerät mit Elektrode: Anzeige text
+function phMeterSVG(x, y, text, ex, ey) {
+  return `<path d="M${x + 30},${y} C ${x + 30},${y - 70} ${ex},${ey - 120} ${ex},${ey}" fill="none" stroke="#3b4152" stroke-width="5" stroke-linecap="round"/>
+<path d="M${x + 30},${y} C ${x + 30},${y - 70} ${ex},${ey - 120} ${ex},${ey}" fill="none" stroke="#7d879b" stroke-width="2" stroke-linecap="round"/>
+<rect x="${ex - 5}" y="${ey - 2}" width="10" height="60" rx="5" fill="#cfe3f3" fill-opacity=".55" stroke="#e6f2fb" stroke-opacity=".7"/>
+${shadow(x + 70, y + 92, 95, 14, .8)}<rect x="${x}" y="${y}" width="140" height="88" rx="12" fill="url(#gBox)" stroke="#6b768d" stroke-opacity=".7"/>
+<rect x="${x + 12}" y="${y + 12}" width="116" height="44" rx="6" fill="#0c1a12" stroke="#1d3b2a"/>
+<text x="${x + 70}" y="${y + 43}" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="27" font-weight="700" fill="#5dffa0">${text}</text>
+<text x="${x + 18}" y="${y + 28}" font-family="sans-serif" font-size="10" fill="#4bb77c">pH</text>
+<circle cx="${x + 28}" cy="${y + 72}" r="6" fill="#43d17a"/><rect x="${x + 50}" y="${y + 66}" width="70" height="12" rx="6" fill="#2a3142"/>`;
+}
+// Waage mit Wägeschale
+function balanceSVG(x, y, text, pile = 0, label = '') {
+  const pc = Math.min(14, pile);
+  return `${shadow(x + 95, y + 78, 130, 17, .8)}<polygon points="${x + 20},${y + 8} ${x + 170},${y + 8} ${x + 190},${y + 30} ${x},${y + 30}" fill="#8e9ab0"/><rect x="${x}" y="${y + 30}" width="190" height="46" rx="10" fill="url(#gMetal)" stroke="#5b6578"/>
+<rect x="${x + 22}" y="${y + 40}" width="100" height="26" rx="4" fill="#0c1a12" stroke="#1d3b2a"/><text x="${x + 72}" y="${y + 60}" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="17" font-weight="700" fill="#5dffa0">${text}</text>
+<circle cx="${x + 150}" cy="${y + 53}" r="9" fill="#cfd6e4" stroke="#5b6578"/>
+<ellipse cx="${x + 95}" cy="${y + 6}" rx="62" ry="11" fill="url(#gMetal)" stroke="#5b6578"/>
+<ellipse cx="${x + 95}" cy="${y + 1}" rx="40" ry="7" fill="#e9edf5" stroke="#b9c0cf"/>
+${crystalsSVG(x + 95, y - 1, 26, 4, pc, 77)}`;
+}
+// Probengefäß (Schraubglas) mit Aufschrift
+function jarSVG(x, y, code, col) {
+  return `${shadow(x + 36, y + 66, 52, 9, .8)}<rect x="${x}" y="${y - 6}" width="72" height="22" rx="5" fill="#2d3445" stroke="#566077"/><rect x="${x + 4}" y="${y + 14}" width="64" height="52" rx="8" fill="url(#gGlass)" stroke="#dbe7f7" stroke-opacity=".6"/><rect x="${x + 6}" y="${y + 36}" width="60" height="28" rx="6" fill="#f3f0e6" fill-opacity=".85"/><rect x="${x + 12}" y="${y + 22}" width="48" height="22" rx="4" fill="${col}"/><text x="${x + 36}" y="${y + 38}" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="800" fill="#10151c">${code}</text>`;
+}
+const labSVG = inner => `<svg viewBox="0 0 900 560" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${labDefs()}${labBG()}${inner}</svg>`;
+// Löse die Ladungsbilanz nach dem pH-Wert: c·z̄(pH) + [H⁺] − [OH⁻] + extra = 0   (extra = c(Na⁺) − c(Cl⁻))
+function solvePH(aa, c, extra) {
+  const f = pH => c * aaMeanCharge(aa, pH) + Math.pow(10, -pH) - Math.pow(10, pH - 14) + extra;
+  let lo = -1, hi = 15;
+  for (let i = 0; i < 80; i++) { const mid = (lo + hi) / 2; if (f(mid) > 0) lo = mid; else hi = mid; }
+  return (lo + hi) / 2;
+}
+
+// ===== 4. REITER 1 + 2: AUFBAU UND EIGENSCHAFTEN =============================
+const a1 = { aa: AAby.Ala, hl: null, generic: false };
+const GRP = { amino: ['Aminogruppe', '#6ea8ff'], carboxy: ['Carboxygruppe', '#ff6b6b'], ca: ['α-C-Atom', '#e8edf5'], rest: ['Rest R', '#ffd54f'] };
+function grpText(k, aa) {
+  const gk = isGK();
+  if (k === 'amino') return gk ? '<b>Aminogruppe –NH₂:</b> Hier sitzt ein Stickstoff-Atom mit zwei H-Atomen. Die Gruppe ist <b>basisch</b>: Das freie Elektronenpaar am N kann ein H⁺ aufnehmen (–NH₃⁺).' : '<b>Aminogruppe –NH₂</b> (bei Pro sekundär: –NH–): Das freie Elektronenpaar am Stickstoff macht sie zur <b>Base</b> (Protonenakzeptor); die konjugierte Säure –NH₃⁺ hat pK<sub>s</sub> ≈ 9–10.';
+  if (k === 'carboxy') return gk ? '<b>Carboxygruppe –COOH:</b> C-Atom mit einer Doppelbindung zu O und einer OH-Gruppe. Die Gruppe ist <b>sauer</b>: Sie kann das H⁺ der OH-Gruppe abgeben (–COO⁻).' : '<b>Carboxygruppe –COOH:</b> Die O–H-Bindung ist stark polar, das Proton wird leicht abgegeben (pK<sub>s</sub> ≈ 2). Das entstehende Carboxylat-Ion ist mesomeriestabilisiert.';
+  if (k === 'ca') return gk ? `<b>α-C-Atom:</b> Das zentrale C-Atom. Es trägt die Aminogruppe, die Carboxygruppe, ein H-Atom und den Rest R${aa.c === 'Gly' ? ' (bei Glycin ist R = H, es sind also zwei H-Atome gebunden)' : ''}.` : `<b>α-C-Atom (Cα):</b> trägt vier Substituenten (–NH₂, –COOH, –H, –R). ${aa.c === 'Gly' ? 'Bei Glycin zwei gleiche (H, H): achiral.' : 'Vier verschiedene Substituenten: Stereozentrum, Chiralitätszentrum (Reiter 6).'}`;
+  return gk ? `<b>Rest R:</b> ${aa.n} hat den Rest ${RESTINFO[aa.c] ? '–' + RESTINFO[aa.c][0] : ''}. Er ist bei jeder Aminosäure anders.` : `<b>Rest R (Seitenkette):</b> ${RESTINFO[aa.c] ? '–' + RESTINFO[aa.c][0] : ''}. Er legt die Eigenschaften der Aminosäure fest (Reiter 2).`;
+}
+function a1Render() {
+  const aa = a1.generic ? GENERIC : a1.aa, m = aaModel(aa, a1.generic ? { cooh: true, nh: false, r: true } : neutralState(aa));
+  const o = aaSVG(m, { S: 62, groups: !!a1.hl || a1.showAll, hl: a1.hl });
+  $('a1-stage').innerHTML = o.svg;
+  $('a1-grp').innerHTML = Object.entries(GRP).map(([k, [n, c]]) => `<button data-k="${k}" class="${a1.hl === k ? 'on' : ''}" style="color:${c}"><span>${n}</span></button>`).join('');
+  $('a1-grp').querySelectorAll('button').forEach(b => b.onclick = () => { a1.hl = a1.hl === b.dataset.k ? null : b.dataset.k; a1Render(); });
+  $('a1-bar').innerHTML = a1.generic
+    ? `<div class="t1">H₂N–CH(R)–COOH <span class="muted" style="font-size:14px;font-weight:500">allgemeine Formel einer α-Aminosäure</span></div><div class="t2">R steht für den <b>Rest</b> (die Seitenkette). Setze eine Aminosäure aus der Liste ein.</div>`
+    : `<div class="t1" style="color:${CLS[aa.cls].col}">${aa.n} <span class="muted" style="font-size:14px;font-weight:500">${aa.c} · ${aa.o}</span></div><div class="t2">Rest R: <b>${RESTINFO[aa.c] ? '–' + RESTINFO[aa.c][0] : ''}</b> · ${pill(aa.cls)} · Ungeladene Schreibweise${isGK() ? '' : ' (das Zwitterion folgt in Reiter 4)'}</div>`;
+  $('a1-info').innerHTML = a1.hl ? grpText(a1.hl, aa) : (a1.generic ? 'Tippe oben auf eine Gruppe, um sie in der Formel zu markieren.' : `<b>${aa.n}:</b> ${aa.note}.<br><span class="muted">Tippe oben auf eine Gruppe, um sie zu markieren.</span>`);
+  a1.pal.set(a1.generic ? null : a1.aa);
+  $('a1-gen').classList.toggle('on', a1.generic);
+}
+function a1Init() {
+  $('a1-leg').innerHTML = classLegend();
+  a1.pal = makePal($('a1-pal'), a => { a1.aa = a; a1.generic = false; a1Render(); });
+  $('a1-gen').onclick = () => { a1.generic = !a1.generic; a1Render(); };
+  a1Render();
+}
+tabHooks[1] = () => a1Render();
+
+// ----- Reiter 2 -----
+const a2 = { aa: AAby.Ser };
+const GROUPDESC = {
+  un: 'unpolar, wasserabweisend (hydrophob)', po: 'neutral, aber polar (hydrophil)', ac: 'zweite Carboxygruppe im Rest', ba: 'zweite basische Gruppe im Rest'
+};
+function a2Render() {
+  const aa = a2.aa, m = aaModel(aa, neutralState(aa)), o = aaSVG(m, { S: 62, groups: true, hl: 'rest' });
+  $('a2-stage').innerHTML = o.svg;
+  $('a2-cap').innerHTML = `${pill(aa.cls)} <span class="muted">·</span> ${GROUPDESC[aa.cls]}`;
+  $('a2-bar').innerHTML = `<div class="t1" style="color:${CLS[aa.cls].col}">${aa.n} <span class="muted" style="font-size:14px;font-weight:500">${aa.c} · ${aa.o}</span></div><div class="t2">Der Rest R ist farbig markiert · Ladung bei pH 7: <b>${chargeAt7(aa)}</b></div>`;
+  $('a2-info').innerHTML = restHTML(aa);
+  document.querySelectorAll('#a2-groups button').forEach(b => b.classList.toggle('on', b.dataset.c === aa.c));
+}
+function chargeAt7(aa) { const z = aaMeanCharge(aa, 7); return isGK() ? (Math.abs(z) < .3 ? 'ungeladen' : z > 0 ? 'positiv' : 'negativ') : (z > 0.05 ? '+' : '') + fmt(z, 2) + ' (mittlere Nettoladung)'; }
+function a2Init() {
+  const box = $('a2-groups'); box.innerHTML = '';
+  Object.keys(CLS).forEach(k => {
+    const d = document.createElement('div');
+    d.innerHTML = `<div class="grp" style="color:${CLS[k].col}">${CLS[k].n}</div><div class="chips"></div>`;
+    AA.filter(a => a.cls === k).forEach(a => { const b = document.createElement('button'); b.dataset.c = a.c; b.style.background = CLS[k].col; b.textContent = a.c; b.onclick = () => { a2.aa = a; a2Render(); }; d.querySelector('.chips').appendChild(b); });
+    box.appendChild(d);
+  });
+  a2Render();
+}
+tabHooks[2] = () => a2Render();
+
+// ===== 5. REITER 3: LÖSLICHKEIT (2,5D-Experiment) ============================
+const a3 = { aa: AAby.Gly, added: 0, stir: false, drop: 0, rows: {}, timer: null };
+const A3_V = 0.05, A3_MAX = 40;                         // 50 mL Wasser, höchstens 40 g
+const Mfree = a => a.m + 18.015;
+function solClass(S) { return S > 100 ? ['sehr gut', '#43d17a'] : S >= 30 ? ['gut', '#9ad65a'] : S >= 5 ? ['mäßig', '#f4d03f'] : S >= 1 ? ['schlecht', '#ff9f43'] : ['sehr schlecht', '#ff6b6b']; }
+function a3State() {
+  const cap = a3.aa.sol * A3_V, diss = Math.min(a3.added, cap), und = Math.max(0, a3.added - diss), c = diss / Mfree(a3.aa) / A3_V;
+  return { cap, diss, und, c, pH: c > 0 ? solvePH(a3.aa, c, 0) : 7.0, sat: und > 1e-9 };
+}
+function a3Scene() {
+  const st = a3State(), aa = a3.aa, cx = 520, by = 440, w = 210, h = 220;
+  const nSolid = st.und > 0 ? Math.min(90, Math.round(10 + st.und * 6)) : 0;
+  let s = '';
+  s += `<text x="24" y="40" font-family="sans-serif" font-size="22" font-weight="700" fill="#e8edf5">Löslichkeit von ${aa.n}</text>`;
+  s += `<text x="24" y="64" font-family="sans-serif" font-size="14" fill="#8d9bb0">50 mL Wasser · 25 °C · Portionen zu 0,5 g</text>`;
+  s += jarSVG(36, 396, aa.c, CLS[aa.cls].col);
+  s += balanceSVG(140, 396, `${fmt(a3.added, 2)} g`, Math.round(Math.min(14, a3.added * 4 + (a3.added > 0 ? 2 : 0))));
+  s += `<text x="235" y="498" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#8d9bb0">insgesamt zugegeben</text>`;
+  s += stirrerSVG(cx, by);
+  const cloud = st.und > 0 ? (a3.stir ? .7 : .14) : (st.diss > 0 ? 0 : 0);
+  s += beakerSVG({ cx, by, w, h, level: .5, seed: aa.i + 3, solid: a3.stir ? Math.round(nSolid * .3) : nSolid, cloud, stir: a3.stir });
+  if (a3.stir && st.und > 0) { const r = rng(aa.i + 9); for (let i = 0; i < 26; i++) s += `<polygon class="drift" style="animation-delay:${(r() * 2).toFixed(2)}s" transform="translate(${(cx + (r() - .5) * w * .8).toFixed(0)} ${(by - 20 - r() * h * .45).toFixed(0)})" points="0,-3 3,0 0,3 -3,0" fill="#f3f0e6"/>`; }
+  if (a3.drop) { const r = rng(a3.drop * 7 + aa.i); for (let i = 0; i < 14; i++) s += `<g class="fall" style="animation-delay:${(r() * .25).toFixed(2)}s"><polygon transform="translate(${(cx + (r() - .5) * 50).toFixed(0)} ${(by - h * .5 - 30 + r() * 20).toFixed(0)})" points="0,-3.5 3.2,0 0,3 -3,0" fill="#f3f0e6" stroke="#b8b3a2" stroke-width=".5"/></g>`; }
+  // Spatel
+  if (a3.drop) s += `<g transform="translate(${cx + 30} ${by - h - 40}) rotate(-24)"><rect x="-8" y="-4" width="150" height="8" rx="4" fill="url(#gMetal)"/><ellipse cx="-14" cy="0" rx="20" ry="9" fill="url(#gMetal)"/></g>`;
+  s += phMeterSVG(690, 340, fmt(st.pH, 2), cx + 40, by - h * .5 - 60);
+  s += `<text x="${cx}" y="${by - h - 26}" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#cdd7e6">${st.sat ? 'gesättigt – Bodenkörper' : (a3.added > 0 ? 'klare Lösung' : 'reines Wasser')}</text>`;
+  return labSVG(s);
+}
+function a3Record() {
+  const st = a3State(), aa = a3.aa;
+  if (a3.added <= 0) return;
+  if (st.sat) a3.rows[aa.c] = { S: st.diss / A3_V, sat: true, pH: st.pH };
+  else if (a3.added >= A3_MAX - 1e-9) a3.rows[aa.c] = { S: a3.added / A3_V, sat: false, pH: st.pH };
+}
+function a3Render() {
+  const st = a3State(), aa = a3.aa;
+  $('a3-stage').innerHTML = a3Scene();
+  a3.pal.set(aa);
+  let t;
+  if (a3.added <= 0) t = `<b>${aa.n}</b> – noch nichts zugegeben. Gib die erste Portion zu.`;
+  else {
+    t = `<b>${aa.n}</b> · zugegeben: <b>${fmt(a3.added, 1)} g</b> · gelöst: <b>${fmt(st.diss, st.diss < 0.1 ? 3 : 2)} g</b>` + (st.sat ? ` · ungelöst: <b>${fmt(st.und, 2)} g</b>` : '') + `<br>`;
+    t += st.sat ? '⚠ Die Lösung ist <b>gesättigt</b>: Es bleibt ein Bodenkörper zurück.' : '✔ Alles ist gelöst, die Lösung ist noch nicht gesättigt.';
+    t += `<br>pH-Wert der Lösung: <b>${fmt(st.pH, 2)}</b>`;
+    if (!isGK()) t += ` · c(gelöst) ≈ <b>${fmt(st.c, st.c < .1 ? 3 : 2)} mol/L</b>`;
+  }
+  $('a3-status').innerHTML = t;
+  a3Record();
+  const rows = Object.entries(a3.rows).sort((x, y) => y[1].S - x[1].S);
+  let h = '';
+  if (rows.length) {
+    h = `<table class="res"><tr><th>Aminosäure</th><th>Löslichkeit</th>${isGK() ? '' : '<th>mol/L</th>'}<th>pH</th></tr>` + rows.map(([c, r]) => {
+      const a = AAby[c], cl = solClass(r.S);
+      const val = isGK() ? `<span class="pill" style="background:${cl[1]}">${cl[0]}</span>${r.sat ? '' : ' <span class="muted">(alles gelöst bei 40 g)</span>'}` : `${r.sat ? '' : '> '}${fmt(r.S / 10, r.S < 10 ? 2 : 1)} g / 100 g`;
+      return `<tr><td><span class="dot" style="background:${CLS[a.cls].col}"></span><b>${a.c}</b></td><td>${val}</td>${isGK() ? '' : `<td>${r.sat ? '' : '> '}${fmt(r.S / Mfree(a), 2)}</td>`}<td>${fmt(r.pH, 1)}</td></tr>`;
+    }).join('') + '</table>';
+    if (!isGK()) h += '<div class="muted">Löslichkeit aus gelöster Masse in 50 mL (Näherung: 1 L Wasser ≈ 1 kg).</div>';
+  } else h = '<div class="muted">Sobald eine Probe gesättigt ist (oder 40 g sich lösen), erscheint sie hier.</div>';
+  $('a3-table').innerHTML = h;
+}
+function a3Add(g) {
+  if (a3.added >= A3_MAX - 1e-9) { flash('Mehr als 40 g werden nicht zugegeben.'); return; }
+  a3.added = Math.min(A3_MAX, a3.added + g); a3.drop++;
+  a3Render(); clearTimeout(a3.timer); a3.timer = setTimeout(() => { a3.drop = 0; a3Render(); }, 1100);
+}
+function a3Init() {
+  $('a3-leg').innerHTML = classLegend();
+  a3.pal = makePal($('a3-pal'), a => { a3.aa = a; a3.added = 0; a3.stir = false; a3.drop = 0; a3Render(); });
+  $('a3-add').onclick = () => a3Add(.5);
+  $('a3-add5').onclick = () => a3Add(2);
+  $('a3-stir').onclick = () => { a3.stir = !a3.stir; $('a3-stir').classList.toggle('on', a3.stir); a3Render(); };
+  $('a3-new').onclick = () => { a3.added = 0; a3.stir = false; a3.drop = 0; $('a3-stir').classList.remove('on'); a3Render(); };
+  a3Render();
+}
+tabHooks[3] = () => a3Render();
+
+// ===== 6. REITER 4: ZWITTERION UND pI ========================================
+const a4 = { aa: AAby.Gly, pH: 1.0 };
+const PHSTOPS = [[0, '#e53935'], [.17, '#fb8c00'], [.30, '#fdd835'], [.45, '#7cb342'], [.55, '#00897b'], [.70, '#1e88e5'], [.85, '#5e35b1'], [1, '#4a148c']];
+function phCol(pH) {
+  const t = Math.max(0, Math.min(1, pH / 14)); let i = 0; while (i < PHSTOPS.length - 2 && t > PHSTOPS[i + 1][0]) i++;
+  const [t0, c0] = PHSTOPS[i], [t1, c1] = PHSTOPS[i + 1], u = (t - t0) / (t1 - t0), p = h => [1, 3, 5].map(k => parseInt(h.substr(k, 2), 16));
+  const a = p(c0), b = p(c1); return '#' + a.map((v, k) => Math.round(v + (b[k] - v) * u).toString(16).padStart(2, '0')).join('');
+}
+const chgCol = z => z >= 2 ? '#4fc3f7' : z === 1 ? '#80d8ff' : z === 0 ? '#a5d6a7' : z === -1 ? '#ff8a80' : '#ff5252';
+function specName(aa, k) {
+  const z = aaCharge(aa, k);
+  if (z === 0) return 'Zwitterion (nach außen ungeladen)';
+  return (z > 0 ? 'Kation' : 'Anion') + (Math.abs(z) > 1 ? ` (${Math.abs(z)}fach ${z > 0 ? 'positiv' : 'negativ'})` : '');
+}
+function a4Lab(aa, pH) {
+  const f = aaFrac(aa, pH), cx = 330, by = 236, w = 220, h = 150, rx = w / 2, ry = w * .1, ly = by - .62 * h, col = phCol(pH);
+  let s = `<rect width="900" height="300" fill="url(#gWall)"/><rect y="236" width="900" height="64" fill="url(#gBench)"/>`;
+  s += shadow(cx, by + 12, rx * 1.2, 16, .9);
+  s += `<path d="M${cx - rx},${ly} L${cx - rx},${by} A${rx},${ry} 0 0 0 ${cx + rx},${by} L${cx + rx},${ly} Z" fill="${col}" fill-opacity=".62"/><ellipse cx="${cx}" cy="${ly}" rx="${rx}" ry="${ry}" fill="${col}" fill-opacity=".75" stroke="#fff" stroke-opacity=".5"/>`;
+  const r = rng(aa.i * 5 + 1), parts = [];
+  for (let i = 0; i < 18; i++) { let u = r() * (f.reduce((a, b) => a + b, 0)), k = 0; while (k < f.length - 1 && u > f[k]) { u -= f[k]; k++; } parts.push(k); }
+  parts.forEach((k, i) => {
+    const z = aaCharge(aa, k), x = cx - rx + 22 + r() * (w - 44), y = ly + 14 + r() * (by - ly - 26), c = chgCol(z);
+    s += `<g class="drift" style="animation-delay:${(r() * 2).toFixed(2)}s"><circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="11" fill="#10151c" fill-opacity=".8" stroke="${c}" stroke-width="2"/><text x="${x.toFixed(0)}" y="${(y + 4).toFixed(0)}" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="800" fill="${c}">${z === 0 ? '±' : sgn(z)}</text></g>`;
+  });
+  s += `<path d="M${cx - rx},${top0(by, h)} L${cx - rx},${by} A${rx},${ry} 0 0 0 ${cx + rx},${by} L${cx + rx},${top0(by, h)}" fill="url(#gGlass)" stroke="#dbe7f7" stroke-opacity=".75" stroke-width="2"/><ellipse cx="${cx}" cy="${top0(by, h)}" rx="${rx}" ry="${ry}" fill="none" stroke="#cfdcf0" stroke-opacity=".5"/>`;
+  s += phMeterSVG(560, 120, fmt(pH, 1), cx + 40, ly - 30);
+  s += `<text x="${cx}" y="22" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#cdd7e6">${aa.n}-Lösung mit Universalindikator · Teilchen: ± Zwitterion, + Kation, − Anion</text>`;
+  return `<svg viewBox="0 0 900 300" xmlns="http://www.w3.org/2000/svg">${labDefs()}${s}</svg>`;
+}
+const top0 = (by, h) => by - h;
+function a4Charts(aa, pH) {
+  const W = 420, H = 190, L = 34, R = 10, T = 12, B = 30, px = p => L + p / 14 * (W - L - R), py = v => T + (1 - v) * (H - T - B);
+  const n = aa.steps.length + 1, cols = ['#80d8ff', '#a5d6a7', '#ff8a80', '#ff5252'];
+  let s = `<svg viewBox="0 0 ${W} ${H}" class="chart"><rect width="${W}" height="${H}" fill="#10151c" rx="8"/>`;
+  [0, .5, 1].forEach(v => s += `<line x1="${L}" x2="${W - R}" y1="${py(v)}" y2="${py(v)}" stroke="#2a3547"/><text x="${L - 4}" y="${py(v) + 4}" text-anchor="end" font-size="10" fill="#8d9bb0">${v}</text>`);
+  for (let p = 0; p <= 14; p += 2) s += `<text x="${px(p)}" y="${H - 14}" text-anchor="middle" font-size="10" fill="#8d9bb0">${p}</text>`;
+  s += `<text x="${(L + W - R) / 2}" y="${H - 2}" text-anchor="middle" font-size="10" fill="#8d9bb0">pH</text>`;
+  for (let k = 0; k < n; k++) {
+    let d = ''; for (let p = 0; p <= 14.001; p += .2) d += (p ? 'L' : 'M') + px(p).toFixed(1) + ',' + py(aaFrac(aa, p)[k]).toFixed(1);
+    s += `<path d="${d}" fill="none" stroke="${chgCol(aaCharge(aa, k))}" stroke-width="2.4"/>`;
+  }
+  aa.steps.forEach(st => s += `<line x1="${px(st.pk)}" x2="${px(st.pk)}" y1="${T}" y2="${H - B}" stroke="#fdd835" stroke-dasharray="3 3" stroke-opacity=".7"/>`);
+  s += `<line x1="${px(aa.pI)}" x2="${px(aa.pI)}" y1="${T}" y2="${H - B}" stroke="#fff" stroke-dasharray="6 3"/><text x="${px(aa.pI) + 4}" y="${T + 10}" font-size="10" font-weight="700" fill="#fff">pI</text>`;
+  s += `<line x1="${px(pH)}" x2="${px(pH)}" y1="${T}" y2="${H - B}" stroke="#7b3fe4" stroke-width="2.5"/></svg>`;
+  // Titrationskurve: pH gegen zugegebene Äquivalente OH⁻
+  const TW = 420, TH = 190, tx = e => L + e / n * 1 * (TW - L - R) / (n - 0 > 0 ? 1 : 1) / 1, ex = e => L + e / (n - 1) * (TW - L - R), ty = p => T + (1 - p / 14) * (TH - T - B);
+  let t = `<svg viewBox="0 0 ${TW} ${TH}" class="chart"><rect width="${TW}" height="${TH}" fill="#10151c" rx="8"/>`;
+  for (let p = 0; p <= 14; p += 2) t += `<line x1="${L}" x2="${TW - R}" y1="${ty(p)}" y2="${ty(p)}" stroke="#2a3547"/><text x="${L - 4}" y="${ty(p) + 4}" text-anchor="end" font-size="10" fill="#8d9bb0">${p}</text>`;
+  for (let e = 0; e <= n - 1; e++) t += `<text x="${ex(e)}" y="${TH - 14}" text-anchor="middle" font-size="10" fill="#8d9bb0">${e}</text>`;
+  t += `<text x="${(L + TW - R) / 2}" y="${TH - 2}" text-anchor="middle" font-size="10" fill="#8d9bb0">zugegebene Äquivalente OH⁻ je Aminosäure</text>`;
+  let d = '';
+  for (let p = 0.2; p <= 13.8; p += .05) { const f = aaFrac(aa, p), e = f.reduce((a, x, k) => a + x * k, 0); d += (d ? 'L' : 'M') + ex(e).toFixed(1) + ',' + ty(p).toFixed(1); }
+  t += `<path d="${d}" fill="none" stroke="#ffd54f" stroke-width="2.4"/>`;
+  aa.steps.forEach((st, k) => t += `<circle cx="${ex(k + .5)}" cy="${ty(st.pk)}" r="4" fill="#fdd835"/><text x="${ex(k + .5) + 7}" y="${ty(st.pk) + 4}" font-size="10" fill="#fdd835">pK${k + 1} = ${fmt(st.pk, 2)}</text>`);
+  { const k = aa.z0; t += `<circle cx="${ex(k)}" cy="${ty(aa.pI)}" r="5" fill="#fff"/><text x="${ex(k) + 8}" y="${ty(aa.pI) + 4}" font-size="10" font-weight="700" fill="#fff">pI = ${fmt(aa.pI, 2)}</text>`; }
+  const f0 = aaFrac(aa, pH), e0 = f0.reduce((a, x, k) => a + x * k, 0); t += `<circle cx="${ex(e0)}" cy="${ty(pH)}" r="5.5" fill="#7b3fe4" stroke="#fff"/></svg>`;
+  return `<h3>Anteile der Teilchen (Anion/Kation) in Abhängigkeit vom pH</h3>${s}<div class="muted">Farben: ${[...Array(n).keys()].map(k => `<span style="color:${chgCol(aaCharge(aa, k))}">● ${sgn(aaCharge(aa, k)) || '0'}</span>`).join(' ')} · gelb gestrichelt: pK<sub>s</sub> · weiß: pI · violett: aktueller pH</div><h3>Titrationskurve (Zugabe von OH⁻)</h3>${t}<div class="muted">Aus der vollständig protonierten Form; die Wendepunkte der Stufen liegen bei den pK<sub>s</sub>-Werten, am pI ist die Nettoladung null.</div>`;
+}
+function a4Render() {
+  const aa = a4.aa, pH = a4.pH, f = aaFrac(aa, pH), k = aaDominant(aa, pH), st = stateOf(aa, k), m = aaModel(aa, st), o = aaSVG(m, { S: 56, groups: false });
+  $('a4-stage').innerHTML = `<div class="a4lab">${a4Lab(aa, pH)}</div>${o.svg}`;
+  const z = aaCharge(aa, k), zm = aaMeanCharge(aa, pH);
+  $('a4-cap').innerHTML = `<b>${aa.n}</b> bei pH <b>${fmt(pH, 1)}</b>: überwiegend <b style="color:${chgCol(z)}">${specName(aa, k)}</b>`;
+  // pH-Leiste
+  const pks = aa.steps.map(s => s.pk), b = [0, ...pks, 14];
+  const zones = b.slice(0, -1).map((lo, i) => `<div style="flex:${(b[i + 1] - lo).toFixed(2)};background:${chgCol(aaCharge(aa, i))}">${sgn(aaCharge(aa, i)) || '0'}</div>`).join('');
+  $('a4-ph').innerHTML = `<div class="row"><b>pH</b><input type="range" id="a4-sl" min="0" max="14" step="0.1" value="${pH}"><b style="min-width:34px;text-align:right">${fmt(pH, 1)}</b></div><div class="phgrad"></div><div class="zone">${zones}</div>`;
+  $('a4-sl').oninput = e => { a4.pH = +e.target.value; a4Render(); };
+  $('a4-sl').onchange = () => { };
+  // Infobox
+  const near = Math.abs(pH - aa.pI) < .12;
+  let t = `<b>Überwiegende Form:</b> ${specName(aa, k)}, Gesamtladung <b>${sgn(z) || '0'}</b>.`;
+  if (!isGK()) t += `<br>Mittlere Nettoladung z̄ = <b>${fmt(zm, 2)}</b> · Anteile: ` + f.map((x, i) => `${sgn(aaCharge(aa, i)) || '0'}: ${Math.round(x * 100)} %`).join(' · ');
+  t += `<br><b>pI</b> von ${aa.n} ≈ <b>${fmt(aa.pI, 2)}</b>`;
+  if (!isGK()) { const a = aa.steps[aa.z0 - 1], c = aa.steps[aa.z0]; t += ` = ½·(${fmt(a.pk, 2)} + ${fmt(c.pk, 2)}) mit den pK<sub>s</sub>-Werten der Gruppen ${a.g === 'cooh' ? 'α-COOH' : a.g === 'nh' ? 'α-NH₃⁺' : 'Rest'} und ${c.g === 'cooh' ? 'α-COOH' : c.g === 'nh' ? 'α-NH₃⁺' : 'Rest'}`; }
+  t += near ? '<br>✔ Du bist am <b>isoelektrischen Punkt</b>: Nettoladung null, größte Zwitterion-Konzentration.' : (pH < aa.pI ? '<br>pH &lt; pI → die Aminosäure trägt insgesamt eine positive Ladung.' : '<br>pH &gt; pI → die Aminosäure trägt insgesamt eine negative Ladung.');
+  t += `<br><button class="btn" id="a4-pi">Zum pI springen</button>`;
+  $('a4-info').innerHTML = t;
+  $('a4-pi').onclick = () => { a4.pH = Math.round(aa.pI * 10) / 10; a4Render(); };
+  $('a4-charts').innerHTML = a4Charts(aa, pH);
+  a4.pal.set(aa);
+}
+function a4Init() {
+  $('a4-leg').innerHTML = classLegend();
+  a4.pal = makePal($('a4-pal'), a => { a4.aa = a; a4Render(); });
+  a4Render();
+}
+tabHooks[4] = () => a4Render();
+
+// ===== 7. REITER 5: pH-ABHÄNGIGKEIT (2,5D-Experiment) ========================
+const a5 = { aa: AAby.Glu, hcl: 0, naoh: 0, anim: null, pts: [], timer: null };
+const A5_V0 = 0.05, A5_G = 1.0, A5_MAX = 45;           // 50 mL Wasser, 1,0 g Aminosäure
+function a5State() {
+  const aa = a5.aa, M = Mfree(aa), ntot = A5_G / M, V = A5_V0 + (a5.hcl + a5.naoh) / 1000, extra = (a5.naoh - a5.hcl) / 1000 / V;
+  const ctot = ntot / V, S0 = (aa.sol / M) * aaFrac(aa, aa.pI)[aa.z0];
+  const cd = pH => Math.min(ctot, S0 / Math.max(1e-9, aaFrac(aa, pH)[aa.z0]));
+  const g = pH => cd(pH) * aaMeanCharge(aa, pH) + Math.pow(10, -pH) - Math.pow(10, pH - 14) + extra;
+  let lo = -1, hi = 15, prev = g(lo), found = false;
+  for (let p = -1; p < 15; p += .02) { const v = g(p + .02); if (prev > 0 && v <= 0) { lo = p; hi = p + .02; found = true; break; } prev = v; }
+  if (!found) { lo = -1; hi = 15; }
+  for (let i = 0; i < 50; i++) { const mid = (lo + hi) / 2; if (g(mid) > 0) lo = mid; else hi = mid; }
+  const pH = (lo + hi) / 2, c = cd(pH), und = Math.max(0, (ctot - c) * V * M), dis = ctot * V * M - und;
+  return { pH, c, und, dis, V, ctot, S0, Stot: S0 / aaFrac(aa, pH)[aa.z0] * M, sat: und > 1e-4 };
+}
+function a5Scene(st) {
+  const aa = a5.aa, cx = 470, by = 440, w = 210, h = 220, level = Math.min(.8, .5 + (a5.hcl + a5.naoh) * .006), und = Math.min(1, st.und / A5_G);
+  const nS = st.sat ? Math.round(8 + und * 70) : 0;
+  let s = `<text x="24" y="40" font-family="sans-serif" font-size="22" font-weight="700" fill="#e8edf5">${aa.n} in Wasser – Zugabe von HCl / NaOH</text>`;
+  s += `<text x="24" y="64" font-family="sans-serif" font-size="14" fill="#8d9bb0">50 mL Wasser · 1,0 g ${aa.n} · Zugabe: HCl ${fmt(a5.hcl, 1)} mL · NaOH ${fmt(a5.naoh, 1)} mL</text>`;
+  const bott = (x, col, name, on) => `${shadow(x + 36, 462, 56, 9, .8)}<rect x="${x + 22}" y="360" width="28" height="22" rx="4" fill="#2d3445" stroke="#566077"/><rect x="${x}" y="378" width="72" height="84" rx="14" fill="${col}" fill-opacity=".35" stroke="#dbe7f7" stroke-opacity=".6" stroke-width="2"/><rect x="${x + 7}" y="420" width="58" height="36" rx="8" fill="${col}" fill-opacity=".55"/><rect x="${x + 6}" y="396" width="60" height="20" rx="3" fill="#10151c" fill-opacity=".7"/><text x="${x + 36}" y="411" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="800" fill="#fff">${name}</text><text x="${x + 36}" y="482" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#8d9bb0">1 mol/L</text>`;
+  s += bott(40, '#e53935', 'HCl') + bott(130, '#1e88e5', 'NaOH');
+  s += stirrerSVG(cx, by);
+  s += beakerSVG({ cx, by, w, h, level, seed: aa.i + 11, solid: nS, cloud: st.sat ? Math.min(.9, .12 + und * .8) : 0, stir: true });
+  if (a5.anim) {
+    const col = a5.anim === 'h' ? '#e53935' : '#1e88e5', x = cx + (a5.anim === 'h' ? -40 : 40), ly = by - level * h;
+    s += `<g transform="translate(${x} ${by - h - 70})"><rect x="-6" y="-70" width="12" height="70" rx="4" fill="#d8e2f2" fill-opacity=".7" stroke="#fff" stroke-opacity=".5"/><path d="M-6,0 L0,22 L6,0Z" fill="#d8e2f2" fill-opacity=".8"/><ellipse cx="0" cy="-74" rx="9" ry="10" fill="${col}"/></g>`;
+    for (let i = 0; i < 3; i++) s += `<ellipse class="dfall" style="--dy:${(ly - (by - h - 48)).toFixed(0)}px;animation-delay:${i * .22}s;animation-iteration-count:1" cx="${x}" cy="${by - h - 44}" rx="4" ry="6" fill="${col}"/>`;
+  }
+  s += phMeterSVG(690, 340, fmt(st.pH, 2), cx + 70, by - level * h - 50);
+  s += `<text x="${cx}" y="${by - h - 26}" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#cdd7e6">${st.sat ? 'trübe Aufschlämmung (Bodenkörper)' : 'klare Lösung'}</text>`;
+  return labSVG(s);
+}
+function a5Curve() {
+  const pts = a5.pts.filter(p => p.aa === a5.aa.c).sort((a, b) => a.v - b.v), W = 420, H = 210, L = 34, R = 10, T = 12, B = 32;
+  const vmin = Math.min(-4, ...pts.map(p => p.v)) - 1, vmax = Math.max(8, ...pts.map(p => p.v)) + 1, px = v => L + (v - vmin) / (vmax - vmin) * (W - L - R), py = p => T + (1 - p / 14) * (H - T - B);
+  let s = `<svg viewBox="0 0 ${W} ${H}" class="chart"><rect width="${W}" height="${H}" fill="#10151c" rx="8"/>`;
+  for (let p = 0; p <= 14; p += 2) s += `<line x1="${L}" x2="${W - R}" y1="${py(p)}" y2="${py(p)}" stroke="#2a3547"/><text x="${L - 4}" y="${py(p) + 4}" text-anchor="end" font-size="10" fill="#8d9bb0">${p}</text>`;
+  for (let v = Math.ceil(vmin / 5) * 5; v <= vmax; v += 5) s += `<text x="${px(v)}" y="${H - 16}" text-anchor="middle" font-size="10" fill="#8d9bb0">${v}</text>`;
+  s += `<line x1="${px(0)}" x2="${px(0)}" y1="${T}" y2="${H - B}" stroke="#3a4a63"/><text x="${(L + W - R) / 2}" y="${H - 3}" text-anchor="middle" font-size="10" fill="#8d9bb0">Volumen: ← HCl · NaOH → (mL, 1 mol/L)</text>`;
+  s += `<line x1="${L}" x2="${W - R}" y1="${py(a5.aa.pI)}" y2="${py(a5.aa.pI)}" stroke="#fff" stroke-dasharray="6 3" stroke-opacity=".7"/><text x="${W - R - 4}" y="${py(a5.aa.pI) - 3}" text-anchor="end" font-size="10" fill="#fff">pI</text>`;
+  if (pts.length > 1) s += `<path d="${pts.map((p, i) => (i ? 'L' : 'M') + px(p.v).toFixed(1) + ',' + py(p.pH).toFixed(1)).join('')}" fill="none" stroke="#ffd54f" stroke-width="2"/>`;
+  pts.forEach(p => s += `<circle cx="${px(p.v)}" cy="${py(p.pH)}" r="3.5" fill="${p.sat ? '#f2efe4' : '#4fc3f7'}" stroke="#ffd54f"/>`);
+  return `<h3>Messkurve: pH gegen zugegebenes Volumen</h3>${s}</svg><div class="muted">● weiß: Bodenkörper vorhanden · ● blau: alles gelöst. Die Punkte entstehen bei jeder Zugabe.</div>`;
+}
+function a5Render() {
+  const st = a5State(), aa = a5.aa, k = aaDominant(aa, st.pH), m = aaModel(aa, stateOf(aa, k)), o = aaSVG(m, { S: 30 });
+  a5.cur = st;
+  $('a5-stage').innerHTML = a5Scene(st);
+  $('a5-species').innerHTML = `<div style="font-size:11.5px;margin-bottom:2px">Überwiegendes Teilchen <b style="color:${chgCol(aaCharge(aa, k))}">${sgn(aaCharge(aa, k)) || '0'}</b></div><div class="spw">${o.svg}</div>`;
+  a5.pal.set(aa);
+  let t = `pH-Wert: <b>${fmt(st.pH, 2)}</b> · ${st.sat ? '<b>trübe</b>, ungelöst: ' + fmt(st.und, 2) + ' g' : '<b>klare Lösung</b>, alles gelöst'}<br>Überwiegend: <b>${specName(aa, k)}</b>`;
+  if (!isGK()) t += `<br>c(gelöst) = <b>${fmt(st.c, 3)} mol/L</b> · S<sub>ges</sub>(pH) ≈ <b>${fmt(st.Stot, st.Stot < 10 ? 2 : 1)} g/L</b> · z̄ = <b>${fmt(aaMeanCharge(aa, st.pH), 2)}</b>`;
+  t += `<br><span class="muted">pI von ${aa.n}: ${fmt(aa.pI, 2)}</span>`;
+  $('a5-status').innerHTML = t;
+  $('a5-curve').innerHTML = a5Curve();
+}
+function a5Add(kind, mL) {
+  if (a5.hcl + a5.naoh + mL > A5_MAX) { flash('Das Becherglas ist voll (max. 45 mL Zugabe).'); return; }
+  if (kind === 'h') a5.hcl += mL; else a5.naoh += mL;
+  a5.anim = kind; a5Render();
+  const st = a5.cur; a5.pts.push({ aa: a5.aa.c, v: a5.naoh - a5.hcl, pH: st.pH, sat: st.sat });
+  a5Render();
+  clearTimeout(a5.timer); a5.timer = setTimeout(() => { a5.anim = null; a5Render(); }, 1100);
+}
+function a5Reset() { a5.hcl = 0; a5.naoh = 0; a5.anim = null; a5.pts = a5.pts.filter(p => p.aa !== a5.aa.c); a5Render(); a5.pts.push({ aa: a5.aa.c, v: 0, pH: a5.cur.pH, sat: a5.cur.sat }); a5Render(); }
+function a5Init() {
+  $('a5-leg').innerHTML = classLegend();
+  a5.pal = makePal($('a5-pal'), a => { a5.aa = a; a5Reset(); });
+  $('a5-h1').onclick = () => a5Add('h', .5); $('a5-h2').onclick = () => a5Add('h', 2);
+  $('a5-o1').onclick = () => a5Add('o', .5); $('a5-o2').onclick = () => a5Add('o', 2);
+  $('a5-new').onclick = a5Reset;
+  a5Reset();
+}
+tabHooks[5] = () => a5Render();
+
+// ===== 8. REITER 6: CHIRALITÄT (LK) ==========================================
+const a6 = { aa: AAby.Ala, d: false };
+const CIP2 = { Ile: ['2S,3S', '2R,3R'], Thr: ['2S,3R', '2R,3S'] };
+function a6Conf(aa, d) {
+  const sL = aa.c === 'Cys' ? 'R' : 'S', L = sL, D = sL === 'S' ? 'R' : 'S';
+  return d ? D : L;
+}
+function a6Prio(aa) { return aa.c === 'Cys' ? { N: 1, R: 2, C: 3, H: 4 } : { N: 1, C: 2, R: 3, H: 4 }; }
+function fischerSVG(aa, d) {
+  const rname = aa.c === 'Gly' ? 'H' : 'R', N = 'H₂N', L = d ? 'H' : N, Rr = d ? N : 'H', cx = 130, cy = 130;
+  const t = (x, y, txt, col = '#e8edf5', a = 'middle', fs = 20) => `<text x="${x}" y="${y}" text-anchor="${a}" font-size="${fs}" font-weight="700" fill="${col}" font-family="sans-serif">${txt}</text>`;
+  let s = `<line x1="${cx}" y1="42" x2="${cx}" y2="218" stroke="#e8edf5" stroke-width="3"/><line x1="52" y1="${cy}" x2="208" y2="${cy}" stroke="#e8edf5" stroke-width="3"/><rect x="${cx - 13}" y="${cy - 13}" width="26" height="26" fill="#10151c"/>`;
+  s += `<circle cx="${cx}" cy="${cy}" r="3.5" fill="#ffd54f"/>${t(cx, 30, 'COOH', '#ff8a80')}${t(cx, 246, aa.c === 'Gly' ? 'H' : 'R', '#ffd54f')}`;
+  s += t(40, cy + 7, L, L === N ? '#6ea8ff' : '#aebbd0', 'end') + t(220, cy + 7, Rr, Rr === N ? '#6ea8ff' : '#aebbd0', 'start');
+  s += `<text x="${cx}" y="272" text-anchor="middle" font-size="15" font-weight="700" fill="#cdd7e6" font-family="sans-serif">${d ? 'D' : 'L'}-${aa.n} (Fischer-Projektion)</text>`;
+  return `<svg viewBox="0 0 260 285" xmlns="http://www.w3.org/2000/svg">${s}</svg>`;
+}
+function a6Render() {
+  const aa = a6.aa, d = a6.d, chiral = aa.c !== 'Gly', m = aaModel(aa, neutralState(aa));
+  const o = aaSVG(m, { S: 84, stereo: chiral ? { H: d ? 'hash' : 'solid', R: d ? 'solid' : 'hash' } : null, prio: chiral ? a6Prio(aa) : null, prioSide: { H: 1 }, star: chiral });
+  $('a6-stage').innerHTML = o.svg + (chiral ? fischerSVG(aa, d) : '');
+  const conf = a6Conf(aa, d), c2 = CIP2[aa.c];
+  $('a6-cap').innerHTML = chiral ? `<b>${d ? 'D' : 'L'}-${aa.n}</b> · Konfiguration <b>(${c2 ? c2[d ? 1 : 0] : conf})</b>` : `<b>Glycin</b> · achiral (kein Stereozentrum)`;
+  $('a6-bar').innerHTML = chiral ? `<div class="t1" style="color:${CLS[aa.cls].col}">${d ? 'D' : 'L'}-${aa.n} <span class="muted" style="font-size:14px;font-weight:500">Keil-Strich-Formel · ausgefüllter Keil: zum Betrachter, gestrichelt: vom Betrachter weg</span></div>` : `<div class="t1">Glycin <span class="muted" style="font-size:14px;font-weight:500">R = H: zwei gleiche Substituenten am α-C-Atom</span></div>`;
+  let t;
+  if (!chiral) t = '<b>Glycin ist achiral.</b> Am α-C-Atom sitzen zwei H-Atome, das Molekül ist mit seinem Spiegelbild deckungsgleich. Es gibt keine D- oder L-Form.';
+  else {
+    const p = a6Prio(aa), ord = Object.keys(p).sort((a, b) => p[a] - p[b]), nm = { N: '–NH₂', C: '–COOH', R: aa.c === 'Pro' ? 'Ringkohlenstoff (–CH₂–)' : '–' + (RESTINFO[aa.c] ? RESTINFO[aa.c][0] : 'R'), H: '–H' };
+    t = `<b>Prioritäten (CIP):</b> ` + ord.map((k, i) => `<b>${i + 1}</b> ${nm[k]}`).join(' › ') + `<br>` +
+      (aa.c === 'Cys' ? 'Der Rest –CH₂–<b>S</b>H enthält Schwefel (Z = 16), –COOH nur Sauerstoff (Z = 8): Der Rest rangiert <b>vor</b> der Carboxygruppe. ' : 'Reihenfolge nach der Ordnungszahl: N (7) › C mit (O,O,O) › C mit (C,H,H) oder (C,C,H) › H. ') +
+      `Blick mit dem H-Atom <b>nach hinten</b>: 1 → 2 → 3 ${conf === 'R' ? 'im' : 'gegen den'} Uhrzeigersinn → <b>${conf}</b>.` + (c2 ? `<br><span class="muted">${aa.n} hat ein zweites Stereozentrum (Cβ); angegeben ist die Konfiguration beider Zentren.</span>` : '') + (aa.c === 'Pro' ? '<br><span class="muted">Prolin ist eine sekundäre Aminosäure (Ring über N).</span>' : '');
+    t += `<br><span class="muted">${d ? 'D-Form: Spiegelbild der L-Form (alle Keile vertauscht, N rechts in der Fischer-Projektion).' : 'L-Form: kommt in Proteinen vor (N links in der Fischer-Projektion).'}</span>`;
+  }
+  $('a6-info').innerHTML = t;
+  $('a6-flip').disabled = !chiral;
+  a6.pal.set(aa);
+}
+function a6Init() {
+  $('a6-leg').innerHTML = classLegend();
+  a6.pal = makePal($('a6-pal'), a => { a6.aa = a; a6Render(); });
+  $('a6-flip').onclick = () => { a6.d = !a6.d; a6Render(); };
+  a6Render();
+}
+tabHooks[6] = () => a6Render();
+
+// ===== 9. REITER 7: ELEKTROPHORESE (LK, 2,5D-Experiment) =====================
+const a7 = { ph: 6, lanes: ['Glu', 'Gly', 'Lys', 'Leu'], mix: null, t: 0, run: false, dev: false, guess: new Set(), raf: 0, done: false };
+const A7_K = 3200, A7_U = 560;
+const a7Mob = (aa, pH) => aaMeanCharge(aa, pH) / Math.pow(aa.m + 18.015, 2 / 3);
+function a7NewMix() {
+  let x, y; do { x = AA[Math.floor(Math.random() * 20)]; y = AA[Math.floor(Math.random() * 20)]; } while (x === y || Math.abs(x.pI - y.pI) < 1.2);
+  a7.mix = [x, y]; a7.guess.clear(); $('a7-fb').innerHTML = '';
+}
+const a7P = (u, v) => { const L = 170 - 40 * v, R = 730 + 40 * v; return [L + u * (R - L), 300 + v * 140]; };
+function a7Lanes() { return [...a7.lanes.map(c => c ? [AAby[c]] : []), a7.mix]; }
+function a7SpotPos(aa, i, t) {
+  const v = (i + .5) / 5, d = a7Mob(aa, a7.ph) * A7_K * t, du = Math.max(-.46, Math.min(.46, -d / A7_U)); return a7P(.5 + du, v);
+}
+function a7Ghost(t) {
+  let s = '';
+  a7Lanes().forEach((lane, i) => lane.forEach(aa => { const [x, y] = a7SpotPos(aa, i, t); s += `<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="11" ry="4.5" fill="#fff" fill-opacity=".14"/>`; }));
+  return s;
+}
+function a7Scene() {
+  const col = phCol(a7.ph), running = a7.run, buf = col;
+  let s = `<text x="24" y="40" font-family="sans-serif" font-size="22" font-weight="700" fill="#e8edf5">Papierelektrophorese · Puffer pH ${a7.ph}</text>`;
+  s += `<text x="24" y="64" font-family="sans-serif" font-size="14" fill="#8d9bb0">Kationen wandern zur Kathode (−), Anionen zur Anode (+)</text>`;
+  // Tisch/Schatten
+  s += shadow(450, 480, 420, 26, .9);
+  // Netzgerät
+  s += `<rect x="360" y="104" width="180" height="84" rx="12" fill="url(#gBox)" stroke="#6b768d"/><rect x="376" y="118" width="96" height="40" rx="6" fill="#0c1a12" stroke="#1d3b2a"/><text x="424" y="148" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="24" font-weight="700" fill="#5dffa0">${running || a7.t > 0 ? '200 V' : '  0 V'}</text><circle cx="500" cy="134" r="8" fill="${running ? '#43d17a' : '#4a5568'}"/><circle cx="500" cy="164" r="6" fill="#222"/><text x="450" y="178" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#9aa7bd">Gleichspannungsquelle</text>`;
+  s += `<path d="M376,188 C376,230 95,160 95,262" fill="none" stroke="#1a1d24" stroke-width="5"/><path d="M524,188 C524,230 805,160 805,262" fill="none" stroke="#c62828" stroke-width="5"/>`;
+  // Tröge
+  const trough = (x, label, c) => `<g><path d="M${x},290 L${x + 130},290 L${x + 130},470 L${x},470 Z" fill="${buf}" fill-opacity=".42"/><ellipse cx="${x + 65}" cy="290" rx="65" ry="10" fill="${buf}" fill-opacity=".7" stroke="#fff" stroke-opacity=".4"/></g>`;
+  s += trough(60) + trough(710);
+  // Streifen
+  const q = [a7P(0, 0), a7P(1, 0), a7P(1, 1), a7P(0, 1)];
+  s += `<polygon points="${q.map(p => p.join(',')).join(' ')}" fill="#f4efdc" stroke="#cfc7a6" stroke-width="1.5"/>`;
+  for (let i = 1; i < 5; i++) { const a = a7P(0, i / 5), b = a7P(1, i / 5); s += `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#d9d2b3" stroke-dasharray="4 4"/>`; }
+  { const a = a7P(.5, 0), b = a7P(.5, 1); s += `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#9c9170" stroke-dasharray="3 3"/><text x="${a[0]}" y="${a[1] - 6}" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#cdd7e6">Start</text>`; }
+  // Spurbeschriftung + Startmarken
+  a7Lanes().forEach((lane, i) => {
+    const v = (i + .5) / 5, [lx, ly] = a7P(.012, v), [sx, sy] = a7P(.5, v);
+    const nm = i < 4 ? (a7.lanes[i] || '–') : '?';
+    s += `<text x="${lx + 2}" y="${ly + 4}" font-family="sans-serif" font-size="12" font-weight="800" fill="${i === 4 ? '#ff8a65' : '#5b5338'}">${nm}</text><text x="${sx}" y="${sy + 3}" text-anchor="middle" font-size="9" fill="#9c9170">+</text>`;
+  });
+  // Spots
+  if (a7.dev) a7Lanes().forEach((lane, i) => lane.forEach(aa => {
+    const [x, y] = a7SpotPos(aa, i, a7.t), v = (i + .5) / 5, c = aa.c === 'Pro' ? '#f9c300' : '#7e3ff2', sp = 11 + a7.t * 7;
+    s += `<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="${sp.toFixed(1)}" ry="6" fill="${c}" fill-opacity=".35"/><ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="${(sp * .6).toFixed(1)}" ry="4" fill="${c}" fill-opacity=".85"/>`;
+  }));
+  else s += `<g id="a7-ghost">${running ? a7Ghost(a7.t) : ''}</g>`;
+  // Trogvorderwände + Elektroden
+  const front = x => `<path d="M${x},290 L${x},470 L${x + 130},470 L${x + 130},290" fill="url(#gGlass)" stroke="#dbe7f7" stroke-opacity=".7" stroke-width="2"/>`;
+  s += front(60) + front(710);
+  s += `<rect x="90" y="262" width="10" height="190" rx="4" fill="#9aa4b4"/><rect x="800" y="262" width="10" height="190" rx="4" fill="#9aa4b4"/>`;
+  s += `<circle cx="95" cy="248" r="14" fill="#10151c" stroke="#6ea8ff" stroke-width="2.5"/><text x="95" y="255" text-anchor="middle" font-family="sans-serif" font-size="22" font-weight="800" fill="#6ea8ff">−</text><text x="95" y="228" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#9ab8e8">Kathode</text>`;
+  s += `<circle cx="805" cy="248" r="14" fill="#10151c" stroke="#ff6b6b" stroke-width="2.5"/><text x="805" y="256" text-anchor="middle" font-family="sans-serif" font-size="20" font-weight="800" fill="#ff6b6b">+</text><text x="805" y="228" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#ff9a9a">Anode</text>`;
+  if (running) { const r = rng(7); for (let i = 0; i < 5; i++) { s += `<circle class="bub" style="animation-delay:${(r() * 1.4).toFixed(2)}s" cx="${95 + (r() - .5) * 10}" cy="${430 - r() * 30}" r="3" fill="#fff" fill-opacity=".6"/><circle class="bub" style="animation-delay:${(r() * 1.4).toFixed(2)}s" cx="${805 + (r() - .5) * 10}" cy="${430 - r() * 30}" r="3" fill="#fff" fill-opacity=".6"/>`; } }
+  s += `<text x="125" y="496" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#8d9bb0">Puffer pH ${a7.ph}</text><text x="775" y="496" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#8d9bb0">Puffer pH ${a7.ph}</text>`;
+  if (a7.dev) s += `<text x="450" y="496" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#cdd7e6">mit Ninhydrin entwickelt (Spots violett, Prolin gelb)</text>`;
+  else s += `<text x="450" y="496" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#cdd7e6">${running ? 'Spannung liegt an … ' : a7.t > 0 ? 'Lauf beendet – Aminosäuren sind noch farblos' : 'Proben auf der Startlinie aufgetragen'}</text>`;
+  return labSVG(s);
+}
+function a7Table() {
+  if (!a7.dev) return '';
+  let h = '<table class="res"><tr><th>Spur</th><th>Laufstrecke</th><th>Richtung</th></tr>';
+  a7Lanes().forEach((lane, i) => lane.forEach(aa => {
+    const d = -a7Mob(aa, a7.ph) * A7_K * a7.t / 6, mm = Math.abs(d), dir = Math.abs(d) < .5 ? 'bleibt am Start' : d < 0 ? 'zur Kathode (−)' : 'zur Anode (+)';
+    h += `<tr><td>${i === 4 ? '? (' + (a7.guessShow ? aa.c : '…') + ')' : aa.c}</td><td>${fmt(mm, 0)} mm</td><td>${dir}</td></tr>`;
+  }));
+  return h + '</table>';
+}
+function a7Render() {
+  $('a7-stage').innerHTML = a7Scene();
+  $('a7-ph').innerHTML = [2, 4, 6, 8, 10, 12].map(p => `<button data-p="${p}" class="${p === a7.ph ? 'on' : ''}">pH ${p}</button>`).join('');
+  $('a7-ph').querySelectorAll('button').forEach(b => b.onclick = () => { if (a7.run) return; a7.ph = +b.dataset.p; a7Reset(true); });
+  $('a7-status').innerHTML = (a7.dev ? 'Entwickelt. Vergleiche die Flecken der Spur „?“ mit den Referenzen.' : a7.run ? 'Es läuft … (Laufzeit ' + Math.round(a7.t * 40) + ' min)' : a7.t > 0 ? 'Lauf beendet (40 min). Jetzt mit Ninhydrin entwickeln.' : 'Wähle Puffer und Referenzen, dann Spannung anlegen.') + a7Table();
+  $('a7-run').disabled = a7.run || a7.dev || a7.t >= 1; $('a7-dev').disabled = a7.run || a7.dev || a7.t <= 0;
+  const g = $('a7-guess'); g.querySelectorAll('button').forEach(b => b.classList.toggle('sel', a7.guess.has(b.dataset.c)));
+}
+function a7Reset(keepMix) { cancelAnimationFrame(a7.raf); a7.t = 0; a7.run = false; a7.dev = false; a7.guessShow = false; a7Render(); }
+function a7Run() {
+  if (a7.run) return; a7.run = true; const t0 = performance.now(), from = a7.t; a7Render();
+  const step = now => {
+    a7.t = Math.min(1, from + (1 - from) * (now - t0) / 4500);
+    const gh = $('a7-ghost'); if (gh) gh.innerHTML = a7Ghost(a7.t);
+    if (a7.t < 1) a7.raf = requestAnimationFrame(step); else { a7.run = false; a7Render(); }
+  };
+  a7.raf = requestAnimationFrame(step);
+}
+function a7Init() {
+  a7NewMix();
+  const L = $('a7-lanes'); L.innerHTML = '';
+  for (let i = 0; i < 4; i++) {
+    const d = document.createElement('div'); d.className = 'lanerow';
+    d.innerHTML = `<span>Spur ${i + 1}</span><select>${'<option value="">– leer –</option>' + AA.map(a => `<option value="${a.c}"${a.c === a7.lanes[i] ? ' selected' : ''}>${a.n} (${a.c})</option>`).join('')}</select>`;
+    d.querySelector('select').onchange = e => { a7.lanes[i] = e.target.value || null; a7Reset(true); };
+    L.appendChild(d);
+  }
+  const d5 = document.createElement('div'); d5.className = 'lanerow'; d5.innerHTML = '<span>Spur 5</span><b style="color:#ff8a65">? unbekanntes Gemisch (2 Aminosäuren)</b>'; L.appendChild(d5);
+  const g = $('a7-guess'); g.innerHTML = '';
+  AA.forEach(a => { const b = document.createElement('button'); b.dataset.c = a.c; b.style.background = CLS[a.cls].col; b.textContent = a.c; b.onclick = () => { if (a7.guess.has(a.c)) a7.guess.delete(a.c); else { if (a7.guess.size >= 2) { flash('Es sind genau zwei Aminosäuren gesucht.'); return; } a7.guess.add(a.c); } a7Render(); }; g.appendChild(b); });
+  $('a7-run').onclick = a7Run;
+  $('a7-dev').onclick = () => { a7.dev = true; a7Render(); };
+  $('a7-reset').onclick = () => a7Reset(true);
+  $('a7-check').onclick = () => {
+    if (a7.guess.size !== 2) { $('a7-fb').innerHTML = 'Wähle genau zwei Aminosäuren.'; return; }
+    const right = a7.mix.filter(a => a7.guess.has(a.c)).length;
+    $('a7-fb').innerHTML = right === 2 ? '✔ <b>Richtig!</b> Das Gemisch enthielt ' + a7.mix.map(a => a.n).join(' und ') + '.' : right === 1 ? 'Eine Aminosäure stimmt. Wiederhole den Lauf bei einem anderen pH-Wert.' : 'Keine stimmt. Vergleiche Laufrichtung und Laufstrecke mit den Referenzen, auch bei anderem pH.';
+    if (right === 2) { a7.guessShow = true; a7Render(); }
+  };
+  $('a7-newmix').onclick = () => { a7NewMix(); a7Reset(true); };
+  a7Render();
+}
+tabHooks[7] = () => a7Render();
+
+// ===== 9. HAUPTPROGRAMM ======================================================
+const TABS = 7, inited = {};
+function setMode(m) {
+  MODE.m = m; document.body.dataset.mode = m; try { localStorage.setItem('prot-mode', m); } catch (e) {}
+  document.querySelectorAll('#mode button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+  if (m === 'gk') { const cur = document.querySelector('#tabs button.on'); if (cur && cur.classList.contains('lk')) showTab(1); }
+  refreshAll();
+}
+function refreshAll() { const cur = document.querySelector('#tabs button.on'); const h = cur && tabHooks[cur.dataset.t]; if (h) h(); }
+function showTab(t) {
+  document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x.dataset.t == t));
+  document.querySelectorAll('.tab').forEach(s => s.classList.toggle('on', s.id === 't' + t));
+  const h = tabHooks[t]; if (h) h();
+}
+document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => showTab(b.dataset.t));
+document.querySelectorAll('#mode button').forEach(b => { b.onclick = () => setMode(b.dataset.m); b.classList.toggle('on', b.dataset.m === MODE.m); });
+a1Init(); a2Init();
+if (typeof a3Init === 'function') a3Init();
+if (typeof a4Init === 'function') a4Init();
+if (typeof a5Init === 'function') a5Init();
+if (typeof a6Init === 'function') a6Init();
+if (typeof a7Init === 'function') a7Init();
+showTab(1);
+
+</script>
+<a href="/Virtuelles-Chemielabor/impressum.html" style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-family: sans-serif; font-size: 12px; z-index: 9999;">Impressum &amp; Datenschutz</a>
+</body>
+</html>
