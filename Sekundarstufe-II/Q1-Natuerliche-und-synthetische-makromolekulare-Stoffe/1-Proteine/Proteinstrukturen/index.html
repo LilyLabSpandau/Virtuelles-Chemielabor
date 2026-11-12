@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Strukturebenen der Proteine</title>
+<style>
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; height: 100%; }
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #12161d; color: #e8edf5; display: flex; flex-direction: column; overflow: hidden; }
+header { flex: none; display: flex; align-items: center; gap: 14px; padding: 8px 14px; background: #0d1117; border-bottom: 1px solid #263041; flex-wrap: wrap; }
+header h1 { font-size: 17px; margin: 0; color: #64b5f6; white-space: nowrap; }
+header a.back { color: #90a4be; font-size: 12.5px; text-decoration: none; margin-left: auto; }
+nav { display: flex; gap: 6px; flex-wrap: wrap; }
+nav button { border: 1px solid #2f3b50; background: #1a212c; color: #c5d0e0; padding: 7px 13px; border-radius: 9px; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+nav button.on { background: #2f5fd0; border-color: #4d7df0; color: #fff; }
+nav button small { opacity: .7; font-weight: 500; }
+main { flex: 1; min-height: 0; position: relative; }
+.tab { display: none; position: absolute; inset: 0; grid-template-columns: minmax(0, 1fr) 410px; }
+.tab.on { display: grid; }
+.view { position: relative; min-width: 0; min-height: 0; overflow: hidden; background: radial-gradient(ellipse at 50% 40%, #1d2735, #10141b 75%); }
+.side { overflow-y: auto; padding: 12px 14px 60px; background: #161b24; border-left: 1px solid #263041; font-size: 13.5px; line-height: 1.5; }
+.side h2 { font-size: 15px; margin: 4px 0 8px; color: #ffd54f; }
+.side h3 { font-size: 13px; margin: 14px 0 6px; color: #90caf9; text-transform: uppercase; letter-spacing: .04em; }
+.muted { color: #8d9bb0; }
+.expl { background: #1c2430; border: 1px solid #2a3547; border-radius: 10px; padding: 8px 12px; margin: 8px 0; }
+.expl summary { cursor: pointer; font-weight: 700; color: #ffd54f; }
+.expl p { margin: 7px 0; }
+.expl ul { margin: 6px 0; padding-left: 20px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 12px; margin: 6px 0; }
+.legend i { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+button.aa { --c: #888; border: 0; border-radius: 9px; background: var(--c); color: #10151c; padding: 5px 4px; cursor: pointer; display: flex; flex-direction: column; align-items: center; line-height: 1.1; min-width: 0; }
+button.aa b { font-size: 13.5px; } button.aa small { font-size: 10.5px; opacity: .75; }
+button.aa:active { transform: scale(.94); }
+.pal { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin: 6px 0; }
+.btns { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+button.mini, .btns button { border: 1px solid #38465e; background: #232d3c; color: #dbe4f2; border-radius: 8px; padding: 6px 10px; font-size: 12.5px; cursor: pointer; }
+button.mini:active, .btns button:active { background: #2f3c52; }
+.btns button.on { background: #2f5fd0; border-color: #4d7df0; color: #fff; }
+label.chk { display: inline-flex; align-items: center; gap: 6px; margin: 3px 12px 3px 0; font-size: 12.5px; cursor: pointer; }
+.box { background: #1c2430; border: 1px solid #2a3547; border-radius: 10px; padding: 8px 12px; margin: 8px 0; }
+.box.hi { border-color: #64b5f6; }
+/* Tab 1 */
+#lw-scroll { position: absolute; left: 0; right: 0; top: 0; bottom: 118px; overflow: auto; display: flex; align-items: center; }
+#lw-svg { margin: 0 auto; padding: 8px 12px; }
+#lw-svg .empty { color: #8d9bb0; text-align: center; padding: 30px; font-size: 15px; }
+#lw-bottom { position: absolute; left: 0; right: 0; bottom: 0; height: 118px; background: rgba(13,17,23,.94); border-top: 1px solid #263041; padding: 8px 16px; overflow: auto; }
+#lw-code { font-size: 22px; font-weight: 700; font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 3px; }
+#lw-code .chip, .chipb { padding: 1px 9px; border-radius: 8px; color: #10151c; cursor: pointer; font-size: 20px; }
+#lw-code .chip.sel { outline: 2px solid #fff; }
+#lw-code .term { color: #ff9e80; }
+#lw-one { color: #a9b6c9; font-size: 13px; margin-top: 3px; font-family: ui-monospace, Menlo, Consolas, monospace; }
+#lw-facts { color: #cdd7e6; font-size: 13px; margin-top: 3px; }
+/* 3D */
+.view canvas { display: block; touch-action: none; }
+.ov { position: absolute; z-index: 5; pointer-events: none; }
+.ov > * { pointer-events: auto; }
+#sc-chain { left: 10px; right: 10px; top: 8px; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.cc { padding: 3px 8px; border-radius: 8px; font-size: 12.5px; font-weight: 700; color: #10151c; cursor: pointer; border-bottom: 4px solid var(--s, #a0a7b4); }
+.cc.sel { outline: 2px solid #fff; }
+#sc-bars { left: 10px; right: 10px; bottom: 8px; background: rgba(13,17,23,.82); border: 1px solid #2a3547; border-radius: 10px; padding: 6px 8px; font-size: 11.5px; }
+#sc-bars .row { display: flex; gap: 3px; align-items: flex-end; height: 44px; }
+#sc-bars .col { flex: 1; min-width: 14px; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; }
+#sc-bars .bar { display: flex; gap: 1px; align-items: flex-end; height: 30px; }
+#sc-bars .bar i { width: 5px; display: block; border-radius: 2px 2px 0 0; }
+#sc-bars .lbl { font-size: 10px; color: #a9b6c9; }
+.hud { right: 10px; top: 8px; display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+.hud .chips { background: rgba(13,17,23,.82); border: 1px solid #2a3547; border-radius: 10px; padding: 6px 10px; font-size: 12px; }
+.tip { left: 10px; bottom: 8px; background: rgba(13,17,23,.82); border: 1px solid #2a3547; border-radius: 10px; padding: 6px 10px; font-size: 12px; color: #b6c3d6; max-width: 60%; }
+.eltn { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 6px 0; }
+.eltn button { text-align: left; border: 1px solid #38465e; background: #232d3c; color: #dbe4f2; border-radius: 9px; padding: 7px 9px; font-size: 12.5px; cursor: pointer; display: flex; gap: 7px; align-items: center; }
+.eltn button i { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+.eltn button.on { background: #2f5fd0; border-color: #4d7df0; color: #fff; }
+.detail { display: none; position: absolute; right: 10px; bottom: 10px; width: min(46%, 440px); height: min(52%, 360px); z-index: 6; border: 1px solid #4d6a99; border-radius: 12px; overflow: hidden; background: radial-gradient(ellipse at 50% 40%, #1d2735, #0b0f15 85%); box-shadow: 0 8px 30px rgba(0,0,0,.6); }
+.detail .dx { position: absolute; right: 6px; top: 5px; z-index: 3; border: 0; background: rgba(60,70,90,.85); color: #fff; width: 26px; height: 26px; border-radius: 13px; font-size: 14px; cursor: pointer; }
+.detail canvas { display: block; touch-action: none; }
+.detail .dl { position: absolute; left: 8px; top: 6px; z-index: 2; max-width: calc(100% - 44px); font-size: 11.5px; color: #cdd7e6; background: rgba(13,17,23,.7); padding: 3px 8px; border-radius: 7px; pointer-events: none; }
+.box:empty { display: none; }
+.seqline { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13.5px; color: #ffd54f; margin: 4px 0; word-break: break-word; }
+#toast { position: fixed; left: 50%; bottom: 70px; transform: translateX(-50%); background: #2f3c52; color: #fff; padding: 8px 14px; border-radius: 10px; font-size: 13px; opacity: 0; transition: opacity .25s; pointer-events: none; z-index: 50; }
+#toast.on { opacity: 1; }
+@media (max-width: 900px) {
+  .tab, .tab.on { grid-template-columns: 1fr; }
+  .tab.on { grid-template-rows: 54% 46%; }
+  .side { border-left: 0; border-top: 1px solid #263041; }
+  header h1 { font-size: 15px; }
+  .tip { display: none; }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>🧬 Strukturebenen der Proteine</h1>
+  <nav id="tabs">
+    <button data-t="1" class="on">1 Primär<small> · Lewis</small></button>
+    <button data-t="2">2 Sekundär<small> · 3D</small></button>
+    <button data-t="3">3 Tertiär<small> · 3D</small></button>
+    <button data-t="4">4 Quartär<small> · 3D</small></button>
+  </nav>
+  <a class="back" href="../index.html">← Zurück zu Proteine</a>
+</header>
+<main>
+
+<!-- ============ 1 PRIMÄRSTRUKTUR ============ -->
+<section class="tab on" id="t1">
+  <div class="view">
+    <div id="lw-scroll"><div id="lw-svg"></div></div>
+    <div id="lw-bottom">
+      <div id="lw-code"></div>
+      <div id="lw-one"></div>
+      <div id="lw-facts"></div>
+    </div>
+  </div>
+  <div class="side">
+    <h2>Primärstruktur: die Aminosäure-Sequenz</h2>
+    <details class="expl" open>
+      <summary>Was ist die Primärstruktur?</summary>
+      <p>Die <b>Primärstruktur</b> eines Proteins ist die <b>Reihenfolge (Sequenz) der Aminosäuren</b> in der Peptidkette.</p>
+      <p>Benachbarte Aminosäuren sind durch <b>Peptidbindungen</b> (–CO–NH–) verknüpft: Die Carboxygruppe der einen Aminosäure reagiert mit der Aminogruppe der nächsten unter Abspaltung von Wasser (<b>Kondensation</b>).</p>
+      <p>Gelesen wird immer vom <b>N-Terminus</b> (freie Aminogruppe) zum <b>C-Terminus</b> (freie Carboxygruppe). Kurz notiert wird im <b>Drei-Buchstaben-Code</b>, z. B. H₂N–Ala–Gly–Ser–COOH.</p>
+      <p>Die Reihenfolge der Reste R legt fest, wie sich die Kette später faltet – sie bestimmt damit alle höheren Strukturebenen und die Funktion des Proteins.</p>
+    </details>
+    <h3>Aminosäuren auswählen</h3>
+    <div class="legend" id="lw-leg"></div>
+    <div class="pal" id="lw-pal"></div>
+    <div class="btns">
+      <button id="lw-undo">↩ Letzte entfernen</button>
+      <button id="lw-clear">Leeren</button>
+      <button id="lw-rand">🎲 Zufällige Kette</button>
+    </div>
+    <label class="chk"><input type="checkbox" id="lw-plane" checked> Peptidbindung markieren</label>
+    <label class="chk"><input type="checkbox" id="lw-col" checked> Reste nach Eigenschaft einfärben</label>
+    <div class="box hi" id="lw-info" style="display:none"></div>
+    <details class="expl">
+      <summary>Hinweise zur Darstellung</summary>
+      <p>Die Lewis-Formel zeigt <b>Valenzstriche</b> und <b>freie Elektronenpaare</b> an N, O und S. Kohlenstoff-Atome sind als Ecken gezeichnet; die Reste sind in ungeladener Form dargestellt.</p>
+      <p>Die gelb markierte Peptidbindung ist <b>starr</b>: C, O, N und H liegen in einer Ebene, die C–N-Bindung ist nicht frei drehbar.</p>
+      <p>Tippe auf eine Aminosäure (in der Formel oder im Code darunter), um mehr über sie zu erfahren.</p>
+    </details>
+  </div>
+</section>
+
+<!-- ============ 2 SEKUNDÄRSTRUKTUR ============ -->
+<section class="tab" id="t2">
+  <div class="view" id="sc-view">
+    <div class="ov" id="sc-chain"></div>
+    <div class="ov hud">
+      <div class="chips" id="sc-legend"></div>
+    </div>
+    <div class="ov" id="sc-bars"></div>
+  </div>
+  <div class="side">
+    <h2>Sekundärstruktur: α-Helix und β-Faltblatt</h2>
+    <details class="expl" open>
+      <summary>Was ist die Sekundärstruktur?</summary>
+      <p>Die <b>Sekundärstruktur</b> beschreibt die regelmäßige räumliche Anordnung kurzer Abschnitte des Peptid-<b>Rückgrats</b> (N–Cα–C). Sie wird durch <b>Wasserstoffbrücken</b> zwischen der C=O-Gruppe der einen und der N–H-Gruppe einer anderen Peptidbindung stabilisiert (Oδ⁻ ··· H–Nδ⁺).</p>
+      <ul>
+        <li><b>α-Helix:</b> rechtsgängige Schraube, 3,6 Aminosäuren pro Windung (Ganghöhe 0,54 nm). Jede C=O-Gruppe bindet an die N–H-Gruppe der vierten Aminosäure danach (i → i+4). Die Reste R zeigen nach außen.</li>
+        <li><b>β-Faltblatt:</b> gestreckte Stränge liegen nebeneinander; die H-Brücken verlaufen <i>zwischen</i> den Strängen. Die Reste stehen abwechselnd über und unter der Faltblattebene.</li>
+      </ul>
+    </details>
+    <details class="expl" open>
+      <summary>Welche Aminosäuren bevorzugen welche Struktur?</summary>
+      <ul>
+        <li><b style="color:#4cd964">Helix-Bildner:</b> Glu, Ala, Leu, Met, Gln, Lys, Arg</li>
+        <li><b style="color:#ff6b61">Faltblatt-Bildner:</b> Val, Ile, Tyr, Phe, Trp, Thr, Cys (große, oft verzweigte Reste)</li>
+        <li><b style="color:#a0a7b4">Schleifen / Knicke:</b> Gly, Pro, Asn, Asp, Ser – <b>Pro</b> hat kein N–H und einen Ringschluss, <b>Gly</b> ist sehr beweglich: beide brechen Helices.</li>
+      </ul>
+      <p class="muted">Die Vorhersage im Modell folgt den Neigungswerten nach Chou und Fasman (Balken unten). Die Struktur entsteht hier aus der Reihenfolge der Aminosäuren, die du baust.</p>
+    </details>
+    <h3>Peptidkette bauen</h3>
+    <div class="legend" id="sc-leg"></div>
+    <div class="pal" id="sc-pal"></div>
+    <div class="btns">
+      <button id="sc-undo">↩ Letzte entfernen</button>
+      <button id="sc-clear">Leeren</button>
+    </div>
+    <h3>Beispiele</h3>
+    <div class="btns" id="sc-pre"></div>
+    <h3>Anzeige</h3>
+    <label class="chk"><input type="checkbox" id="sc-hb" checked> Wasserstoffbrücken</label>
+    <label class="chk"><input type="checkbox" id="sc-side" checked> Reste R</label>
+    <label class="chk"><input type="checkbox" id="sc-rib"> Band-Modell</label>
+    <div class="box hi" id="sc-info">Baue eine Kette (mindestens 6 Aminosäuren) oder wähle ein Beispiel.</div>
+  </div>
+</section>
+
+<!-- ============ 3 TERTIÄRSTRUKTUR ============ -->
+<section class="tab" id="t3">
+  <div class="view" id="te-view">
+    <div class="ov tip">Ziehen = drehen · Mausrad / Zwei-Finger = zoomen · Elemente antippen</div>
+    <div class="detail" id="te-detail"><div class="dl" id="te-dl"></div></div>
+  </div>
+  <div class="side">
+    <h2>Tertiärstruktur: die Faltung der ganzen Kette</h2>
+    <details class="expl" open>
+      <summary>Was ist die Tertiärstruktur?</summary>
+      <p>Die <b>Tertiärstruktur</b> ist die vollständige dreidimensionale Faltung <i>einer</i> Peptidkette: Sie beschreibt, wie Helices, Faltblätter und Schleifen im Raum zueinander liegen.</p>
+      <p>Sie entsteht durch Wechselwirkungen zwischen den <b>Resten R</b> der Aminosäuren – auch zwischen solchen, die in der Sequenz weit auseinander liegen:</p>
+      <ul>
+        <li><b>Wasserstoffbrücken</b> zwischen polaren Resten</li>
+        <li><b>Ionenbindung</b> (Salzbrücke) zwischen –COO⁻ und –NH₃⁺</li>
+        <li><b>hydrophobe Wechselwirkungen</b> (Van-der-Waals-Kräfte) im Inneren</li>
+        <li><b>Disulfidbrücke</b> –S–S– (Atombindung) zwischen zwei Cystein-Resten</li>
+      </ul>
+      <p>Ein <b>schematisches Modell</b> eines α/β-Proteins (zwei Helices auf einem vierfachen Faltblatt) dient hier als Beispiel.</p>
+    </details>
+    <h3>Strukturelemente anklicken</h3>
+    <div class="eltn" id="te-list"></div>
+    <div class="box hi" id="te-info">Tippe im Modell auf ein Element oder wähle es hier aus. Dann erscheint ein Ausschnitt mit den beteiligten Aminosäuren.</div>
+    <div class="box" id="te-dinfo"></div>
+    <div class="legend" id="te-leg"></div>
+  </div>
+</section>
+
+<!-- ============ 4 QUARTÄRSTRUKTUR ============ -->
+<section class="tab" id="t4">
+  <div class="view" id="qu-view">
+    <div class="ov tip">Ziehen = drehen · Mausrad / Zwei-Finger = zoomen · Elemente antippen</div>
+    <div class="detail" id="qu-detail"><div class="dl" id="qu-dl"></div></div>
+  </div>
+  <div class="side">
+    <h2>Quartärstruktur: mehrere Untereinheiten</h2>
+    <details class="expl" open>
+      <summary>Was ist die Quartärstruktur?</summary>
+      <p>Viele Proteine bestehen aus <b>mehreren Peptidketten</b> (<b>Untereinheiten</b>). Die <b>Quartärstruktur</b> beschreibt, wie sich diese Ketten zu einem funktionsfähigen Komplex zusammenlagern.</p>
+      <p>Zusammengehalten werden die Untereinheiten durch dieselben Wechselwirkungen wie in der Tertiärstruktur – nur eben <b>zwischen Resten verschiedener Ketten</b>: hydrophobe Wechselwirkungen, Wasserstoffbrücken und Salzbrücken.</p>
+      <p>Beispiel <b>Hämoglobin</b> (Sauerstofftransport im Blut): vier Untereinheiten (2 × α, 2 × β), jede mit einer <b>Häm-Gruppe</b>, die ein Fe²⁺-Ion enthält und ein O₂-Molekül bindet. Die Untereinheiten beeinflussen sich gegenseitig (Kooperativität).</p>
+      <p>Schematisches Modell: Die Untereinheiten sind vereinfacht aus Helices aufgebaut.</p>
+    </details>
+    <h3>Elemente anklicken</h3>
+    <div class="eltn" id="qu-list"></div>
+    <div class="box hi" id="qu-info">Tippe im Modell auf eine Untereinheit oder die Häm-Gruppe oder wähle sie hier aus.</div>
+    <div class="box" id="qu-dinfo"></div>
+    <div class="legend" id="qu-leg"></div>
+  </div>
+</section>
+
+</main>
+<div id="toast"></div>
+<script src="three.min.js"></script>
+<script>
+// ===== 1. DATEN: die 20 proteinogenen Aminosäuren ==========================
+const CLS = {
+  un: { n: 'unpolar (hydrophob)', col: '#e0b84c' },
+  ar: { n: 'aromatisch', col: '#b388eb' },
+  po: { n: 'polar, ungeladen', col: '#4dd0e1' },
+  ac: { n: 'sauer (negativ geladen)', col: '#ff8a65' },
+  ba: { n: 'basisch (positiv geladen)', col: '#7f9cf5' }
+};
+// Seitenketten für die Lewis-Formel: [Element, Elternatom (-1 = Cα), Winkel in °, Bindungsordnung, (x, y) absolut]
+// Winkel: 90° = senkrecht vom Rückgrat weg. Ringschlüsse stehen in rc: [i, j, Ordnung].
+const _pent = (k) => { const a = [-90, -18, 54, 126, 198][k] * Math.PI / 180; return [0.8507 * Math.cos(a), 2.8507 + 0.8507 * Math.sin(a)]; };
+function _indole() {
+  const P = [0, 1, 2, 3, 4].map(_pent), e2 = P[3], d2 = P[4], mid = [(e2[0] + d2[0]) / 2, (e2[1] + d2[1]) / 2], pc = [0, 2.8507];
+  let dx = mid[0] - pc[0], dy = mid[1] - pc[1]; const n = Math.hypot(dx, dy); dx /= n; dy /= n;
+  const hc = [mid[0] + 0.866 * dx, mid[1] + 0.866 * dy], a1 = Math.atan2(e2[1] - hc[1], e2[0] - hc[0]), a2 = Math.atan2(d2[1] - hc[1], d2[0] - hc[0]);
+  const wrap = a => { while (a > Math.PI) a -= 2 * Math.PI; while (a < -Math.PI) a += 2 * Math.PI; return a; };
+  const s = Math.abs(wrap(a1 - Math.PI / 3 - a2)) < 0.01 ? 1 : -1;   // a2 = a1 - s*60°
+  const V = k => { const a = a1 + s * k * Math.PI / 3; return [hc[0] + Math.cos(a), hc[1] + Math.sin(a)]; };
+  return [['C', -1, 90, 1], ['C', 0, 90, 1], ['C', 1, null, 2, ...P[1]], ['N', 2, null, 1, ...P[2]], ['C', 3, null, 1, ...P[3]],
+    ['C', 4, null, 2, ...V(1)], ['C', 5, null, 1, ...V(2)], ['C', 6, null, 2, ...V(3)], ['C', 7, null, 1, ...V(4)], ['C', 8, null, 2, ...P[4]]];
+}
+const _ph = [['C', -1, 90, 1], ['C', 0, 90, 1], ['C', 1, 30, 2], ['C', 2, 90, 1], ['C', 3, 150, 2], ['C', 4, 210, 1], ['C', 5, 270, 2]];
+const AA = [
+  { c: 'Gly', o: 'G', n: 'Glycin', cls: 'un', pa: .57, pb: .75, m: 57.05, rf: '–H', sc: [], note: 'kleinster Rest (nur H) – macht die Kette sehr beweglich' },
+  { c: 'Ala', o: 'A', n: 'Alanin', cls: 'un', pa: 1.42, pb: .83, m: 71.08, rf: '–CH₃', sc: [['C', -1, 90, 1]], note: 'kleiner, unpolarer Rest – passt gut in die α-Helix' },
+  { c: 'Val', o: 'V', n: 'Valin', cls: 'un', pa: 1.06, pb: 1.70, m: 99.13, rf: '–CH(CH₃)₂', sc: [['C', -1, 90, 1], ['C', 0, 150, 1], ['C', 0, 30, 1]], note: 'verzweigt direkt am Cβ – stark Faltblatt-bildend' },
+  { c: 'Leu', o: 'L', n: 'Leucin', cls: 'un', pa: 1.21, pb: 1.30, m: 113.16, rf: '–CH₂–CH(CH₃)₂', sc: [['C', -1, 90, 1], ['C', 0, 90, 1], ['C', 1, 150, 1], ['C', 1, 30, 1]], note: 'unpolar, bildet im Protein-Inneren den „hydrophoben Kern“' },
+  { c: 'Ile', o: 'I', n: 'Isoleucin', cls: 'un', pa: 1.08, pb: 1.60, m: 113.16, rf: '–CH(CH₃)–CH₂–CH₃', sc: [['C', -1, 90, 1], ['C', 0, 30, 1], ['C', 0, 150, 1], ['C', 2, 90, 1]], note: 'verzweigt am Cβ – bevorzugt das Faltblatt' },
+  { c: 'Pro', o: 'P', n: 'Prolin', cls: 'un', pa: .57, pb: .55, m: 97.12, rf: 'Ring (an N gebunden)', sc: [], pro: true, note: 'Ringschluss zum Stickstoff, kein N–H: „Helixbrecher“, knickt die Kette' },
+  { c: 'Met', o: 'M', n: 'Methionin', cls: 'un', pa: 1.45, pb: 1.05, m: 131.19, rf: '–CH₂–CH₂–S–CH₃', sc: [['C', -1, 90, 1], ['C', 0, 30, 1], ['S', 1, 90, 1], ['C', 2, 30, 1]], note: 'enthält Schwefel (Thioether), bildet gern Helices' },
+  { c: 'Phe', o: 'F', n: 'Phenylalanin', cls: 'ar', pa: 1.13, pb: 1.38, m: 147.18, rf: '–CH₂–C₆H₅', sc: _ph, rc: [[6, 1, 1]], note: 'großer, unpolarer Benzolring' },
+  { c: 'Trp', o: 'W', n: 'Tryptophan', cls: 'ar', pa: 1.08, pb: 1.37, m: 186.21, rf: '–CH₂–Indolyl', sc: _indole(), rc: [[9, 1, 1], [9, 4, 1]], note: 'größte Aminosäure (Indolring)' },
+  { c: 'Tyr', o: 'Y', n: 'Tyrosin', cls: 'ar', pa: .69, pb: 1.47, m: 163.18, rf: '–CH₂–C₆H₄–OH', sc: [..._ph, ['O', 4, 90, 1]], rc: [[6, 1, 1]], note: 'aromatisch mit OH-Gruppe – kann Wasserstoffbrücken bilden' },
+  { c: 'Ser', o: 'S', n: 'Serin', cls: 'po', pa: .77, pb: .75, m: 87.08, rf: '–CH₂–OH', sc: [['C', -1, 90, 1], ['O', 0, 30, 1]], note: 'OH-Gruppe: hydrophil, Wasserstoffbrücken' },
+  { c: 'Thr', o: 'T', n: 'Threonin', cls: 'po', pa: .83, pb: 1.19, m: 101.10, rf: '–CH(OH)–CH₃', sc: [['C', -1, 90, 1], ['O', 0, 150, 1], ['C', 0, 30, 1]], note: 'OH-Gruppe, am Cβ verzweigt – neigt zum Faltblatt' },
+  { c: 'Cys', o: 'C', n: 'Cystein', cls: 'po', pa: .70, pb: 1.19, m: 103.14, rf: '–CH₂–SH', sc: [['C', -1, 90, 1], ['S', 0, 30, 1]], note: 'SH-Gruppe: zwei Cys können eine Disulfidbrücke (–S–S–) bilden' },
+  { c: 'Asn', o: 'N', n: 'Asparagin', cls: 'po', pa: .67, pb: .89, m: 114.10, rf: '–CH₂–CO–NH₂', sc: [['C', -1, 90, 1], ['C', 0, 90, 1], ['O', 1, 150, 2], ['N', 1, 30, 1]], note: 'Säureamid, bildet Wasserstoffbrücken; häufig in Schleifen' },
+  { c: 'Gln', o: 'Q', n: 'Glutamin', cls: 'po', pa: 1.11, pb: 1.10, m: 128.13, rf: '–CH₂–CH₂–CO–NH₂', sc: [['C', -1, 90, 1], ['C', 0, 30, 1], ['C', 1, 90, 1], ['O', 2, 150, 2], ['N', 2, 30, 1]], note: 'Säureamid, bildet Wasserstoffbrücken' },
+  { c: 'Asp', o: 'D', n: 'Asparaginsäure', cls: 'ac', pa: 1.01, pb: .54, m: 115.09, rf: '–CH₂–COOH', sc: [['C', -1, 90, 1], ['C', 0, 90, 1], ['O', 1, 150, 2], ['O', 1, 30, 1]], note: 'Carboxygruppe, im Körper meist als –COO⁻ geladen' },
+  { c: 'Glu', o: 'E', n: 'Glutaminsäure', cls: 'ac', pa: 1.51, pb: .37, m: 129.12, rf: '–CH₂–CH₂–COOH', sc: [['C', -1, 90, 1], ['C', 0, 30, 1], ['C', 1, 90, 1], ['O', 2, 150, 2], ['O', 2, 30, 1]], note: 'Carboxygruppe, im Körper meist als –COO⁻ geladen – starker Helixbildner' },
+  { c: 'Lys', o: 'K', n: 'Lysin', cls: 'ba', pa: 1.16, pb: .74, m: 128.17, rf: '–(CH₂)₄–NH₂', sc: [['C', -1, 90, 1], ['C', 0, 30, 1], ['C', 1, 90, 1], ['C', 2, 30, 1], ['N', 3, 90, 1]], note: 'Aminogruppe, im Körper meist als –NH₃⁺ geladen' },
+  { c: 'Arg', o: 'R', n: 'Arginin', cls: 'ba', pa: .98, pb: .93, m: 156.19, rf: '–(CH₂)₃–NH–C(=NH)–NH₂', sc: [['C', -1, 90, 1], ['C', 0, 30, 1], ['C', 1, 90, 1], ['N', 2, 30, 1], ['C', 3, 90, 1], ['N', 4, 150, 2], ['N', 4, 30, 1]], note: 'Guanidiniumgruppe, stark basisch' },
+  { c: 'His', o: 'H', n: 'Histidin', cls: 'ba', pa: 1.00, pb: .87, m: 137.14, rf: '–CH₂–Imidazolyl', sc: [['C', -1, 90, 1], ['C', 0, 90, 1], ['N', 1, null, 1, ..._pent(1)], ['C', 2, null, 1, ..._pent(2)], ['N', 3, null, 2, ..._pent(3)], ['C', 4, null, 1, ..._pent(4)]], rc: [[5, 1, 2]], note: 'Imidazolring – kann je nach pH Protonen aufnehmen oder abgeben' }
+];
+const AAby = {}; AA.forEach((a, i) => { a.i = i; AAby[a.c] = a; });
+const pepName = n => ['', 'Aminosäure', 'Dipeptid', 'Tripeptid', 'Tetrapeptid', 'Pentapeptid', 'Hexapeptid', 'Heptapeptid', 'Octapeptid', 'Nonapeptid', 'Decapeptid'][n] || (n < 50 ? 'Oligopeptid' : 'Polypeptid');
+const sub = s => String(s).replace(/\d/g, d => '₀₁₂₃₄₅₆₇₈₉'[d]);
+const tabHooks = {};
+
+// ===== 2. PRIMÄRSTRUKTUR: Lewis-Formel der Peptidkette ======================
+const LW = { colorSC: true, sc: 40, valence: { N: 5, O: 6, S: 6 }, hmax: { N: 3, O: 2, S: 2 } };
+const lw = { seq: [], sel: -1, showPlane: true, colorSC: true };
+
+function lewisBuild(seq) {
+  const atoms = [], bonds = [], res = [];
+  const add = o => { o.id = atoms.length; o.H = o.H || 0; atoms.push(o); return o; };
+  const bond = (a, b, o = 1, kind = 'bb', ri = -1) => bonds.push({ a, b, o, kind, ri });
+  const n = seq.length, P = g => ({ x: 0.866 * g, y: (g % 2 === 0) ? 0.5 : 0 }), D = g => (g % 2 === 0) ? 1 : -1;
+  let prevC = null;
+  seq.forEach((aa, i) => {
+    const gN = 3 * i, gA = gN + 1, gC = gN + 2, dA = D(gA);
+    const N = add({ el: 'N', ...P(gN), res: i, kind: 'bb' });
+    const A = add({ el: 'C', ...P(gA), res: i, kind: 'bb', cA: true });
+    const C = add({ el: 'C', ...P(gC), res: i, kind: 'bb' });
+    const O = add({ el: 'O', x: P(gC).x, y: P(gC).y + D(gC), res: i, kind: 'bb' });
+    res.push({ aa, N, A, C, O, atoms: [N, A, C, O], sc: [] });
+    if (prevC) bond(prevC, N, 1, 'pep', i);
+    bond(N, A, 1, 'bb', i); bond(A, C, 1, 'bb', i); bond(C, O, 2, 'bb', i);
+    // Wasserstoffatome am Stickstoff
+    const dN = D(gN), hN = aa.pro ? (i === 0 ? 1 : 0) : (i === 0 ? 2 : 1);
+    const addH = (p, x, y, kind) => { const H = add({ el: 'H', x, y, res: i, kind }); bond(p, H, 1, kind, i); res[i].atoms.push(H); return H; };
+    if (hN >= 1) res[i].Nh = addH(N, N.x, N.y + dN, 'bb');
+    if (hN === 2) addH(N, N.x - 1, N.y, 'bb');
+    // H am Cα (gegenüber der Seitenkette)
+    if (aa.c === 'Gly') { addH(A, A.x, A.y + 1, 'bb'); addH(A, A.x, A.y - 1, 'bb'); } else addH(A, A.x, A.y - dA, 'bb');
+    // Seitenkette
+    if (aa.pro) {
+      const a = N, b = A, mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2, nx = 0, ny = dA, R = 0.8507, ap = 0.688;
+      const cx = mx + nx * ap, cy = my + ny * ap, aB = Math.atan2(b.y - cy, b.x - cx), aA = Math.atan2(a.y - cy, a.x - cx);
+      let d = aA - aB; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
+      const s = d > 0 ? -1 : 1, V = k => ({ x: cx + R * Math.cos(aB + s * k * 1.2566), y: cy + R * Math.sin(aB + s * k * 1.2566) });
+      const cb = add({ el: 'C', ...V(1), res: i, kind: 'sc' }), cg = add({ el: 'C', ...V(2), res: i, kind: 'sc' }), cd = add({ el: 'C', ...V(3), res: i, kind: 'sc' });
+      bond(A, cb, 1, 'sc', i); bond(cb, cg, 1, 'sc', i); bond(cg, cd, 1, 'sc', i); bond(cd, N, 1, 'sc', i);
+      res[i].sc = [cb, cg, cd];
+    } else {
+      const loc = [];
+      aa.sc.forEach((s, k) => {
+        const [el, p, ang, o, ax, ay] = s, par = p < 0 ? { x: 0, y: 0 } : loc[p];
+        const L = ax !== undefined ? { x: ax, y: ay } : { x: par.x + Math.cos(ang * Math.PI / 180), y: par.y + Math.sin(ang * Math.PI / 180) };
+        loc.push(L);
+        const at = add({ el, x: A.x + L.x, y: A.y + dA * L.y, res: i, kind: 'sc' });
+        res[i].sc.push(at); bond(p < 0 ? A : res[i].sc[p], at, o, 'sc', i);
+      });
+      (aa.rc || []).forEach(([a, b, o]) => bond(res[i].sc[a], res[i].sc[b], o, 'sc', i));
+    }
+    prevC = C;
+  });
+  // C-terminus: –OH
+  if (n) {
+    const last = res[n - 1], g = 3 * n, OH = add({ el: 'O', ...P(g), res: n - 1, kind: 'bb' });
+    bond(last.C, OH, 1, 'bb', n - 1); last.OH = OH; last.atoms.push(OH); OH.H = 1; OH.hSide = 1;
+  }
+  // implizite H (nur Seitenketten-Heteroatome) + Elektronenpaare
+  const adj = atoms.map(() => []);
+  bonds.forEach(b => { adj[b.a.id].push({ o: b.b, ord: b.o }); adj[b.b.id].push({ o: b.a, ord: b.o }); });
+  atoms.forEach(a => {
+    if (!LW.valence[a.el]) return;
+    const sum = adj[a.id].reduce((s, x) => s + x.ord, 0);
+    if (a.kind === 'sc' || a.el !== 'N') { a.H = Math.max(0, LW.hmax[a.el] - sum); if (a.el === 'N' && a.kind === 'bb') a.H = 0; }
+    if (a.id === (res.length ? res[res.length - 1].OH.id : -1)) a.H = 1;
+    const explicitH = adj[a.id].filter(x => x.o.el === 'H').length;
+    a.pairs = Math.max(0, Math.round((LW.valence[a.el] - sum - a.H) / 2));
+    a.dirs = adj[a.id].map(x => Math.atan2(-(x.o.y - a.y), x.o.x - a.x));   // Bildschirmwinkel (y nach oben)
+    // Seite der H-Beschriftung (SC-Heteroatome): gegenüber der mittleren Bindungsrichtung
+    if (a.H > 0) {
+      if (a.hSide === undefined) { const mx = adj[a.id].reduce((s, x) => s + (x.o.x - a.x), 0); a.hSide = mx > 0.05 ? -1 : 1; }
+      a.dirs.push(a.hSide > 0 ? 0 : Math.PI);
+    }
+  });
+  return { atoms, bonds, res, adj };
+}
+
+function lonePairDirs(a) {
+  if (!a.pairs) return [];
+  const ds = a.dirs.slice().sort((x, y) => x - y), gaps = [];
+  if (!ds.length) { return Array.from({ length: a.pairs }, (_, k) => k * 2 * Math.PI / a.pairs + Math.PI / 2); }
+  ds.forEach((d, i) => { const nx = i === ds.length - 1 ? ds[0] + 2 * Math.PI : ds[i + 1]; gaps.push({ from: d, size: nx - d, cnt: 0 }); });
+  for (let k = 0; k < a.pairs; k++) { let b = gaps[0]; gaps.forEach(g => { if (g.size / (g.cnt + 1) > b.size / (b.cnt + 1)) b = g; }); b.cnt++; }
+  const out = []; gaps.forEach(g => { for (let j = 1; j <= g.cnt; j++) out.push(g.from + g.size * j / (g.cnt + 1)); });
+  return out;
+}
+
+function lewisSVG(model) {
+  const { atoms, bonds, res } = model, S = LW.sc, ns = 'http://www.w3.org/2000/svg';
+  if (!atoms.length) return { svg: '', w: 0, h: 0 };
+  let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+  atoms.forEach(a => { x0 = Math.min(x0, a.x); x1 = Math.max(x1, a.x); y0 = Math.min(y0, a.y); y1 = Math.max(y1, a.y); });
+  const mx = 1.9, my = 1.9; x0 -= mx; x1 += mx; y0 -= my; y1 += my;
+  const X = x => (x - x0) * S, Y = y => (y1 - y) * S, W = (x1 - x0) * S, Hh = (y1 - y0) * S;
+  const colOf = (a) => (LW.colorSC && a.kind === 'sc') ? CLS[res[a.res].aa.cls].col : '#e8edf5';
+  const labeled = a => a.el !== 'C';
+  let s = '';
+  // Peptidebene hervorheben
+  if (lw.showPlane) for (let i = 0; i < res.length - 1; i++) {
+    const C = res[i].C, O = res[i].O, N = res[i + 1].N, H = res[i + 1].Nh || N;
+    const xa = Math.min(C.x, O.x, N.x, H.x) - 0.55, xb = Math.max(C.x, O.x, N.x, H.x) + 0.55, ya = Math.min(C.y, O.y, N.y, H.y) - 0.5, yb = Math.max(C.y, O.y, N.y, H.y) + 0.5;
+    s += `<rect x="${X(xa)}" y="${Y(yb)}" width="${(xb - xa) * S}" height="${(yb - ya) * S}" rx="14" fill="rgba(255,213,79,.11)" stroke="rgba(255,213,79,.7)" stroke-width="1.5" stroke-dasharray="5 4"/>`;
+  }
+  if (lw.showPlane && res.length > 1) s += `<rect x="8" y="8" width="22" height="14" rx="5" fill="rgba(255,213,79,.11)" stroke="rgba(255,213,79,.7)" stroke-dasharray="4 3"/><text x="38" y="20" font-size="12" fill="#ffd54f" font-weight="700">Peptidbindung (–CO–NH–), starre Ebene</text>`;
+  // markierter Rest
+  if (lw.sel >= 0 && res[lw.sel]) {
+    const r = res[lw.sel], pts = r.atoms.concat(r.sc), xa = Math.min(...pts.map(p => p.x)) - 0.6, xb = Math.max(...pts.map(p => p.x)) + 0.6, ya = Math.min(...pts.map(p => p.y)) - 0.6, yb = Math.max(...pts.map(p => p.y)) + 0.6;
+    s += `<rect x="${X(xa)}" y="${Y(yb)}" width="${(xb - xa) * S}" height="${(yb - ya) * S}" rx="12" fill="rgba(100,181,246,.10)" stroke="rgba(100,181,246,.8)" stroke-width="1.5"/>`;
+  }
+  // Bindungen
+  bonds.forEach(b => {
+    const A = b.a, B = b.b, dx = B.x - A.x, dy = B.y - A.y, L = Math.hypot(dx, dy) * S, ux = dx * S / L, uy = -dy * S / L;
+    const ta = labeled(A) ? 10 : 0, tb = labeled(B) ? 10 : 0;
+    let ax = X(A.x) + ux * ta, ay = Y(A.y) + uy * ta, bx = X(B.x) - ux * tb, by = Y(B.y) - uy * tb;
+    const col = (b.kind === 'pep') ? '#ffd54f' : (b.kind === 'sc' ? (LW.colorSC ? CLS[res[b.ri].aa.cls].col : '#e8edf5') : '#e8edf5'), wd = b.kind === 'pep' ? 3.2 : 2.2;
+    if (b.o === 2) { const nx = -uy * 2.6, ny = ux * 2.6; s += `<line x1="${ax + nx}" y1="${ay + ny}" x2="${bx + nx}" y2="${by + ny}" stroke="${col}" stroke-width="${wd}" stroke-linecap="round"/><line x1="${ax - nx}" y1="${ay - ny}" x2="${bx - nx}" y2="${by - ny}" stroke="${col}" stroke-width="${wd}" stroke-linecap="round"/>`; }
+    else s += `<line x1="${ax}" y1="${ay}" x2="${bx}" y2="${by}" stroke="${col}" stroke-width="${wd}" stroke-linecap="round"/>`;
+  });
+  // Elektronenpaare + Beschriftungen
+  atoms.forEach(a => {
+    if (a.el === 'C') return;
+    const col = a.el === 'H' ? '#aebbd0' : (a.el === 'O' ? '#ff6b6b' : (a.el === 'N' ? '#6ea8ff' : '#f4d03f')), px = X(a.x), py = Y(a.y), r = a.H > 0 ? 17 : 14;
+    lonePairDirs(a).forEach(d => { const cx = px + Math.cos(d) * (a.el === 'H' ? 0 : 13), cy = py - Math.sin(d) * 13, tx = -Math.sin(d) * 4.5, ty = -Math.cos(d) * 4.5; s += `<line x1="${cx + tx}" y1="${cy + ty}" x2="${cx - tx}" y2="${cy - ty}" stroke="${col}" stroke-width="2.6" stroke-linecap="round"/>`; });
+    const hl = a.H > 0 ? `<text x="${px + a.hSide * 11}" y="${py + 5}" text-anchor="${a.hSide > 0 ? 'start' : 'end'}" font-size="15" font-weight="700" fill="${col}">H${a.H > 1 ? `<tspan font-size="11" dy="4">${a.H}</tspan>` : ''}</text>` : '';
+    s += `<text x="${px}" y="${py + 5.5}" text-anchor="middle" font-size="${a.el === 'H' ? 13 : 16}" font-weight="700" fill="${col}">${a.el}</text>${hl}`;
+  });
+  // Rest-Beschriftung (3-Buchstaben-Code) an der Seitenkette
+  res.forEach((r, i) => {
+    const d = (3 * i + 1) % 2 === 0 ? 1 : -1, pts = r.sc.length ? r.sc : [r.A], off = r.sc.length ? 0.95 : 1.9, ext = d > 0 ? Math.max(...pts.map(p => p.y)) + off : Math.min(...pts.map(p => p.y)) - off;
+    const px = X(r.A.x), py = Y(ext);
+    s += `<g class="lw-res" data-i="${i}" style="cursor:pointer"><rect x="${px - 24}" y="${py - 13}" width="48" height="24" rx="12" fill="${CLS[r.aa.cls].col}" fill-opacity="${lw.sel === i ? 1 : .88}" stroke="${lw.sel === i ? '#fff' : 'none'}" stroke-width="2"/><text x="${px}" y="${py + 5}" text-anchor="middle" font-size="14" font-weight="800" fill="#10151c">${r.aa.c}</text></g>`;
+  });
+  // Termini
+  s += `<text x="6" y="${Hh - 8}" font-size="12" fill="#8fb4ff" font-weight="700">← N-Terminus</text>`;
+  s += `<text x="${W - 6}" y="${Hh - 8}" text-anchor="end" font-size="12" fill="#ff9e80" font-weight="700">C-Terminus →</text>`;
+  return { svg: `<svg xmlns="${ns}" viewBox="0 0 ${W} ${Hh}" width="${W}" height="${Hh}" style="max-width:none">${s}</svg>`, w: W, h: Hh };
+}
+
+// ----- Oberfläche Tab 1 -----
+function lwMass() { return lw.seq.reduce((s, a) => s + a.m, 0) + 18.015 * (lw.seq.length ? 1 : 0); }
+function lwRender() {
+  const box = document.getElementById('lw-svg'), n = lw.seq.length;
+  if (!n) { box.innerHTML = '<div class="empty">Wähle unten Aminosäuren aus, um eine Peptidkette zu bauen.<br><small>Tippe auf eine Aminosäure – sie wird am C-Terminus (rechts) angehängt.</small></div>'; }
+  else { const m = lewisBuild(lw.seq), o = lewisSVG(m); box.innerHTML = o.svg; { const sv = box.firstChild, cw = document.getElementById('lw-scroll').clientWidth - 30, ch = document.getElementById('lw-scroll').clientHeight - 20, f = Math.min(1.6, Math.max(0.6, Math.min(cw / o.w, ch / o.h))); sv.setAttribute('width', o.w * f); sv.setAttribute('height', o.h * f); } box.querySelectorAll('.lw-res').forEach(g => g.onclick = () => { lw.sel = lw.sel === +g.dataset.i ? -1 : +g.dataset.i; lwRender(); }); }
+  // 3-Buchstaben-Code
+  const code = document.getElementById('lw-code');
+  if (!n) code.innerHTML = '<span class="muted">H₂N–…–COOH</span>';
+  else code.innerHTML = '<span class="term">H₂N</span>' + lw.seq.map((a, i) => `–<span class="chip${lw.sel === i ? ' sel' : ''}" data-i="${i}" style="background:${CLS[a.cls].col}">${a.c}</span>`).join('') + '–<span class="term">COOH</span>';
+  code.querySelectorAll('.chip').forEach(c => c.onclick = () => { lw.sel = lw.sel === +c.dataset.i ? -1 : +c.dataset.i; lwRender(); });
+  document.getElementById('lw-one').textContent = n ? 'Ein-Buchstaben-Code: ' + lw.seq.map(a => a.o).join('–') : '';
+  document.getElementById('lw-facts').innerHTML = n ? `<b>${pepName(n)}</b> aus ${n} Aminosäure${n > 1 ? 'n' : ''} · <b>${Math.max(0, n - 1)}</b> Peptidbindung${n === 2 ? '' : 'en'} · ${Math.max(0, n - 1)} H₂O abgespalten · M ≈ ${lwMass().toFixed(1).replace('.', ',')} g/mol` : '';
+  // Info zum markierten Rest
+  const info = document.getElementById('lw-info');
+  if (lw.sel >= 0 && lw.seq[lw.sel]) { const a = lw.seq[lw.sel]; info.style.display = 'block'; info.innerHTML = `<b style="color:${CLS[a.cls].col}">${a.n} (${a.c}, ${a.o})</b> · Position ${lw.sel + 1}<br>Rest R: <b>${a.rf}</b> · ${CLS[a.cls].n}<br><span class="muted">${a.note}</span><br><button class="mini" id="lw-del">Diese Aminosäure entfernen</button>`; document.getElementById('lw-del').onclick = () => { lw.seq.splice(lw.sel, 1); lw.sel = -1; lwRender(); }; }
+  else info.style.display = 'none';
+  const sc = document.getElementById('lw-scroll'); if (n && sc.dataset.n != n) { sc.scrollLeft = sc.scrollWidth; } sc.dataset.n = n;
+}
+function lwInit() {
+  const pal = document.getElementById('lw-pal');
+  AA.forEach(a => { const b = document.createElement('button'); b.className = 'aa'; b.style.setProperty('--c', CLS[a.cls].col); b.innerHTML = `<b>${a.c}</b><small>${a.o}</small>`; b.title = `${a.n} – ${a.rf}`; b.onclick = () => { if (lw.seq.length >= 10) { flash('Für die Lewis-Formel sind höchstens 10 Aminosäuren möglich.'); return; } lw.seq.push(a); lw.sel = -1; lwRender(); }; pal.appendChild(b); });
+  document.getElementById('lw-undo').onclick = () => { lw.seq.pop(); lw.sel = -1; lwRender(); };
+  document.getElementById('lw-clear').onclick = () => { lw.seq = []; lw.sel = -1; lwRender(); };
+  document.getElementById('lw-rand').onclick = () => { const n = 3 + Math.floor(Math.random() * 3); lw.seq = Array.from({ length: n }, () => AA[Math.floor(Math.random() * 20)]); lw.sel = -1; lwRender(); };
+  document.getElementById('lw-plane').onchange = e => { lw.showPlane = e.target.checked; lwRender(); };
+  document.getElementById('lw-col').onchange = e => { LW.colorSC = e.target.checked; lwRender(); };
+  lwRender();
+}
+
+// ===== 3. GEOMETRIE: Peptidrückgrat aus Torsionswinkeln (NeRF) ==============
+const D2R = Math.PI / 180;
+function nerf(a, b, c, r, theta, phi) {
+  const t = theta * D2R, p = phi * D2R, bc = c.clone().sub(b).normalize(), n = b.clone().sub(a).cross(bc).normalize(), m = n.clone().cross(bc);
+  return c.clone().addScaledVector(bc, -r * Math.cos(t)).addScaledVector(m, r * Math.sin(t) * Math.cos(p)).addScaledVector(n, r * Math.sin(t) * Math.sin(p));
+}
+// Seitenketten-Tabelle: [Name, Element, Ref A, Ref B, Ref C (gebundenes Atom), Bindungslänge, Winkel, Diederwinkel]
+const SCT = {
+  Gly: [], Ala: [],
+  Ser: [['OG', 'O', 'N', 'CA', 'CB', 1.43, 111, -60]],
+  Cys: [['SG', 'S', 'N', 'CA', 'CB', 1.81, 114, -65]],
+  Thr: [['OG1', 'O', 'N', 'CA', 'CB', 1.43, 109.5, 60], ['CG2', 'C', 'N', 'CA', 'CB', 1.52, 111, -60]],
+  Val: [['CG1', 'C', 'N', 'CA', 'CB', 1.52, 110.5, 180], ['CG2', 'C', 'N', 'CA', 'CB', 1.52, 110.5, -60]],
+  Leu: [['CG', 'C', 'N', 'CA', 'CB', 1.53, 116, -65], ['CD1', 'C', 'CA', 'CB', 'CG', 1.52, 110.7, 175], ['CD2', 'C', 'CA', 'CB', 'CG', 1.52, 110.7, -65]],
+  Ile: [['CG1', 'C', 'N', 'CA', 'CB', 1.53, 110.5, -60], ['CG2', 'C', 'N', 'CA', 'CB', 1.52, 110.5, 60], ['CD1', 'C', 'CA', 'CB', 'CG1', 1.51, 113.8, 170]],
+  Met: [['CG', 'C', 'N', 'CA', 'CB', 1.52, 114, -65], ['SD', 'S', 'CA', 'CB', 'CG', 1.81, 112.7, 180], ['CE', 'C', 'CB', 'CG', 'SD', 1.79, 100.9, 180]],
+  Phe: [['CG', 'C', 'N', 'CA', 'CB', 1.50, 113.8, -65], ['CD1', 'C', 'CA', 'CB', 'CG', 1.39, 120.7, 90], ['CD2', 'C', 'CA', 'CB', 'CG', 1.39, 120.7, -90], ['CE1', 'C', 'CB', 'CG', 'CD1', 1.39, 120.7, 180], ['CE2', 'C', 'CB', 'CG', 'CD2', 1.39, 120.7, 180], ['CZ', 'C', 'CG', 'CD1', 'CE1', 1.39, 120, 0]],
+  Tyr: [['CG', 'C', 'N', 'CA', 'CB', 1.50, 113.8, -65], ['CD1', 'C', 'CA', 'CB', 'CG', 1.39, 120.7, 90], ['CD2', 'C', 'CA', 'CB', 'CG', 1.39, 120.7, -90], ['CE1', 'C', 'CB', 'CG', 'CD1', 1.39, 120.7, 180], ['CE2', 'C', 'CB', 'CG', 'CD2', 1.39, 120.7, 180], ['CZ', 'C', 'CG', 'CD1', 'CE1', 1.39, 120, 0], ['OH', 'O', 'CD1', 'CE1', 'CZ', 1.38, 120, 180]],
+  Asp: [['CG', 'C', 'N', 'CA', 'CB', 1.52, 112, -60], ['OD1', 'O', 'CA', 'CB', 'CG', 1.25, 118.5, 0], ['OD2', 'O', 'CA', 'CB', 'CG', 1.25, 118.5, 180]],
+  Glu: [['CG', 'C', 'N', 'CA', 'CB', 1.52, 114, -60], ['CD', 'C', 'CA', 'CB', 'CG', 1.52, 113, 180], ['OE1', 'O', 'CB', 'CG', 'CD', 1.25, 118.5, 0], ['OE2', 'O', 'CB', 'CG', 'CD', 1.25, 118.5, 180]],
+  Asn: [['CG', 'C', 'N', 'CA', 'CB', 1.52, 112, -60], ['OD1', 'O', 'CA', 'CB', 'CG', 1.23, 120.8, 0], ['ND2', 'N', 'CA', 'CB', 'CG', 1.33, 116.4, 180]],
+  Gln: [['CG', 'C', 'N', 'CA', 'CB', 1.52, 114, -60], ['CD', 'C', 'CA', 'CB', 'CG', 1.52, 112, 180], ['OE1', 'O', 'CB', 'CG', 'CD', 1.23, 120.8, 0], ['NE2', 'N', 'CB', 'CG', 'CD', 1.33, 116.4, 180]],
+  Lys: [['CG', 'C', 'N', 'CA', 'CB', 1.52, 114, -60], ['CD', 'C', 'CA', 'CB', 'CG', 1.52, 111, 180], ['CE', 'C', 'CB', 'CG', 'CD', 1.52, 111, 180], ['NZ', 'N', 'CG', 'CD', 'CE', 1.49, 111, 180]],
+  Arg: [['CG', 'C', 'N', 'CA', 'CB', 1.52, 114, -60], ['CD', 'C', 'CA', 'CB', 'CG', 1.52, 111, 180], ['NE', 'N', 'CB', 'CG', 'CD', 1.46, 111, 180], ['CZ', 'C', 'CG', 'CD', 'NE', 1.33, 124.5, 180], ['NH1', 'N', 'CD', 'NE', 'CZ', 1.33, 120, 0], ['NH2', 'N', 'CD', 'NE', 'CZ', 1.33, 120, 180]],
+  His: [['CG', 'C', 'N', 'CA', 'CB', 1.50, 113.8, -65], ['ND1', 'N', 'CA', 'CB', 'CG', 1.38, 122.7, 90], ['CD2', 'C', 'CA', 'CB', 'CG', 1.35, 131, -90], ['CE1', 'C', 'CB', 'CG', 'ND1', 1.32, 109, 180], ['NE2', 'N', 'CB', 'CG', 'CD2', 1.37, 107, 180]],
+  Trp: [['CG', 'C', 'N', 'CA', 'CB', 1.50, 113.8, -65], ['CD1', 'C', 'CA', 'CB', 'CG', 1.37, 127, 90], ['CD2', 'C', 'CA', 'CB', 'CG', 1.43, 126.5, -90], ['NE1', 'N', 'CB', 'CG', 'CD1', 1.38, 110, 180], ['CE2', 'C', 'CB', 'CG', 'CD2', 1.41, 107, 180], ['CE3', 'C', 'CB', 'CG', 'CD2', 1.40, 133.9, 0], ['CZ2', 'C', 'CG', 'CD2', 'CE2', 1.40, 122.4, 180], ['CZ3', 'C', 'CG', 'CD2', 'CE3', 1.38, 118.8, 180], ['CH2', 'C', 'CD2', 'CE2', 'CZ2', 1.37, 117.5, 0]],
+  Pro: [['CG', 'C', 'N', 'CA', 'CB', 1.50, 104.5, 30], ['CD', 'C', 'CA', 'CB', 'CG', 1.50, 103.5, -30]]
+};
+const SCX = { Phe: [['CZ', 'CE2']], Tyr: [['CZ', 'CE2']], His: [['NE2', 'CE1'], ['CD2', 'CG']], Trp: [['NE1', 'CE2'], ['CZ3', 'CH2'], ['CE2', 'CD2'], ['CE3', 'CD2']], Pro: [['CD', 'N']] };
+// Doppelbindungen (nur für die Anzeige)
+const DBL = { Asp: [['CG', 'OD1']], Glu: [['CD', 'OE1']], Asn: [['CG', 'OD1']], Gln: [['CD', 'OE1']], Phe: [['CG', 'CD1'], ['CE1', 'CZ'], ['CE2', 'CD2']], Tyr: [['CG', 'CD1'], ['CE1', 'CZ'], ['CE2', 'CD2']] };
+
+// Kette aus Torsionswinkeln [{phi, psi}] aufbauen; Atome: {n, el, p, r, t}, t = 'bb' | 'sc' | 'H'
+function buildChain(seq, tors, opt = {}) {
+  const atoms = [], bonds = [], res = [], V = (x, y, z) => new THREE.Vector3(x, y, z);
+  const add = (n, el, p, r, t) => { const a = { n, el, p, r, t, id: atoms.length }; atoms.push(a); return a; };
+  const bnd = (a, b, o = 1) => bonds.push([a.id, b.id, o]);
+  let N = V(0, 0, 0), CA = V(1.458, 0, 0), C = CA.clone().add(V(Math.cos((180 - 111.2) * D2R), Math.sin((180 - 111.2) * D2R), 0).multiplyScalar(1.525));
+  let prev = null, prevPos = null;
+  seq.forEach((aa, i) => {
+    const t = tors[i] || { phi: -60, psi: -45 };
+    if (i > 0) {
+      const psiP = tors[i - 1].psi;
+      N = nerf(prevPos.N, prevPos.CA, prevPos.C, 1.329, 116.2, psiP);
+      CA = nerf(prevPos.CA, prevPos.C, N, 1.458, 121.7, 180);
+      C = nerf(prevPos.C, N, CA, 1.525, 111.2, t.phi);
+    }
+    const O = nerf(N, CA, C, 1.231, 120.8, t.psi + 180);
+    const rr = { aa, i, a: {} }; res.push(rr);
+    rr.a.N = add('N', 'N', N, i, 'bb'); rr.a.CA = add('CA', 'C', CA, i, 'bb'); rr.a.C = add('C', 'C', C, i, 'bb'); rr.a.O = add('O', 'O', O, i, 'bb');
+    bnd(rr.a.N, rr.a.CA); bnd(rr.a.CA, rr.a.C); bnd(rr.a.C, rr.a.O, 2);
+    if (prev) {
+      bnd(prev.a.C, rr.a.N);
+      const u = N.clone().sub(prevPos.C).normalize(), w = N.clone().sub(CA).normalize();
+      rr.a.H = add('H', 'H', N.clone().addScaledVector(u.add(w).normalize(), 1.01), i, 'H'); bnd(rr.a.N, rr.a.H);
+    }
+    if (aa.c !== 'Gly') {
+      const b = CA.clone().sub(N), c = C.clone().sub(CA), a = b.clone().cross(c), CB = a.multiplyScalar(-0.58273431).addScaledVector(b, 0.56802827).addScaledVector(c, -0.54067466).add(CA);
+      rr.a.CB = add('CB', 'C', CB, i, 'sc'); bnd(rr.a.CA, rr.a.CB);
+      if (!opt.noSC) (SCT[aa.c] || []).forEach(([nm, el, ra, rb, rc, len, ang, dih]) => {
+        const p = nerf(rr.a[ra].p, rr.a[rb].p, rr.a[rc].p, len, ang, dih);
+        rr.a[nm] = add(nm, el, p, i, 'sc'); bnd(rr.a[rc], rr.a[nm]);
+      });
+      if (!opt.noSC) (SCX[aa.c] || []).forEach(([x, y]) => bnd(rr.a[x], rr.a[y]));
+    }
+    prev = rr; prevPos = { N, CA, C };
+  });
+  // Doppelbindungen markieren
+  bonds.forEach(b => { const A = atoms[b[0]], B = atoms[b[1]]; const rr = res[A.r]; if (A.r === B.r && DBL[rr.aa.c] && DBL[rr.aa.c].some(([x, y]) => (A.n === x && B.n === y) || (A.n === y && B.n === x))) b[2] = 2; });
+  return { atoms, bonds, res };
+}
+// Wasserstoffbrücken: N–H···O=C
+function findHB(atoms, maxD = 2.6, minSep = 2) {
+  const Hs = atoms.filter(a => a.t === 'H'), Os = atoms.filter(a => a.n === 'O' && a.t === 'bb'), out = [];
+  Hs.forEach(H => { Os.forEach(O => {
+    if (Math.abs(H.r - O.r) < minSep && H.grp === O.grp) return;
+    const d = H.p.distanceTo(O.p); if (d > maxD) return;
+    out.push([H.id, O.id, d]);
+  }); });
+  return out;
+}
+function bestPerH(hb) { const m = {}; hb.forEach(h => { if (!m[h[0]] || m[h[0]][2] > h[2]) m[h[0]] = h; }); const used = {}; return Object.values(m).sort((a, b) => a[2] - b[2]).filter(h => { if (used[h[1]]) return false; used[h[1]] = 1; return true; }); }
+const TORS = { helix: { phi: -57, psi: -47 }, sheet: { phi: -125, psi: 135 }, ppii: { phi: -75, psi: 145 } };
+
+// ===== 4. 3D-HILFSFUNKTIONEN ==================================================
+const CPK = { C: 0xa8b3c2, N: 0x4a7bf0, O: 0xff4d4d, S: 0xf4d03f, H: 0xf1f4f8 }, RAD = { C: 0.36, N: 0.34, O: 0.33, S: 0.46, H: 0.2 };
+const COL = { helix: 0x4cd964, sheet: 0xff453a, coil: 0xa0a7b4 };
+const geoSph = new THREE.SphereGeometry(1, 18, 14), geoCyl = new THREE.CylinderGeometry(1, 1, 1, 10, 1, false);
+const matCache = {};
+const stdMat = (c, o = {}) => { const k = c + JSON.stringify(o); return matCache[k] || (matCache[k] = new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: 0.45, metalness: 0.05 }, o))); };
+function cyl(a, b, r, mat) {
+  const m = new THREE.Mesh(geoCyl, mat), d = b.clone().sub(a), L = d.length();
+  m.position.copy(a).addScaledVector(d, 0.5); m.scale.set(r, L, r); m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize()); return m;
+}
+function sphere(p, r, mat) { const m = new THREE.Mesh(geoSph, mat); m.position.copy(p); m.scale.setScalar(r); return m; }
+function dashes(a, b, r = 0.065, color = 0xffee58, n = 7) {
+  const g = new THREE.Group(), d = b.clone().sub(a), mat = new THREE.MeshBasicMaterial({ color });
+  for (let i = 0; i < n; i++) { const s = a.clone().addScaledVector(d, (i + 0.15) / n), e = a.clone().addScaledVector(d, (i + 0.65) / n); g.add(cyl(s, e, r, mat)); }
+  return g;
+}
+const labelCache = {};
+function makeLabel(text, color = '#ffffff', size = 1.6, bg = 'rgba(10,14,20,.72)') {
+  const key = text + color + bg; let tex = labelCache[key];
+  if (!tex) {
+    const c = document.createElement('canvas'), x = c.getContext('2d'); x.font = 'bold 44px Segoe UI, system-ui, sans-serif';
+    const w = Math.ceil(x.measureText(text).width) + 30; c.width = w; c.height = 70;
+    x.font = 'bold 44px Segoe UI, system-ui, sans-serif'; x.fillStyle = bg; x.beginPath(); x.roundRect ? x.roundRect(2, 4, w - 4, 62, 22) : x.rect(2, 4, w - 4, 62); x.fill();
+    x.fillStyle = color; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(text, w / 2, 37);
+    tex = new THREE.CanvasTexture(c); tex.anisotropy = 4; tex.userData = { w, h: 70 }; labelCache[key] = tex;
+  }
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false, transparent: true })); sp.renderOrder = 20;
+  sp.scale.set(size * tex.userData.w / 70, size, 1); return sp;
+}
+const clsCol = aa => parseInt(CLS[aa.cls].col.slice(1), 16);
+// Kugel-Stab-Modell einer Kette
+function atomGroup(ch, o = {}) {
+  const g = new THREE.Group(), bondMat = stdMat(0xb6c0cf, { roughness: 0.5 }), P = a => a.p;
+  const show = a => (o.showSC !== false || a.t !== 'sc') && (o.showH !== false || a.t !== 'H') && (!o.skip || !o.skip(a));
+  ch.atoms.forEach(a => {
+    if (!show(a)) return;
+    let col = CPK[a.el]; if (a.t === 'sc' && a.el === 'C' && o.classColor !== false) col = clsCol(ch.res[a.r].aa);
+    const s = sphere(a.p, (RAD[a.el] || 0.35) * (o.scale || 1), stdMat(col, { roughness: 0.35 })); s.userData.atom = a; g.add(s);
+  });
+  ch.bonds.forEach(([i, j, ord]) => {
+    const A = ch.atoms[i], B = ch.atoms[j]; if (!show(A) || !show(B)) return;
+    if (ord === 2) {
+      const d = B.p.clone().sub(A.p).normalize(), side = new THREE.Vector3(0.3, 1, 0.2).cross(d).normalize().multiplyScalar(0.1);
+      g.add(cyl(A.p.clone().add(side), B.p.clone().add(side), 0.055, bondMat)); g.add(cyl(A.p.clone().sub(side), B.p.clone().sub(side), 0.055, bondMat));
+    } else g.add(cyl(A.p, B.p, 0.085, bondMat));
+  });
+  if (o.hb) o.hb.forEach(h => g.add(dashes(ch.atoms[h[0]].p, ch.atoms[h[1]].p, 0.06, o.hbColor || 0xffee58)));
+  return g;
+}
+// Band-Modell: Helix = Band, Faltblatt = Pfeil, Schleife = Röhre
+function ribbonMesh(sp) {
+  const pts = sp.pts; if (pts.length < 2) return new THREE.Group();
+  const nS = Math.max(8, (pts.length - 1) * 10), col1 = new THREE.Color(sp.c1), col2 = new THREE.Color(sp.c2 !== undefined ? sp.c2 : sp.c1);
+  let ps = pts;
+  if (sp.type === 'E' && pts.length > 2) ps = pts.map((p, i) => { const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)]; return i === 0 || i === pts.length - 1 ? p.clone() : p.clone().multiplyScalar(0.5).addScaledVector(a, 0.25).addScaledVector(b, 0.25); });
+  const curve = new THREE.CatmullRomCurve3(ps, false, 'catmullrom', 0.5);
+  if (sp.type === 'C') {
+    const geo = new THREE.TubeGeometry(curve, nS, sp.r || 0.3, 8, false), m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: sp.c1, roughness: 0.5 })); m.userData = sp.ud || {}; return m;
+  }
+  const pos = [], nor = [], colr = [], idx = [];
+  const w = sp.w || (sp.type === 'H' ? 2.2 : 2.4), th = sp.th || 0.5, arrowFrac = sp.type === 'E' ? Math.min(0.3, 5.5 / Math.max(6, pts.length * 3.3 / 1.2)) : 0;
+  const rows = [];
+  for (let i = 0; i <= nS; i++) {
+    const u = i / nS, P = curve.getPoint(u), T = curve.getTangent(u).normalize();
+    let S = sp.type === 'H' ? sp.axis.clone().addScaledVector(T, -sp.axis.dot(T)) : sp.up.clone().cross(T);
+    S.normalize(); const N = T.clone().cross(S).normalize();
+    let wf = 1; if (sp.type === 'E' && u > 1 - arrowFrac) wf = (1 - u) / arrowFrac * 1.65 + 0.001;
+    rows.push({ P, S, N, w2: w / 2 * wf, th: th / 2, u });
+  }
+  const c = new THREE.Color();
+  rows.forEach(r => {
+    const { P, S, N } = r, corner = (a, b) => P.clone().addScaledVector(S, a * r.w2).addScaledVector(N, b * r.th);
+    c.copy(col1).lerp(col2, r.u);
+    [[[-1, 1], [1, 1], N], [[1, 1], [1, -1], S], [[1, -1], [-1, -1], N.clone().negate()], [[-1, -1], [-1, 1], S.clone().negate()]].forEach(([p0, p1, nn]) => {
+      [p0, p1].forEach(q => { const v = corner(q[0], q[1]); pos.push(v.x, v.y, v.z); nor.push(nn.x, nn.y, nn.z); colr.push(c.r, c.g, c.b); });
+    });
+  });
+  for (let i = 0; i < nS; i++) for (let f = 0; f < 4; f++) { const a = i * 8 + f * 2, b = (i + 1) * 8 + f * 2; idx.push(a, a + 1, b + 1, a, b + 1, b); }
+  { const a = 0; idx.push(0, 2, 4, 0, 4, 6); }
+  const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3)); geo.setAttribute('color', new THREE.Float32BufferAttribute(colr, 3)); geo.setIndex(idx);
+  const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.4, metalness: 0.05, side: THREE.DoubleSide })); m.userData = sp.ud || {}; return m;
+}
+// Drehen / Zoomen / Verschieben
+class Orbit {
+  constructor(cam, target, dist, az = 0.5, pol = 1.25) { this.cam = cam; this.t = target.clone(); this.r = dist; this.az = az; this.pol = pol; this.min = dist * 0.25; this.max = dist * 3; this.update(); }
+  update() { const s = Math.sin(this.pol); this.cam.position.set(this.t.x + this.r * s * Math.sin(this.az), this.t.y + this.r * Math.cos(this.pol), this.t.z + this.r * s * Math.cos(this.az)); this.cam.lookAt(this.t); }
+  pan(dx, dy) { const k = this.r * 0.0016, right = new THREE.Vector3().setFromMatrixColumn(this.cam.matrix, 0), up = new THREE.Vector3().setFromMatrixColumn(this.cam.matrix, 1); this.t.addScaledVector(right, -dx * k).addScaledVector(up, dy * k); }
+}
+function bindOrbit(canvas, getOrbit, onTap) {
+  const ptr = new Map(); let down = null, lastD = 0, moved = 0;
+  canvas.addEventListener('pointerdown', e => { canvas.setPointerCapture(e.pointerId); ptr.set(e.pointerId, { x: e.clientX, y: e.clientY }); if (ptr.size === 1) { down = { x: e.clientX, y: e.clientY, t: performance.now() }; moved = 0; } if (ptr.size === 2) { const [a, b] = [...ptr.values()]; lastD = Math.hypot(a.x - b.x, a.y - b.y); } });
+  canvas.addEventListener('pointermove', e => {
+    const o = getOrbit(); if (!o || !ptr.has(e.pointerId)) return; const p = ptr.get(e.pointerId), dx = e.clientX - p.x, dy = e.clientY - p.y;
+    if (ptr.size === 1) { moved += Math.abs(dx) + Math.abs(dy); if (e.shiftKey || e.buttons === 2) o.pan(dx, dy); else { o.az -= dx * 0.008; o.pol = Math.min(Math.PI - 0.08, Math.max(0.08, o.pol - dy * 0.008)); } }
+    else if (ptr.size === 2) { p.x = e.clientX; p.y = e.clientY; const [a, b] = [...ptr.values()], d = Math.hypot(a.x - b.x, a.y - b.y); if (lastD) o.r = Math.min(o.max, Math.max(o.min, o.r * lastD / d)); lastD = d; o.pan(dx / 2, dy / 2); moved += 20; }
+    p.x = e.clientX; p.y = e.clientY; o.update();
+  });
+  const up = e => { const was = ptr.size; ptr.delete(e.pointerId); if (was === 1 && down && moved < 8 && performance.now() - down.t < 500 && onTap) onTap(e.clientX, e.clientY); if (ptr.size < 2) lastD = 0; };
+  canvas.addEventListener('pointerup', up); canvas.addEventListener('pointercancel', up);
+  canvas.addEventListener('wheel', e => { const o = getOrbit(); if (!o) return; e.preventDefault(); o.r = Math.min(o.max, Math.max(o.min, o.r * (1 + Math.sign(e.deltaY) * 0.1))); o.update(); }, { passive: false });
+  canvas.addEventListener('contextmenu', e => e.preventDefault());
+}
+function newScene() {
+  const s = new THREE.Scene();
+  s.add(new THREE.HemisphereLight(0xcfe0ff, 0x28303c, 0.95));
+  const d = new THREE.DirectionalLight(0xffffff, 0.95); d.position.set(30, 50, 40); s.add(d);
+  const d2 = new THREE.DirectionalLight(0x9fb8ff, 0.35); d2.position.set(-40, -10, -30); s.add(d2);
+  return s;
+}
+// Renderer (einer für die große Ansicht, einer für die Detailansicht)
+function makeRenderer() { const r = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true }); r.setPixelRatio(Math.min(2, window.devicePixelRatio || 1)); r.setClearColor(0x000000, 0); return r; }
+const mainR = makeRenderer(), detR = makeRenderer();
+const stage = { main: null, detail: null };      // aktuelle Ansichten: {scene, camera, orbit, el}
+function fit(r, el, cam) { const w = Math.max(10, el.clientWidth), h = Math.max(10, el.clientHeight); r.setSize(w, h, false); r.domElement.style.width = w + 'px'; r.domElement.style.height = h + 'px'; cam.aspect = w / h; cam.updateProjectionMatrix(); }
+function showMain(v) { stage.main = v; v.el.insertBefore(mainR.domElement, v.el.firstChild); fit(mainR, v.el, v.camera); }
+function showDetail(v) { stage.detail = v; if (!v) return; v.el.insertBefore(detR.domElement, v.el.firstChild); fit(detR, v.el, v.camera); }
+bindOrbit(mainR.domElement, () => stage.main && stage.main.orbit, (x, y) => stage.main && stage.main.tap && stage.main.tap(x, y, mainR.domElement));
+bindOrbit(detR.domElement, () => stage.detail && stage.detail.orbit, null);
+window.addEventListener('resize', () => { if (stage.main) fit(mainR, stage.main.el, stage.main.camera); if (stage.detail) fit(detR, stage.detail.el, stage.detail.camera); });
+new ResizeObserver(() => { if (stage.main) fit(mainR, stage.main.el, stage.main.camera); if (stage.detail) fit(detR, stage.detail.el, stage.detail.camera); }).observe(document.body);
+let lastT = performance.now();
+function loop(t) {
+  requestAnimationFrame(loop); const dt = Math.min(0.1, (t - lastT) / 1000); lastT = t;
+  if (stage.main && stage.main.el.offsetParent) { if (stage.main.tick) stage.main.tick(dt); mainR.render(stage.main.scene, stage.main.camera); }
+  if (stage.detail && stage.detail.el.offsetParent) { if (stage.detail.tick) stage.detail.tick(dt); detR.render(stage.detail.scene, stage.detail.camera); }
+}
+requestAnimationFrame(loop);
+function pickAt(v, cx, cy, canvas, objs) {
+  const r = canvas.getBoundingClientRect(), m = new THREE.Vector2((cx - r.left) / r.width * 2 - 1, -(cy - r.top) / r.height * 2 + 1), rc = new THREE.Raycaster();
+  rc.setFromCamera(m, v.camera); const hit = rc.intersectObjects(objs, true); return hit.length ? hit[0] : null;
+}
+const sphereIn = (pts) => { const c = new THREE.Vector3(); pts.forEach(p => c.add(p)); c.divideScalar(pts.length); let r = 0; pts.forEach(p => r = Math.max(r, p.distanceTo(c))); return { c, r }; };
+
+// ===== 5. SEKUNDÄRSTRUKTUR =====================================================
+const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
+const sc = { seq: [], sel: -1, hb: true, side: true, rib: false, view: null, grp: null, info: {} };
+const SC_PRE = [
+  ['α-Helix: Helix-Bildner', ['Ala', 'Glu', 'Leu', 'Met', 'Lys', 'Ala', 'Glu', 'Leu', 'Gln', 'Ala']],
+  ['β-Faltblatt: Val/Ile/Tyr/Thr', ['Val', 'Tyr', 'Ile', 'Thr', 'Val', 'Asn', 'Gly', 'Thr', 'Ile', 'Val', 'Tyr', 'Val']],
+  ['Helix + Faltblatt', ['Ala', 'Glu', 'Leu', 'Met', 'Lys', 'Ala', 'Glu', 'Gly', 'Pro', 'Val', 'Ile', 'Tyr', 'Thr', 'Val', 'Ile']],
+  ['Pro in der Helix', ['Ala', 'Glu', 'Leu', 'Pro', 'Lys', 'Ala', 'Glu', 'Leu', 'Gln', 'Ala']],
+  ['Knäuel: Gly/Pro/Ser', ['Gly', 'Pro', 'Ser', 'Gly', 'Asn', 'Pro', 'Gly', 'Ser', 'Asp', 'Gly']]
+];
+
+// ----- Vorhersage (vereinfacht nach Chou & Fasman) -----
+function predictSS(seq) {
+  const n = seq.length, Pa = seq.map(a => a.pa), Pb = seq.map(a => a.pb), pro = seq.map(a => a.c === 'Pro');
+  const H = Array(n).fill(false), E = Array(n).fill(false);
+  const grow = (i0, j0, P, thr, noPro) => { let i = i0, j = j0; while (j + 1 < n && P[j + 1] >= thr && !(noPro && pro[j + 1])) j++; while (i - 1 >= 0 && P[i - 1] >= thr && !(noPro && pro[i - 1])) i--; return [i, j]; };
+  for (let i = 0; i + 6 <= n; i++) { let c = 0, bad = false; for (let k = i; k < i + 6; k++) { if (Pa[k] >= 1.03) c++; if (pro[k] && k > i + 1) bad = true; } if (c >= 4 && !bad) { const [a, b] = grow(i, i + 5, Pa, 1.0, true); for (let k = a; k <= b; k++) if (Pa[k] >= 0.95 && !pro[k]) H[k] = true; } }
+  for (let i = 0; i + 5 <= n; i++) { let c = 0; for (let k = i; k < i + 5; k++) if (Pb[k] >= 1.05) c++; if (c >= 3) { const [a, b] = grow(i, i + 4, Pb, 1.0, false); for (let k = a; k <= b; k++) if (Pb[k] >= 0.95) E[k] = true; } }
+  const st = Array(n).fill('C');
+  // Überlappungen: Bereich mit höherem mittlerem Wert gewinnt
+  let k = 0;
+  while (k < n) {
+    if (H[k] && E[k]) { let j = k; while (j < n && H[j] && E[j]) j++; let sa = 0, sb = 0; for (let q = k; q < j; q++) { sa += Pa[q]; sb += Pb[q]; } const win = sa >= sb ? 'H' : 'E'; for (let q = k; q < j; q++) st[q] = win; k = j; }
+    else { st[k] = H[k] ? 'H' : (E[k] ? 'E' : 'C'); k++; }
+  }
+  // Mindestlängen: Helix ≥ 5, Faltblatt ≥ 4
+  let i = 0; while (i < n) { let j = i; while (j < n && st[j] === st[i]) j++; if ((st[i] === 'H' && j - i < 5) || (st[i] === 'E' && j - i < 4)) for (let q = i; q < j; q++) st[q] = 'C'; i = j; }
+  return st;
+}
+
+// ----- Hilfen -----
+function alignFrame(ch, x, y, origin) {
+  const X = x.clone().normalize(), Y = y.clone().addScaledVector(X, -y.dot(X)).normalize(), Z = X.clone().cross(Y);
+  ch.atoms.forEach(a => { const d = a.p.clone().sub(origin); a.p.set(d.dot(X), d.dot(Y), d.dot(Z)); });
+}
+const caCenter = ch => { const c = V3(0, 0, 0); ch.res.forEach(r => c.add(r.a.CA.p)); return c.divideScalar(ch.res.length); };
+function makeHelix(segAA) {
+  const ch = buildChain(segAA, segAA.map(() => TORS.helix), { noSC: true }), ca = ch.res.map(r => r.a.CA.p), ax = V3(0, 0, 0);
+  for (let i = 0; i + 2 < ca.length; i++) ax.add(ca[i + 1].clone().sub(ca[i]).cross(ca[i + 2].clone().sub(ca[i + 1])));
+  if (ax.dot(ca[ca.length - 1].clone().sub(ca[0])) < 0) ax.negate();
+  alignFrame(ch, ax, V3(0, 1, 0).cross(ax).lengthSq() > 0.01 ? V3(0, 1, 0) : V3(0, 0, 1), caCenter(ch)); return ch;
+}
+function makeStrand(segAA) {
+  const ch = buildChain(segAA, segAA.map(() => TORS.sheet), { noSC: true }), ca = ch.res.map(r => r.a.CA.p);
+  const x = ca[ca.length - 1].clone().sub(ca[0]), p = ca[1].clone().sub(ca[0].clone().add(ca[2]).multiplyScalar(0.5));
+  alignFrame(ch, x, p, caCenter(ch)); return ch;
+}
+function hbLists(ch) { return { H: ch.atoms.filter(a => a.t === 'H'), O: ch.atoms.filter(a => a.n === 'O') }; }
+const flipA = p => V3(-p.x, p.y, -p.z), flipB = p => V3(-p.x, -p.y, p.z);
+function pairStrands(A, B, centerA) {   // A: Kette (bereits platziert), B: lokale Kette (um 0 zentriert)
+  const LA = hbLists(A), LB = hbLists(B); let best = null;
+  [flipA, flipB].forEach((f, ci) => {
+    const bH = LB.H.map(a => f(a.p)), bO = LB.O.map(a => f(a.p));
+    for (let sy = -0.6; sy <= 0.61; sy += 0.3) for (let sx = -4; sx <= 4.01; sx += 0.25) for (let d = 3.8; d <= 5.8; d += 0.1) {
+      const off = V3(centerA.x + sx, centerA.y + sy, centerA.z + d); let s = 0;
+      for (const h of LA.H) for (const o of bO) { const dd = Math.sqrt((h.p.x - o.x - off.x) ** 2 + (h.p.y - o.y - off.y) ** 2 + (h.p.z - o.z - off.z) ** 2); if (dd < 2.7) s += 3.2 - dd; }
+      for (const h of bH) for (const o of LA.O) { const dd = Math.sqrt((o.p.x - h.x - off.x) ** 2 + (o.p.y - h.y - off.y) ** 2 + (o.p.z - h.z - off.z) ** 2); if (dd < 2.7) s += 3.2 - dd; }
+      if (!best || s > best.s + 1e-6) best = { s, f, off: off.clone() };
+    }
+  });
+  B.atoms.forEach(a => { a.p = best.f(a.p).add(best.off); });
+  return best.s;
+}
+function crossHB(chA, chB, maxD = 2.6) {
+  const out = [], LA = hbLists(chA), LB = hbLists(chB);
+  LA.H.forEach(h => LB.O.forEach(o => { const d = h.p.distanceTo(o.p); if (d < maxD) out.push([h.p, o.p, d, h, o]); }));
+  LB.H.forEach(h => LA.O.forEach(o => { const d = h.p.distanceTo(o.p); if (d < maxD) out.push([h.p, o.p, d, h, o]); }));
+  return out;
+}
+function bezierPts(P0, P1, P2, P3, n) {
+  const f = t => { const u = 1 - t; return P0.clone().multiplyScalar(u * u * u).addScaledVector(P1, 3 * u * u * t).addScaledVector(P2, 3 * u * t * t).addScaledVector(P3, t * t * t); };
+  const dense = []; for (let i = 0; i <= 120; i++) dense.push(f(i / 120)); const cum = [0]; for (let i = 1; i < dense.length; i++) cum.push(cum[i - 1] + dense[i].distanceTo(dense[i - 1]));
+  return { len: cum[cum.length - 1], at: s => { let i = 1; while (i < cum.length - 1 && cum[i] < s) i++; const t = (s - cum[i - 1]) / ((cum[i] - cum[i - 1]) || 1); return dense[i - 1].clone().lerp(dense[i], t); }, n };
+}
+function loopPoints(P0, T0, P3, T3, n) {   // n innere Cα-Positionen zwischen P0 und P3
+  const target = 3.8 * (n + 1); let best = null;
+  for (let m = 1; m <= 40; m += 0.5) { const b = V3(0, 0.45 * m, 0), bz = bezierPts(P0, P0.clone().addScaledVector(T0, m).add(b), P3.clone().addScaledVector(T3, -m).add(b), P3, n); best = bz; if (bz.len >= target) break; }
+  const out = []; for (let k = 1; k <= n; k++) out.push(best.at(best.len * k / (n + 1))); return out;
+}
+function rSphereGroup(ch, gi, selIdx, labels) {
+  const g = new THREE.Group();
+  ch.res.forEach(r => {
+    const CB = r.a.CB; if (!CB) return; const aa = r.aa, d = CB.p.clone().sub(r.a.CA.p).normalize(), c = CB.p.clone().addScaledVector(d, 0.9), sel = gi(r.i) === selIdx;
+    const s = sphere(c, sel ? 0.95 : 0.74, new THREE.MeshStandardMaterial({ color: clsCol(aa), roughness: 0.4, transparent: true, opacity: 0.82, emissive: sel ? 0xffffff : 0x000000, emissiveIntensity: sel ? 0.35 : 0 }));
+    g.add(s); g.add(cyl(r.a.CA.p, CB.p, 0.08, stdMat(0xb6c0cf)));
+    if (labels) { const l = makeLabel(aa.c, '#10151c', 0.9, 'rgba(255,255,255,.0)'); l.position.copy(c); l.material.depthTest = false; g.add(l); }
+  });
+  return g;
+}
+
+// ----- Szene aufbauen -----
+function scBuild() {
+  const seq = sc.seq, n = seq.length;
+  if (sc.grp) { sc.view.scene.remove(sc.grp); sc.grp = null; }
+  sc.st = n ? predictSS(seq) : []; sc.hbCount = { H: 0, E: 0 };
+  if (n < 2) { scUI(); return; }
+  const G = new THREE.Group(), st = sc.st, pts = [];
+  const runs = []; { let i = 0; while (i < n) { let j = i; while (j < n && st[j] === st[i]) j++; runs.push({ t: st[i], a: i, b: j - 1 }); i = j; } }
+  const allSS = runs.some(r => r.t !== 'C');
+  const atomsG = new THREE.Group(), ribG = new THREE.Group(), hbG = new THREE.Group(), rG = new THREE.Group(), coilG = new THREE.Group(); G.add(atomsG, ribG, hbG, rG, coilG);
+  sc.parts = { atomsG, ribG, hbG, rG, coilG };
+  if (!allSS) {                                   // reines Knäuel: Rückgrat-Atome in unregelmäßiger Faltung
+    const rnd = (() => { let s = seq.reduce((a, b) => a * 31 + b.i + 7, 17) % 2147483647 || 1; return () => (s = s * 48271 % 2147483647) / 2147483647; })();
+    const opts = [{ phi: -75, psi: 145 }, { phi: -65, psi: -40 }, { phi: -120, psi: 130 }, { phi: -90, psi: 0 }, { phi: 60, psi: 40 }, { phi: -80, psi: 160 }];
+    const ch = buildChain(seq, seq.map(() => { const o = opts[Math.floor(rnd() * opts.length)]; return { phi: o.phi + (rnd() - .5) * 30, psi: o.psi + (rnd() - .5) * 30 }; }), { noSC: true });
+    const c = caCenter(ch); ch.atoms.forEach(a => a.p.sub(c));
+    atomsG.add(atomGroup(ch, { showSC: false })); rG.add(rSphereGroup(ch, i => i, sc.sel, true)); ch.res.forEach(r => pts.push(r.a.CA.p.clone()));
+    const tp = new THREE.Group(); ribG.add(ribbonMesh({ type: 'C', pts: ch.res.map(r => r.a.CA.p), c1: COL.coil, r: 0.32 }));
+  } else {
+    let cursor = 0; const gap = 6, placed = [];     // placed: Elemente {t, a, b, ch, startP, endP, startT, endT}
+    let r = 0;
+    while (r < runs.length) {
+      const run = runs[r];
+      if (run.t === 'H') {
+        const segAA = seq.slice(run.a, run.b + 1), ch = makeHelix(segAA), len = ch.res[ch.res.length - 1].a.CA.p.x - ch.res[0].a.CA.p.x, x0 = cursor + gap + (placed.length ? 0 : 0);
+        ch.atoms.forEach(a => a.p.x += x0 + len / 2); ch.res.forEach(q => q.gi = run.a + q.i);
+        const hb = bestPerH(findHB(ch.atoms, 2.6, 3));
+        const el = { t: 'H', a: run.a, b: run.b, ch, hb: hb.map(h => [ch.atoms[h[0]].p, ch.atoms[h[1]].p, h[2]]), startP: ch.res[0].a.CA.p.clone(), endP: ch.res[ch.res.length - 1].a.CA.p.clone(), startT: V3(1, 0, 0), endT: V3(1, 0, 0) };
+        placed.push(el); cursor = x0 + len; sc.hbCount.H += hb.length; r++;
+      } else if (run.t === 'E') {
+        // Gruppe aufeinanderfolgender Stränge (nur durch Schleifen getrennt)
+        const grp = []; let q = r;
+        while (q < runs.length) { if (runs[q].t === 'E') { grp.push(runs[q]); q++; } else if (runs[q].t === 'C' && q + 1 < runs.length && runs[q + 1].t === 'E' && runs[q].b - runs[q].a + 1 <= 6) q++; else break; }
+        const strands = []; let zc = 0, prev = null;
+        grp.forEach((g, k) => {
+          const segAA = seq.slice(g.a, g.b + 1), ch = makeStrand(segAA); ch.res.forEach(w => w.gi = g.a + w.i);
+          if (!prev) { const len = ch.res[ch.res.length - 1].a.CA.p.x - ch.res[0].a.CA.p.x, x0 = cursor + gap + len / 2; ch.atoms.forEach(a => a.p.x += x0); }
+          else { const cA = caCenter(prev.ch); pairStrands(prev.ch, ch, cA); }
+          const first = ch.res[0].a.CA.p, last = ch.res[ch.res.length - 1].a.CA.p, T = last.clone().sub(first).normalize();
+          const el = { t: 'E', a: g.a, b: g.b, ch, startP: first.clone(), endP: last.clone(), startT: T.clone(), endT: T.clone() }; strands.push(el); prev = el;
+        });
+        let xmax = -1e9; strands.forEach((s, k) => { s.ch.atoms.forEach(a => xmax = Math.max(xmax, a.p.x)); if (k > 0) { const hbs = crossHB(strands[k - 1].ch, s.ch); s.hb = hbs.map(h => [h[0], h[1], h[2]]); sc.hbCount.E += hbs.length; } });
+        strands.forEach(s => placed.push(s)); cursor = xmax; r = q;
+      } else r++;
+    }
+    // Rendern der Elemente
+    placed.forEach(el => {
+      const ch = el.ch; atomsG.add(atomGroup(ch, { showSC: false })); rG.add(rSphereGroup(ch, i => ch.res[i] ? ch.res[i].gi : -1, sc.sel, true));
+      el.pts = ch.res.map(w => w.a.CA.p.clone());
+      ribG.add(ribbonMesh(el.t === 'H' ? { type: 'H', pts: el.pts, axis: V3(1, 0, 0), c1: 0x4cd964, c2: 0x1fa04a } : { type: 'E', pts: el.pts, up: V3(0, 1, 0), c1: 0xe53935, c2: 0xffb3ae }));
+      (el.hb || []).forEach(h => hbG.add(dashes(h[0], h[1], 0.06, 0xffee58)));
+    });
+    // Schleifen / Knäuel
+    const chainPts = [];
+    for (let i = 0; i < runs.length; i++) {
+      const run = runs[i]; if (run.t !== 'C') continue; const cnt = run.b - run.a + 1, prevEl = placed.find(e => e.b === run.a - 1), nextEl = placed.find(e => e.a === run.b + 1);
+      let cp = [], P0, P3;
+      if (prevEl && nextEl) {
+        // Strang-Haarnadel: Schleife zwischen Strängen der gleichen Gruppe verbinden Ende und Anfang
+        cp = loopPoints(prevEl.endP, prevEl.endT, nextEl.startP, nextEl.startT, cnt); P0 = prevEl.endP; P3 = nextEl.startP;
+      } else if (nextEl) { const T = nextEl.startT, S = nextEl.startP; cp = Array.from({ length: cnt }, (_, k) => S.clone().addScaledVector(T, -3.6 * (cnt - k)).add(V3(0, -0.5 * (cnt - k), 0.8 * (cnt - k)))); P3 = S; }
+      else if (prevEl) { const T = prevEl.endT, S = prevEl.endP; cp = Array.from({ length: cnt }, (_, k) => S.clone().addScaledVector(T, 3.6 * (k + 1)).add(V3(0, 0.5 * (k + 1), 0.8 * (k + 1)))); P0 = S; }
+      const tube = [P0, ...cp, P3].filter(Boolean); if (tube.length > 1) coilG.add(ribbonMesh({ type: 'C', pts: tube, c1: COL.coil, r: 0.3 }));
+      cp.forEach((p, k) => { const aa = seq[run.a + k], gi = run.a + k, sel = gi === sc.sel; coilG.add(sphere(p, 0.55, new THREE.MeshStandardMaterial({ color: clsCol(aa), roughness: 0.4, emissive: sel ? 0xffffff : 0, emissiveIntensity: sel ? .35 : 0 }))); const l = makeLabel(aa.c, '#ffffff', 0.9); l.position.copy(p).add(V3(0, 1.4, 0)); coilG.add(l); });
+    }
+    placed.forEach(e => e.pts.forEach(p => pts.push(p))); coilG.children.forEach(o => { if (o.isMesh && o.geometry.type === 'SphereGeometry') pts.push(o.position.clone()); });
+  }
+  sc.grp = G; sc.view.scene.add(G); scApplyVis();
+  const bb = new THREE.Box3().setFromObject(atomsG); bb.union(new THREE.Box3().setFromObject(coilG)); const cen = bb.getCenter(V3(0, 0, 0)), rad = bb.getSize(V3(0, 0, 0)).length() / 2; sc.view.orbit.t.copy(cen); sc.view.orbit.r = Math.max(24, rad * 3.1); sc.view.orbit.min = 8; sc.view.orbit.max = sc.view.orbit.r * 3; sc.view.orbit.update();
+  scUI();
+}
+function scApplyVis() {
+  if (!sc.parts) return; const p = sc.parts;
+  p.atomsG.visible = !sc.rib; p.ribG.visible = sc.rib; p.hbG.visible = sc.hb; p.rG.visible = sc.side; p.coilG.visible = true;
+  p.coilG.children.forEach(o => { if (o.isSprite) o.visible = sc.side; });
+  // im Band-Modus Reste kleiner? (bleiben sichtbar)
+}
+
+// ----- Oberfläche -----
+function scUI() {
+  const n = sc.seq.length, chain = document.getElementById('sc-chain'), st = sc.st || [];
+  const sCol = { H: '#4cd964', E: '#ff453a', C: '#a0a7b4' };
+  chain.innerHTML = n ? '<span class="muted" style="font-size:12px;margin-right:2px">N</span>' + sc.seq.map((a, i) => `<span class="cc${sc.sel === i ? ' sel' : ''}" data-i="${i}" style="background:${CLS[a.cls].col};--s:${sCol[st[i] || 'C']}">${a.c}</span>`).join('') + '<span class="muted" style="font-size:12px;margin-left:2px">C</span>' : '<span class="chips hud" style="position:static;padding:6px 10px;background:rgba(13,17,23,.82);border:1px solid #2a3547;border-radius:10px;font-size:12.5px;color:#b6c3d6">Wähle rechts Aminosäuren oder ein Beispiel.</span>';
+  chain.querySelectorAll('.cc').forEach(c => c.onclick = () => { sc.sel = sc.sel === +c.dataset.i ? -1 : +c.dataset.i; scBuild(); });
+  document.getElementById('sc-legend').innerHTML = `<span style="color:#4cd964">■</span> α-Helix &nbsp; <span style="color:#ff453a">■</span> β-Faltblatt &nbsp; <span style="color:#a0a7b4">■</span> Schleife/Knäuel &nbsp; <span style="color:#ffee58">┅</span> H-Brücke`;
+  // Neigungsbalken
+  const bars = document.getElementById('sc-bars'); bars.style.display = n ? 'block' : 'none';
+  bars.innerHTML = n ? `<div style="display:flex;justify-content:space-between;margin-bottom:3px"><span><b style="color:#4cd964">▮</b> Neigung zur Helix</span><span><b style="color:#ff453a">▮</b> Neigung zum Faltblatt</span><span class="muted">(Balken über der Linie = bevorzugt)</span></div><div class="row">${sc.seq.map((a, i) => `<div class="col" data-i="${i}"><div class="bar" style="position:relative"><i style="height:${Math.min(30, a.pa / 1.6 * 30)}px;background:#4cd964"></i><i style="height:${Math.min(30, a.pb / 1.6 * 30)}px;background:#ff453a"></i><span style="position:absolute;left:0;right:0;bottom:${1.0 / 1.6 * 30}px;border-top:1px dashed rgba(255,255,255,.45)"></span></div><div class="lbl" style="${sc.sel === i ? 'color:#fff;font-weight:700' : ''}">${a.c}</div></div>`).join('')}</div>` : '';
+  bars.querySelectorAll('.col').forEach(c => c.onclick = () => { sc.sel = sc.sel === +c.dataset.i ? -1 : +c.dataset.i; scBuild(); });
+  // Info
+  const info = document.getElementById('sc-info'); let h = '';
+  if (n < 6) h = n ? 'Für eine erkennbare Sekundärstruktur braucht es mindestens 5–6 Aminosäuren. Füge weitere hinzu.' : 'Baue eine Kette (mindestens 6 Aminosäuren) oder wähle ein Beispiel.';
+  else {
+    const runs = []; { let i = 0; while (i < n) { let j = i; while (j < n && st[j] === st[i]) j++; runs.push({ t: st[i], a: i, b: j - 1 }); i = j; } }
+    const nm = { H: 'α-Helix', E: 'β-Faltblatt (Strang)', C: 'Schleife / Knäuel' }, hs = runs.filter(r => r.t === 'H').length, es = runs.filter(r => r.t === 'E').length;
+    h = `<b>Ergebnis für deine Kette (${n} Aminosäuren):</b><br>` + runs.map(r => `<span style="color:${sCol[r.t]}">■</span> ${nm[r.t]}: Aminosäure ${r.a + 1}${r.b > r.a ? '–' + (r.b + 1) : ''} <span class="muted">(${seqText(r.a, r.b)})</span>`).join('<br>');
+    if (hs) h += `<br><br>Helix: <b>${sc.hbCount.H}</b> Wasserstoffbrücke${sc.hbCount.H === 1 ? '' : 'n'} – jede verbindet C=O der Aminosäure <i>i</i> mit N–H der Aminosäure <i>i</i>+4.`;
+    if (es > 1) h += `<br>Faltblatt: <b>${sc.hbCount.E}</b> Wasserstoffbrücken zwischen den ${es} benachbarten Strängen (antiparallel).`;
+    else if (es === 1) h += `<br>Ein einzelner Strang hat noch <b>keine</b> Partner für Wasserstoffbrücken – ein Faltblatt entsteht erst durch mehrere nebeneinander liegende Stränge.`;
+    if (!hs && !es) h += `<br><span class="muted">Hier fehlen Helix- oder Faltblatt-Bildner; die Kette bleibt ungeordnet (Knäuel). Rückgrat schematisch dargestellt.</span>`;
+    else h += `<br><span class="muted">Schleifen sind schematisch dargestellt; die Elemente liegen zur Übersicht nebeneinander.</span>`;
+  }
+  if (sc.sel >= 0 && sc.seq[sc.sel]) { const a = sc.seq[sc.sel]; h += `<br><br><b style="color:${CLS[a.cls].col}">${a.n} (${a.c})</b>, Pos. ${sc.sel + 1}: Rest ${a.rf}<br>Helix-Neigung <b>${a.pa.toFixed(2).replace('.', ',')}</b> · Faltblatt-Neigung <b>${a.pb.toFixed(2).replace('.', ',')}</b><br><span class="muted">${a.note}</span> <button class="mini" id="sc-del">Entfernen</button>`; }
+  info.innerHTML = h; const d = document.getElementById('sc-del'); if (d) d.onclick = () => { sc.seq.splice(sc.sel, 1); sc.sel = -1; scBuild(); };
+}
+const seqText = (a, b) => sc.seq.slice(a, b + 1).map(x => x.c).join('–');
+function scInit() {
+  const view = document.getElementById('sc-view'), cam = new THREE.PerspectiveCamera(40, 1, 0.5, 600), scene = newScene();
+  sc.view = { scene, camera: cam, el: view, orbit: new Orbit(cam, V3(0, 0, 0), 40, 0.25, 0.8), tick: null };
+  const pal = document.getElementById('sc-pal');
+  AA.forEach(a => { const b = document.createElement('button'); b.className = 'aa'; b.style.setProperty('--c', CLS[a.cls].col); b.innerHTML = `<b>${a.c}</b><small>${a.o}</small>`; b.title = `${a.n} – Helix ${a.pa} / Faltblatt ${a.pb}`; b.onclick = () => { if (sc.seq.length >= 30) { flash('Höchstens 30 Aminosäuren.'); return; } sc.seq.push(a); sc.sel = -1; scBuild(); }; pal.appendChild(b); });
+  document.getElementById('sc-undo').onclick = () => { sc.seq.pop(); sc.sel = -1; scBuild(); };
+  document.getElementById('sc-clear').onclick = () => { sc.seq = []; sc.sel = -1; scBuild(); };
+  const pre = document.getElementById('sc-pre'); SC_PRE.forEach(([nm, list]) => { const b = document.createElement('button'); b.textContent = nm; b.onclick = () => { sc.seq = list.map(c => AAby[c]); sc.sel = -1; scBuild(); }; pre.appendChild(b); });
+  document.getElementById('sc-hb').onchange = e => { sc.hb = e.target.checked; scApplyVis(); };
+  document.getElementById('sc-side').onchange = e => { sc.side = e.target.checked; scApplyVis(); };
+  document.getElementById('sc-rib').onchange = e => { sc.rib = e.target.checked; scApplyVis(); };
+  sc.seq = SC_PRE[2][1].map(c => AAby[c]); scBuild();
+}
+tabHooks[2] = () => { if (!sc.view) scInit(); showMain(sc.view); };
+
+// ===== 6. DETAILMODELLE (Atome) für Tertiär- und Quartärstruktur ==============
+const AAn = c => AAby[c];
+const frameOf = (p0, p1, p2) => { const x = p1.clone().sub(p0).normalize(), t = p2.clone().sub(p0), z = x.clone().cross(t).normalize(), y = z.clone().cross(x); return { o: p0.clone(), x, y, z }; };
+function moveToFrame(ch, src, dst) {
+  ch.atoms.forEach(a => { const d = a.p.clone().sub(src.o), lx = d.dot(src.x), ly = d.dot(src.y), lz = d.dot(src.z); a.p = dst.o.clone().addScaledVector(dst.x, lx).addScaledVector(dst.y, ly).addScaledVector(dst.z, lz); });
+}
+const TORS_EXT = { phi: -120, psi: 130 };
+const clearance = (A, B, skipA, skipB) => { let m = 99; A.atoms.forEach(a => { if (a.t === 'H') return; B.atoms.forEach(b => { if (b.t === 'H') return; if (skipA && skipB && a === skipA && b === skipB) return; const d = a.p.distanceTo(b.p); if (d < m) m = d; }); }); return m; };
+// Fragment B so an Fragment A andocken: Atom aA (Bezug rA) trifft B-Atome [b1,b2,b3] mit Abstand dist
+function dockPair(A, aA, rA, B, names, dist, g12, g23) {
+  let best = null;
+  const u = aA.p.clone().sub(rA.p).normalize(), t1 = aA.p.clone().addScaledVector(u, dist), src = frameOf(...names.map(n => B.res[B.mid].a[n].p));
+  for (let f1 = 0; f1 < 360; f1 += 30) for (let f2 = 0; f2 < 360; f2 += 30) {
+    const t2 = nerf(rA.p, aA.p, t1, g12[0], g12[1], f1), t3 = nerf(aA.p, t1, t2, g23[0], g23[1], f2), tmp = { atoms: B.atoms.map(a => ({ ...a, p: a.p.clone() })) };
+    moveToFrame(tmp, src, frameOf(t1, t2, t3));
+    const c = clearance(A, tmp, null, null), own = Math.min(...tmp.atoms.map(a => a.p.distanceTo(aA.p))) ;
+    const sc = c - Math.max(0, own - dist) * 2; if (!best || sc > best.sc) best = { sc, t: [t1, t2, t3], f1, f2 };
+  }
+  moveToFrame(B, src, frameOf(...best.t)); return best;
+}
+function centerAt(chs, c0) { const c = V3(0, 0, 0); let n = 0; chs.forEach(ch => ch.atoms.forEach(a => { c.add(a.p); n++; })); c.divideScalar(n); chs.forEach(ch => ch.atoms.forEach(a => a.p.sub(c))); return c; }
+const bboxR = chs => { let r = 0; chs.forEach(ch => ch.atoms.forEach(a => r = Math.max(r, a.p.length()))); return r; };
+function addLabels(g, ch, off = V3(0, 1.3, 0), num = true, color = '#ffffff') { ch.res.forEach(r => { const l = makeLabel(r.aa.c + (num ? ' ' + (r.i + 1) : ''), color, 0.95); l.position.copy(r.a.CA.p).add(off); g.add(l); }); }
+function carbonColor(ch, col) { ch.atoms.forEach(a => { if (a.el === 'C') a.col = col; }); }
+
+// 1) α-Helix
+function detHelix(seqNames) {
+  const aa = seqNames.map(AAn), ch = buildChain(aa, aa.map(() => TORS.helix)), ca = ch.res.map(r => r.a.CA.p), ax = V3(0, 0, 0);
+  for (let i = 0; i + 2 < ca.length; i++) ax.add(ca[i + 1].clone().sub(ca[i]).cross(ca[i + 2].clone().sub(ca[i + 1])));
+  if (ax.dot(ca[ca.length - 1].clone().sub(ca[0])) < 0) ax.negate();
+  alignFrame(ch, ax, V3(0, 1, 0), caCenter(ch)); ch.atoms.forEach(a => a.p.applyAxisAngle(V3(1, 0, 0), 0.2));
+  const hb = bestPerH(findHB(ch.atoms, 2.6, 3)), g = new THREE.Group();
+  g.add(atomGroup(ch, { hb }));
+  ch.res.forEach(r => { const l = makeLabel(r.aa.c + ' ' + (r.i + 1), '#ffffff', 0.9), d = r.a.CA.p.clone(); d.x = 0; d.normalize(); l.position.copy(r.a.CA.p).addScaledVector(d, 4.3); g.add(l); });
+  return { g, r: 14, ch, hb, info: `${hb.length} Wasserstoffbrücken: jede verbindet das C=O der Aminosäure <i>i</i> mit dem N–H der Aminosäure <i>i</i>+4.` };
+}
+// 2) β-Faltblatt (zwei antiparallele Stränge)
+function detSheet(s1, s2) {
+  const a1 = s1.map(AAn), a2 = s2.map(AAn);
+  const mk = aa => { const ch = buildChain(aa, aa.map(() => TORS.sheet)), ca = ch.res.map(r => r.a.CA.p), x = ca[ca.length - 1].clone().sub(ca[0]), p = ca[1].clone().sub(ca[0].clone().add(ca[2]).multiplyScalar(0.5)); alignFrame(ch, x, p, caCenter(ch)); return ch; };
+  const A = mk(a1), B = mk(a2); pairStrands(A, B, V3(0, 0, 0));
+  const hb = crossHB(A, B, 2.6), g = new THREE.Group();
+  g.add(atomGroup(A, { classColor: true })); g.add(atomGroup(B, { classColor: true })); hb.forEach(h => g.add(dashes(h[0], h[1], 0.06, 0xffee58)));
+  [A, B].forEach(ch => ch.res.forEach(r => { const l = makeLabel(r.aa.c, '#ffffff', 0.9), up = r.a.CB ? r.a.CB.p.clone().sub(r.a.CA.p).normalize() : V3(0, 1, 0); l.position.copy(r.a.CA.p).addScaledVector(up, 3.9); g.add(l); }));
+  const c = centerAt([A, B]); g.children.forEach(o => o.position.sub(c)); hb.forEach(() => 0);
+  return { g, r: 15, ch: A, hb, info: `${hb.length} Wasserstoffbrücken zwischen den beiden Strängen (antiparallel). Die Reste zeigen abwechselnd nach oben und unten – deshalb stehen hier abwechselnd unpolare und polare Aminosäuren.` };
+}
+// 3) β-Schleife (Turn): Pro–Gly
+function detTurn(names) {
+  const aa = names.map(AAn), tors = [{ phi: -120, psi: 130 }, { phi: -120, psi: 130 }, { phi: -60, psi: 120 }, { phi: 80, psi: 0 }, { phi: -120, psi: 130 }, { phi: -120, psi: 130 }];
+  const ch = buildChain(aa, tors), hb = bestPerH(findHB(ch.atoms, 2.9, 2)), g = new THREE.Group();
+  g.add(atomGroup(ch, { hb })); const c = centerAt([ch]); g.children.forEach(o => o.position.sub(c));
+  ch.res.forEach(r => { const l = makeLabel(r.aa.c + ' ' + (r.i + 1), '#ffffff', 0.9); l.position.copy(r.a.CA.p).add(V3(0, 1.9, 0)).sub(c); g.add(l); });
+  return { g, r: 11, ch, hb, info: `Eine β-Schleife (β-Turn) kehrt die Richtung der Kette um. Pro (feste Ringform) und Gly (sehr klein, beweglich) sind hier typisch.${hb.length ? ' Eine H-Brücke (gelb) schließt die Schleife.' : ''}` };
+}
+// 4) Disulfidbrücke
+function detDisulfide() {
+  const mk = names => { const aa = names.map(AAn); const ch = buildChain(aa, aa.map(() => TORS_EXT)); ch.mid = 1; return ch; };
+  const A = mk(['Thr', 'Cys', 'Val']), B = mk(['Ala', 'Cys', 'Ile']), sgA = A.res[1].a.SG, cbA = A.res[1].a.CB, caA = A.res[1].a.CA; let best = null;
+  const srcB = frameOf(B.res[1].a.SG.p.clone(), B.res[1].a.CB.p.clone(), B.res[1].a.CA.p.clone());
+  [180, 60, -60].forEach(x2 => [90, -90].forEach(x3 => [180, 60, -60].forEach(x4 => {
+    const sB = nerf(caA.p, cbA.p, sgA.p, 2.05, 104, x2), cB = nerf(cbA.p, sgA.p, sB, 1.81, 104, x3), aB = nerf(sgA.p, sB, cB, 1.53, 114, x4), tmp = { atoms: B.atoms.map(a => ({ ...a, p: a.p.clone() })) };
+    moveToFrame(tmp, srcB, frameOf(sB, cB, aB)); let m = 99; A.atoms.forEach(a => tmp.atoms.forEach(b => { if (a.t === 'H' || b.t === 'H') return; if (a === sgA && b.n === 'SG') return; const d = a.p.distanceTo(b.p); if (d < m) m = d; }));
+    if (!best || m > best.m) best = { m, f: frameOf(sB, cB, aB) };
+  })));
+  moveToFrame(B, srcB, best.f);
+  const g = new THREE.Group(); g.add(atomGroup(A)); g.add(atomGroup(B));
+  const sB = B.res[1].a.SG; g.add(cyl(sgA.p, sB.p, 0.13, stdMat(0xffd600, { emissive: 0x665500 })));
+  const c = centerAt([A, B]); g.children.forEach(o => o.position.sub(c));
+  [A, B].forEach(ch => ch.res.forEach(r => { const l = makeLabel(r.aa.c, r.aa.c === 'Cys' ? '#ffd600' : '#ffffff', 0.95); l.position.copy(r.a.CA.p).sub(c).add(V3(0, 1.6, 0)); g.add(l); }));
+  const l = makeLabel('S–S  (2,05 Å)', '#ffd600', 1.0); l.position.copy(sgA.p.clone().add(sB.p).multiplyScalar(0.5)).sub(c).add(V3(0, -2.2, 0)); g.add(l);
+  return { g, r: 11, info: 'Zwei Cystein-Reste (–SH) werden zu einer <b>Disulfidbrücke</b> (–S–S–) oxidiert. Das ist eine <b>Atombindung</b> – die stärkste Verknüpfung in der Tertiärstruktur, auch zwischen weit entfernten Abschnitten der Kette.' };
+}
+// 5) Salzbrücke (Lys–Glu) und 6) H-Brücke (Ser–Asp)
+function detDock(nameA, nameB, kind) {
+  const mk = names => { const aa = names.map(AAn), ch = buildChain(aa, aa.map(() => TORS_EXT)); ch.mid = 1; return ch; };
+  const A = mk(['Ala', nameA, 'Val']), B = mk(['Leu', nameB, 'Ala']), a = A.res[1].a, g = new THREE.Group();
+  let pair;
+  if (kind === 'salt') { dockPair(A, a.NZ, a.CE, B, ['OE1', 'CD', 'CG'], 2.8, [1.25, 120], [1.52, 118]); pair = [a.NZ, B.res[1].a.OE1]; }
+  else { dockPair(A, a.OG, a.CB, B, ['OD1', 'CG', 'CB'], 2.8, [1.25, 120], [1.52, 118]); pair = [a.OG, B.res[1].a.OD1]; }
+  g.add(atomGroup(A)); g.add(atomGroup(B)); g.add(dashes(pair[0].p, pair[1].p, 0.075, kind === 'salt' ? 0xff80ab : 0xffee58));
+  const c = centerAt([A, B]); g.children.forEach(o => o.position.sub(c));
+  [A, B].forEach(ch => ch.res.forEach(r => { const l = makeLabel(r.aa.c, '#ffffff', 0.95); l.position.copy(r.a.CA.p).sub(c).add(V3(0, 1.6, 0)); g.add(l); }));
+  if (kind === 'salt') {
+    const l1 = makeLabel('–NH₃⁺', '#8fb4ff', 1.05); l1.position.copy(pair[0].p).sub(c).add(V3(0, 1.5, 0)); g.add(l1);
+    const l2 = makeLabel('–COO⁻', '#ff8a80', 1.05); l2.position.copy(pair[1].p).sub(c).add(V3(0, 1.5, 0)); g.add(l2);
+    return { g, r: 12, info: `<b>Salzbrücke (Ionenbindung)</b> zwischen der positiv geladenen –NH₃⁺-Gruppe des Lysins und der negativ geladenen –COO⁻-Gruppe der Glutaminsäure (Abstand ≈ ${pair[0].p.distanceTo(pair[1].p).toFixed(1).replace('.', ',')} Å).` };
+  }
+  return { g, r: 11, info: `<b>Wasserstoffbrücke zwischen Resten:</b> Die OH-Gruppe des Serins (Oδ⁻–Hδ⁺) bindet an ein Sauerstoff-Atom der Carboxygruppe der Asparaginsäure (Abstand ≈ ${pair[0].p.distanceTo(pair[1].p).toFixed(1).replace('.', ',')} Å).` };
+}
+// 7) hydrophober Kern
+function detCore() {
+  const names = ['Leu', 'Ile', 'Val', 'Phe'], dirs = [V3(1, 1, 1), V3(-1, -1, 1), V3(-1, 1, -1), V3(1, -1, -1)].map(d => d.normalize()), g = new THREE.Group(), chs = [];
+  names.forEach((nm, k) => {
+    const aa = AAn(nm), ch = buildChain([aa], [TORS.helix]), ca = ch.res[0].a.CA.p.clone(), sc = ch.atoms.filter(a => a.t === 'sc' && a.n !== 'CB' || a.n === 'CB');
+    const cen = V3(0, 0, 0); sc.forEach(a => cen.add(a.p)); cen.divideScalar(sc.length);
+    const q = new THREE.Quaternion().setFromUnitVectors(cen.clone().sub(ca).normalize(), dirs[k].clone().negate());
+    ch.atoms.forEach(a => { a.p = a.p.clone().sub(ca).applyQuaternion(q); });
+    const cen2 = V3(0, 0, 0); sc.forEach(a => cen2.add(a.p)); cen2.divideScalar(sc.length);
+    const shift = dirs[k].clone().multiplyScalar(3.0).sub(cen2); ch.atoms.forEach(a => a.p.add(shift));
+    chs.push(ch); g.add(atomGroup(ch));
+    ch.atoms.forEach(a => { if (a.t === 'sc' && a.el === 'C') g.add(sphere(a.p, 1.7, new THREE.MeshBasicMaterial({ color: clsCol(aa), transparent: true, opacity: 0.13, depthWrite: false }))); });
+    const l = makeLabel(nm, '#10151c', 1.0, clsHex(aa)); l.position.copy(ch.res[0].a.CA.p).addScaledVector(dirs[k], 2.3); g.add(l);
+  });
+  return { g, r: 11, info: '<b>Hydrophober Kern:</b> unpolare Reste (Leu, Ile, Val, Phe) lagern sich im Inneren des Proteins zusammen, weil sie dem Wasser ausweichen. Zwischen ihnen wirken <b>Van-der-Waals-Kräfte</b> (blasse Hüllen überlappen). Polare und geladene Reste liegen dagegen außen.' };
+}
+const clsHex = aa => CLS[aa.cls].col;
+// 8) Häm-Gruppe mit Fe, His und O₂
+function detHeme() {
+  const g = new THREE.Group(), bondM = stdMat(0xb6c0cf), cMat = stdMat(0x6d6f78, { roughness: 0.4 }), nMat = stdMat(CPK.N, { roughness: 0.35 }), oMat = stdMat(CPK.O, { roughness: 0.35 });
+  const pt = (x, z) => V3(x, 0, z), rot = (p, k) => { const a = k * Math.PI / 2, c = Math.cos(a), s = Math.sin(a); return V3(p.x * c - p.z * s, 0, p.x * s + p.z * c); };
+  const ringAtoms = [], bonds = [], Ns = [], mesos = [];
+  for (let k = 0; k < 4; k++) {
+    const N = rot(pt(2.0, 0), k), Ca1 = rot(pt(2.81, 1.108), k), Ca2 = rot(pt(2.81, -1.108), k), Cb1 = rot(pt(4.11, 0.685), k), Cb2 = rot(pt(4.11, -0.685), k), M = rot(pt(2.45, 2.45), k);
+    [[N, nMat, 0.36], [Ca1, cMat, 0.34], [Ca2, cMat, 0.34], [Cb1, cMat, 0.34], [Cb2, cMat, 0.34], [M, cMat, 0.3]].forEach(([p, m, r]) => g.add(sphere(p, r, m)));
+    [[N, Ca1], [N, Ca2], [Ca1, Cb1], [Ca2, Cb2], [Cb1, Cb2], [Ca1, M]].forEach(([a, b]) => g.add(cyl(a, b, 0.08, bondM)));
+    const nextCa2 = rot(pt(2.81, -1.108), k + 1); g.add(cyl(M, nextCa2, 0.08, bondM));
+    g.add(cyl(N, V3(0, 0, 0), 0.05, stdMat(0xff9f40))); Ns.push(N);
+    // Propionat/Methyl-Andeutung
+    const me = rot(pt(5.4, 1.3), k); g.add(sphere(me, 0.3, cMat)); g.add(cyl(Cb1, me, 0.08, bondM));
+  }
+  g.add(sphere(V3(0, 0, 0), 0.62, stdMat(0xe67e22, { roughness: 0.3, metalness: 0.4 })));
+  // proximales His (F8) unter dem Eisen: Imidazolring
+  const hisN = V3(0, -2.1, 0), cc = V3(0, -2.1 - 1.165, 0), hv = []; for (let k = 0; k < 5; k++) { const a = (90 + k * 72) * D2R; hv.push(V3(1.165 * Math.cos(a), cc.y + 1.165 * Math.sin(a), 0.0).applyAxisAngle(V3(0, 1, 0), 0.5)); }
+  hv.forEach((p, k) => { g.add(sphere(p, k === 0 || k === 3 ? 0.34 : 0.33, (k === 0 || k === 3) ? nMat : cMat)); g.add(cyl(p, hv[(k + 1) % 5], 0.08, bondM)); });
+  g.add(cyl(V3(0, 0, 0), hv[0], 0.1, stdMat(0xff9f40)));
+  const cb = hv[2].clone().add(V3(0.9, -1.0, 0)); g.add(sphere(cb, 0.34, cMat)); g.add(cyl(hv[2], cb, 0.08, bondM));
+  const lH = makeLabel('His F8 (proximal)', '#8fb4ff', 1.0); lH.position.set(3.4, -3.6, 0); g.add(lH);
+  // O₂ über dem Eisen
+  const o1 = V3(0.5, 1.7, 0.0), o2 = V3(1.45, 2.55, 0.0); g.add(sphere(o1, 0.42, oMat)); g.add(sphere(o2, 0.42, oMat)); g.add(cyl(V3(0, 0, 0), o1, 0.1, stdMat(0xff9f40))); const dbl = cyl(o1, o2, 0.06, bondM); g.add(dbl);
+  const lO = makeLabel('O₂', '#ff8a80', 1.1); lO.position.set(2.6, 3.3, 0); g.add(lO);
+  const lF = makeLabel('Fe²⁺', '#ffb74d', 1.0); lF.position.set(-2.7, 0.9, 0); g.add(lF);
+  const lP = makeLabel('Porphyrin-Ring (Häm)', '#e0e0e0', 0.95); lP.position.set(-4.6, -1.6, 4.2); g.add(lP);
+  // distales His (E7) über O₂
+  const dc = V3(2.2, 4.8, 0.4), dv = []; for (let k = 0; k < 5; k++) { const a = (90 + k * 72) * D2R; dv.push(V3(dc.x + 1.165 * Math.cos(a), dc.y + 1.165 * Math.sin(a), dc.z)); }
+  dv.forEach((p, k) => { g.add(sphere(p, 0.3, (k === 1 || k === 3) ? nMat : cMat)); g.add(cyl(p, dv[(k + 1) % 5], 0.07, bondM)); });
+  const lD = makeLabel('His E7 (distal)', '#8fb4ff', 0.95); lD.position.set(4.3, 5.6, 0.4); g.add(lD);
+  g.add(dashes(o2, dv[3].clone(), 0.05, 0xffee58, 4));
+  g.rotation.set(0.35, 0.2, 0);
+  return { g, r: 10, info: '<b>Häm-Gruppe:</b> Ein flacher <b>Porphyrin-Ring</b> hält ein <b>Fe²⁺-Ion</b>. Vier Stickstoff-Atome des Rings und das proximale <b>Histidin F8</b> der Peptidkette binden das Eisen; auf der anderen Seite bindet ein <b>O₂-Molekül</b>. Das distale Histidin stabilisiert ihn über eine Wasserstoffbrücke. Pro Untereinheit: 1 Häm = 1 O₂, im Tetramer insgesamt 4 O₂.' };
+}
+// Kontaktfläche zweier Helices (zwei Untereinheiten)
+function detInterface() {
+  const sA = ['Leu', 'Val', 'Lys', 'Ala', 'Leu', 'Val', 'Ala'], sB = ['Asp', 'Ala', 'Leu', 'Val', 'Ala', 'Leu', 'Ile'];
+  const mk = (names, col) => { const aa = names.map(AAn), ch = buildChain(aa, aa.map(() => TORS.helix)), ca = ch.res.map(r => r.a.CA.p), ax = V3(0, 0, 0); for (let i = 0; i + 2 < ca.length; i++) ax.add(ca[i + 1].clone().sub(ca[i]).cross(ca[i + 2].clone().sub(ca[i + 1]))); if (ax.dot(ca[ca.length - 1].clone().sub(ca[0])) < 0) ax.negate(); alignFrame(ch, ax, V3(0, 1, 0), caCenter(ch)); ch.col = col; return ch; };
+  const A = mk(sA, 0x4fc3f7), B0 = mk(sB, 0xffb74d); let best = null;
+  for (let rot = 0; rot < 360; rot += 10) for (let dz = 9; dz <= 12; dz += 0.5) for (let sx = -3; sx <= 3.01; sx += 1) {
+    const tmp = { atoms: B0.atoms.map(a => ({ ...a, p: a.p.clone() })) };
+    tmp.atoms.forEach(a => { a.p.applyAxisAngle(V3(1, 0, 0), rot * D2R); a.p.x = -a.p.x; a.p.y = -a.p.y; a.p.add(V3(sx, 0, dz)); });
+    let cnt = 0, m = 99; A.atoms.forEach(a => { if (a.t === 'H') return; tmp.atoms.forEach(b => { if (b.t === 'H') return; const d = a.p.distanceTo(b.p); if (d < m) m = d; if (d < 4.2 && a.t !== 'bb' && b.t !== 'bb') cnt++; }); });
+    const sc = cnt - (m < 2.8 ? 100 : 0); if (!best || sc > best.sc) best = { sc, rot, dz, sx };
+  }
+  B0.atoms.forEach(a => { a.p.applyAxisAngle(V3(1, 0, 0), best.rot * D2R); a.p.x = -a.p.x; a.p.y = -a.p.y; a.p.add(V3(best.sx, 0, best.dz)); });
+  const g = new THREE.Group();
+  g.add(atomGroup(A, { classColor: false })); g.add(atomGroup(B0, { classColor: false }));
+  [A, B0].forEach((ch, ci) => ch.atoms.forEach(a => { if (a.el === 'C') { const m = g.children[ci].children.find(o => o.userData.atom === a); if (m) m.material = stdMat(ch.col, { roughness: 0.4 }); } }));
+  // Kontakte
+  let pol = 0, hyd = 0;
+  A.atoms.forEach(a => B0.atoms.forEach(b => {
+    if (a.t === 'H' || b.t === 'H' || a.t === 'bb' || b.t === 'bb') return; const d = a.p.distanceTo(b.p);
+    if (a.el !== 'C' && b.el !== 'C' && d < 3.4) { g.add(dashes(a.p, b.p, 0.07, 0xffee58, 4)); pol++; }
+    else if (a.el === 'C' && b.el === 'C' && d < 3.9) { g.add(dashes(a.p, b.p, 0.04, 0xb0bec5, 3)); hyd++; }
+  }));
+  [A, B0].forEach((ch, ci) => ch.res.forEach(r => { const l = makeLabel(r.aa.c, ci ? '#ffcc80' : '#81d4fa', 0.9); const d = r.a.CA.p.clone(); d.x = 0; d.z -= (ci ? best.dz : 0); d.normalize(); l.position.copy(r.a.CA.p).addScaledVector(d, 4.6); g.add(l); }));
+  const c = centerAt([A, B0]); g.children.forEach(o => o.position.sub(c));
+  return { g, r: 17, info: `<b>Kontaktfläche zweier Untereinheiten</b> (hier zwei Helices, blau und orange): Zwischen den Resten der beiden Ketten wirken dieselben Kräfte wie in der Tertiärstruktur – <b>hydrophobe Kontakte</b> (graue Linien, Leu/Val/Ala), <b>Wasserstoffbrücken</b> und <b>Salzbrücken</b> zwischen polaren/geladenen Resten (gelb).` };
+}
+
+// ===== 7. TERTIÄRSTRUKTUR + gemeinsamer „Erkunder“ (klickbare Elemente) =========
+function makeExplorer(cfg) {
+  const cam = new THREE.PerspectiveCamera(40, 1, 0.5, 800), scene = newScene(), ex = { cfg, sel: null, pick: [], detail: null };
+  ex.view = { scene, camera: cam, el: cfg.viewEl, orbit: new Orbit(cam, V3(0, 0, 0), cfg.dist, 0.55, 1.15), tick: null };
+  ex.scene = scene;
+  ex.register = (mesh, id) => { mesh.userData.el = id; if (mesh.material) { mesh.material = mesh.material.clone(); mesh.material.transparent = true; mesh.userData.baseOp = mesh.material.opacity; } ex.pick.push(mesh); };
+  ex.view.tap = (x, y, canvas) => { const h = pickAt(ex.view, x, y, canvas, ex.pick); ex.select(h ? h.object.userData.el : null); };
+  ex.select = id => {
+    ex.sel = id === ex.sel ? null : id;
+    ex.pick.forEach(m => { const on = !ex.sel || m.userData.el === ex.sel, sel = ex.sel && m.userData.el === ex.sel; m.material.opacity = on ? (sel && m.userData.baseOp < 0.5 ? 0.4 : m.userData.baseOp) : m.userData.baseOp * 0.22; if (m.material.emissive) { m.material.emissive.setHex(sel ? 0x555555 : 0x000000); } });
+    if (ex.hl) ex.hl(ex.sel);
+    cfg.listEl.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.id === ex.sel));
+    const it = ex.sel ? cfg.items[ex.sel] : null;
+    cfg.infoEl.innerHTML = it ? `<b style="color:${it.col}">${it.name}</b><br>${it.html}` : cfg.idle;
+    // Detailansicht
+    if (it && it.build) {
+      const d = it.build(), sc = newScene(), c = new THREE.PerspectiveCamera(40, 1, 0.5, 400); sc.add(d.g);
+      const v = { scene: sc, camera: c, el: cfg.detailEl, orbit: new Orbit(c, V3(0, 0, 0), d.r * 1.9, 0.6, 1.2), tick: dt => { if (!v.touched) { v.orbit.az += dt * 0.35; v.orbit.update(); } } };
+      v.orbit.min = d.r * 0.8; v.orbit.max = d.r * 6; ex.detail = v; cfg.detailEl.style.display = 'block';
+      cfg.detailLabel.textContent = it.name + ' – Detailansicht (Aminosäuren)'; showDetail(v);
+      cfg.detailInfo.innerHTML = (d.info || '') + (it.seq ? `<div class="seqline">${it.seq}</div>` : '');
+    } else { cfg.detailInfo.innerHTML = ''; cfg.detailEl.style.display = 'none'; if (ex.detail) { showDetail(null); stage.detail = null; ex.detail = null; cfg.detailEl.querySelectorAll('canvas').forEach(c => c.remove()); } }
+  };
+  Object.entries(cfg.items).forEach(([id, it]) => { const b = document.createElement('button'); b.dataset.id = id; b.innerHTML = `<i style="background:${it.col}"></i>${it.name}`; b.onclick = () => ex.select(id); cfg.listEl.appendChild(b); });
+  cfg.infoEl.innerHTML = cfg.idle;
+  { const x = document.createElement('button'); x.className = 'dx'; x.textContent = '✕'; x.title = 'Detailansicht schließen'; x.onclick = () => ex.select(ex.sel); cfg.detailEl.appendChild(x); }
+  return ex;
+}
+
+// ----- Modell: α/β-Protein (Ferredoxin-ähnlich: β α β β α β) -----
+const TE_SEQ = [
+  ['N', 'c', ['Met', 'Ser']], ['b1', 'E', ['Lys', 'Ile', 'Val', 'Val', 'Thr', 'Leu', 'Val']], ['L1', 'c', ['Gly', 'Cys', 'Asn']],
+  ['a1', 'H', ['Glu', 'Ala', 'Leu', 'Lys', 'Ala', 'Ile', 'Glu', 'Glu', 'Leu', 'Ala', 'Ser', 'Lys']], ['L2', 'c', ['Asn', 'Gly', 'Asp']],
+  ['b2', 'E', ['Val', 'Thr', 'Ile', 'Tyr', 'Val', 'Phe', 'Lys']], ['L3', 'c', ['Asp', 'Pro', 'Gly']], ['b3', 'E', ['Ile', 'Thr', 'Val', 'Lys', 'Leu', 'Ile', 'Val']],
+  ['L4', 'c', ['Ser', 'Gly', 'Asn']], ['a2', 'H', ['Asp', 'Ala', 'Ile', 'Glu', 'Lys', 'Leu', 'Val', 'Glu', 'Ala', 'Phe', 'Lys', 'Gln']],
+  ['L5', 'c', ['Thr', 'Cys', 'Gly']], ['b4', 'E', ['Val', 'Ser', 'Ile', 'Thr', 'Val', 'Gln', 'Ile']], ['C', 'c', ['Lys', 'Arg']]
+];
+function teModel() {
+  const P = {}, T = {};
+  const strand = (z, dir) => Array.from({ length: 7 }, (_, i) => V3(dir > 0 ? -9.9 + 3.3 * i : 9.9 - 3.3 * i, i % 2 ? 0.7 : -0.7, z));
+  const helix = (n, x0, dir, y0, z0, phi) => Array.from({ length: n }, (_, i) => { const th = phi + dir * i * 100 * D2R; return V3(x0 + dir * 1.5 * i, y0 + 2.3 * Math.cos(th), z0 + 2.3 * Math.sin(th)); });
+  P.b1 = strand(-2.4, 1); P.b2 = strand(7.2, 1); P.b3 = strand(2.4, -1); P.b4 = strand(-7.2, -1);
+  P.a1 = helix(12, 8.5, -1, 9.6, 5, 0.0); P.a2 = helix(12, -8.5, 1, 9.6, -5, Math.PI);
+  const dirOf = id => { const p = P[id]; return p[p.length - 1].clone().sub(p[0]).setY(0).normalize(); };
+  ['b1', 'b2', 'b3', 'b4', 'a1', 'a2'].forEach(k => T[k] = dirOf(k));
+  const loop = (a, b, n) => loopPoints(P[a][P[a].length - 1], T[a], P[b][0], T[b], n);
+  P.L1 = loop('b1', 'a1', 3); P.L2 = loop('a1', 'b2', 3); P.L3 = loop('b2', 'b3', 3); P.L4 = loop('b3', 'a2', 3); P.L5 = loop('a2', 'b4', 3);
+  P.N = [P.b1[0].clone().add(V3(-6.8, -0.8, 0.3)), P.b1[0].clone().add(V3(-3.4, -0.4, 0.2))]; P.C = [P.b4[6].clone().add(V3(-3.4, 0.2, -0.3)), P.b4[6].clone().add(V3(-6.8, 0.6, -0.8))];
+  // Reste durchnummerieren
+  const idx = {}; let k = 0; TE_SEQ.forEach(([id, t, names]) => { idx[id] = []; names.forEach((n, i) => { idx[id].push({ k: k++, name: n, p: P[id][i] }); }); });
+  return { P, T, idx };
+}
+function teBuild() {
+  const M = teModel(), ex = makeExplorer({
+    viewEl: document.getElementById('te-view'), listEl: document.getElementById('te-list'), infoEl: document.getElementById('te-info'), detailEl: document.getElementById('te-detail'), detailLabel: document.getElementById('te-dl'), detailInfo: document.getElementById('te-dinfo'), dist: 56,
+    idle: 'Tippe im Modell auf ein Element (Helix, Faltblatt, Schleife, Verbrückung …) oder wähle es hier aus. Dann erscheint ein Ausschnitt mit den beteiligten Aminosäuren.',
+    items: {}
+  });
+  const { P, T, idx } = M, g = new THREE.Group(); ex.scene.add(g);
+  const seqOf = id => idx[id].map(r => `${r.name} ${r.k + 1}`).join(' – ');
+  // Bänder
+  ['b1', 'b2', 'b3', 'b4'].forEach((id, i) => { const m = ribbonMesh({ type: 'E', pts: P[id], up: V3(0, 1, 0), c1: [0xc62828, 0xd84343, 0xe96464, 0xf29a94][i], c2: [0xf08a84, 0xf4a6a1, 0xf9c0bc, 0xffd7d4][i] }); g.add(m); ex.register(m, 'sheet'); });
+  ['a1', 'a2'].forEach(id => { const m = ribbonMesh({ type: 'H', pts: P[id], axis: V3(1, 0, 0), c1: 0x2fbf63, c2: 0x1b8a4b }); g.add(m); ex.register(m, id); });
+  const cm = (ids, el) => { const pts = []; ids.forEach(id => P[id].forEach(p => pts.push(p))); return pts; };
+  // Schleifen: Röhre zwischen den Elementen
+  const conn = [['b1', 'L1', 'a1'], ['a1', 'L2', 'b2'], ['b2', 'L3', 'b3'], ['b3', 'L4', 'a2'], ['a2', 'L5', 'b4']];
+  conn.forEach(([a, l, b]) => { const pts = [P[a][P[a].length - 1], ...P[l], P[b][0]], m = ribbonMesh({ type: 'C', pts, c1: 0xb7bdc9, r: 0.34 }); g.add(m); ex.register(m, 'turn'); });
+  [['N', 'b1', true], ['C', 'b4', false]].forEach(([id, e, first]) => { const pts = first ? [...P[id], P[e][0]] : [P[e][6], ...P[id]], m = ribbonMesh({ type: 'C', pts, c1: 0xb7bdc9, r: 0.34 }); g.add(m); ex.register(m, 'turn'); });
+  const lN = makeLabel('N', '#8fb4ff', 2.2), lC = makeLabel('C', '#ff9e80', 2.2); lN.position.copy(P.N[0]).add(V3(-1.6, 0, 0)); lC.position.copy(P.C[1]).add(V3(-1.6, 0, 0)); g.add(lN, lC);
+  // Markierungen
+  const near = (A, B, test) => { let best = null; A.forEach(a => B.forEach(b => { if (test && !test(a, b)) return; const d = a.p.distanceTo(b.p); if (!best || d < best.d) best = { a, b, d }; })); return best; };
+  const only = (id, names) => idx[id].filter(r => names.includes(r.name));
+  const ss = near(only('L1', ['Cys']), only('L5', ['Cys'])), salt = near(only('a1', ['Lys']), only('a2', ['Glu', 'Asp'])), hb = near(idx.b2.concat(idx.L2).filter(r => ['Thr', 'Tyr', 'Asn', 'Ser'].includes(r.name)), idx.a1.concat(idx.L3).filter(r => ['Asp', 'Glu', 'Ser', 'Lys'].includes(r.name)), (a, b) => Math.abs(a.k - b.k) > 6 && !(salt && (b === salt.a || a === salt.a)));
+  const out = (r, el) => { const c = r.p.clone(); c.x = el === 'a' ? 0 : c.x; return r.p.clone().add(V3(0, 0.8, 0)); };
+  const mark = (pair, col, id, r = 0.62) => { const grp = new THREE.Group(); [pair.a, pair.b].forEach(q => { const s = sphere(q.p.clone().add(V3(0, 0.6, 0)), r, new THREE.MeshStandardMaterial({ color: col, roughness: 0.3, emissive: col, emissiveIntensity: 0.25 })); grp.add(s); ex.register(s, id); }); const d = dashes(pair.a.p.clone().add(V3(0, 0.6, 0)), pair.b.p.clone().add(V3(0, 0.6, 0)), 0.11, col, 9); d.children.forEach(c => ex.register(c, id)); grp.add(d); g.add(grp); return grp; };
+  mark(ss, 0xffd600, 'ss', 0.7); if (salt) mark(salt, 0xff80ab, 'salt'); if (hb) mark(hb, 0x4dd0e1, 'hb');
+  const core = sphere(V3(0, 4.6, 0.2), 5.4, new THREE.MeshStandardMaterial({ color: 0xffa726, transparent: true, opacity: 0.16, roughness: 0.6, depthWrite: false })); core.scale.set(7.8, 3.6, 5.8); g.add(core); ex.register(core, 'core');
+  const dist = (p, q) => p.p.distanceTo(q.p).toFixed(1).replace('.', ',');
+  const rn = r => `${r.name} ${r.k + 1}`;
+  ex.items = {
+    a1: { name: 'α-Helix 1', col: '#2fbf63', seq: seqOf('a1'), build: () => detHelix(['Glu', 'Ala', 'Leu', 'Lys', 'Ala', 'Ile', 'Glu', 'Glu', 'Leu', 'Ala', 'Ser', 'Lys']), html: `Abschnitt aus <b>12 Aminosäuren</b> (Aminosäure ${idx.a1[0].k + 1}–${idx.a1[11].k + 1}). Das Rückgrat bildet eine <b>rechtsgängige Schraube</b>, stabilisiert durch Wasserstoffbrücken i → i+4. Die Reste zeigen nach außen: auf der Seite zum Faltblatt unpolare (Ala, Leu, Ile) – sie tragen zum hydrophoben Kern bei.` },
+    a2: { name: 'α-Helix 2', col: '#1b8a4b', seq: seqOf('a2'), build: () => detHelix(['Asp', 'Ala', 'Ile', 'Glu', 'Lys', 'Leu', 'Val', 'Glu', 'Ala', 'Phe', 'Lys', 'Gln']), html: `Zweite Helix (Aminosäure ${idx.a2[0].k + 1}–${idx.a2[11].k + 1}). Beide Helices liegen auf derselben Seite des Faltblatts – ihr Zusammenspiel mit dem Faltblatt bestimmt die Faltung.` },
+    sheet: { name: 'β-Faltblatt (4 Stränge)', col: '#e5534b', seq: ['b4', 'b1', 'b3', 'b2'].map(i => seqOf(i)).join('<br>'), build: () => detSheet(['Val', 'Thr', 'Ile', 'Ser', 'Val', 'Thr'], ['Ile', 'Ser', 'Val', 'Thr', 'Ile', 'Val']), html: `Vier Stränge (β1–β4, Pfeile) bilden ein <b>antiparalleles Faltblatt</b> in der Reihenfolge β4 – β1 – β3 – β2. Zwischen den Strängen verlaufen Wasserstoffbrücken des Rückgrats; die Reste stehen abwechselnd über und unter der Ebene.` },
+    turn: { name: 'Schleife / β-Turn', col: '#b7bdc9', seq: ['L1', 'L2', 'L3', 'L4', 'L5'].map(i => seqOf(i)).join(' · '), build: () => detTurn(['Thr', 'Val', 'Pro', 'Gly', 'Lys', 'Ile']), html: `Schleifen verbinden Helices und Stränge. Die <b>Haarnadel</b> zwischen β2 und β3 (${idx.L3.map(rn).join('–')}) kehrt die Richtung der Kette um. <b>Pro</b> und <b>Gly</b> sind in Schleifen häufig: Pro knickt die Kette, Gly ist sehr beweglich.` },
+    ss: { name: 'Disulfidbrücke', col: '#ffd600', seq: ss ? `${rn(ss.a)} ↔ ${rn(ss.b)}` : '', build: detDisulfide, html: `Die Reste <b>${ss ? rn(ss.a) : ''}</b> und <b>${ss ? rn(ss.b) : ''}</b> liegen in der Sequenz weit auseinander, im gefalteten Protein aber nahe beieinander. Ihre –SH-Gruppen sind zu –S–S– oxidiert: eine <b>kovalente Verbrückung</b> der Tertiärstruktur.` },
+    salt: { name: 'Salzbrücke', col: '#ff80ab', seq: salt ? `${rn(salt.a)} (Helix 1) ↔ ${rn(salt.b)} (Helix 2)` : '', build: () => detDock('Lys', 'Glu', 'salt'), html: `Zwischen den Helices stehen sich der basische Rest <b>${salt ? rn(salt.a) : 'Lys'}</b> (–NH₃⁺) und der saure Rest <b>${salt ? rn(salt.b) : 'Glu'}</b> (–COO⁻) gegenüber: <b>Ionenbindung</b> zwischen entgegengesetzten Ladungen.` },
+    hb: { name: 'H-Brücke zwischen Resten', col: '#4dd0e1', seq: hb ? `${rn(hb.a)} ↔ ${rn(hb.b)}` : '', build: () => detDock('Ser', 'Asp', 'hb'), html: `Polare Reste wie <b>${hb ? rn(hb.a) : 'Ser'}</b> und <b>${hb ? rn(hb.b) : 'Asp'}</b> bilden Wasserstoffbrücken über ihre –OH-, –NH- oder –COO⁻-Gruppen – hier zwischen Resten verschiedener Abschnitte (Tertiärstruktur, nicht Rückgrat).` },
+    core: { name: 'Hydrophober Kern', col: '#ffa726', seq: 'z. B. Ala, Leu, Ile, Val, Phe', build: detCore, html: `Im Inneren (orange) lagern sich <b>unpolare Reste</b> zusammen, weil sie das Wasser meiden (hydrophober Effekt). Zwischen ihnen wirken <b>Van-der-Waals-Kräfte</b>. Dieser Kern ist die treibende Kraft der Faltung wasserlöslicher Proteine.` }
+  };
+  ex.cfg.items = ex.items; ex.cfg.listEl.innerHTML = ''; Object.entries(ex.items).forEach(([id, it]) => { const b = document.createElement('button'); b.dataset.id = id; b.innerHTML = `<i style="background:${it.col}"></i>${it.name}`; b.onclick = () => ex.select(id); ex.cfg.listEl.appendChild(b); });
+  ex.view.orbit.t.set(0, 4, 0); ex.view.orbit.update();
+  document.getElementById('te-leg').innerHTML = '<span><i style="background:#2fbf63"></i>α-Helix</span><span><i style="background:#e5534b"></i>β-Faltblatt</span><span><i style="background:#b7bdc9"></i>Schleife</span><span><i style="background:#ffd600"></i>S–S</span><span><i style="background:#ff80ab"></i>Salzbrücke</span><span><i style="background:#ffa726"></i>Kern</span>';
+  return ex;
+}
+let te = null;
+tabHooks[3] = () => { if (!te) te = teBuild(); showMain(te.view); if (te.detail) showDetail(te.detail); else { showDetail(null); stage.detail = null; } };
+
+// ===== 8. QUARTÄRSTRUKTUR: Hämoglobin-artiges Tetramer (schematisch) ============
+const mulberry = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+function globinSpec(seed, nH) {
+  const rnd = mulberry(seed), hel = [], axes = [];
+  for (let k = 0; k < nH; k++) {
+    const ang = k * 2 * Math.PI / nH + (rnd() - 0.5) * 0.25, R = 9.6 + (rnd() - 0.5) * 1.4, up = k % 2 === 0 ? 1 : -1, n = 9 + Math.floor(rnd() * 5), cy = (rnd() - 0.5) * 3.5;
+    const rad = V3(Math.cos(ang), 0, Math.sin(ang)), tan = V3(-Math.sin(ang), 0, Math.cos(ang)), tilt = (0.16 + rnd() * 0.12) * (rnd() < 0.5 ? 1 : -1);
+    const a = V3(0, up, 0).applyAxisAngle(tan, tilt).applyAxisAngle(V3(0, 1, 0), (rnd() - 0.5) * 0.5).normalize();
+    const u = a.clone().cross(rad).normalize(), v = a.clone().cross(u), len = 1.5 * (n - 1), c = rad.clone().multiplyScalar(R).add(V3(0, cy, 0)), s = c.clone().addScaledVector(a, -len / 2), phi = rnd() * 6.28;
+    hel.push(Array.from({ length: n }, (_, i) => { const th = phi + i * 100 * D2R; return s.clone().addScaledVector(a, 1.5 * i).addScaledVector(u, 2.3 * Math.cos(th)).addScaledVector(v, 2.3 * Math.sin(th)); }));
+    axes.push(a);
+  }
+  const loops = []; for (let k = 0; k + 1 < nH; k++) loops.push(loopPoints(hel[k][hel[k].length - 1], axes[k], hel[k + 1][0], axes[k + 1], 2));
+  return { hel, axes, loops, nH };
+}
+function subunitGroup(spec, c1, c2, id, reg, labels) {
+  const g = new THREE.Group();
+  spec.hel.forEach((p, k) => { const m = ribbonMesh({ type: 'H', pts: p, axis: spec.axes[k], c1, c2, w: 2.4, th: 0.55 }); g.add(m); if (reg) reg(m, id); });
+  spec.loops.forEach((l, k) => { const m = ribbonMesh({ type: 'C', pts: [spec.hel[k][spec.hel[k].length - 1], ...l, spec.hel[k + 1][0]], c1: new THREE.Color(c1).lerp(new THREE.Color(0xffffff), 0.45).getHex(), r: 0.3 }); g.add(m); if (reg) reg(m, id); });
+  if (labels) spec.hel.forEach((p, k) => { const l = makeLabel('ABCDEFGH'[k], '#ffffff', 2.0); const m = p[Math.floor(p.length / 2)].clone(); const out = V3(m.x, 0, m.z).normalize(); l.position.copy(m).addScaledVector(out, 4.2); g.add(l); });
+  return g;
+}
+function hemeMini(reg, id) {
+  const g = new THREE.Group(), mat = new THREE.MeshStandardMaterial({ color: 0xc62828, roughness: 0.4 }), tor = new THREE.Mesh(new THREE.TorusGeometry(3.0, 0.7, 10, 28), mat);
+  g.add(tor); const fe = sphere(V3(0, 0, 0), 1.0, new THREE.MeshStandardMaterial({ color: 0xe67e22, roughness: 0.3, metalness: 0.4 })); g.add(fe);
+  const o1 = sphere(V3(0, 0, 2.2), 0.7, new THREE.MeshStandardMaterial({ color: 0xff5252, roughness: 0.3 })), o2 = sphere(V3(0.9, 0, 3.4), 0.7, new THREE.MeshStandardMaterial({ color: 0xff5252, roughness: 0.3 })); g.add(o1, o2);
+  g.add(cyl(V3(0, 0, 0), V3(0, 0, 2.2), 0.12, stdMat(0xffb74d)), cyl(V3(0, 0, 2.2), V3(0.9, 0, 3.4), 0.1, stdMat(0xffb74d)));
+  if (reg) g.children.forEach(m => { if (m.isMesh) reg(m, id); });
+  return g;
+}
+function quBuild() {
+  const SP = { a: globinSpec(11, 7), b: globinSpec(23, 8) };
+  const ex = makeExplorer({ viewEl: document.getElementById('qu-view'), listEl: document.getElementById('qu-list'), infoEl: document.getElementById('qu-info'), detailEl: document.getElementById('qu-detail'), detailLabel: document.getElementById('qu-dl'), detailInfo: document.getElementById('qu-dinfo'), dist: 66, idle: 'Tippe im Modell auf eine Untereinheit, die Häm-Gruppe oder eine Kontaktfläche – oder wähle sie hier aus.', items: {} });
+  const root = new THREE.Group(); ex.scene.add(root);
+  const col = { a1: [0x4fc3f7, 0x1e88e5], b1: [0xffb74d, 0xf57c00], a2: [0x7986cb, 0x3949ab], b2: [0xff8a80, 0xe53935] };
+  const place = { a1: [-12.5, -12.5, 0, 'a'], b1: [12.5, -12.5, 0, 'b'], a2: [12.5, 12.5, Math.PI, 'a'], b2: [-12.5, 12.5, Math.PI, 'b'] };
+  Object.entries(place).forEach(([id, [x, z, rot, t]]) => {
+    const sg = new THREE.Group(); sg.position.set(x, 0, z); sg.rotation.y = rot + (id === 'a2' || id === 'b2' ? 0 : 0);
+    sg.add(subunitGroup(SP[t], col[id][0], col[id][1], id, ex.register)); const h = hemeMini(ex.register, 'heme'); h.rotation.set(0.3, 0.7, 0.2); sg.add(h); root.add(sg);
+  });
+  const disc = (x, z, ry, color, id) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(7.5, 7.5, 0.5, 40), new THREE.MeshStandardMaterial({ color, transparent: true, opacity: 0.22, roughness: 0.5, depthWrite: false, emissive: color, emissiveIntensity: 0.15 })); m.rotation.set(Math.PI / 2, 0, 0); m.rotation.y = ry; m.position.set(x, 0, z); root.add(m); ex.register(m, id); return m; };
+  const d11 = disc(0, -12.5, 0, 0x69f0ae, 'if11'); d11.rotation.set(0, 0, Math.PI / 2); d11.scale.set(1, 1, 1);
+  const d12 = disc(-12.5, 0, 0, 0xea80fc, 'if12'); d12.rotation.set(Math.PI / 2, 0, 0);
+  const subInfo = (nm, n, nh) => `<b>${nm}</b>-Untereinheit: eine eigene Peptidkette aus <b>${n} Aminosäuren</b> mit <b>${nh} α-Helices</b> (A–H) – jede Untereinheit besitzt für sich eine <b>Tertiärstruktur</b>. Im Inneren liegt die Häm-Tasche. Erst die Zusammenlagerung aller vier Ketten ist die <b>Quartärstruktur</b>.`;
+  const sub = (id, nm, t, c, n, nh) => ({ name: nm, col: c, seq: '', build: () => { const g = new THREE.Group(), s = SP[t]; g.add(subunitGroup(s, col[id][0], col[id][1], null, null, true)); g.add(hemeMini(null, null)); g.rotation.set(0, 0, 0); return { g, r: 14, info: `Die Helices (Buchstaben A–${'ABCDEFGH'[s.nH - 1]}) umschließen die <b>Häm-Gruppe</b> (rot) mit dem Fe²⁺-Ion und gebundenem O₂.` }; }, html: subInfo(nm.replace('-Kette', ''), n, nh) });
+  ex.items = {
+    a1: sub('a1', 'α₁-Kette', 'a', '#4fc3f7', 141, 7), b1: sub('b1', 'β₁-Kette', 'b', '#ffb74d', 146, 8), a2: sub('a2', 'α₂-Kette', 'a', '#7986cb', 141, 7), b2: sub('b2', 'β₂-Kette', 'b', '#ff8a80', 146, 8),
+    heme: { name: 'Häm-Gruppe + O₂', col: '#e53935', seq: '', build: detHeme, html: 'Jede der vier Untereinheiten trägt eine <b>Häm-Gruppe</b> (rote Ringe) mit einem <b>Fe²⁺-Ion</b>. Dort wird je ein <b>O₂-Molekül</b> gebunden – das ganze Tetramer transportiert also <b>4 O₂</b>. Die Häm-Gruppe ist kein Teil der Peptidkette (prosthetische Gruppe).' },
+    if11: { name: 'Kontaktfläche α₁β₁', col: '#69f0ae', seq: '', build: detInterface, html: 'Die Kontaktfläche zwischen <b>α₁ und β₁</b> (grün) ist groß und fest: viele <b>hydrophobe Kontakte</b> halten dieses Paar (Dimer) zusammen. Bei der O₂-Bindung verschiebt sie sich kaum.' },
+    if12: { name: 'Kontaktfläche α₁β₂', col: '#ea80fc', seq: '', build: detInterface, html: 'An der Kontaktfläche <b>α₁β₂</b> (violett) gleiten die Untereinheiten bei der O₂-Aufnahme gegeneinander. Dabei werden <b>Salzbrücken</b> gelöst; die übrigen Häm-Gruppen binden dann leichter O₂ – <b>Kooperativität</b>: Die Untereinheiten beeinflussen sich gegenseitig (nur durch die Quartärstruktur möglich).' }
+  };
+  ex.cfg.items = ex.items; ex.cfg.listEl.innerHTML = ''; Object.entries(ex.items).forEach(([id, it]) => { const b = document.createElement('button'); b.dataset.id = id; b.innerHTML = `<i style="background:${it.col}"></i>${it.name}`; b.onclick = () => ex.select(id); ex.cfg.listEl.appendChild(b); });
+  document.getElementById('qu-leg').innerHTML = '<span><i style="background:#4fc3f7"></i>α-Ketten</span><span><i style="background:#ffb74d"></i>β-Ketten</span><span><i style="background:#c62828"></i>Häm</span><span><i style="background:#69f0ae"></i>Kontaktfläche α₁β₁</span><span><i style="background:#ea80fc"></i>Kontaktfläche α₁β₂</span>';
+  ex.view.orbit.t.set(0, 0, 0); ex.view.orbit.r = 118; ex.view.orbit.update();
+  return ex;
+}
+let qu = null;
+tabHooks[4] = () => { if (!qu) qu = quBuild(); showMain(qu.view); if (qu.detail) showDetail(qu.detail); else { showDetail(null); stage.detail = null; } };
+
+// ===== 9. HAUPTPROGRAMM: Reiter, Hinweise =====================================
+function flash(t) { const e = document.getElementById('toast'); e.textContent = t; e.classList.add('on'); clearTimeout(flash.t); flash.t = setTimeout(() => e.classList.remove('on'), 2200); }
+const classLegend = () => Object.values(CLS).map(c => `<span><i style="background:${c.col}"></i>${c.n}</span>`).join('');
+document.getElementById('lw-leg').innerHTML = classLegend();
+document.getElementById('sc-leg').innerHTML = classLegend();
+
+document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.id === 't' + b.dataset.t));
+  const h = tabHooks[b.dataset.t]; if (h) h();
+});
+lwInit();
+
+</script>
+<a href="/Virtuelles-Chemielabor/impressum.html" style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-family: sans-serif; font-size: 12px; z-index: 9999;">Impressum & Datenschutz</a>
+</body>
+</html>
