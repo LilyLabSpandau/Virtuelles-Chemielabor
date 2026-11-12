@@ -91,6 +91,10 @@ label.chk { display: inline-flex; align-items: center; gap: 6px; margin: 3px 12p
   .side { border-left: 0; border-top: 1px solid #263041; }
   header h1 { font-size: 15px; }
   .tip { display: none; }
+  #sc-bars .muted { display: none; }
+  #sc-bars span { white-space: nowrap; }
+  #sc-view .hud { top: auto; bottom: 92px; left: 10px; right: 10px; align-items: center; }
+  #sc-view .hud .chips { text-align: center; font-size: 10.5px; padding: 5px 6px; }
 }
 </style>
 </head>
@@ -1012,7 +1016,7 @@ function scUI() {
   const sCol = { H: '#4cd964', E: '#ff453a', C: '#a0a7b4' };
   chain.innerHTML = n ? '<span class="muted" style="font-size:12px;margin-right:2px">N</span>' + sc.seq.map((a, i) => `<span class="cc${sc.sel === i ? ' sel' : ''}" data-i="${i}" style="background:${CLS[a.cls].col};--s:${sCol[st[i] || 'C']}">${a.c}</span>`).join('') + '<span class="muted" style="font-size:12px;margin-left:2px">C</span>' : '<span class="chips hud" style="position:static;padding:6px 10px;background:rgba(13,17,23,.82);border:1px solid #2a3547;border-radius:10px;font-size:12.5px;color:#b6c3d6">Wähle rechts Aminosäuren oder ein Beispiel.</span>';
   chain.querySelectorAll('.cc').forEach(c => c.onclick = () => { sc.sel = sc.sel === +c.dataset.i ? -1 : +c.dataset.i; scBuild(); });
-  document.getElementById('sc-legend').innerHTML = (isGK() ? `<span style="color:#4cd964">■</span> α-Helix (Spirale) &nbsp; <span style="color:#ff453a">■</span> β-Faltblatt (Pfeil) &nbsp; <span style="color:#a0a7b4">■</span> Schleife &nbsp; <span style="color:#ffee58">┅</span> Wasserstoffbrücke` : `<span style="color:#4cd964">■</span> α-Helix &nbsp; <span style="color:#ff453a">■</span> β-Faltblatt &nbsp; <span style="color:#a0a7b4">■</span> Schleife/Knäuel &nbsp; <span style="color:#ffee58">┅</span> H-Brücke`);
+  document.getElementById('sc-legend').innerHTML = (isGK() ? `<span style="white-space:nowrap"><span style="color:#4cd964">■</span> α-Helix (Spirale)</span> &nbsp; <span style="white-space:nowrap"><span style="color:#ff453a">■</span> β-Faltblatt (Pfeil)</span> &nbsp; <span style="white-space:nowrap"><span style="color:#a0a7b4">■</span> Schleife</span> &nbsp; <span style="white-space:nowrap"><span style="color:#ffee58">┅</span> Wasserstoffbrücke</span>` : `<span style="white-space:nowrap"><span style="color:#4cd964">■</span> α-Helix</span> &nbsp; <span style="white-space:nowrap"><span style="color:#ff453a">■</span> β-Faltblatt</span> &nbsp; <span style="white-space:nowrap"><span style="color:#a0a7b4">■</span> Schleife/Knäuel</span> &nbsp; <span style="white-space:nowrap"><span style="color:#ffee58">┅</span> H-Brücke</span>`);
   // Neigungsbalken
   const bars = document.getElementById('sc-bars'); bars.style.display = n ? 'block' : 'none';
   bars.innerHTML = n ? `<div style="display:flex;justify-content:space-between;margin-bottom:3px">${isGK() ? '<span><b style="color:#4cd964">▮</b> passt zur α-Helix</span><span><b style="color:#ff453a">▮</b> passt zum β-Faltblatt</span><span class="muted">(Balken über der Linie = passt gut)</span>' : '<span><b style="color:#4cd964">▮</b> Neigung zur Helix</span><span><b style="color:#ff453a">▮</b> Neigung zum Faltblatt</span><span class="muted">(Balken über der Linie = bevorzugt)</span>'}</div><div class="row">${sc.seq.map((a, i) => `<div class="col" data-i="${i}"><div class="bar" style="position:relative"><i style="height:${Math.min(30, a.pa / 1.6 * 30)}px;background:#4cd964"></i><i style="height:${Math.min(30, a.pb / 1.6 * 30)}px;background:#ff453a"></i><span style="position:absolute;left:0;right:0;bottom:${1.0 / 1.6 * 30}px;border-top:1px dashed rgba(255,255,255,.45)"></span></div><div class="lbl" style="${sc.sel === i ? 'color:#fff;font-weight:700' : ''}">${a.c}</div></div>`).join('')}</div>` : '';
