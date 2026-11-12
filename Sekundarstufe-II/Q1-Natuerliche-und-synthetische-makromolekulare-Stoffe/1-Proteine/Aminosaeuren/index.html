@@ -992,7 +992,8 @@ ${crystalsSVG(x + 95, y - 1, 26, 4, pc, 77)}`;
 function jarSVG(x, y, code, col) {
   return `${shadow(x + 36, y + 66, 52, 9, .8)}<rect x="${x}" y="${y - 6}" width="72" height="22" rx="5" fill="#2d3445" stroke="#566077"/><rect x="${x + 4}" y="${y + 14}" width="64" height="52" rx="8" fill="url(#gGlass)" stroke="#dbe7f7" stroke-opacity=".6"/><rect x="${x + 6}" y="${y + 36}" width="60" height="28" rx="6" fill="#f3f0e6" fill-opacity=".85"/><rect x="${x + 12}" y="${y + 22}" width="48" height="22" rx="4" fill="${col}"/><text x="${x + 36}" y="${y + 38}" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="800" fill="#10151c">${code}</text>`;
 }
-const labSVG = inner => `<svg viewBox="0 0 900 560" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${labDefs()}${labBG()}${inner}</svg>`;
+let labN = 0;
+const labSVG = inner => { const u = 'u' + (++labN); return `<svg viewBox="0 0 900 560" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${labDefs()}${labBG()}${inner}</svg>`.replace(/(id="|url\(#)(gWall|gTable|gGlass|gWater|gMetal|gBox|gShadow|fBlur)/g, '$1$2' + u); };
 // Löse die Ladungsbilanz nach dem pH-Wert: c·z̄(pH) + [H⁺] − [OH⁻] + extra = 0   (extra = c(Na⁺) − c(Cl⁻))
 function solvePH(aa, c, extra) {
   const f = pH => c * aaMeanCharge(aa, pH) + Math.pow(10, -pH) - Math.pow(10, pH - 14) + extra;
@@ -1162,7 +1163,7 @@ function a4Lab(aa, pH) {
   });
   s += `<path d="M${cx - rx},${top0(by, h)} L${cx - rx},${by} A${rx},${ry} 0 0 0 ${cx + rx},${by} L${cx + rx},${top0(by, h)}" fill="url(#gGlass)" stroke="#dbe7f7" stroke-opacity=".75" stroke-width="2"/><ellipse cx="${cx}" cy="${top0(by, h)}" rx="${rx}" ry="${ry}" fill="none" stroke="#cfdcf0" stroke-opacity=".5"/>`;
   s += phMeterSVG(560, 120, fmt(pH, 1), cx + 40, ly - 30);
-  return `<svg viewBox="0 0 900 290" xmlns="http://www.w3.org/2000/svg">${labDefs()}${s}</svg>`;
+  const u = 'u' + (++labN); return `<svg viewBox="0 0 900 290" xmlns="http://www.w3.org/2000/svg">${labDefs()}${s}</svg>`.replace(/(id="|url\(#)(gWall|gTable|gGlass|gWater|gMetal|gBox|gShadow|fBlur)/g, '$1$2' + u);
 }
 const top0 = (by, h) => by - h;
 function a4Charts(aa, pH) {

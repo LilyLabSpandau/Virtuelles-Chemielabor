@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Systeme und 1. Hauptsatz der Thermodynamik</title>
+<style>
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; height: 100%; }
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #12161d; color: #e8edf5; display: flex; flex-direction: column; overflow: hidden; }
+header { flex: none; display: flex; align-items: center; gap: 12px; padding: 8px 14px; background: #0d1117; border-bottom: 1px solid #263041; flex-wrap: wrap; }
+header h1 { font-size: 17px; margin: 0; color: #64b5f6; white-space: nowrap; }
+header a.back { color: #90a4be; font-size: 12.5px; text-decoration: none; margin-left: auto; }
+nav { display: flex; gap: 6px; flex-wrap: wrap; }
+nav button { border: 1px solid #2f3b50; background: #1a212c; color: #c5d0e0; padding: 7px 12px; border-radius: 9px; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+nav button.on { background: #2f5fd0; border-color: #4d7df0; color: #fff; }
+nav button small { opacity: .7; font-weight: 500; }
+#mode { display: flex; border: 1px solid #2f3b50; border-radius: 9px; overflow: hidden; }
+#mode button { border: 0; background: #1a212c; color: #c5d0e0; padding: 7px 12px; font-size: 13px; font-weight: 600; cursor: pointer; }
+#mode button.on { background: #7b3fe4; color: #fff; }
+body[data-mode=gk] .lk, body[data-mode=lk] .gk { display: none !important; }
+main { flex: 1; min-height: 0; position: relative; }
+.tab { display: none; position: absolute; inset: 0; grid-template-columns: minmax(0, 1fr) 420px; }
+.tab.on { display: grid; }
+.view { position: relative; min-width: 0; min-height: 0; overflow: hidden; background: radial-gradient(ellipse at 50% 40%, #1d2735, #10141b 75%); }
+.view .stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 52px 10px 74px; }
+.view .stage svg { width: min(100%, 700px); height: auto; max-height: 100%; }
+.view.lab { background: #0d1117; }
+.view.lab .stage { padding: 0; }
+.view.lab .stage svg { width: 100%; height: 100%; }
+.ov { position: absolute; z-index: 3; }
+.hud { background: rgba(13,17,23,.86); border: 1px solid #2a3547; border-radius: 10px; padding: 6px 10px; font-size: 12.5px; }
+.side { overflow-y: auto; padding: 12px 14px 60px; background: #161b24; border-left: 1px solid #263041; font-size: 13.5px; line-height: 1.5; }
+.side h2 { font-size: 15px; margin: 4px 0 8px; color: #ffd54f; }
+.side h3 { font-size: 13px; margin: 14px 0 6px; color: #90caf9; text-transform: uppercase; letter-spacing: .04em; }
+.muted { color: #8d9bb0; }
+.expl { background: #1c2430; border: 1px solid #2a3547; border-radius: 10px; padding: 8px 12px; margin: 8px 0; }
+.expl summary { cursor: pointer; font-weight: 700; color: #ffd54f; }
+.expl p { margin: 7px 0; }
+.expl ul, .expl ol { margin: 6px 0; padding-left: 20px; }
+.expl li { margin: 3px 0; }
+.gloss dt { font-weight: 700; color: #90caf9; margin-top: 7px; }
+.gloss dd { margin: 2px 0 0 0; }
+.task { background: #1d2a22; border: 1px solid #355a45; }
+.task summary { color: #8fe0b0; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 12px; margin: 6px 0; }
+.legend i, .dot { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+button.aa { --c: #888; border: 0; border-radius: 9px; background: var(--c); color: #10151c; padding: 5px 4px; cursor: pointer; display: flex; flex-direction: column; align-items: center; line-height: 1.1; min-width: 0; }
+button.aa b { font-size: 13.5px; } button.aa small { font-size: 10.5px; opacity: .75; }
+button.aa.on { outline: 3px solid #fff; transform: scale(1.04); }
+button.aa:active { transform: scale(.94); }
+.pal { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin: 6px 0; }
+.btns { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+button.mini, .btns button { border: 1px solid #38465e; background: #232d3c; color: #dbe4f2; border-radius: 8px; padding: 7px 11px; font-size: 12.5px; cursor: pointer; }
+button.mini:active, .btns button:active { background: #2f3c52; }
+.btns button.on { background: #2f5fd0; border-color: #4d7df0; color: #fff; }
+.btns button.del { border-color: #7a3a3a; color: #ffb4ab; }
+.btns button.go { background: #2a6a3f; border-color: #3f9a5b; color: #fff; }
+label.chk { display: inline-flex; align-items: center; gap: 6px; margin: 3px 12px 3px 0; font-size: 12.5px; cursor: pointer; }
+.box { background: #1c2430; border: 1px solid #2a3547; border-radius: 10px; padding: 8px 12px; margin: 8px 0; }
+.box.hi { border-color: #64b5f6; }
+.box:empty { display: none; }
+select, input[type=range] { font: inherit; }
+select { background: #232d3c; color: #e8edf5; border: 1px solid #38465e; border-radius: 8px; padding: 6px 8px; font-size: 13px; }
+table.res { border-collapse: collapse; width: 100%; font-size: 12.5px; margin: 6px 0; }
+table.res th, table.res td { border-bottom: 1px solid #2a3547; padding: 4px 6px; text-align: left; }
+table.res th { color: #90caf9; font-weight: 700; }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 999px; color: #10151c; font-weight: 700; font-size: 12px; }
+.grp { margin: 8px 0 2px; font-weight: 700; font-size: 12.5px; }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.chips button { border: 0; border-radius: 8px; padding: 5px 9px; font-weight: 700; font-size: 12.5px; cursor: pointer; color: #10151c; }
+.chips button.on { outline: 3px solid #fff; }
+.sw { display: inline-flex; align-items: center; gap: 6px; }
+#toast { position: fixed; left: 50%; bottom: 70px; transform: translateX(-50%); background: #2f3c52; color: #fff; padding: 8px 14px; border-radius: 10px; font-size: 13px; opacity: 0; transition: opacity .25s; pointer-events: none; z-index: 20; }
+#toast.on { opacity: 1; }
+/* Lewis-Anzeige */
+.lwbar { position: absolute; left: 0; right: 0; bottom: 0; background: rgba(13,17,23,.94); border-top: 1px solid #263041; padding: 8px 14px; z-index: 4; }
+.lwbar .t1 { font-size: 20px; font-weight: 800; }
+.lwbar .t2 { font-size: 13px; color: #b6c3d6; margin-top: 2px; }
+.cap { position: absolute; left: 12px; top: 10px; z-index: 3; display: flex; gap: 8px; flex-wrap: wrap; max-width: calc(100% - 24px); }
+.cap .hud b { color: #fff; }
+.gchips { display: flex; flex-wrap: wrap; gap: 6px; }
+.gchips button { border: 1px solid currentColor; background: rgba(13,17,23,.85); border-radius: 999px; padding: 4px 11px; font-size: 12.5px; font-weight: 700; cursor: pointer; }
+.gchips button.on { background: currentColor; }
+.gchips button.on span { color: #10151c; }
+/* pH-Regler */
+.phbar { position: absolute; left: 12px; right: 12px; bottom: 10px; z-index: 4; background: rgba(13,17,23,.92); border: 1px solid #2a3547; border-radius: 12px; padding: 8px 12px 10px; }
+.phbar .row { display: flex; align-items: center; gap: 10px; }
+.phbar input[type=range] { flex: 1; accent-color: #7b3fe4; height: 26px; }
+.phgrad { height: 12px; border-radius: 6px; margin: 4px 0 2px; background: linear-gradient(90deg, #e53935 0%, #fb8c00 17%, #fdd835 30%, #7cb342 45%, #00897b 55%, #1e88e5 70%, #5e35b1 85%, #4a148c 100%); position: relative; }
+.phtick { position: absolute; top: -3px; width: 3px; height: 18px; background: #fff; border-radius: 2px; transform: translateX(-1.5px); }
+.zone { display: flex; font-size: 11.5px; font-weight: 700; text-align: center; margin-top: 3px; }
+.zone div { padding: 3px 2px; border-radius: 4px; margin-right: 2px; color: #10151c; overflow: hidden; white-space: nowrap; }
+@media (max-width: 900px) {
+  .tab, .tab.on { grid-template-columns: 1fr; }
+  .tab.on { grid-template-rows: 56% 44%; }
+  .side { border-left: 0; border-top: 1px solid #263041; }
+  header h1 { font-size: 15px; }
+  .cap .hud { font-size: 11.5px; }
+}
+@keyframes fall { 0% { transform: translateY(-190px); opacity: 1; } 85% { opacity: 1; } 100% { transform: translateY(0); opacity: .9; } }
+@keyframes dashmove { to { stroke-dashoffset: -64; } }
+@keyframes drift { 0% { transform: translate(0, 0); } 50% { transform: translate(6px, -8px); } 100% { transform: translate(0, 0); } }
+@keyframes bubble { 0% { transform: translateY(0); opacity: .9; } 100% { transform: translateY(-70px); opacity: 0; } }
+@keyframes dropfall { 0% { transform: translateY(0); opacity: 1; } 80% { opacity: 1; } 100% { transform: translateY(var(--dy, 120px)); opacity: 0; } }
+.fall { animation: fall .85s ease-in forwards; }
+.swirl ellipse { animation: dashmove 1.1s linear infinite; }
+.drift { animation: drift 2.4s ease-in-out infinite; }
+.bub { animation: bubble 1.4s ease-out infinite; }
+.dfall { animation: dropfall .7s ease-in forwards; }
+.a4lab { width: min(100%, 700px); margin: 0 auto 4px; }
+.a4lab svg { width: 100%; border-radius: 12px; }
+.chart { width: 100%; max-width: 460px; display: block; margin: 4px 0; }
+.btn { background: #2a3547; color: #e8edf5; border: 1px solid #3a4a63; border-radius: 8px; padding: 6px 12px; font: inherit; cursor: pointer; margin-top: 6px; }
+#a4-stage { flex-direction: column; gap: 6px; }
+#a4-stage .a4lab { width: min(100%, 640px); flex: 0 0 auto; }
+#a4-stage > svg { width: auto; max-width: min(100%, 520px); height: auto; max-height: 52%; flex: 0 1 auto; }
+.spw { width: 190px; }
+@media (max-width: 900px) { .spw { width: 108px; } #a5-species { padding: 4px 6px !important; } }
+#a6-stage { gap: 14px; flex-wrap: wrap; }
+#a6-stage svg { width: auto; max-width: 56%; max-height: 88%; }
+#a6-stage svg:last-child:not(:first-child) { max-width: 34%; }
+@media (max-width: 900px) { #a6-stage { flex-direction: row; flex-wrap: nowrap; gap: 4px; padding-left: 4px; padding-right: 4px; } #a6-stage svg { max-width: 62%; max-height: 92%; } #a6-stage svg:last-child:not(:first-child) { max-width: 36%; max-height: 80%; } }
+.lanerow { display: flex; align-items: center; gap: 8px; margin: 4px 0; font-size: 13px; }
+.lanerow span { min-width: 46px; color: #8d9bb0; }
+.lanerow select { flex: 1; background: #232d3c; color: #e8edf5; border: 1px solid #38465e; border-radius: 8px; padding: 6px; font: inherit; }
+.chips button.sel { outline: 3px solid #fff; }
+.btns button:disabled { opacity: .45; cursor: default; }
+
+@media (max-width: 900px) {
+  #t4.tab.on { grid-template-rows: 64% 36%; }
+  #a4-stage { padding: 44px 6px 118px; gap: 2px; }
+  #a4-stage .a4lab { width: min(100%, 290px); }
+  #a4-stage > svg { max-width: 96%; max-height: 66%; }
+}
+/* Zuordnungsspiel */
+#b2-stage { align-items: flex-start; overflow: auto; padding: 56px 12px 12px; }
+.sg { width: 100%; max-width: 760px; margin: 0 auto; }
+.sgpool { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; min-height: 90px; margin-bottom: 14px; }
+.sgcard { background: #f2e6b6; color: #2a2411; border: 0; border-radius: 6px; padding: 10px 12px; font: 600 13.5px/1.25 system-ui, sans-serif; max-width: 200px; text-align: left; cursor: pointer; box-shadow: 0 3px 0 #b9a65e, 0 6px 10px rgba(0,0,0,.4); transform: rotate(-1deg); }
+.sgcard:nth-child(even) { transform: rotate(1.2deg); background: #f6dcc9; box-shadow: 0 3px 0 #c39579, 0 6px 10px rgba(0,0,0,.4); }
+.sgcard.sel { outline: 3px solid #7b3fe4; transform: scale(1.05); }
+.sgbins { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.sgbin { background: #1a2230; color: #dbe4f2; border: 2px dashed; border-radius: 12px; padding: 10px; min-height: 130px; font: inherit; text-align: center; cursor: pointer; display: flex; flex-direction: column; gap: 4px; align-items: center; }
+.sgbin span { font-size: 11.5px; color: #9aa7bd; }
+.sgdone { display: flex; flex-direction: column; gap: 3px; margin-top: 4px; }
+.sgdone i { font-style: normal; font-size: 11px; background: #2a3547; border-radius: 4px; padding: 2px 5px; color: #cdd7e6; }
+.sgwin { font-size: 18px; font-weight: 700; color: #a5d6a7; padding: 18px; }
+.sg { display: flex; flex-direction: column; }
+.sgbins { order: -1; margin-bottom: 12px; }
+@media (max-width: 900px) { .sgbins { gap: 5px; } .sgbin { min-height: 64px; padding: 6px 4px; } .sgbin b { font-size: 12.5px; } .sgbin span { display: none; } .sgdone i { font-size: 10px; } .sgcard { max-width: 46%; font-size: 12.5px; padding: 8px 9px; } }
+.lbar { position: relative; height: 12px; width: 140px; background: #10151c; border-radius: 6px; overflow: hidden; }
+.lbar::after { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: #5a6a82; }
+.lbar div { position: absolute; top: 0; bottom: 0; }
+.btns button.wrong { background: #5a2a2a; border-color: #a04545; color: #ffb4ab; }
+.c7row { display: flex; align-items: center; gap: 8px; margin: 5px 0; padding: 6px 8px; background: #1c2430; border: 1px solid #2a3547; border-radius: 10px; font-size: 13.5px; }
+.c7row.ok { border-color: #43d17a; background: #1b2b22; }
+.c7row span { flex: 1; }
+.c7row select { background: #232d3c; color: #e8edf5; border: 1px solid #38465e; border-radius: 8px; padding: 6px; font: inherit; max-width: 52%; }
+.c7row select.shake { animation: shk .3s; }
+@keyframes shk { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+.sk { display: flex; height: 30px; border-radius: 6px; overflow: hidden; margin: 6px 0; }
+.sk div { color: #10151c; font-weight: 800; font-size: 12.5px; display: flex; align-items: center; justify-content: center; min-width: 38px; }
+#c7-text { width: 100%; background: #1c2430; color: #e8edf5; border: 1px solid #38465e; border-radius: 8px; padding: 8px; font: inherit; box-sizing: border-box; }
+.swirl2 { animation: dashmove 1.2s linear infinite; }
+
+</style>
+</head>
+<body>
+<header>
+  <h1>🔥 Thermodynamik</h1>
+  <nav id="tabs">
+    <button data-t="1" class="on">1 Systeme</button>
+    <button data-t="2">2 System-Detektiv <small>· Spiel</small></button>
+    <button data-t="3">3 Abkühlung <small>· Versuch</small></button>
+    <button data-t="4">4 Innere Energie <small>· Versuch</small></button>
+    <button data-t="5">5 1. Hauptsatz <small>· Spiel</small></button>
+    <button data-t="7">6 Energieumwandlung <small>· Spiel</small></button>
+    <button data-t="6">7 Kalorimeter <small>· Versuch</small></button>
+  </nav>
+  <div id="mode" title="Schwierigkeitsgrad"><button data-m="gk">Grundkurs</button><button data-m="lk">Leistungskurs</button></div>
+  <a class="back" href="../index.html">← Zurück zu Thermodynamik</a>
+</header>
+<main>
+
+<!-- ============ 1 SYSTEME ============ -->
+<section class="tab on" id="t1">
+  <div class="view lab" id="b1-view">
+    <div class="stage" id="b1-stage"></div>
+  </div>
+  <div class="side">
+    <h2>Thermodynamische Systeme</h2>
+    <details class="expl" open>
+      <summary>Was ist ein „System“?</summary>
+      <p>In der Thermodynamik betrachtet man nie „die ganze Welt“, sondern nur einen <b>Ausschnitt</b>, den man genau untersuchen möchte. Diesen Ausschnitt nennt man das <b>System</b>. Das kann ein Becherglas mit Wasser sein, ein Gas in einer Spritze, ein Kühlschrank, ein Lebewesen oder die Erde.</p>
+      <ul>
+        <li>Alles, was <b>nicht</b> zum System gehört, heißt <b>Umgebung</b>.</li>
+        <li>Die gedachte oder echte Trennlinie dazwischen ist die <b>Systemgrenze</b> (z. B. die Glaswand des Becherglases). Im Bild ist sie <b style="color:#ffd54f">gelb gestrichelt</b>.</li>
+        <li>System und Umgebung zusammen bilden das <b>Universum</b> (im Sinne der Thermodynamik: „alles, was eine Rolle spielt“).</li>
+      </ul>
+      <p class="gk">Du darfst die Systemgrenze <b>selbst festlegen</b>. Wichtig ist nur, dass du sagst, was zum System gehört. Beim Kochen von Wasser kann das System „das Wasser“ sein oder „Wasser und Topf“.</p>
+      <p class="lk">Die Wahl der Systemgrenze ist eine <b>Modellentscheidung</b> und richtet sich nach der Fragestellung. Sie muss aber eindeutig angegeben werden, weil Bilanzen (Energie, Stoffmenge) sich immer auf das gewählte System beziehen. Die Grenze kann <b>real</b> (Gefäßwand) oder <b>gedacht</b> (ein Volumenelement in einer strömenden Flüssigkeit) sein.</p>
+    </details>
+    <details class="expl" open>
+      <summary>Was kann die Systemgrenze überqueren?</summary>
+      <p>Über die Systemgrenze kann zweierlei ausgetauscht werden:</p>
+      <ul>
+        <li><b style="color:#64b5f6">Stoff</b>: Teilchen gelangen hinein oder heraus (z. B. Wasserdampf, der aus einem offenen Topf aufsteigt).</li>
+        <li><b style="color:#ff8a80">Energie</b>: Sie wird als <b>Wärme</b> (Q) oder als <b>Arbeit</b> (W) übertragen. Wärme fließt, wenn Systeme unterschiedlich warm sind. Arbeit wird verrichtet, wenn z. B. ein Kolben bewegt, gerührt oder Strom genutzt wird.</li>
+      </ul>
+      <p class="lk">Auch Strahlung (Licht, Infrarotstrahlung) überträgt Energie über die Grenze. Sie wird je nach Betrachtung der Wärme oder der Arbeit zugerechnet. „Wärme“ ist <b>keine</b> Eigenschaft oder Stoff, den ein System „enthält“, sondern eine Form der <b>Energieübertragung</b>.</p>
+    </details>
+    <details class="expl" open>
+      <summary>Die drei Systemarten</summary>
+      <table class="res">
+        <tr><th></th><th>Stoff­austausch</th><th>Energie­austausch</th></tr>
+        <tr><td><b style="color:#64b5f6">offenes System</b></td><td>ja</td><td>ja</td></tr>
+        <tr><td><b style="color:#ffd54f">geschlossenes System</b></td><td>nein</td><td>ja</td></tr>
+        <tr><td><b style="color:#a5d6a7">abgeschlossenes (isoliertes) System</b></td><td>nein</td><td>nein</td></tr>
+      </table>
+      <p class="gk"><b>Merkhilfe (Haus):</b> Offen: Fenster und Tür stehen offen, Luft und Wärme gehen raus und rein. Geschlossen: Fenster und Tür sind zu, aber die Wärme geht trotzdem durch Wand und Glas. Abgeschlossen: ein perfekt gedämmter Bunker, nichts kommt raus und nichts rein.</p>
+      <p>Ein <b>völlig abgeschlossenes</b> System gibt es in der Praxis nicht. Eine <b>Thermoskanne</b> kommt dem nahe, aber nach einigen Stunden ist der Tee trotzdem kalt. Als abgeschlossen gilt streng genommen nur das <b>Universum</b> als Ganzes.</p>
+      <p class="lk"><b>Abgrenzung:</b> „Adiabatisch“ bedeutet nur, dass <b>keine Wärme</b> übertragen wird (Arbeit ist weiter möglich). „Abgeschlossen“ bedeutet: <b>weder Stoff noch Energie</b> (also auch keine Arbeit). Typische Zustandsgrößen eines Systems sind Druck p, Volumen V, Temperatur T und Stoffmenge n.</p>
+    </details>
+    <h3>Systeme ausprobieren</h3>
+    <div class="btns" id="b1-sys"></div>
+    <div class="box hi" id="b1-info"></div>
+    <details class="expl task" open>
+      <summary>Aufgaben</summary>
+      <ol>
+        <li>Schalte nacheinander durch die drei Systeme. Beschreibe für jedes, was die gelbe Grenze überschreitet und was nicht.</li>
+        <li>Nenne je zwei Beispiele aus dem Alltag für ein offenes, ein geschlossenes und ein abgeschlossenes (bzw. annähernd abgeschlossenes) System.</li>
+        <li class="gk">Du bist das System: Bist du ein offenes, geschlossenes oder abgeschlossenes System? Begründe mit Stoff und Energie.</li>
+        <li class="lk">Ein Fahrradreifen wird aufgepumpt. Lege das System fest (z. B. „Luft im Reifen“) und gib die Systemart an. Beschreibe den Zeitpunkt des Aufpumpens und danach, wenn der Reifen verschlossen ist.</li>
+      </ol>
+    </details>
+  </div>
+</section>
+
+<!-- ============ 2 SYSTEM-DETEKTIV ============ -->
+<section class="tab" id="t2">
+  <div class="view" id="b2-view">
+    <div class="cap"><div class="hud" id="b2-cap"></div></div>
+    <div class="stage" id="b2-stage"></div>
+  </div>
+  <div class="side">
+    <h2>Spiel: System-Detektiv</h2>
+    <details class="expl" open>
+      <summary>So geht’s</summary>
+      <p><b>1.</b> Tippe auf eine <b>Karte</b> (sie wird markiert). <b>2.</b> Tippe auf den <b>Behälter</b>, in den sie gehört: offen, geschlossen oder abgeschlossen. Du bekommst sofort eine Rückmeldung mit Begründung. Wenn du falsch liegst, ist das nicht schlimm: Lies die Begründung und versuche es nochmal.</p>
+      <p class="muted">Tipp: Frage dich bei jeder Karte zuerst: „Wo ist die Systemgrenze?“ Dann: „Kann <b>Stoff</b> hindurch?“ Und: „Kann <b>Energie</b> hindurch?“</p>
+    </details>
+    <div class="box hi" id="b2-fb"></div>
+    <div class="btns"><button id="b2-new">Neue Runde mischen</button></div>
+    <details class="expl task" open>
+      <summary>Aufgaben</summary>
+      <ol>
+        <li>Spiele eine Runde komplett durch. Schreibe dir die Karten auf, bei denen du dich geirrt hast, und formuliere die Regel dahinter in einem Satz.</li>
+        <li class="gk">Erfinde zwei eigene Karten, die zu „geschlossen“ passen.</li>
+        <li class="lk">Wähle ein Beispiel (z. B. „Hand-Wärmepad“) und lege die Systemgrenze zweimal unterschiedlich (z. B. Pad allein / Pad mit Hand). Wie ändert sich die Systemart?</li>
+      </ol>
+    </details>
+  </div>
+</section>
+
+<!-- ============ 3 ABKÜHLUNG ============ -->
+<section class="tab" id="t3">
+  <div class="view lab" id="b3-view">
+    <div class="stage" id="b3-stage"></div>
+    <div class="phbar" id="b3-time"></div>
+  </div>
+  <div class="side">
+    <h2>Versuch: Wer kühlt am schnellsten ab?</h2>
+    <details class="expl" open>
+      <summary>Versuchsbeschreibung</summary>
+      <p><b>Durchführung:</b> Drei gleiche Portionen Wasser (je 200 g, 80 °C) stehen in einem Raum mit 20 °C: im <b>offenen Becherglas</b>, in einer <b>verschlossenen Glasflasche</b> und in einer <b>Thermoskanne</b>. Mit dem Regler (Zeit) und der Wiedergabe lässt du bis zu 60 Minuten vergehen. Beobachte <b>Temperatur</b> und <b>Masse</b> der drei Ansätze.</p>
+      <p class="muted">Das Modell rechnet mit typischen Abkühlungsraten. Die Zahlenwerte sind gerundet und dienen der Anschauung.</p>
+    </details>
+    <h3>Ergebnisse</h3>
+    <div class="box" id="b3-res"></div>
+    <div id="b3-chart"></div>
+    <details class="expl task" open>
+      <summary>Aufgaben</summary>
+      <ol>
+        <li>Lass 60 Minuten ablaufen. Notiere Temperatur und Masse der drei Ansätze. Ordne sie nach Temperaturverlust.</li>
+        <li>Welcher Ansatz verliert <b>Masse</b>? Erkläre, woher die Masse „verschwindet“ und warum das im Zusammenhang mit der Systemart steht.</li>
+        <li>Ordne jeden Ansatz einer Systemart zu und begründe mit Stoff- und Energieaustausch.</li>
+        <li class="lk">Warum kühlt das <b>offene</b> Becherglas schneller ab als die verschlossene Flasche, obwohl in beiden die Wärme durch die Wand gehen kann? Nenne den zusätzlichen Energietransport (Verdunstung).</li>
+        <li class="lk">Warum ist die Thermoskanne nie ganz abgeschlossen? Nenne zwei Wege, auf denen Energie trotzdem übertragen wird.</li>
+      </ol>
+    </details>
+    <details class="expl">
+      <summary>Erklärung (nach dem Experimentieren öffnen)</summary>
+      <div class="gk">
+        <p>Heißes Wasser gibt Wärme an die kühlere Umgebung ab, bis beide gleich warm sind. Wie schnell das geht, hängt davon ab, wie gut die Systemgrenze <b>Energie durchlässt</b>.</p>
+        <ul>
+          <li><b>Offenes Becherglas (offenes System):</b> Wärme geht durch Glas und Oberfläche, und zusätzlich entweicht <b>Wasserdampf</b> (Stoffaustausch). Die schnellsten Wasserteilchen verlassen das Wasser und nehmen viel Energie mit. Darum wird das Wasser <b>am schnellsten kalt</b> und die Masse nimmt ab.</li>
+          <li><b>Verschlossene Flasche (geschlossenes System):</b> Kein Stoff verlässt die Flasche, die Masse bleibt gleich. Die Wärme geht aber durch die Glaswand. Das Wasser kühlt langsamer ab als im offenen Glas.</li>
+          <li><b>Thermoskanne (annähernd abgeschlossenes System):</b> Doppelte Wand mit Vakuum und Spiegelschicht: Es kann kaum Wärme übertragen werden. Das Wasser bleibt lange warm. Ganz abgeschlossen ist sie nicht, deshalb kühlt es nach vielen Stunden doch ab.</li>
+        </ul>
+      </div>
+      <div class="lk">
+        <p>Die Abkühlung folgt in guter Näherung dem Newtonschen Abkühlungsgesetz: dT/dt = −k·(T − T<sub>Umg</sub>). Die Temperatur nähert sich also exponentiell der Umgebungstemperatur. Die Konstante k kennzeichnet, wie gut die Systemgrenze Wärme überträgt:</p>
+        <ul>
+          <li><b>offen:</b> Wärmeleitung/Konvektion <b>und</b> Verdunstung (Stoffaustausch). Die Verdampfungsenthalpie (ca. 2,3 kJ/g) wird dem Wasser entzogen. Schon 1 g verdunstetes Wasser entspricht etwa 2,3 kJ, das reicht, um 200 g Wasser um etwa 2,7 K abzukühlen.</li>
+          <li><b>geschlossen:</b> nur Wärmeübertragung durch die Wand (Leitung, Strahlung), kein Stoffverlust.</li>
+          <li><b>annähernd abgeschlossen:</b> Doppelwand mit Vakuum unterbindet Leitung und Konvektion, die Verspiegelung verringert Strahlung. Restverluste gehen über Deckel/Stopfen und den Hals der Kanne.</li>
+        </ul>
+        <p>Die Energieänderung des Wassers ist ΔU ≈ m·c·ΔT (c = 4,18 J/(g·K)), und sie entspricht der abgegebenen Wärme Q (negativ aus Sicht des Systems Wasser). Das ist ein Beispiel für den 1. Hauptsatz (Reiter 5).</p>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ============ 4 INNERE ENERGIE ============ -->
+<section class="tab" id="t4">
+  <div class="view lab" id="b4-view">
+    <div class="stage" id="b4-stage"></div>
+  </div>
+  <div class="side">
+    <h2>Versuch: Innere Energie verändern</h2>
+    <details class="expl" open>
+      <summary>Was ist die innere Energie U?</summary>
+      <div class="gk">
+        <p>Die Teilchen eines Stoffes (Atome, Moleküle) sind nie in Ruhe. Sie <b>bewegen sich</b> (Wärmebewegung), schwingen und ziehen sich gegenseitig an. In jedem Stoff steckt deshalb Energie. Die Summe aller dieser Energien aller Teilchen nennt man die <b>innere Energie U</b> des Systems.</p>
+        <ul>
+          <li>Wird ein Gas <b>heißer</b>, bewegen sich die Teilchen schneller: <b>U wird größer</b>.</li>
+          <li>Wird es <b>kälter</b>, bewegen sie sich langsamer: <b>U wird kleiner</b>.</li>
+        </ul>
+        <p>Den <b>absoluten Wert</b> von U kann man nicht messen. Man kann nur die <b>Änderung ΔU</b> bestimmen (Δ gesprochen „Delta“ = „Änderung“, Endwert minus Anfangswert).</p>
+      </div>
+      <div class="lk">
+        <p>Die <b>innere Energie U</b> ist die Summe aller Energien der Teilchen eines Systems im Ruhesystem des Schwerpunkts: <b>kinetische Energie</b> (Translation, Rotation, Schwingung), <b>potenzielle Energie</b> der Wechselwirkungen zwischen den Teilchen und die Energie, die in den <b>chemischen Bindungen</b> steckt. Kinetische Energie des ganzen Körpers oder seine Lage im Schwerefeld gehören nicht dazu.</p>
+        <ul>
+          <li>Ein <b>absoluter Wert</b> von U ist nicht bestimmbar, nur <b>ΔU</b> (Differenz Endzustand − Anfangszustand).</li>
+          <li>U ist eine <b>Zustandsfunktion</b>: ΔU hängt nur vom Anfangs- und Endzustand ab, nicht vom Weg. Die übertragenen Beträge <b>Q</b> und <b>W</b> sind dagegen <b>Wegfunktionen</b>: Sie hängen davon ab, wie der Vorgang abläuft.</li>
+          <li>Für ein <b>ideales einatomiges Gas</b> gilt U = (3/2)·n·R·T. Hier hängt U nur von der Temperatur ab.</li>
+        </ul>
+      </div>
+    </details>
+    <details class="expl" open>
+      <summary>Zwei Wege, die innere Energie zu ändern</summary>
+      <ul>
+        <li><b>Wärme Q:</b> Energieübertragung wegen eines <b>Temperaturunterschieds</b> (Heizplatte, Eiswürfel). Beispiel: Du erhitzt Gas im festen Behälter.</li>
+        <li><b>Arbeit W:</b> Energieübertragung durch eine <b>Kraft über eine Strecke</b>: Kolben eindrücken oder herausziehen, rühren, Strom fließen lassen. Beispiel: Du drückst den Kolben einer Luftpumpe zusammen, das Gas wird warm.</li>
+      </ul>
+      <p class="lk"><b>Volumenarbeit:</b> Ändert sich das Volumen eines Gases gegen den Außendruck p, gilt W = −p·ΔV. Wird das Gas zusammengedrückt (ΔV &lt; 0), wird am Gas Arbeit verrichtet (W &gt; 0); dehnt es sich aus (ΔV &gt; 0), verrichtet das Gas Arbeit an der Umgebung (W &lt; 0).</p>
+    </details>
+    <h3>Experiment wählen</h3>
+    <div class="btns" id="b4-mode"></div>
+    <div class="muted" id="b4-modetxt" style="margin-bottom:4px"></div>
+    <h3>Aktion</h3>
+    <div class="btns" id="b4-act"></div>
+    <div class="box hi" id="b4-ledger"></div>
+    <details class="expl task" open>
+      <summary>Aufgaben</summary>
+      <ol>
+        <li>Wähle „Kolben festgestellt“ und erhitze zweimal. Was passiert mit Q, W, ΔU und der Temperatur? Begründe, warum W = 0 ist.</li>
+        <li>Wähle „Kolben bewegt sich, Zylinder gedämmt“ und drücke den Kolben zusammen. Es wird <b>keine Wärme</b> zugeführt und trotzdem wird das Gas wärmer. Erkläre.</li>
+        <li>Wähle „Kolben bewegt sich, im Wasserbad“ und drücke langsam zusammen. Warum bleibt die Temperatur gleich, obwohl Arbeit verrichtet wird? Wohin geht die Energie?</li>
+        <li class="lk">Überprüfe in jedem Versuch: ΔU = Q + W. Welche Größen sind in den drei Versuchen jeweils null?</li>
+      </ol>
+    </details>
+    <details class="expl">
+      <summary>Erklärung (nach dem Experimentieren öffnen)</summary>
+      <div class="gk">
+        <p><b>Festgestellter Kolben:</b> Das Gas kann sich nicht ausdehnen, es wird keine Arbeit verrichtet (W = 0). Zugeführte Wärme erhöht allein die innere Energie: ΔU = Q. Das Gas wird wärmer.</p>
+        <p><b>Gedämmter Zylinder:</b> Es kann keine Wärme ein- oder austreten (Q = 0). Wenn du den Kolben eindrückst, <b>übertragen die Kolbenstöße Energie auf die Teilchen</b>. Sie werden schneller, das Gas wird wärmer: ΔU = W. Beim Herausziehen ist es umgekehrt, das Gas wird kälter. (So wird auch eine Luftpumpe warm.)</p>
+        <p><b>Wasserbad:</b> Beim langsamen Zusammendrücken wird Arbeit verrichtet, aber das Gas <b>gibt die zugeführte Energie als Wärme an das Wasserbad ab</b>. Die Temperatur bleibt gleich, U ändert sich nicht (ΔU = 0): die Arbeit, die hineingeht, geht als Wärme wieder hinaus.</p>
+      </div>
+      <div class="lk">
+        <p>Alle drei Versuche zeigen den 1. Hauptsatz für ein geschlossenes System: ΔU = Q + W.</p>
+        <ul>
+          <li><b>Isochor</b> (V konstant): ΔV = 0 ⇒ W = −p·ΔV = 0. Also ΔU = Q<sub>V</sub>.</li>
+          <li><b>Adiabatisch</b> (kein Wärmeaustausch): Q = 0 ⇒ ΔU = W. Verdichten (W &gt; 0) erwärmt, Expandieren (W &lt; 0) kühlt das Gas. Anwendung: Dieselmotor (adiabatische Verdichtung zündet den Kraftstoff), Kühlung beim Öffnen einer Spraydose.</li>
+          <li><b>Isotherm</b> (T konstant): Für ein ideales Gas hängt U nur von T ab, also ΔU = 0 ⇒ Q = −W. Die am Gas verrichtete Arbeit verlässt das System als Wärme.</li>
+        </ul>
+        <p class="muted">Modellannahme: ideales Gas mit C<sub>V</sub> = 12,5 J/K (1 mol, einatomig); die Zahlenwerte der Schritte (±100 J Wärme, ±80 J Arbeit) sind vereinfacht, damit die Bilanz leicht nachrechenbar ist.</p>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ============ 5 1. HAUPTSATZ ============ -->
+<section class="tab" id="t5">
+  <div class="view lab" id="b5-view">
+    <div class="cap"><div class="hud" id="b5-cap"></div></div>
+    <div class="stage" id="b5-stage"></div>
+  </div>
+  <div class="side">
+    <h2>Der 1. Hauptsatz der Thermodynamik</h2>
+    <details class="expl" open>
+      <summary>Energie geht nicht verloren</summary>
+      <div class="gk">
+        <p><b>Der 1. Hauptsatz</b> ist ein Energieerhaltungssatz:</p>
+        <p style="text-align:center"><b>Energie kann weder erzeugt noch vernichtet werden. Sie kann nur von einer Form in eine andere umgewandelt oder von einem System auf ein anderes übertragen werden.</b></p>
+        <ul>
+          <li>In einem <b>abgeschlossenen</b> System bleibt die Gesamtenergie immer gleich: ΔU = 0.</li>
+          <li>In einem <b>geschlossenen</b> System kann sich die innere Energie ändern, aber nur durch zugeführte oder abgegebene <b>Wärme Q</b> und <b>Arbeit W</b>.</li>
+        </ul>
+        <p style="text-align:center;font-size:1.2em"><b>ΔU = Q + W</b></p>
+      </div>
+      <div class="lk">
+        <p><b>Der 1. Hauptsatz der Thermodynamik</b> ist der Energieerhaltungssatz für thermodynamische Systeme. Für ein <b>geschlossenes</b> System gilt:</p>
+        <p style="text-align:center;font-size:1.2em"><b>ΔU = Q + W</b></p>
+        <p>Für ein <b>abgeschlossenes</b> System ist Q = 0 und W = 0, also ΔU = 0: Die innere Energie ist konstant. Für <b>offene</b> Systeme kommt die mit dem Stoff ein- oder ausgetragene Energie hinzu. Die Energie des Universums ist konstant.</p>
+      </div>
+    </details>
+    <details class="expl" open>
+      <summary>Das Energiekonto (Vorzeichen)</summary>
+      <p>Stell dir die innere Energie U als <b>Kontostand</b> des Systems vor. Q und W sind <b>Einzahlungen</b> oder <b>Abhebungen</b>, immer aus der Sicht des <b>Systems</b>:</p>
+      <ul>
+        <li><b>+</b> = Energie wird dem System <b>zugeführt</b> (Wärme aufgenommen, Arbeit am System verrichtet, z. B. Gas zusammengedrückt).</li>
+        <li><b>−</b> = Energie wird vom System <b>abgegeben</b> (Wärme abgegeben, Arbeit vom System verrichtet, z. B. Gas drückt Kolben weg).</li>
+      </ul>
+      <p><b>Beispiel:</b> Ein Gas nimmt 150 J Wärme auf (Q = +150 J) und dehnt sich aus, wobei es 60 J Arbeit verrichtet (W = −60 J). Dann ist ΔU = +150 J + (−60 J) = <b>+90 J</b>. Die innere Energie steigt um 90 J.</p>
+      <p class="lk"><b>Achtung:</b> In manchen Büchern steht ΔU = Q − W (W = vom System verrichtete Arbeit). Hier gilt die gebräuchliche Konvention (IUPAC): Alle Größen werden aus Sicht des Systems betrachtet, und alles, was dem System <b>zugeführt</b> wird, zählt positiv.</p>
+    </details>
+    <details class="expl lk" open>
+      <summary>Enthalpie H und chemische Reaktionen</summary>
+      <p>Chemische Reaktionen laufen meist im offenen Gefäß bei konstantem <b>Außendruck</b> ab. Dann verrichtet das System eventuell Volumenarbeit (z. B. entstehende Gase schieben die Luft weg). Mit W = −p·ΔV folgt:</p>
+      <p style="text-align:center">Q<sub>p</sub> = ΔU − W = ΔU + p·ΔV =: <b>ΔH</b></p>
+      <ul>
+        <li>Die <b>Reaktionsenthalpie ΔH</b> ist die bei konstantem Druck ausgetauschte Wärme.</li>
+        <li>ΔH &lt; 0: <b>exotherm</b> (System gibt Wärme ab), ΔH &gt; 0: <b>endotherm</b> (System nimmt Wärme auf).</li>
+        <li>Bei Reaktionen <b>ohne Änderung der Gasteilchenzahl</b> ist p·ΔV ≈ 0, also ΔH ≈ ΔU. Sonst gilt ΔH = ΔU + Δn(g)·R·T.</li>
+      </ul>
+    </details>
+    <h3>Spiel 1: Energiekonto</h3>
+    <div class="box" id="b5-quest"></div>
+    <div class="btns" id="b5-opts"></div>
+    <div class="box hi" id="b5-fb"></div>
+    <h3>Spiel 2: Perpetuum-mobile-Prüfstand</h3>
+    <div class="box" id="b5-pm"></div>
+    <details class="expl task" open>
+      <summary>Aufgaben</summary>
+      <ol>
+        <li>Löse im Energiekonto mindestens 8 Aufgaben. Versuche eine Serie von 5 richtigen Antworten.</li>
+        <li>Erkläre in eigenen Worten, warum ein <b>Perpetuum mobile 1. Art</b> (Maschine, die mehr Energie abgibt als sie aufnimmt) unmöglich ist.</li>
+        <li class="gk">Ein Heizlüfter nimmt 1000 J elektrische Energie auf und gibt 1000 J Wärme an den Raum ab. Zeige mit dem 1. Hauptsatz, dass Energie nicht „verbraucht“ wird.</li>
+        <li class="lk">Bei der Reaktion 2 H₂(g) + O₂(g) → 2 H₂O(l) verringert sich die Gasteilchenzahl um Δn = −3. Berechne p·ΔV bei 298 K (R = 8,314 J/(mol·K)) für die Stoffmenge der Reaktionsgleichung und vergleiche mit ΔH = −572 kJ.</li>
+      </ol>
+    </details>
+  </div>
+</section>
+
+<!-- ============ 7 ENERGIEUMWANDLUNG ============ -->
+<section class="tab" id="t7">
+  <div class="view lab" id="c7-view">
+    <div class="stage" id="c7-stage"></div>
+  </div>
+  <div class="side">
+    <h2>Energieumwandlungen erkennen</h2>
+    <details class="expl" open>
+      <summary>Energieformen und Umwandlung</summary>
+      <p>Im Alltag und in der Chemie wird ständig Energie <b>umgewandelt</b>: aus einer Form in eine andere. Dabei gilt immer der <b>1. Hauptsatz</b>: Es geht <b>nichts verloren</b>. Was du „verbrauchst“, steckt hinterher in einer anderen Energieform (oft als Wärme in der Umgebung).</p>
+      <ul>
+        <li><b style="color:#6fcf6f">chemische Energie</b>: gespeichert in Stoffen (Benzin, Nahrung, Batterie, Kerzenwachs), genauer in den Bindungen der Teilchen.</li>
+        <li><b style="color:#ffd54f">elektrische Energie</b>: Strom, bewegte Ladungen.</li>
+        <li><b style="color:#ff7043">thermische Energie</b>: Bewegung der Teilchen (Wärmebewegung). Wird sie auf andere Körper übertragen, nennt man das <b>Wärme</b>.</li>
+        <li><b style="color:#4fc3f7">kinetische Energie</b>: Bewegungsenergie eines ganzen Körpers (Auto, Rad, Wasserstrom).</li>
+        <li><b style="color:#b388ff">potenzielle Energie</b>: Lageenergie (Wasser im Stausee, Radfahrer auf dem Berg).</li>
+        <li><b style="color:#fff59d">Strahlungsenergie</b>: Licht und andere Strahlung.</li>
+      </ul>
+      <p class="gk"><b>Vereinfachte Energiebilanz:</b> Eingesetzte Energie = nutzbare Energie + „Abwärme“. Die Abwärme ist ebenfalls Energie, wir können sie nur nicht mehr gut nutzen.</p>
+      <p class="lk"><b>Zusammenhang mit ΔU = Q + W:</b> Betrachtest du ein Gerät als geschlossenes System im Dauerbetrieb, ändert sich seine innere Energie nicht (ΔU = 0). Dann gilt: Die zugeführte Energie (Q, W &gt; 0) ist gleich der abgegebenen (Q, W &lt; 0), z. B. E<sub>zu</sub> = E<sub>nutz</sub> + Q<sub>ab</sub>. Der <b>Wirkungsgrad</b> ist η = E<sub>nutz</sub> / E<sub>zu</sub> &lt; 1. Bei Reaktionen ist chemische Energie Teil der inneren Energie U: exotherm (ΔH &lt; 0) = chemische Energie sinkt, thermische Energie steigt; endotherm = umgekehrt.</p>
+    </details>
+    <h3>1. Beispiel wählen</h3>
+    <div class="btns" id="c7-pick"></div>
+    <div class="box" id="c7-task"></div>
+    <h3>2. Energieformen bestimmen</h3>
+    <div id="c7-rows"></div>
+    <div class="box hi" id="c7-fb"></div>
+    <div id="c7-bal"></div>
+    <div id="c7-after"></div>
+    <details class="expl task" open>
+      <summary>Aufgaben</summary>
+      <ol>
+        <li>Bearbeite mindestens vier Beispiele, davon zwei aus der <b>Chemie</b>. Bestimme jede Energieform und beschreibe die Umwandlung mit eigenen Worten, bevor du die Musterbeschreibung öffnest.</li>
+        <li>Zeichne für ein Beispiel ein Energieflussdiagramm (Pfeile mit Energieformen, Abwärme nach außen).</li>
+        <li>Erkläre: Warum ist der Satz „Die Batterie ist leer, die Energie ist verbraucht“ physikalisch ungenau?</li>
+        <li class="lk">Lege für ein Beispiel die Systemgrenze fest, gib die Systemart an und beurteile das Vorzeichen von Q und W aus Sicht des Systems.</li>
+        <li class="lk">Vergleiche den Wirkungsgrad von Glühlampe, Benzinmotor und Wasserkraftwerk. Welcher Anteil wird jeweils zur Wärme, und was bedeutet das für die Umgebung?</li>
+      </ol>
+    </details>
+  </div>
+</section>
+
+<!-- ============ 6 KALORIMETER ============ -->
+<section class="tab" id="t6">
+  <div class="view lab" id="b6-view">
+    <div class="stage" id="b6-stage"></div>
+  </div>
+  <div class="side">
+    <h2>Versuch: Lösungswärme im Kalorimeter</h2>
+    <details class="expl" open>
+      <summary>Versuchsbeschreibung</summary>
+      <p><b>Durchführung:</b> In ein Gefäß mit <b>100 g Wasser</b> (21 °C) gibst du ein <b>Salz</b>. Beim Lösen wird das Wasser wärmer oder kälter. Du misst die Temperatur ein halbe Minute lang vorher und drei Minuten lang nachher. Führe den Versuch in einem <b>Kalorimeter</b> (gedämmtes, geschlossenes Gefäß mit Rührer) und im <b>offenen Becherglas</b> durch und vergleiche.</p>
+      <p class="gk">Beim Lösen wird Energie <b>umgewandelt</b>: Sie steckt zuerst im Gitter des Salzes und in der Bewegung der Wasserteilchen. Beim Lösen wird sie neu verteilt. Wird das Wasser wärmer, ist die Reaktion <b>exotherm</b>, wird es kälter, ist sie <b>endotherm</b>.</p>
+      <p class="lk"><b>Näherung:</b> Wärmekapazität des Wassers und der Lösung c = 4,18 J/(g·K), Wärmekapazität des Gefäßes vernachlässigt, Masse der Lösung = Masse Wasser + Masse Salz.</p>
+    </details>
+    <h3>1. Salz wählen</h3>
+    <div class="btns" id="b6-salt"></div>
+    <h3>2. Menge und Gefäß</h3>
+    <div class="btns" id="b6-mass"></div>
+    <div class="btns" id="b6-vessel"></div>
+    <div class="btns"><button id="b6-go" class="go">▶ Salz zugeben und messen</button><button id="b6-reset" class="del">Neuer Ansatz</button></div>
+    <div class="box hi" id="b6-status"></div>
+    <div id="b6-chart"></div>
+    <div id="b6-table"></div>
+    <details class="expl task" open>
+      <summary>Aufgaben</summary>
+      <ol>
+        <li>Miss Natriumhydroxid, Ammoniumnitrat und Calciumchlorid im Kalorimeter. Welche Salze sind exotherm, welche endotherm? Woran erkennst du das?</li>
+        <li>Wiederhole dieselbe Messung mit gleicher Salzmenge im <b>offenen Becherglas</b>. Vergleiche die höchste (bzw. tiefste) Temperatur. Erkläre den Unterschied mit den Systemarten.</li>
+        <li class="gk">Welche Energieumwandlung findet beim Lösen von NaOH statt? Beschreibe mit Systemgrenze (System: die Lösung) und Umgebung.</li>
+        <li class="lk">Berechne aus ΔT die Wärme Q = m(Lösung)·c·ΔT und daraus die molare Lösungsenthalpie ΔH = −Q/n. Vergleiche mit dem Literaturwert und erkläre mögliche Abweichungen.</li>
+        <li class="lk">Natriumchlorid zeigt kaum eine Temperaturänderung. Erkläre mit Gitterenthalpie und Hydratationsenthalpie.</li>
+      </ol>
+    </details>
+    <details class="expl">
+      <summary>Erklärung (nach dem Experimentieren öffnen)</summary>
+      <div class="gk">
+        <p>Das <b>Kalorimeter</b> ist gut gedämmt, ist also fast ein <b>abgeschlossenes System</b>: Die Energie bleibt im Gefäß und kann nicht entweichen. Deshalb ändert sich die Temperatur des Wassers so stark, wie es dem Lösevorgang entspricht.</p>
+        <p>Im <b>offenen Becherglas</b> tauscht das Wasser Wärme mit der Umgebung aus (und Wasserdampf entweicht). Die Temperaturänderung ist kleiner, und das Wasser gleicht sich langsam wieder der Raumtemperatur an. Wenn du hier misst, bekommst du ein <b>ungenaues</b> Ergebnis.</p>
+        <p><b>Beim Lösen:</b> Das Salzgitter muss aufgebrochen werden (kostet Energie), und die Ionen werden von Wassermolekülen umhüllt (setzt Energie frei). Überwiegt die frei werdende Energie, wird es <b>wärmer</b> (exotherm, z. B. NaOH, CaCl₂). Überwiegt die benötigte Energie, wird es <b>kälter</b> (endotherm, z. B. NH₄NO₃, daher „Kühlpacks“).</p>
+      </div>
+      <div class="lk">
+        <p>Die Lösungsenthalpie ΔH<sub>L</sub> ergibt sich aus Gitterenthalpie (endotherm, Ionengitter wird getrennt) und Hydratationsenthalpie (exotherm, Ionen werden von Wassermolekülen umgeben): ΔH<sub>L</sub> = ΔH<sub>Gitter</sub> + ΔH<sub>Hydr</sub>. Bei NaCl heben sich beide fast auf (ΔH<sub>L</sub> ≈ +3,9 kJ/mol).</p>
+        <p><b>Auswertung:</b> Im idealen Kalorimeter (adiabatisch, bei konstantem Druck) nimmt die Lösung die Wärme Q auf bzw. gibt sie ab: Q = m(Lösung)·c·ΔT. Die Reaktionswärme hat das umgekehrte Vorzeichen: ΔH = −Q/n. Beispiel: 5 g NaOH (n = 0,125 mol) in 100 g Wasser, ΔT ≈ +12,8 K ⇒ Q = 105 g · 4,18 J/(g·K) · 12,8 K ≈ 5,6 kJ ⇒ ΔH ≈ −45 kJ/mol.</p>
+        <p><b>Fehlerquellen:</b> Im offenen Gefäß geht Wärme an die Umgebung verloren (Maximum zu klein; man extrapoliert die Abkühlgerade auf den Zeitpunkt der Zugabe zurück), außerdem verdunstet Wasser. Ein reales Kalorimeter hat zudem eine Wärmekapazität C<sub>K</sub> (Kalorimeterkonstante), die zuvor mit einer Eichreaktion bestimmt werden muss. Hier wird sie vernachlässigt.</p>
+      </div>
+    </details>
+  </div>
+</section>
+
+</main>
+<div id="toast"></div>
+
+<script>
+// ===== 1. GEMEINSAMES ========================================================
+const $ = id => document.getElementById(id);
+function flash(t) { const e = $('toast'); e.textContent = t; e.classList.add('on'); clearTimeout(flash.t); flash.t = setTimeout(() => e.classList.remove('on'), 2200); }
+const fmt = (x, d = 1) => x.toFixed(d).replace('.', ',');
+const sg = (x, d = 0) => (x > 0 ? '+' : x < 0 ? '−' : '') + Math.abs(x).toFixed(d).replace('.', ',');
+const tabHooks = {};
+const MODE = { m: 'gk' };
+const isGK = () => MODE.m === 'gk';
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const rng = seed => () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+const labDefs = () => `<defs>
+<linearGradient id="gWall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#202a3a"/><stop offset="1" stop-color="#141a24"/></linearGradient>
+<linearGradient id="gTable" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a6275"/><stop offset="1" stop-color="#2c313d"/></linearGradient>
+<linearGradient id="gGlass" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".30"/><stop offset=".18" stop-color="#fff" stop-opacity=".07"/><stop offset=".8" stop-color="#fff" stop-opacity=".04"/><stop offset="1" stop-color="#fff" stop-opacity=".22"/></linearGradient>
+<linearGradient id="gWater" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5fa9e0" stop-opacity=".62"/><stop offset=".45" stop-color="#8fcdf3" stop-opacity=".48"/><stop offset="1" stop-color="#4f97d2" stop-opacity=".68"/></linearGradient>
+<linearGradient id="gMetal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d7dde8"/><stop offset=".5" stop-color="#9aa5b8"/><stop offset="1" stop-color="#6c7688"/></linearGradient>
+<linearGradient id="gBox" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a4357"/><stop offset="1" stop-color="#232a38"/></linearGradient>
+<radialGradient id="gShadow"><stop offset="0" stop-color="#000" stop-opacity=".55"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+<filter id="fBlur" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.2"/></filter>
+</defs>`;
+const labBG = () => `<rect width="900" height="560" fill="url(#gWall)"/>
+<polygon points="0,330 900,330 900,560 0,560" fill="url(#gTable)"/>
+<line x1="0" y1="330" x2="900" y2="330" stroke="#8993a8" stroke-opacity=".55" stroke-width="2"/>
+<g stroke="#000" stroke-opacity=".12">${[0, 1, 2, 3, 4, 5, 6, 7, 8].map(i => `<line x1="${i * 112.5}" y1="330" x2="${450 + (i * 112.5 - 450) * 1.6}" y2="560"/>`).join('')}</g>`;
+const shadow = (cx, cy, rx, ry, op = 1) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="url(#gShadow)" opacity="${op}"/>`;
+// Kristalle (Bodenkörper): n Stück in der elliptischen Bodenfläche
+function crystalsSVG(cx, by, rx, ry, n, seed, col = '#f3f0e6') {
+  const r = rng(seed), out = [];
+  for (let i = 0; i < n; i++) {
+    const a = r() * 6.283, d = Math.sqrt(r()), s = 2.6 + r() * 3.2, layer = Math.floor(i / 26) * 2.4;
+    const x = cx + Math.cos(a) * d * rx * .84, y = by + Math.sin(a) * d * ry * .62 - layer, rot = r() * 360;
+    out.push(`<polygon transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${rot.toFixed(0)})" points="0,${-s} ${s * .9},0 0,${s * .8} ${-s * .8},0" fill="${col}" stroke="#b8b3a2" stroke-width=".5"/>`);
+  }
+  return out.join('');
+}
+// Becherglas (2,5D): cx = Mitte, by = Boden (Mitte der unteren Ellipse), level 0..1
+function beakerSVG(o) {
+  const { cx, by, w, h, level = .5, seed = 1, solid = 0, cloud = 0, stir = false, liquidFill = 'url(#gWater)', marks = true, id = 'b' } = o;
+  const rx = w / 2, ry = w * .1, ly = by - level * h, top = by - h;
+  let s = shadow(cx, by + ry * .9, rx * 1.25, ry * 1.5, .9);
+  s += `<ellipse cx="${cx}" cy="${top}" rx="${rx}" ry="${ry}" fill="#9fb4d0" fill-opacity=".08" stroke="#cfdcf0" stroke-opacity=".35"/>`;
+  if (level > 0) {
+    s += `<path d="M${cx - rx},${ly} L${cx - rx},${by} A${rx},${ry} 0 0 0 ${cx + rx},${by} L${cx + rx},${ly} Z" fill="${liquidFill}"/>`;
+    if (cloud > 0) s += `<path d="M${cx - rx},${ly} L${cx - rx},${by} A${rx},${ry} 0 0 0 ${cx + rx},${by} L${cx + rx},${ly} Z" fill="#f2efe4" fill-opacity="${(cloud * .62).toFixed(2)}"/>`;
+    s += `<ellipse cx="${cx}" cy="${by}" rx="${rx}" ry="${ry}" fill="#2a6fb0" fill-opacity=".22"/>`;
+  }
+  if (solid > 0) s += crystalsSVG(cx, by - 2, rx, ry, solid, seed);
+  if (level > 0) {
+    s += `<ellipse cx="${cx}" cy="${ly}" rx="${rx}" ry="${ry}" fill="#b9e0fa" fill-opacity=".5" stroke="#e3f3ff" stroke-opacity=".6"/>`;
+    if (stir) s += `<g class="swirl"><ellipse cx="${cx}" cy="${ly}" rx="${rx * .55}" ry="${ry * .55}" fill="none" stroke="#fff" stroke-opacity=".6" stroke-dasharray="9 7"/><ellipse cx="${cx}" cy="${ly}" rx="${rx * .25}" ry="${ry * .25}" fill="none" stroke="#fff" stroke-opacity=".6" stroke-dasharray="5 6"/></g>`;
+  }
+  s += `<path d="M${cx - rx},${top} L${cx - rx},${by} A${rx},${ry} 0 0 0 ${cx + rx},${by} L${cx + rx},${top}" fill="url(#gGlass)" stroke="#dbe7f7" stroke-opacity=".75" stroke-width="2"/>`;
+  s += `<path d="M${cx - rx + 8},${top + 8} L${cx - rx + 8},${by - 10}" stroke="#fff" stroke-opacity=".5" stroke-width="5" stroke-linecap="round"/>`;
+  if (marks) for (let i = 1; i <= 4; i++) { const y = by - h * i / 5 + 0; s += `<line x1="${cx + rx - 26}" y1="${y}" x2="${cx + rx - 2}" y2="${y}" stroke="#e8f0fb" stroke-opacity=".7" stroke-width="1.5"/>`; }
+  s += `<path d="M${cx - rx},${top} A${rx},${ry} 0 0 0 ${cx + rx},${top}" fill="none" stroke="#f2f8ff" stroke-opacity=".8" stroke-width="2.2"/>`;
+  return s;
+}
+// Magnetrührer (Quader mit Knopf)
+function stirrerSVG(cx, by, w = 260) {
+  const x = cx - w / 2, y = by + 8;
+  return `${shadow(cx, y + 46, w * .62, 20, .8)}<polygon points="${x + 14},${y} ${x + w - 14},${y} ${x + w},${y + 20} ${x},${y + 20}" fill="#58627a"/><rect x="${x}" y="${y + 20}" width="${w}" height="34" rx="8" fill="url(#gBox)" stroke="#6b768d" stroke-opacity=".6"/><circle cx="${x + w - 34}" cy="${y + 37}" r="9" fill="#cfd6e4" stroke="#6b768d"/><line x1="${x + w - 34}" y1="${y + 37}" x2="${x + w - 38}" y2="${y + 31}" stroke="#2a3040" stroke-width="2"/><circle cx="${x + 28}" cy="${y + 37}" r="3.5" fill="#43d17a"/>`;
+}
+// pH-Messgerät mit Elektrode: Anzeige text
+let labN = 0;
+const labSVG = inner => { const u = 'u' + (++labN); return `<svg viewBox="0 0 900 560" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${labDefs()}${labBG()}${inner}</svg>`.replace(/(id="|url\(#)(gWall|gTable|gGlass|gWater|gMetal|gBox|gShadow|fBlur)/g, '$1$2' + u); };
+
+// ===== 2. ZEICHENHILFEN ======================================================
+const COL = { stoff: '#64b5f6', en: '#ff8a80', sys: '#ffd54f', ok: '#a5d6a7' };
+function arrowSVG(x1, y1, x2, y2, col, blocked, wavy) {
+  const dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy), ux = dx / L, uy = dy / L, nx = -uy, ny = ux;
+  let s = '';
+  if (wavy) {
+    let d = `M${x1},${y1}`; const n = Math.floor(L / 14);
+    for (let i = 1; i <= n; i++) { const t = i / n, px = x1 + dx * t + nx * (i % 2 ? 5 : -5), py = y1 + dy * t + ny * (i % 2 ? 5 : -5); d += ` L${px.toFixed(1)},${py.toFixed(1)}`; }
+    s += `<path d="${d}" fill="none" stroke="${col}" stroke-width="4" stroke-linejoin="round"/>`;
+  } else s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${blocked ? '' : ''}"/>`;
+  s += `<polygon points="${x2},${y2} ${x2 - ux * 16 + nx * 9},${y2 - uy * 16 + ny * 9} ${x2 - ux * 16 - nx * 9},${y2 - uy * 16 - ny * 9}" fill="${col}"/>`;
+  if (blocked) { const mx = x1 + dx * .55, my = y1 + dy * .55; s += `<circle cx="${mx}" cy="${my}" r="15" fill="#10151c" stroke="#ff5252" stroke-width="3"/><path d="M${mx - 7},${my - 7} L${mx + 7},${my + 7} M${mx + 7},${my - 7} L${mx - 7},${my + 7}" stroke="#ff5252" stroke-width="3.5" stroke-linecap="round"/>`; }
+  return s;
+}
+function steamSVG(cx, y, n, seed, spread = 70) {
+  const r = rng(seed); let s = '';
+  for (let i = 0; i < n; i++) s += `<ellipse class="bub" style="animation-delay:${(r() * 1.6).toFixed(2)}s;animation-duration:${(1.4 + r()).toFixed(2)}s" cx="${(cx + (r() - .5) * spread).toFixed(0)}" cy="${(y - r() * 24).toFixed(0)}" rx="${(7 + r() * 8).toFixed(0)}" ry="${(5 + r() * 5).toFixed(0)}" fill="#fff" fill-opacity=".32"/>`;
+  return s;
+}
+function hotplateSVG(cx, by, w, on) {
+  return `${shadow(cx, by + 20, w * .62, 14, .8)}<polygon points="${cx - w / 2 + 14},${by - 14} ${cx + w / 2 - 14},${by - 14} ${cx + w / 2},${by + 4} ${cx - w / 2},${by + 4}" fill="${on ? '#e8572a' : '#6b7280'}"/>${on ? `<ellipse cx="${cx}" cy="${by - 8}" rx="${w * .38}" ry="8" fill="#ff9a3c" fill-opacity=".55"/>` : ''}<rect x="${cx - w / 2}" y="${by + 4}" width="${w}" height="26" rx="6" fill="url(#gBox)" stroke="#6b768d"/><circle cx="${cx + w / 2 - 22}" cy="${by + 17}" r="6" fill="${on ? '#ff6b35' : '#4a5568'}"/>`;
+}
+// Thermometer: T in °C (0..100)
+function thermoSVG(x, y, T, h = 120, label = true) {
+  const f = Math.max(0, Math.min(1, T / 100)), lh = 8 + f * (h - 16);
+  return `<rect x="${x - 5}" y="${y}" width="10" height="${h}" rx="5" fill="#dfe9f5" fill-opacity=".22" stroke="#e6f2fb" stroke-opacity=".7"/><circle cx="${x}" cy="${y + h + 4}" r="9" fill="#e53935" stroke="#ffb3ad" stroke-opacity=".6"/><rect x="${x - 2.5}" y="${y + h - lh}" width="5" height="${lh + 2}" rx="2.5" fill="#e53935"/>${label ? `<text x="${x}" y="${y - 8}" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="15" font-weight="700" fill="#ffb3ad">${fmt(T, 1)} °C</text>` : ''}`;
+}
+function waterColor(T) { const f = Math.max(0, Math.min(1, (T - 20) / 60)); const a = [95, 169, 224], b = [240, 120, 90]; return 'rgb(' + a.map((v, i) => Math.round(v + (b[i] - v) * f)).join(',') + ')'; }
+// Thermoskanne (Dewar)
+function thermosSVG(cx, by, w, h, T) {
+  const x = cx - w / 2, ry = w * .09;
+  return `${shadow(cx, by + 6, w * .75, 14, .9)}<path d="M${x},${by - h + 16} L${x},${by} A${w / 2},${ry} 0 0 0 ${x + w},${by} L${x + w},${by - h + 16} Z" fill="url(#gMetal)" stroke="#5b6578"/><path d="M${x + 8},${by - h + 26} L${x + 8},${by - 12}" stroke="#fff" stroke-opacity=".5" stroke-width="6" stroke-linecap="round"/><rect x="${x + 6}" y="${by - h - 20}" width="${w - 12}" height="28" rx="8" fill="#2c5ccf" stroke="#5b86f0"/><ellipse cx="${cx}" cy="${by - h + 16}" rx="${w / 2}" ry="${ry}" fill="#b6c0d2" stroke="#5b6578"/>`;
+}
+// Glasflasche mit Stopfen
+function bottleSVG(cx, by, w, h, T, level = .7) {
+  const x = cx - w / 2, ry = w * .1, nw = w * .3, nh = h * .28, top = by - h, ly = by - level * (h - nh);
+  return `${shadow(cx, by + 6, w * .7, 13, .9)}<path d="M${x},${by} L${x},${top + nh + 20} Q${x},${top + nh} ${cx - nw / 2},${top + nh - 8} L${cx - nw / 2},${top} L${cx + nw / 2},${top} L${cx + nw / 2},${top + nh - 8} Q${x + w},${top + nh} ${x + w},${top + nh + 20} L${x + w},${by} A${w / 2},${ry} 0 0 1 ${x},${by} Z" fill="url(#gGlass)" stroke="#dbe7f7" stroke-opacity=".75" stroke-width="2"/><path d="M${x + 1},${ly} L${x + 1},${by} A${w / 2},${ry} 0 0 0 ${x + w - 1},${by} L${x + w - 1},${ly} Z" fill="${waterColor(T)}" fill-opacity=".62"/><ellipse cx="${cx}" cy="${ly}" rx="${w / 2 - 1}" ry="${ry}" fill="${waterColor(T)}" fill-opacity=".75"/><rect x="${cx - nw / 2 - 3}" y="${top - 14}" width="${nw + 6}" height="18" rx="4" fill="#b2503b" stroke="#e08a72"/>`;
+}
+// Liniendiagramm: series [{pts:[[x,y]], col, name}]
+function lineChart(o) {
+  const W = 420, H = o.H || 200, L = 40, R = 12, T = 12, B = 34, px = x => L + (x - o.x0) / (o.x1 - o.x0) * (W - L - R), py = y => T + (1 - (y - o.y0) / (o.y1 - o.y0)) * (H - T - B);
+  let s = `<svg viewBox="0 0 ${W} ${H}" class="chart"><rect width="${W}" height="${H}" rx="8" fill="#10151c"/>`;
+  for (let i = 0; i <= (o.ny || 4); i++) { const v = o.y0 + (o.y1 - o.y0) * i / (o.ny || 4); s += `<line x1="${L}" x2="${W - R}" y1="${py(v)}" y2="${py(v)}" stroke="#2a3547"/><text x="${L - 5}" y="${py(v) + 4}" text-anchor="end" font-size="10" fill="#8d9bb0">${Math.round(v * 10) / 10}</text>`; }
+  for (let i = 0; i <= (o.nx || 4); i++) { const v = o.x0 + (o.x1 - o.x0) * i / (o.nx || 4); s += `<text x="${px(v)}" y="${H - 18}" text-anchor="middle" font-size="10" fill="#8d9bb0">${Math.round(v * 10) / 10}</text>`; }
+  s += `<text x="${(L + W - R) / 2}" y="${H - 4}" text-anchor="middle" font-size="10.5" fill="#9aa7bd">${o.xl}</text><text x="12" y="${T + 8}" font-size="10.5" fill="#9aa7bd" transform="rotate(-90 12 ${(T + H - B) / 2})" text-anchor="middle">${o.yl}</text>`;
+  (o.series || []).forEach(se => { if (se.pts.length > 1) s += `<path d="${se.pts.map((p, i) => (i ? 'L' : 'M') + px(p[0]).toFixed(1) + ',' + py(p[1]).toFixed(1)).join('')}" fill="none" stroke="${se.col}" stroke-width="2.4"/>`; });
+  if (o.cursor != null) s += `<line x1="${px(o.cursor)}" x2="${px(o.cursor)}" y1="${T}" y2="${H - B}" stroke="#7b3fe4" stroke-width="2"/>`;
+  return s + '</svg>' + ((o.series || []).filter(x => x.name).length ? `<div class="muted">${o.series.filter(x => x.name).map(x => `<span style="color:${x.col}">● ${x.name}</span>`).join(' · ')}</div>` : '');
+}
+
+// ===== 3. REITER 1: SYSTEME ==================================================
+const SYS = {
+  open: { n: 'Offenes System', col: COL.stoff, ex: 'Offener Topf mit heißem Wasser auf der Herdplatte', stoff: true, en: true },
+  closed: { n: 'Geschlossenes System', col: COL.sys, ex: 'Verschlossene Flasche mit Wasser auf der Herdplatte', stoff: false, en: true },
+  iso: { n: 'Abgeschlossenes System', col: COL.ok, ex: 'Thermoskanne (annähernd abgeschlossen)', stoff: false, en: false }
+};
+const b1 = { k: 'open' };
+function b1Scene(k) {
+  const cx = 450, by = 400, w = 190, h = 190;
+  let s = `<text x="24" y="40" font-family="sans-serif" font-size="22" font-weight="700" fill="#e8edf5">${SYS[k].n}</text><text x="24" y="64" font-family="sans-serif" font-size="14" fill="#8d9bb0">${SYS[k].ex}</text>`;
+  s += `<text x="860" y="520" text-anchor="end" font-family="sans-serif" font-size="14" fill="#8d9bb0">Umgebung: Raum (20 °C)</text>`;
+  if (k === 'open') {
+    s += hotplateSVG(cx, by + 6, 270, true);
+    s += beakerSVG({ cx, by, w, h, level: .62, seed: 3, liquidFill: '#e87b5a', marks: false });
+    s += steamSVG(cx, by - h - 10, 9, 5, 120);
+  } else if (k === 'closed') {
+    s += hotplateSVG(cx, by + 6, 270, true);
+    s += bottleSVG(cx, by, w, h + 20, 80, .6);
+  } else {
+    s += thermosSVG(cx, by, w, h + 40, 80);
+  }
+  // Systemgrenze (gelb gestrichelt)
+  const gx = cx - w / 2 - 26, gw = w + 52, gy = by - h - (k === 'iso' ? 90 : 50), gh = h + (k === 'iso' ? 112 : 78);
+  s += `<rect x="${gx}" y="${gy}" width="${gw}" height="${gh}" rx="26" fill="none" stroke="${COL.sys}" stroke-width="3.5" stroke-dasharray="12 8"/><text x="${gx + gw + 8}" y="${gy + 18}" font-family="sans-serif" font-size="14" font-weight="700" fill="${COL.sys}">Systemgrenze</text>`;
+  // Pfeile
+  const S = SYS[k];
+  s += arrowSVG(cx - 235, by - 60, gx + 4, by - 60, COL.en, !S.en, true) + `<text x="${cx - 270}" y="${by - 84}" font-family="sans-serif" font-size="14" font-weight="700" fill="${COL.en}">Energie</text><text x="${cx - 270}" y="${by - 68}" font-family="sans-serif" font-size="12" fill="#ffb3ad">(Wärme)</text>`;
+  if (k !== 'iso') s += arrowSVG(cx, by + 76, cx, gy + gh + 2, COL.en, false, true);
+  s += arrowSVG(cx + 232, by - h - 30, cx + 232, by - h - 120, COL.stoff, !S.stoff, false) + `<text x="${cx + 244}" y="${by - h - 66}" font-family="sans-serif" font-size="14" font-weight="700" fill="${COL.stoff}">Stoff</text>`;
+  if (k === 'iso') s += `<text x="${cx}" y="${by - h - 110}" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#a5d6a7">Doppelwand · Vakuum · Spiegelschicht · Deckel</text>`;
+  return labSVG(s);
+}
+function b1Render() {
+  $('b1-stage').innerHTML = b1Scene(b1.k);
+  $('b1-sys').innerHTML = Object.keys(SYS).map(k => `<button data-k="${k}" class="${b1.k === k ? 'on' : ''}">${SYS[k].n}</button>`).join('');
+  $('b1-sys').querySelectorAll('button').forEach(b => b.onclick = () => { b1.k = b.dataset.k; b1Render(); });
+  const S = SYS[b1.k];
+  const why = { open: 'Wasserdampf (Stoff) steigt auf, und die Herdplatte liefert Wärme (Energie). Beides überschreitet die Systemgrenze.', closed: 'Der Stopfen hält den Dampf zurück: <b>kein Stoffaustausch</b>. Die Wärme der Herdplatte geht aber durch die Glaswand: <b>Energieaustausch</b>.', iso: 'Die Doppelwand mit Vakuum und der Deckel lassen praktisch <b>weder Stoff noch Wärme</b> durch. Annähernd abgeschlossen (ganz abgeschlossen ist nur das Universum).' };
+  $('b1-info').innerHTML = `<b style="color:${S.col}">${S.n}</b><br>Stoffaustausch: <b>${S.stoff ? 'ja' : 'nein'}</b> · Energieaustausch: <b>${S.en ? 'ja' : 'nein'}</b><br>${why[b1.k]}` + (isGK() ? '' : (b1.k === 'closed' ? '<br><span class="muted">Typisch: Reaktionen im verschlossenen Reagenzglas, Kühlschrank-Kältemittel, die Erde (Energie ja, Stoff nahezu nein).</span>' : b1.k === 'iso' ? '<br><span class="muted">Im Labor annähernd: Kalorimeter (Reiter 7).</span>' : '<br><span class="muted">Typisch: Lebewesen, Kerze, offene Reaktion im Becherglas.</span>'));
+}
+tabHooks[1] = () => b1Render();
+
+// ===== 4. REITER 2: SYSTEM-DETEKTIV (Zuordnungsspiel) ========================
+const B2CARDS = [
+  { t: 'Offener Kochtopf mit Wasser auf dem Herd', s: 'open', why: 'Wasserdampf steigt auf (Stoff) und die Herdplatte liefert Wärme (Energie).' },
+  { t: 'Reagenzglas mit Stopfen im heißen Wasserbad', s: 'closed', why: 'Der Stopfen verhindert Stoffaustausch. Wärme gelangt aber durch das Glas hinein.' },
+  { t: 'Thermoskanne mit aufgeschraubtem Deckel', s: 'iso', why: 'Doppelwand mit Vakuum und Deckel: praktisch weder Stoff- noch Energieaustausch (annähernd abgeschlossen).' },
+  { t: 'Eine brennende Kerze', s: 'open', why: 'Sauerstoff strömt hinein, Kohlenstoffdioxid und Wasserdampf strömen hinaus. Dazu Wärme und Licht: Stoff- und Energieaustausch.' },
+  { t: 'Du selbst (ein Mensch)', s: 'open', why: 'Wir essen, trinken, atmen (Stoff) und geben Wärme ab (Energie).' },
+  { t: 'Die Erde (vereinfacht)', s: 'closed', why: 'Sonnenlicht kommt an und Wärme wird abgestrahlt (Energie). Stoffaustausch mit dem Weltall ist vernachlässigbar.' },
+  { t: 'Das Universum', s: 'iso', why: 'Nach Definition gibt es keine Umgebung. Weder Stoff noch Energie können ausgetauscht werden.' },
+  { t: 'Zugeschmolzene Glasampulle in Eiswasser', s: 'closed', why: 'Die Ampulle ist dicht (kein Stoff). Wärme geht durch das Glas an das Eiswasser.' },
+  { t: 'Heizkörper mit Wasserkreislauf (Wasser bleibt in den Rohren)', s: 'closed', why: 'Das Wasser verlässt den Kreislauf nicht (kein Stoffaustausch), gibt aber Wärme an den Raum ab.' },
+  { t: 'Brausetablette in offenem Wasserglas', s: 'open', why: 'Kohlenstoffdioxid-Gas entweicht (Stoff) und das Gemisch tauscht Wärme mit der Luft aus.' },
+  { t: 'Zugeknoteter Luftballon', s: 'closed', why: 'Das Gas bleibt im Ballon (kein Stoffaustausch). Wärme und Arbeit (Ballon dehnt sich) kommen vor.' },
+  { t: 'Verschlossener Fahrradreifen', s: 'closed', why: 'Die Luft bleibt drin. Wärme geht durch den Mantel, und der Reifen wird beim Fahren verformt (Arbeit).' },
+  { t: 'Kalorimeter mit Deckel (gut gedämmt)', s: 'iso', why: 'Dämmung und Deckel halten Stoff und Wärme fast vollständig im Gefäß. Annähernd abgeschlossen.' },
+  { t: 'Offene Pfütze in der Sonne', s: 'open', why: 'Wasser verdunstet (Stoff) und Sonnenlicht liefert Energie.' },
+  { t: 'Gas im Zylinder mit beweglichem Kolben, Dämmung ringsum (adiabatisch)', s: 'closed', lk: true, why: 'Kein Stoffaustausch, keine Wärme, aber der Kolben überträgt <b>Arbeit</b>. Damit wird Energie ausgetauscht: nicht abgeschlossen.' },
+  { t: 'Wärmetauscher, in dem ständig Flüssigkeit durchströmt', s: 'open', lk: true, why: 'Stoff strömt hinein und hinaus. Zusätzlich wird Wärme übertragen. Offenes (Fließ-)System.' }
+];
+const b2 = { cards: [], sel: -1, tries: 0, right: 0, placed: {} };
+function b2New() {
+  const pool = B2CARDS.filter(c => !c.lk || !isGK()), pickSys = k => shuffle(pool.filter(c => c.s === k));
+  let r = [].concat(pickSys('open').slice(0, 3), pickSys('closed').slice(0, 3), pickSys('iso').slice(0, 2));
+  b2.cards = shuffle(r).map((c, i) => Object.assign({ id: i, done: false }, c)); b2.sel = -1; b2.tries = 0; b2.right = 0; $('b2-fb').innerHTML = '';
+  b2Render();
+}
+function b2Render() {
+  const bins = ['open', 'closed', 'iso'], left = b2.cards.filter(c => !c.done);
+  let h = `<div class="sg"><div class="sgpool">` + (left.length ? left.map(c => `<button class="sgcard${b2.sel === c.id ? ' sel' : ''}" data-i="${c.id}">${c.t}</button>`).join('') : '<div class="sgwin">🎉 Alle Karten sind richtig einsortiert!</div>') + `</div><div class="sgbins">`;
+  h += bins.map(k => `<button class="sgbin" data-k="${k}" style="border-color:${SYS[k].col}"><b style="color:${SYS[k].col}">${SYS[k].n}</b><span>Stoff: ${SYS[k].stoff ? 'ja' : 'nein'} · Energie: ${SYS[k].en ? 'ja' : 'nein'}</span><div class="sgdone">${b2.cards.filter(c => c.done && c.s === k).map(c => `<i>${c.t.split(' (')[0]}</i>`).join('')}</div></button>`).join('') + '</div></div>';
+  $('b2-stage').innerHTML = h;
+  $('b2-stage').querySelectorAll('.sgcard').forEach(b => b.onclick = () => { b2.sel = +b.dataset.i; b2Render(); });
+  $('b2-stage').querySelectorAll('.sgbin').forEach(b => b.onclick = () => {
+    if (b2.sel < 0) { flash('Tippe zuerst auf eine Karte.'); return; }
+    const c = b2.cards[b2.sel]; b2.tries++;
+    if (c.s === b.dataset.k) { c.done = true; b2.right++; b2.sel = -1; $('b2-fb').innerHTML = `✔ <b>Richtig:</b> „${c.t}“ ist ein <b>${SYS[c.s].n.toLowerCase()}</b>.<br>${c.why}`; $('b2-fb').style.borderColor = '#43d17a'; }
+    else { $('b2-fb').innerHTML = `✘ <b>Nicht ganz.</b> Prüfe: ${b.dataset.k === 'open' ? 'Geht hier wirklich Stoff über die Grenze?' : b.dataset.k === 'iso' ? 'Ist hier wirklich <b>jeder</b> Austausch (Stoff <b>und</b> Energie) ausgeschlossen?' : 'Bleibt der Stoff drin, und kann trotzdem Energie (Wärme oder Arbeit) durch?'}`; $('b2-fb').style.borderColor = '#ff6b6b'; }
+    b2Render();
+  });
+  $('b2-cap').innerHTML = `Karten: <b>${b2.right}</b> / ${b2.cards.length} · Versuche: <b>${b2.tries}</b>`;
+}
+function b2Init() { $('b2-new').onclick = b2New; b2New(); }
+tabHooks[2] = () => b2Render();
+
+// ===== 5. REITER 3: ABKÜHLUNG ================================================
+const B3 = [
+  { n: 'Offenes Becherglas', sys: 'offen', k: 0.045, col: '#64b5f6' },
+  { n: 'Verschlossene Flasche', sys: 'geschlossen', k: 0.020, col: '#ffd54f' },
+  { n: 'Thermoskanne', sys: 'annähernd abgeschlossen', k: 0.0035, col: '#a5d6a7' }
+];
+const b3 = { t: 0, play: false, iv: 0, data: [] };
+function b3Calc() {
+  b3.data = B3.map((v, i) => {
+    const T = [], M = []; let m = 200;
+    for (let s = 0; s <= 240; s++) {
+      const t = s / 4, Tt = 20 + 60 * Math.exp(-v.k * t); T.push(Tt);
+      if (i === 0 && s > 0) m -= 0.45 * Math.max(0, (Tt - 20) / 60) * .25;
+      M.push(m);
+    }
+    return { T, M };
+  });
+}
+const b3At = (i, t) => { const s = Math.min(240, Math.round(t * 4)); return { T: b3.data[i].T[s], M: b3.data[i].M[s] }; };
+function b3Scene() {
+  const xs = [170, 450, 730], by = 410;
+  let s = `<text x="24" y="40" font-family="sans-serif" font-size="22" font-weight="700" fill="#e8edf5">Drei Ansätze, je 200 g Wasser, Start 80 °C</text><text x="24" y="64" font-family="sans-serif" font-size="14" fill="#8d9bb0">Raumtemperatur 20 °C</text>`;
+  s += `<g id="b3-open"></g>`;
+  B3.forEach((v, i) => {
+    const cx = xs[i], w = 150, h = 170;
+    if (i === 0) s += beakerSVG({ cx, by, w, h, level: .62, seed: 4, liquidFill: waterColor(80), marks: false, id: 'b3a' });
+    else if (i === 1) s += bottleSVG(cx, by, w, h + 10, 80, .6);
+    else s += thermosSVG(cx, by, w, h + 30, 80);
+    s += `<g id="b3-steam" style="opacity:0">${i === 0 ? steamSVG(cx, by - h - 12, 8, 9, 100) : ''}</g>`;
+    s += `<g>${thermoSVG(cx + 105, by - 150, 80, 130, false)}</g>`;
+    s += `<rect id="b3-liq${i}" x="${cx + 102.5}" y="0" width="5" height="10" rx="2.5" fill="#e53935"/>`;
+    s += `<text id="b3-tt${i}" x="${cx}" y="${by + 64}" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="24" font-weight="700" fill="#ffb3ad">80,0 °C</text><text id="b3-mm${i}" x="${cx}" y="${by + 90}" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="17" fill="#cdd7e6">200,0 g</text><text x="${cx}" y="${by + 114}" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="700" fill="${v.col}">${v.n}</text><text x="${cx}" y="${by + 132}" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#8d9bb0">(${isGK() ? v.sys : v.sys}) </text>`;
+  });
+  return labSVG(s);
+}
+function b3Update() {
+  const st = $('b3-stage'); if (!st.querySelector('svg')) return;
+  B3.forEach((v, i) => {
+    const { T, M } = b3At(i, b3.t), f = Math.max(0, Math.min(1, T / 100)), lh = 8 + f * 114, cx = [170, 450, 730][i], by = 410;
+    const liq = $('b3-liq' + i); liq.setAttribute('y', by - 150 + 130 - lh); liq.setAttribute('height', lh + 2);
+    $('b3-tt' + i).textContent = fmt(T, 1) + ' °C'; $('b3-mm' + i).textContent = fmt(M, 1) + ' g';
+  });
+  st.querySelectorAll('[fill^="rgb"]').forEach((e, j) => e.setAttribute('fill', waterColor(b3At(j === 0 ? 0 : 1, b3.t).T)));
+  const stm = st.querySelector('#b3-steam'); if (stm) stm.style.opacity = Math.max(0, Math.min(1, (b3At(0, b3.t).T - 25) / 40));
+  $('b3-time').innerHTML = `<div class="row"><button class="btn" id="b3-play">${b3.play ? '⏸ Pause' : '▶ Start'}</button><input type="range" id="b3-sl" min="0" max="60" step="0.25" value="${b3.t}"><b style="min-width:70px;text-align:right">${fmt(b3.t, 0)} min</b></div>`;
+  $('b3-play').onclick = b3Toggle; $('b3-sl').oninput = e => { b3.t = +e.target.value; b3Update(); };
+  const rows = B3.map((v, i) => { const a = b3At(i, b3.t); return `<tr><td style="color:${v.col}"><b>${v.n}</b></td><td>${fmt(a.T, 1)} °C</td><td>${fmt(a.M, 1)} g</td></tr>`; }).join('');
+  $('b3-res').innerHTML = `<table class="res"><tr><th>Ansatz</th><th>Temperatur</th><th>Masse</th></tr>${rows}</table>`;
+  $('b3-chart').innerHTML = lineChart({ x0: 0, x1: 60, y0: 20, y1: 80, ny: 3, nx: 6, xl: 'Zeit in min', yl: 'Temperatur in °C', cursor: b3.t, series: B3.map((v, i) => ({ name: v.n, col: v.col, pts: b3.data[i].T.filter((_, s) => s % 4 === 0).map((y, s) => [s, y]) })) });
+}
+function b3Toggle() {
+  if (b3.play) { clearInterval(b3.iv); b3.play = false; }
+  else { if (b3.t >= 60) b3.t = 0; b3.play = true; b3.iv = setInterval(() => { b3.t = Math.min(60, b3.t + .5); b3Update(); if (b3.t >= 60) { clearInterval(b3.iv); b3.play = false; b3Update(); } }, 100); }
+  b3Update();
+}
+function b3Init() { b3Calc(); b3Render(); }
+function b3Render() { $('b3-stage').innerHTML = b3Scene(); b3Update(); }
+tabHooks[3] = () => b3Render();
+
+// ===== 6. REITER 4: INNERE ENERGIE (Gaskolben) ===============================
+const B4C = 12.5;                               // J/K
+const b4 = { mode: 'iso', T: 300, v: 0, Q: 0, W: 0, log: [], last: null, raf: 0, parts: [] };
+const B4MODES = {
+  iso: { n: 'Kolben festgestellt', txt: 'Das Volumen bleibt konstant (isochor). Du kannst nur erhitzen oder abkühlen.', acts: [['heat', '🔥 Erhitzen (+100 J Wärme)'], ['cool', '❄ Abkühlen (−100 J Wärme)']] },
+  ad: { n: 'Kolben beweglich, Zylinder gedämmt', txt: 'Keine Wärme kann hinein oder hinaus (adiabatisch). Du verrichtest Arbeit mit dem Kolben.', acts: [['push', '⬇ Kolben eindrücken'], ['pull', '⬆ Kolben herausziehen']] },
+  th: { n: 'Kolben beweglich, im Wasserbad', txt: 'Der Zylinder steht im Wasserbad (20 °C): Wärme kann ausgetauscht werden, die Temperatur bleibt konstant (isotherm).', acts: [['push', '⬇ Kolben eindrücken'], ['pull', '⬆ Kolben herausziehen']] }
+};
+function b4Reset(keepMode) { b4.T = 300; b4.v = 0; b4.Q = 0; b4.W = 0; b4.log = []; b4.last = null; b4Render(); }
+function b4Act(a) {
+  const m = b4.mode; let q = 0, w = 0;
+  if (a === 'heat') { if (b4.T >= 440) { flash('Die Temperatur ist an der Grenze des Versuchs.'); return; } q = 100; }
+  else if (a === 'cool') { if (b4.T <= 262) { flash('Das Gas ist schon sehr kalt. Erhitze es wieder.'); return; } q = -100; }
+  else if (a === 'push') { if (b4.v >= 5) { flash('Der Kolben ist ganz unten.'); return; } w = 80; if (m === 'th') q = -80; b4.v++; }
+  else if (a === 'pull') { if (b4.v <= 0) { flash('Der Kolben ist ganz oben.'); return; } w = -80; if (m === 'th') q = 80; b4.v--; }
+  if (m === 'ad' && b4.T + 80 / B4C > 450 && a === 'push') { b4.v--; flash('Zu heiß für den Versuch. Ziehe den Kolben wieder heraus.'); return; }
+  b4.Q += q; b4.W += w; b4.T = 300 + (b4.Q + b4.W) / B4C; b4.last = { a, q, w };
+  b4.log.unshift({ a, q, w }); b4.log = b4.log.slice(0, 5); b4Render();
+}
+const b4Geo = () => ({ cx: 450, w: 220, base: 440, py: 236 + b4.v * 22 });
+function b4Scene() {
+  const g = b4Geo(), x = g.cx - g.w / 2, top = 170, ry = 22, m = b4.mode, f = Math.max(0, Math.min(1, (b4.T - 250) / 200));
+  const gasC = `rgb(${Math.round(90 + 150 * f)},${Math.round(160 - 60 * f)},${Math.round(230 - 150 * f)})`;
+  let s = `<text x="24" y="40" font-family="sans-serif" font-size="22" font-weight="700" fill="#e8edf5">Gas im Zylinder – ${B4MODES[m].n}</text><text x="24" y="64" font-family="sans-serif" font-size="14" fill="#8d9bb0">Geschlossenes System (Stoffmenge konstant): Energie nur über Wärme Q und Arbeit W</text>`;
+  s += shadow(g.cx, g.base + 14, 180, 20, .9);
+  if (m === 'th') s += `<rect x="${x - 40}" y="${top + 120}" width="${g.w + 80}" height="${g.base - top - 100}" rx="16" fill="#4aa8e8" fill-opacity=".28" stroke="#9fd4f7" stroke-opacity=".6"/><text x="${x - 30}" y="${g.base + 28}" font-family="sans-serif" font-size="13" fill="#9fd4f7">Wasserbad 20 °C</text>`;
+  if (m === 'ad') s += `<rect x="${x - 26}" y="${top - 6}" width="${g.w + 52}" height="${g.base - top + 26}" rx="22" fill="#d8c9a0" fill-opacity=".9" stroke="#a89868" stroke-width="2"/><text x="${x - 20}" y="${g.base + 40}" font-family="sans-serif" font-size="13" fill="#d8c9a0">Wärmedämmung</text>`;
+  // Zylinder hinten, Gas, Kolben, vorne
+  s += `<path d="M${x},${top} L${x},${g.base} A${g.w / 2},${ry} 0 0 0 ${x + g.w},${g.base} L${x + g.w},${top} Z" fill="#9fb4d0" fill-opacity=".10"/>`;
+  s += `<path d="M${x},${g.py + 12} L${x},${g.base} A${g.w / 2},${ry} 0 0 0 ${x + g.w},${g.base} L${x + g.w},${g.py + 12} Z" fill="${gasC}" fill-opacity=".30" id="b4-gas"/>`;
+  s += `<g id="b4-parts"></g>`;
+  // Heizplatte / Kühlung in iso-Modus
+  if (m === 'iso') s += hotplateSVG(g.cx, g.base + 36, 300, b4.last && b4.last.a === 'heat') + (b4.last && b4.last.a === 'cool' ? `<rect x="${g.cx - 70}" y="${g.base + 22}" width="140" height="24" rx="6" fill="#bfe7ff" fill-opacity=".8"/><text x="${g.cx}" y="${g.base + 40}" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#1f4f78">Eis</text>` : '');
+  s += `<path d="M${x},${top} L${x},${g.base} A${g.w / 2},${ry} 0 0 0 ${x + g.w},${g.base} L${x + g.w},${top}" fill="url(#gGlass)" stroke="#dbe7f7" stroke-opacity=".8" stroke-width="2.4"/>`;
+  s += `<rect x="${g.cx - 7}" y="${top - 52}" width="14" height="${g.py - top + 52}" rx="4" fill="url(#gMetal)"/><ellipse cx="${g.cx}" cy="${top - 56}" rx="40" ry="9" fill="url(#gMetal)" stroke="#5b6578"/>`;
+  s += `<path d="M${x + 2},${g.py} L${x + 2},${g.py + 14} A${g.w / 2 - 2},${ry - 3} 0 0 0 ${x + g.w - 2},${g.py + 14} L${x + g.w - 2},${g.py} Z" fill="#7c879b" stroke="#4a5568"/><ellipse cx="${g.cx}" cy="${g.py}" rx="${g.w / 2 - 2}" ry="${ry - 3}" fill="#aab4c6" stroke="#5b6578"/>`;
+  if (m === 'iso') s += `<rect x="${x - 14}" y="${g.py + 2}" width="${g.w + 28}" height="8" rx="3" fill="#ffb74d" stroke="#e0902a"/><text x="${x + g.w + 22}" y="${g.py + 10}" font-family="sans-serif" font-size="13" font-weight="700" fill="#ffb74d">festgestellt</text>`;
+  s += `<ellipse cx="${g.cx}" cy="${top}" rx="${g.w / 2}" ry="${ry}" fill="none" stroke="#f2f8ff" stroke-opacity=".8" stroke-width="2.4"/>`;
+  // Thermometer
+  const tx = g.cx + 190, th = 190, lh = 10 + f * (th - 20);
+  s += `<rect x="${tx - 6}" y="200" width="12" height="${th}" rx="6" fill="#dfe9f5" fill-opacity=".22" stroke="#e6f2fb" stroke-opacity=".7"/><circle cx="${tx}" cy="${200 + th + 6}" r="11" fill="#e53935"/><rect x="${tx - 3}" y="${200 + th - lh}" width="6" height="${lh + 4}" rx="3" fill="#e53935"/><text x="${tx}" y="186" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="16" font-weight="700" fill="#ffb3ad">${Math.round(b4.T)} K</text>`;
+  return labSVG(s);
+}
+function b4Particles() {
+  const g = b4Geo(), x0 = g.cx - g.w / 2 + 12, x1 = g.cx + g.w / 2 - 12, y0 = g.py + 22, y1 = g.base - 6, f = Math.max(0, Math.min(1, (b4.T - 250) / 200));
+  const col = `rgb(${Math.round(120 + 135 * f)},${Math.round(190 - 100 * f)},${Math.round(255 - 170 * f)})`, sp = Math.sqrt(b4.T / 300);
+  if (!b4.parts.length) { const r = rng(5); for (let i = 0; i < 22; i++) b4.parts.push({ x: x0 + r() * (x1 - x0), y: y0 + r() * (y1 - y0), vx: (r() - .5) * 3, vy: (r() - .5) * 3 }); }
+  const grp = $('b4-parts'); if (!grp) return;
+  if (grp.childElementCount !== b4.parts.length) grp.innerHTML = b4.parts.map(() => '<circle r="6.5"/>').join('');
+  [...grp.children].forEach((c, i) => {
+    const p = b4.parts[i]; p.x += p.vx * sp; p.y += p.vy * sp;
+    if (p.x < x0) { p.x = x0; p.vx = Math.abs(p.vx); } if (p.x > x1) { p.x = x1; p.vx = -Math.abs(p.vx); }
+    if (p.y < y0) { p.y = y0; p.vy = Math.abs(p.vy); } if (p.y > y1) { p.y = y1; p.vy = -Math.abs(p.vy); }
+    c.setAttribute('cx', p.x.toFixed(1)); c.setAttribute('cy', p.y.toFixed(1)); c.setAttribute('fill', col); c.setAttribute('stroke', '#fff'); c.setAttribute('stroke-opacity', '.5');
+  });
+}
+function b4Loop() { b4Particles(); b4.raf = requestAnimationFrame(b4Loop); }
+function b4Ledger() {
+  const bar = (v, c) => `<div class="lbar"><div style="width:${Math.min(50, Math.abs(v) / 400 * 50)}%;${v >= 0 ? 'left:50%' : 'right:50%'};background:${c}"></div></div>`;
+  const dU = b4.Q + b4.W;
+  let h = `<table class="res"><tr><th>Größe</th><th>Wert</th><th></th></tr><tr><td><b>Q</b> Wärme</td><td>${sg(b4.Q)} J</td><td>${bar(b4.Q, '#ff8a80')}</td></tr><tr><td><b>W</b> Arbeit</td><td>${sg(b4.W)} J</td><td>${bar(b4.W, '#64b5f6')}</td></tr><tr><td><b>ΔU = Q + W</b></td><td>${sg(dU)} J</td><td>${bar(dU, '#ffd54f')}</td></tr></table>`;
+  h += `Temperatur: <b>${Math.round(b4.T)} K</b> (${fmt(b4.T - 273.15, 0)} °C) · Volumen: <b>${fmt(1 - b4.v * .1, 1)}</b> (relativ)`;
+  if (b4.last) {
+    const l = b4.last, w = { heat: 'Erhitzen: Wärme wird zugeführt. Die Teilchen werden schneller.', cool: 'Abkühlen: Wärme wird abgegeben. Die Teilchen werden langsamer.', push: 'Der Kolben drückt die Teilchen zusammen: Arbeit wird am Gas verrichtet (W &gt; 0).' + (b4.mode === 'th' ? ' Das Wasserbad nimmt die Energie als Wärme auf (Q &lt; 0).' : ' Die Teilchen werden schneller.'), pull: 'Das Gas drückt den Kolben nach oben: Das Gas verrichtet Arbeit (W &lt; 0).' + (b4.mode === 'th' ? ' Das Wasserbad liefert Wärme nach (Q &gt; 0).' : ' Die Teilchen werden langsamer.') }[l.a];
+    h += `<br><span class="muted">Letzte Aktion: ${w}</span>`;
+  }
+  return h;
+}
+function b4Render() {
+  $('b4-stage').innerHTML = b4Scene(); b4Particles();
+  $('b4-mode').innerHTML = Object.keys(B4MODES).map(k => `<button data-k="${k}" class="${b4.mode === k ? 'on' : ''}">${B4MODES[k].n}</button>`).join('');
+  $('b4-mode').querySelectorAll('button').forEach(b => b.onclick = () => { b4.mode = b.dataset.k; b4Reset(); });
+  $('b4-modetxt').textContent = B4MODES[b4.mode].txt;
+  $('b4-act').innerHTML = B4MODES[b4.mode].acts.map(a => `<button data-a="${a[0]}">${a[1]}</button>`).join('') + '<button class="del" id="b4-rs">Neu starten</button>';
+  $('b4-act').querySelectorAll('button[data-a]').forEach(b => b.onclick = () => b4Act(b.dataset.a));
+  $('b4-rs').onclick = () => b4Reset();
+  $('b4-ledger').innerHTML = b4Ledger();
+}
+function b4Init() { b4Render(); }
+tabHooks[4] = () => { b4Render(); cancelAnimationFrame(b4.raf); b4.raf = requestAnimationFrame(b4Loop); };
+
+// ===== 7. REITER 5: 1. HAUPTSATZ (Spiele) ====================================
+const B5SYS = [
+  { n: 'Gas in einer Spritze', wp: 'wird zusammengedrückt, dabei wird Arbeit am Gas verrichtet', wn: 'dehnt sich aus und verrichtet dabei Arbeit', neg: true },
+  { n: 'Luft in einer Luftpumpe', wp: 'wird beim Pumpen zusammengedrückt (Arbeit wird am Gas verrichtet)', wn: 'dehnt sich aus und schiebt den Kolben nach außen (das Gas verrichtet Arbeit)', neg: true },
+  { n: 'Wasser in einem Topf', wp: 'wird mit einem Quirl gerührt (Rührarbeit wird am Wasser verrichtet)', wn: '', neg: false },
+  { n: 'Gas in einem Zylinder mit Kolben', wp: 'wird vom Kolben verdichtet (am Gas wird Arbeit verrichtet)', wn: 'schiebt den Kolben nach oben (das Gas verrichtet Arbeit)', neg: true }
+];
+const b5 = { q: null, score: 0, tries: 0, streak: 0, best: 0, done: false, wrong: [] };
+const abs = Math.abs, J = v => sg(v) + ' J', nr = () => (1 + Math.floor(Math.random() * 30)) * 10;
+function b5Make() {
+  const lk = !isGK(), r = Math.random();
+  if (lk && r < .22) {                                  // Volumenarbeit
+    const p = pick([100, 100, 200, 150]), dV = pick([-0.5, 0.5, 1.0, -1.0, 0.25, -0.25]), W = Math.round(-p * 1000 * dV / 1000 * 10) / 10;   // p in kPa, dV in L -> J
+    const opts = shuffle([...new Set([W, -W, Math.round(W * 10) / 10 * 10, Math.round(W / 10 * 10) / 10 || W + 25])]).slice(0, 4);
+    const all = [W, -W, W * 10, W / 10].map(x => Math.round(x * 100) / 100);
+    const set = [...new Set(all)]; while (set.length < 4) set.push(W + 5 * (set.length + 1));
+    return { type: 'pV', Q: null, W, dU: null, ask: 'W', text: `Ein Gas ${dV > 0 ? 'dehnt sich gegen einen konstanten Außendruck von ' + p + ' kPa um ' + fmt(abs(dV), 2) + ' L aus' : 'wird bei einem konstanten Außendruck von ' + p + ' kPa um ' + fmt(abs(dV), 2) + ' L zusammengedrückt'}. Berechne die Volumenarbeit W = −p·ΔV.`, options: shuffle(set.slice(0, 4)), unit: 'J', solution: `W = −p·ΔV = −${p} kPa · (${dV > 0 ? '+' : '−'}${fmt(abs(dV), 2)} L) = ${J(W)}` };
+  }
+  const S = pick(B5SYS.filter(x => !lk || true));
+  let Q, W; do { Q = (Math.random() < .5 ? 1 : -1) * nr(); W = (Math.random() < (S.neg ? .5 : 1) ? 1 : -1) * nr(); if (!S.neg) W = abs(W); } while (abs(Q + W) > 400 || Q + W === 0);
+  const dU = Q + W, ask = pick(['dU', 'dU', 'Q', 'W']);
+  const qt = Q > 0 ? `nimmt <b>${abs(Q)} J</b> Wärme auf` : `gibt <b>${abs(Q)} J</b> Wärme ab`, wt = W > 0 ? `${S.wp.replace('Arbeit', '<b>' + abs(W) + ' J</b> Arbeit')}` : `${S.wn.replace('Arbeit', '<b>' + abs(W) + ' J</b> Arbeit')}`;
+  let text, correct, wrongs, sol;
+  if (ask === 'dU') { text = `${S.n} ${qt} und ${wt}. Wie ändert sich die innere Energie ΔU?`; correct = dU; wrongs = [Q - W, -(Q + W), abs(Q) + abs(W), Q]; sol = `ΔU = Q + W = ${J(Q)} + (${J(W)}) = ${J(dU)}`; }
+  else if (ask === 'Q') { text = `${S.n} ${wt}. Dabei steigt die innere Energie um <b>${dU > 0 ? '' : '−'}${abs(dU)} J</b> (ΔU = ${J(dU)}). Wie viel Wärme Q wurde ausgetauscht (Vorzeichen beachten)?`; correct = Q; wrongs = [-Q, dU + W, W - dU, dU]; sol = `ΔU = Q + W ⇒ Q = ΔU − W = ${J(dU)} − (${J(W)}) = ${J(Q)}`; }
+  else { text = `${S.n} ${qt}. Dabei ändert sich die innere Energie um ΔU = <b>${J(dU)}</b>. Wie groß ist die Arbeit W (Vorzeichen beachten)?`; correct = W; wrongs = [-W, dU + Q, Q - dU, dU]; sol = `ΔU = Q + W ⇒ W = ΔU − Q = ${J(dU)} − (${J(Q)}) = ${J(W)}`; }
+  const set = [correct]; wrongs.forEach(x => { if (!set.includes(x) && x !== 0) set.push(x); }); while (set.length < 4) { const x = correct + (Math.random() < .5 ? 1 : -1) * nr(); if (!set.includes(x) && x !== 0) set.push(x); }
+  return { type: 'fix', Q, W, dU, ask, text, options: shuffle(set.slice(0, 4)), correct, unit: 'J', solution: sol };
+}
+function b5Scene(q) {
+  const cx = 360, by = 400, w = 190, py = 270;
+  const val = (k, v) => q.ask === k || (q.type === 'pV' && k === 'W') ? '?' : v == null ? '' : J(v);
+  const Q = q.type === 'pV' ? null : q.Q, W = q.W, dU = q.dU;
+  let s = `<text x="24" y="40" font-family="sans-serif" font-size="22" font-weight="700" fill="#e8edf5">Energiekonto des Systems</text><text x="24" y="64" font-family="sans-serif" font-size="14" fill="#8d9bb0">+ : Energie wird dem System zugeführt · − : Energie wird vom System abgegeben</text>`;
+  s += shadow(cx, by + 10, 150, 18, .9);
+  s += `<path d="M${cx - w / 2},180 L${cx - w / 2},${by} A${w / 2},20 0 0 0 ${cx + w / 2},${by} L${cx + w / 2},180" fill="url(#gGlass)" stroke="#dbe7f7" stroke-opacity=".8" stroke-width="2.2"/><ellipse cx="${cx}" cy="180" rx="${w / 2}" ry="20" fill="none" stroke="#f2f8ff" stroke-opacity=".7" stroke-width="2"/>`;
+  s += `<path d="M${cx - w / 2 + 2},${py + 12} L${cx - w / 2 + 2},${by - 1} A${w / 2 - 2},19 0 0 0 ${cx + w / 2 - 2},${by - 1} L${cx + w / 2 - 2},${py + 12} Z" fill="#8fb9e8" fill-opacity=".3"/><rect x="${cx - 6}" y="120" width="12" height="${py - 120}" rx="4" fill="url(#gMetal)"/><ellipse cx="${cx}" cy="116" rx="36" ry="8" fill="url(#gMetal)"/><ellipse cx="${cx}" cy="${py}" rx="${w / 2 - 2}" ry="17" fill="#aab4c6" stroke="#5b6578"/><text x="${cx}" y="${by - 50}" text-anchor="middle" font-family="sans-serif" font-size="20" font-weight="700" fill="#e8edf5">System</text>`;
+  // Q-Pfeil (links) und W-Pfeil (oben)
+  const qv = Q == null ? 0 : Q, wv = W;
+  const qIn = qv >= 0; if (Q != null) s += arrowSVG(qIn ? 70 : cx - w / 2 - 6, 330, qIn ? cx - w / 2 - 6 : 70, 330, COL.en, false, true) + `<text x="70" y="300" font-family="sans-serif" font-size="16" font-weight="700" fill="${COL.en}">Q (Wärme)</text><text x="70" y="318" font-family="sans-serif" font-size="20" font-weight="800" fill="#fff">${val('Q', Q)}</text>`;
+  const wIn = wv >= 0; s += arrowSVG(cx + 150, wIn ? 100 : 170, cx + 150, wIn ? 170 : 100, COL.stoff, false, false) + `<text x="${cx + 170}" y="130" font-family="sans-serif" font-size="16" font-weight="700" fill="${COL.stoff}">W (Arbeit)</text><text x="${cx + 170}" y="152" font-family="sans-serif" font-size="20" font-weight="800" fill="#fff">${val('W', W)}</text>`;
+  // ΔU-Anzeige rechts
+  const bx = 680; s += `<rect x="${bx}" y="150" width="170" height="250" rx="14" fill="#1a2230" stroke="#3a4a63"/><text x="${bx + 85}" y="178" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="700" fill="${COL.sys}">innere Energie U</text><line x1="${bx + 20}" x2="${bx + 150}" y1="290" y2="290" stroke="#5a6a82" stroke-dasharray="4 4"/>`;
+  if (dU != null && q.ask !== 'dU') { const h = Math.max(6, abs(dU) / 400 * 100); s += `<rect x="${bx + 60}" y="${dU > 0 ? 290 - h : 290}" width="50" height="${h}" fill="${COL.sys}" opacity=".85"/>`; }
+  s += `<text x="${bx + 85}" y="${q.ask === 'dU' ? 300 : (dU != null ? (dU > 0 ? 330 : 270) : 300)}" text-anchor="middle" font-family="sans-serif" font-size="22" font-weight="800" fill="#fff">ΔU = ${val('dU', dU)}</text>`;
+  if (q.type === 'pV') s += `<text x="${bx + 85}" y="360" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#9aa7bd">(Q hier nicht gegeben)</text>`;
+  return labSVG(s);
+}
+function b5Render() {
+  if (!b5.q) { b5.q = b5Make(); b5.done = false; b5.mis = []; }
+  const q = b5.q;
+  $('b5-stage').innerHTML = b5Scene(q);
+  $('b5-cap').innerHTML = `Richtig: <b>${b5.score}</b> / ${b5.tries} · Serie: <b>${b5.streak}</b> (Rekord ${b5.best})`;
+  $('b5-quest').innerHTML = q.text;
+  const mis = b5.mis || [];
+  $('b5-opts').innerHTML = b5.done ? '<button id="b5-next" class="go">Nächste Aufgabe ▶</button>' : q.options.map((o, i) => `<button data-i="${i}" class="${mis.includes(i) ? 'wrong' : ''}" ${mis.includes(i) ? 'disabled' : ''}>${q.type === 'pV' ? sg(o, abs(o) < 10 ? 1 : 0).replace('.', ',') : sg(o)} J</button>`).join('');
+  if (b5.done) $('b5-next').onclick = () => { b5.q = null; $('b5-fb').innerHTML = ''; b5Render(); };
+  else $('b5-opts').querySelectorAll('button').forEach(b => b.onclick = () => {
+    const i = +b.dataset.i, o = q.options[i], ok = q.type === 'pV' ? Math.abs(o - q.W) < 1e-6 : o === q.correct;
+    if (ok) { b5.tries++; if (!mis.length) { b5.score++; b5.streak++; b5.best = Math.max(b5.best, b5.streak); } else b5.streak = 0; b5.done = true; $('b5-fb').innerHTML = `✔ <b>Richtig!</b><br>${q.solution}`; $('b5-fb').style.borderColor = '#43d17a'; if (q.type !== 'pV') { /* ΔU etc. */ } }
+    else { b5.tries++; b5.streak = 0; mis.push(i); b5.mis = mis; $('b5-fb').innerHTML = `✘ Nicht ganz. <b>Tipp:</b> Alles aus Sicht des Systems: zugeführte Energie zählt <b>+</b>, abgegebene <b>−</b>. Und es gilt <b>ΔU = Q + W</b>.${q.type === 'pV' ? ' Vorzeichen: Zusammendrücken ⇒ W &gt; 0, Ausdehnen ⇒ W &lt; 0. Einheit: kPa·L = J.' : ''}`; $('b5-fb').style.borderColor = '#ff6b6b'; if (mis.length >= 2) { b5.done = true; $('b5-fb').innerHTML += `<br><b>Lösung:</b> ${q.solution}`; } }
+    b5Render();
+  });
+}
+// Perpetuum-mobile-Prüfstand
+const B5PM = [
+  { t: 'Ein Rad wird von einem Elektromotor angetrieben, der den Strom von einem Generator bekommt, den das Rad selbst antreibt. Es soll sich dauerhaft drehen und zusätzlich eine Lampe betreiben.', ok: false, why: 'Die Lampe würde dauerhaft Energie abgeben, ohne dass Energie zugeführt wird. Durch Reibung und elektrische Verluste geht sogar immer etwas Energie als Wärme verloren. ΔU kann nicht ständig sinken und gleichzeitig Energie abgegeben werden.' },
+  { t: 'Ein Ventilator wird von einer Solarzelle betrieben und läuft, solange die Sonne scheint.', ok: true, why: 'Möglich: Energie kommt von außen (Sonnenlicht). Das System ist offen für Strahlungsenergie. Es wird Energie umgewandelt (Licht → elektrische Energie → Bewegung), nicht erzeugt.' },
+  { t: 'Eine Wärmepumpe liefert 3 kJ Heizwärme für 1 kJ elektrische Energie.', ok: true, why: 'Möglich: Zusätzlich werden 2 kJ Wärme aus der Umgebung (Luft, Erdreich) aufgenommen. Die Bilanz stimmt: 1 kJ + 2 kJ = 3 kJ. Energie wird nicht erzeugt, sondern umverteilt.' },
+  { t: 'Ein Magnetmotor hält ein Rad nur durch die Kräfte von Dauermagneten für immer in Bewegung und gibt dabei Arbeit ab.', ok: false, why: 'Magnete liefern Kräfte, aber keine Energie ohne Quelle. Auf einer Kreisbahn kehrt das Rad in den Ausgangszustand zurück: ΔU = 0, also kann es keine Arbeit nach außen abgeben.' },
+  { t: 'Eine Thermoskanne hält Tee viele Stunden warm.', ok: true, why: 'Möglich: Die Kanne verlangsamt nur den Wärmeaustausch (annähernd abgeschlossenes System). Es wird nirgends Energie erzeugt, der Tee kühlt trotzdem langsam ab.' },
+  { t: 'Eine Maschine gibt in einer Stunde 10 kJ Arbeit ab, nimmt aber nur 8 kJ Wärme auf und wird dabei nicht kälter.', ok: false, why: 'ΔU = Q + W = +8 kJ + (−10 kJ) = −2 kJ: Die Maschine müsste 2 kJ innere Energie verlieren, also kälter werden. Soll sie gleichbleiben (ΔU = 0), muss sie 10 kJ aufnehmen.' }
+];
+const b5p = { i: 0, order: [], ans: null };
+function b5pRender() {
+  if (!b5p.order.length) { b5p.order = shuffle(B5PM.map((_, i) => i)); b5p.i = 0; }
+  const c = B5PM[b5p.order[b5p.i % b5p.order.length]];
+  let h = `<div>${c.t}</div><div class="btns"><button data-a="1">✔ Funktioniert</button><button data-a="0">✘ Unmöglich (verstößt gegen den 1. Hauptsatz)</button></div>`;
+  if (b5p.ans != null) { const ok = (b5p.ans === 1) === c.ok; h = `<div>${c.t}</div><div style="margin-top:6px;color:${ok ? '#a5d6a7' : '#ff8a80'}"><b>${ok ? '✔ Richtig' : '✘ Leider falsch'}:</b> ${c.ok ? 'Das ist möglich.' : 'Das ist unmöglich.'}</div><div>${c.why}</div><div class="btns"><button id="b5p-next" class="go">Nächste Karte ▶</button></div>`; }
+  $('b5-pm').innerHTML = h;
+  if (b5p.ans != null) $('b5p-next').onclick = () => { b5p.ans = null; b5p.i++; b5pRender(); };
+  else $('b5-pm').querySelectorAll('button[data-a]').forEach(b => b.onclick = () => { b5p.ans = +b.dataset.a; b5pRender(); });
+}
+function b5Init() { b5pRender(); }
+tabHooks[5] = () => { if (b5.q && b5.q.type === 'pV' && isGK()) { b5.q = null; $('b5-fb').innerHTML = ''; } b5Render(); b5pRender(); };
+
+// ===== 8. REITER 6: KALORIMETER ==============================================
+const B6S = [
+  { n: 'NaOH', full: 'Natriumhydroxid', M: 40.00, dH: -44.5, col: '#e8edf5' },
+  { n: 'NH₄NO₃', full: 'Ammoniumnitrat', M: 80.04, dH: 25.7, col: '#cfe3f3' },
+  { n: 'CaCl₂', full: 'Calciumchlorid (wasserfrei)', M: 110.98, dH: -82.8, col: '#f3ecd6' },
+  { n: 'NaCl', full: 'Natriumchlorid', M: 58.44, dH: 3.9, col: '#ffffff' },
+  { n: 'KNO₃', full: 'Kaliumnitrat', M: 101.10, dH: 34.9, col: '#f1f1f1' },
+  { n: 'LiCl', full: 'Lithiumchlorid', M: 42.39, dH: -37.0, col: '#f5f5ee' }
+];
+const b6 = { s: 0, m: 5, v: 'cal', run: null, rows: [], series: [], T0: 21 };
+const B6T = { tAdd: 30, tau: 8, kOpen: 0.0040, kCal: 0.00020, tEnd: 210 };
+function b6Sim(s, m, v) {
+  const sa = B6S[s], n = m / sa.M, dT = -n * sa.dH * 1000 / ((100 + m) * 4.18), k = v === 'cal' ? B6T.kCal : B6T.kOpen, out = []; let T = b6.T0;
+  for (let t = 0; t <= B6T.tEnd; t += 0.5) {
+    out.push([t, T]);
+    const inj = t >= B6T.tAdd ? dT * (Math.exp(-(t - B6T.tAdd) / B6T.tau) - Math.exp(-(t + 0.5 - B6T.tAdd) / B6T.tau)) : 0;
+    T += inj - 0.5 * k * (T - b6.T0);
+  }
+  const ext = out.reduce((b, p) => abs(p[1] - b6.T0) > abs(b - b6.T0) ? p[1] : b, b6.T0);
+  return { out, dTid: dT, ext, dTm: ext - b6.T0 };
+}
+function b6Scene(tNow, T) {
+  const cx = 420, by = 420, w = 190, h = 190, adding = tNow >= B6T.tAdd && tNow < B6T.tAdd + 10, sa = B6S[b6.s];
+  let s = `<text x="24" y="40" font-family="sans-serif" font-size="22" font-weight="700" fill="#e8edf5">${b6.v === 'cal' ? 'Kalorimeter (gedämmt, Deckel, Rührer)' : 'Offenes Becherglas'}</text><text x="24" y="64" font-family="sans-serif" font-size="14" fill="#8d9bb0">100 g Wasser · ${fmt(b6.m, 0)} g ${sa.n} · Raumtemperatur ${fmt(b6.T0, 0)} °C</text>`;
+  s += stirrerSVG(cx, by, 270);
+  if (b6.v === 'cal') {
+    s += `<rect x="${cx - w / 2 - 28}" y="${by - h - 20}" width="${w + 56}" height="${h + 26}" rx="26" fill="#d8c9a0" stroke="#a89868" stroke-width="2"/>`;
+    s += beakerSVG({ cx, by: by - 4, w: w - 20, h: h - 22, level: .62, seed: 6, liquidFill: 'url(#gWater)', marks: false, solid: adding ? 10 : 0, stir: false });
+    s += `<rect x="${cx - w / 2 - 34}" y="${by - h - 36}" width="${w + 68}" height="22" rx="8" fill="#b0a070" stroke="#8a7a50"/><rect x="${cx + 28}" y="${by - h - 70}" width="9" height="${h + 40}" rx="4" fill="#dfe9f5" fill-opacity=".5" stroke="#e6f2fb"/><rect x="${cx - 34}" y="${by - h - 66}" width="5" height="${h + 20}" fill="#aab4c6"/>`;
+  } else {
+    s += beakerSVG({ cx, by, w, h, level: .56, seed: 6, solid: adding ? 10 : 0 });
+    s += `<rect x="${cx + 28}" y="${by - h - 20}" width="9" height="${h + 20}" rx="4" fill="#dfe9f5" fill-opacity=".5" stroke="#e6f2fb"/>`;
+  }
+  // Digitalthermometer
+  s += `<rect x="640" y="300" width="200" height="110" rx="14" fill="url(#gBox)" stroke="#6b768d"/><rect x="656" y="316" width="168" height="54" rx="6" fill="#0c1a12" stroke="#1d3b2a"/><text x="740" y="355" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="34" font-weight="700" fill="#5dffa0">${fmt(T, 2)}</text><text x="812" y="334" font-family="sans-serif" font-size="12" fill="#4bb77c">°C</text><text x="740" y="396" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#9aa7bd">Digitalthermometer</text>`;
+  s += `<path d="M${cx + 33},${by - h + 10} C ${cx + 60},${by - h - 80} 600,260 640,340" fill="none" stroke="#3b4152" stroke-width="4"/>`;
+  // Probe
+  s += `<ellipse cx="140" cy="${by + 8}" rx="60" ry="13" fill="#e9edf5" stroke="#b9c0cf"/><text x="140" y="${by + 44}" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="700" fill="#cdd7e6">${sa.n} · ${fmt(b6.m, 0)} g</text>` + (tNow < B6T.tAdd ? crystalsSVG(140, by + 6, 40, 8, Math.round(b6.m * 3), 31, sa.col) : '');
+  s += `<text x="450" y="500" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#cdd7e6">${tNow < B6T.tAdd ? 'Zeit: ' + fmt(tNow, 0) + ' s · Anfangstemperatur wird gemessen' : tNow < B6T.tAdd + 10 ? 'Salz wird zugegeben und gerührt …' : 'Zeit: ' + fmt(tNow, 0) + ' s'}</text>`;
+  return labSVG(s);
+}
+function b6Chart(upto) {
+  const pts = b6.series.filter(p => p[0] <= upto).filter((_, i) => i % 2 === 0);
+  const all = b6.series.map(p => p[1]), lo = Math.floor(Math.min(b6.T0 - 1, ...all) - .5), hi = Math.ceil(Math.max(b6.T0 + 1, ...all) + .5);
+  return lineChart({ x0: 0, x1: B6T.tEnd, y0: b6.series.length ? lo : 15, y1: b6.series.length ? hi : 30, ny: 4, nx: 7, xl: 'Zeit in s', yl: 'Temperatur in °C', series: [{ col: '#ffd54f', pts }] });
+}
+function b6Rows() {
+  if (!b6.rows.length) return '<div class="muted">Hier erscheinen deine Messungen.</div>';
+  const gk = isGK();
+  let h = `<table class="res"><tr><th>Salz</th><th>Gefäß</th><th>ΔT</th>${gk ? '<th>Ergebnis</th>' : '<th>ΔH exp.</th><th>ΔH Lit.</th>'}</tr>`;
+  b6.rows.forEach(r => {
+    const sa = B6S[r.s], n = r.m / sa.M, Q = (100 + r.m) * 4.18 * r.dT, dH = -Q / n / 1000;
+    h += `<tr><td><b>${sa.n}</b> ${fmt(r.m, 0)} g</td><td>${r.v === 'cal' ? 'Kalorimeter' : 'offen'}</td><td>${sg(r.dT, 1)} K</td>` + (gk ? `<td>${abs(r.dT) < 1 ? 'kaum Änderung' : r.dT > 0 ? '<b style="color:#ff8a80">exotherm</b> (wärmer)' : '<b style="color:#64b5f6">endotherm</b> (kälter)'}</td>` : `<td>${sg(dH, 1)} kJ/mol</td><td>${sg(sa.dH, 1)} kJ/mol</td>`) + '</tr>';
+  });
+  return h + '</table>' + (gk ? '' : '<div class="muted">ΔH exp. = −(m(Lösung)·c·ΔT)/n. Abweichungen im offenen Gefäß entstehen durch Wärmeverlust an die Umgebung.</div>');
+}
+function b6Draw(t) {
+  const i = Math.min(b6.series.length - 1, Math.round(t * 2)), T = b6.series.length ? b6.series[i][1] : b6.T0;
+  $('b6-stage').innerHTML = b6Scene(t, T);
+  $('b6-chart').innerHTML = b6Chart(t);
+}
+function b6Render() {
+  b6Draw(b6.run ? b6.run.t : (b6.series.length ? B6T.tEnd : 0));
+  $('b6-salt').innerHTML = B6S.map((x, i) => `<button data-i="${i}" class="${b6.s === i ? 'on' : ''}" title="${x.full}">${x.n}</button>`).join('');
+  $('b6-salt').querySelectorAll('button').forEach(b => b.onclick = () => { if (b6.run) return; b6.s = +b.dataset.i; b6.series = []; b6Render(); });
+  $('b6-mass').innerHTML = [2, 5, 10].map(m => `<button data-m="${m}" class="${b6.m === m ? 'on' : ''}">${m} g</button>`).join('');
+  $('b6-mass').querySelectorAll('button').forEach(b => b.onclick = () => { if (b6.run) return; b6.m = +b.dataset.m; b6.series = []; b6Render(); });
+  $('b6-vessel').innerHTML = `<button data-v="cal" class="${b6.v === 'cal' ? 'on' : ''}">Kalorimeter (gedämmt, Deckel)</button><button data-v="open" class="${b6.v === 'open' ? 'on' : ''}">Offenes Becherglas</button>`;
+  $('b6-vessel').querySelectorAll('button').forEach(b => b.onclick = () => { if (b6.run) return; b6.v = b.dataset.v; b6.series = []; b6Render(); });
+  $('b6-go').disabled = !!b6.run;
+  $('b6-table').innerHTML = b6Rows();
+  const sa = B6S[b6.s];
+  $('b6-status').innerHTML = b6.run ? 'Messung läuft …' : b6.series.length ? `Messung beendet. Größte Temperaturänderung: <b>${sg(b6.last.dTm, 1)} K</b>${isGK() ? '' : ' (ideal, ohne Wärmeverlust: ' + sg(b6.last.dTid, 1) + ' K)'}.` : `Bereit: ${sa.full}, ${b6.m} g, ${b6.v === 'cal' ? 'Kalorimeter' : 'offenes Becherglas'}.`;
+}
+function b6Go() {
+  if (b6.run) return; const sim = b6Sim(b6.s, b6.m, b6.v); b6.series = sim.out; b6.last = sim; b6.run = { t0: performance.now(), t: 0 };
+  const step = now => {
+    b6.run.t = Math.min(B6T.tEnd, (now - b6.run.t0) / 7000 * B6T.tEnd); b6Draw(b6.run.t);
+    if (b6.run.t < B6T.tEnd) b6.raf = requestAnimationFrame(step);
+    else { b6.run = null; b6.rows.unshift({ s: b6.s, m: b6.m, v: b6.v, dT: sim.dTm }); b6.rows = b6.rows.slice(0, 8); b6Render(); }
+  };
+  b6.raf = requestAnimationFrame(step); b6Render();
+}
+function b6Init() {
+  $('b6-go').onclick = b6Go;
+  $('b6-reset').onclick = () => { cancelAnimationFrame(b6.raf); b6.run = null; b6.series = []; b6.rows = []; b6Render(); };
+  b6Render();
+}
+tabHooks[6] = () => { if (!b6.run) b6Render(); };
+
+// ===== 10. REITER 6 (data-t=7): ENERGIEUMWANDLUNGEN ==========================
+const EF = { chem: ['chemische Energie', '#6fcf6f'], elek: ['elektrische Energie', '#ffd54f'], therm: ['thermische Energie / Wärme', '#ff7043'], kin: ['kinetische Energie', '#4fc3f7'], pot: ['potenzielle Energie (Lage)', '#b388ff'], rad: ['Strahlungsenergie (Licht)', '#fff59d'] };
+const C7 = [
+  { id: 'lampe', cat: 'Alltag', e: '🔦', n: 'Taschenlampe (Glühlampe)', task: 'Die Taschenlampe leuchtet. Wohin gelangt die Energie der Batterie?',
+    st: [{ e: '🔋', n: 'Batterie', f: 'chem', h: 'In der Batterie sind Stoffe gespeichert, die miteinander reagieren können.' }, { e: '🔌', n: 'Stromkreis', f: 'elek', h: 'Durch die Drähte fließt Strom.' }, { e: '💡', n: 'leuchtende Glühlampe', f: 'rad', h: 'Was sendet eine leuchtende Lampe aus?' }],
+    cv: ['Redoxreaktion in der Batterie', 'Glühfaden wird heiß und glüht'], br: [{ from: 2, e: '🌡️', n: 'warme Lampe, warme Luft', f: 'therm', h: 'Wenn du die Lampe anfasst, spürst du es.' }],
+    bal: { inn: ['elektrische Energie', 100], out: [['Licht', 5, 'rad'], ['Wärme', 95, 'therm']] },
+    sol: 'In der Batterie ist <b>chemische Energie</b> gespeichert. Bei der Reaktion in der Batterie (Redoxreaktion) wird sie in <b>elektrische Energie</b> umgewandelt. Die Glühlampe wandelt die elektrische Energie in <b>Strahlungsenergie (Licht)</b> und sehr viel <b>thermische Energie</b> um. Die Energie geht nicht verloren, sie wird als Wärme an die Umgebung abgegeben.',
+    lkq: { q: 'Wie groß ist der Wirkungsgrad der Glühlampe (nutzbare Energie / zugeführte Energie)?', o: ['5 %', '95 %', '50 %', '100 %'], ok: 0, why: 'η = E<sub>Licht</sub> / E<sub>elektrisch</sub> = 5 J / 100 J = 5 %. Die übrigen 95 J verlassen als Wärme das System.' } },
+  { id: 'kerze', cat: 'Chemie', e: '🕯️', n: 'Brennende Kerze (Verbrennung)', task: 'Eine Kerze brennt. Die Verbrennung von Wachs ist eine exotherme Reaktion.',
+    st: [{ e: '🕯️', n: 'Wachs und Sauerstoff', f: 'chem', h: 'Die Stoffe können miteinander reagieren (brennen).' }, { e: '🔥', n: 'heiße Flamme', f: 'therm', h: 'Die Teilchen bewegen sich sehr schnell.' }],
+    cv: ['Verbrennung (exotherme Reaktion)'], br: [{ from: 1, e: '✨', n: 'Licht der Flamme', f: 'rad', h: 'Die Kerze leuchtet.' }, { from: 1, e: '♨️', n: 'warme Luft um die Flamme', f: 'therm', h: 'Die Flamme erwärmt die Umgebung.' }],
+    bal: { inn: ['chemische Energie', 100], out: [['Licht', 10, 'rad'], ['Wärme', 90, 'therm']], approx: true },
+    sol: 'Wachs und Sauerstoff enthalten <b>chemische Energie</b>. Bei der Verbrennung reagieren sie zu Kohlenstoffdioxid und Wasser. Die chemische Energie des Systems sinkt, es entstehen <b>thermische Energie</b> (heiße Flamme) und <b>Strahlungsenergie</b> (Licht). Beide gehen an die Umgebung. Die Reaktion ist <b>exotherm</b>.',
+    lkq: { q: 'Welches Vorzeichen hat die Reaktionsenthalpie ΔH und die Wärme Q für das System „Reaktionsgemisch“ der Kerze?', o: ['ΔH &lt; 0 und Q &lt; 0 (System gibt Wärme ab)', 'ΔH &gt; 0 und Q &gt; 0', 'ΔH &lt; 0 und Q &gt; 0', 'ΔH = 0'], ok: 0, why: 'Exotherm: Das System gibt Wärme an die Umgebung ab. Aus Sicht des Systems ist Q negativ, und bei konstantem Druck ΔH = Q<sub>p</sub> &lt; 0. Das System ist offen (Sauerstoff strömt hinein, CO₂ hinaus).' } },
+  { id: 'rad', cat: 'Alltag', e: '🚴', n: 'Radfahrer fährt den Berg hinauf', task: 'Eine Radfahrerin isst morgens ein Brötchen und fährt später einen Berg hinauf.',
+    st: [{ e: '🥐', n: 'Brötchen (Nahrung)', f: 'chem', h: 'Stoffe, die der Körper abbauen kann.' }, { e: '🚴', n: 'Rad fährt (bergauf)', f: 'kin', h: 'Der Körper bewegt sich.' }, { e: '⛰️', n: 'Radfahrerin oben auf dem Berg', f: 'pot', h: 'Sie ist jetzt höher als vorher.' }],
+    cv: ['Stoffwechsel in den Muskelzellen', 'Rad wird gegen die Schwerkraft nach oben bewegt'], br: [{ from: 1, e: '🥵', n: 'Körperwärme, Schweiß', f: 'therm', h: 'Radfahren macht warm.' }],
+    bal: { inn: ['chemische Energie (Nahrung)', 100], out: [['Höhenenergie und Bewegung', 25, 'pot'], ['Wärme', 75, 'therm']], approx: true },
+    sol: 'In der Nahrung ist <b>chemische Energie</b> gespeichert. Die Muskelzellen wandeln sie um in <b>kinetische Energie</b> (Fahren) und später in <b>potenzielle Energie</b> (Höhe). Ein großer Teil (etwa drei Viertel) wird als <b>thermische Energie</b> frei: Der Körper wird warm und gibt Wärme an die Umgebung ab.',
+    lkq: { q: 'Der Körper ist (vereinfacht) ein offenes System. Warum?', o: ['Er tauscht Stoff (Essen, Atmen) und Energie (Wärme, Arbeit) aus', 'Er tauscht nur Energie aus', 'Er tauscht weder Stoff noch Energie aus', 'Er tauscht nur Stoff aus'], ok: 0, why: 'Der Körper nimmt Nahrung und Sauerstoff auf, gibt CO₂ und Wasser ab (Stoffaustausch) und gibt Wärme sowie Arbeit an die Umgebung ab (Energieaustausch).' } },
+  { id: 'kraftwerk', cat: 'Alltag', e: '🏞️', n: 'Wasserkraftwerk', task: 'Wasser fließt aus einem Stausee durch ein Kraftwerk.',
+    st: [{ e: '🏞️', n: 'Wasser im Stausee (oben)', f: 'pot', h: 'Das Wasser liegt hoch.' }, { e: '🌊', n: 'Wasser strömt durch die Rohre', f: 'kin', h: 'Das Wasser bewegt sich schnell.' }, { e: '⚡', n: 'Generator liefert Strom', f: 'elek', h: 'Aus der Steckdose kommt …' }],
+    cv: ['Wasser fällt und beschleunigt', 'Turbine treibt den Generator an'], br: [{ from: 1, e: '🌡️', n: 'Reibung, erwärmtes Wasser', f: 'therm', h: 'Reibung erwärmt.' }],
+    bal: { inn: ['potenzielle Energie', 100], out: [['elektrische Energie', 90, 'elek'], ['Wärme', 10, 'therm']], approx: true },
+    sol: 'Das Wasser im Stausee besitzt <b>potenzielle Energie</b>. Beim Herabstürzen wird sie in <b>kinetische Energie</b> umgewandelt. Die Turbine und der Generator machen daraus <b>elektrische Energie</b>. Ein kleiner Teil wird durch Reibung zu <b>thermischer Energie</b>.',
+    lkq: { q: 'Wie groß ist der Wirkungsgrad, wenn von 100 J nur 10 J als Wärme verloren gehen?', o: ['90 %', '10 %', '110 %', '50 %'], ok: 0, why: 'η = E<sub>elektr</sub> / E<sub>zu</sub> = 90 J / 100 J = 90 %. Wasserkraftwerke zählen zu den effizientesten Kraftwerken.' } },
+  { id: 'motor', cat: 'Chemie', e: '🚗', n: 'Benzinmotor (Auto)', task: 'Ein Auto fährt mit Benzin. Beim Verbrennen von Benzin reagieren Kohlenwasserstoffe mit Sauerstoff.',
+    st: [{ e: '⛽', n: 'Benzin und Luft', f: 'chem', h: 'Stoffe, die verbrennen können.' }, { e: '💥', n: 'heißes Verbrennungsgas im Zylinder', f: 'therm', h: 'Das Gas ist sehr heiß.' }, { e: '🚗', n: 'fahrendes Auto', f: 'kin', h: 'Es bewegt sich.' }],
+    cv: ['Verbrennung im Zylinder', 'Gas dehnt sich aus und schiebt den Kolben'], br: [{ from: 1, e: '♨️', n: 'Abgas und Kühler', f: 'therm', h: 'Der Motor wird heiß, der Auspuff auch.' }],
+    bal: { inn: ['chemische Energie (Benzin)', 100], out: [['Bewegung', 25, 'kin'], ['Abwärme', 75, 'therm']], approx: true },
+    sol: 'Im Benzin steckt <b>chemische Energie</b>. Bei der Verbrennung (exotherm) wird sie zu <b>thermischer Energie</b> des heißen Gases. Das Gas dehnt sich aus, schiebt den Kolben und das Auto bekommt <b>kinetische Energie</b>. Etwa drei Viertel gehen als <b>Abwärme</b> über Abgas und Kühler an die Umgebung.',
+    lkq: { q: 'Das Gas im Zylinder dehnt sich aus und schiebt den Kolben. Welches Vorzeichen hat die Arbeit W aus Sicht des Gases?', o: ['W &lt; 0 (das Gas verrichtet Arbeit)', 'W &gt; 0 (am Gas wird Arbeit verrichtet)', 'W = 0', 'W kann nicht bestimmt werden'], ok: 0, why: 'Das Gas gibt Energie an den Kolben ab. Aus Sicht des Systems Gas ist die Arbeit negativ: W = −p·ΔV &lt; 0, weil ΔV &gt; 0.' } },
+  { id: 'foen', cat: 'Alltag', e: '💨', n: 'Föhn', task: 'Ein Föhn bläst warme Luft.',
+    st: [{ e: '🔌', n: 'Steckdose', f: 'elek', h: 'Aus ihr kommt Strom.' }, { e: '💨', n: 'Föhn (Heizspirale und Ventilator)', f: 'elek', h: 'Hier kommt noch die elektrische Energie an.' }],
+    cv: ['Strom fließt zum Föhn'], br: [{ from: 1, e: '🔥', n: 'heiße Luft', f: 'therm', h: 'Die Heizspirale wird heiß.' }, { from: 1, e: '🌬️', n: 'Luftstrom', f: 'kin', h: 'Die Luft bewegt sich.' }],
+    bal: { inn: ['elektrische Energie', 100], out: [['Wärme der Luft', 85, 'therm'], ['Bewegung der Luft', 15, 'kin']] },
+    sol: 'Aus der Steckdose kommt <b>elektrische Energie</b>. In der Heizspirale wird sie zu <b>thermischer Energie</b> (heiße Luft), im Ventilatormotor zu <b>kinetischer Energie</b> (Luftstrom). Am Ende landen beide durch Reibung und Abkühlen als thermische Energie in der Umgebung.',
+    lkq: { q: 'Welche Systemart ist der Föhn, wenn Luft hindurchströmt?', o: ['offenes System', 'geschlossenes System', 'abgeschlossenes System', 'kein System'], ok: 0, why: 'Luft (Stoff) strömt hinein und heraus, zusätzlich fließt elektrische Energie hinein: Stoff- und Energieaustausch, also offen.' } },
+  { id: 'photo', cat: 'Chemie', e: '🌱', n: 'Photosynthese', task: 'Ein Blatt bildet aus Kohlenstoffdioxid und Wasser Traubenzucker (Glucose) und Sauerstoff.',
+    st: [{ e: '☀️', n: 'Sonnenlicht', f: 'rad', h: 'Die Sonne strahlt.' }, { e: '🌱', n: 'Glucose im Blatt', f: 'chem', h: 'Zucker ist ein Speicherstoff.' }],
+    cv: ['Photosynthese (Lichtenergie wird gebunden)'], br: [{ from: 1, e: '💧', n: 'Verdunstung, Erwärmung des Blattes', f: 'therm', h: 'Blätter geben Wärme und Wasserdampf ab.' }],
+    bal: { inn: ['Strahlungsenergie', 100], out: [['chemische Energie (gespeichert)', 5, 'chem'], ['Wärme und Verdunstung', 95, 'therm']], approx: true },
+    sol: 'Die Pflanze nimmt <b>Strahlungsenergie</b> (Sonnenlicht) auf. In der Photosynthese wird ein Teil davon als <b>chemische Energie</b> in Glucose gespeichert. Die Reaktion ist <b>endotherm</b>: Energie wird in den Stoffen gespeichert. Der größere Teil wird als <b>thermische Energie</b> wieder abgegeben (Werte sehr grob).',
+    lkq: { q: 'Die Photosynthese ist endotherm. Welches Vorzeichen hat ΔH?', o: ['ΔH &gt; 0 (System nimmt Energie auf)', 'ΔH &lt; 0', 'ΔH = 0', 'Das hängt von der Pflanze ab'], ok: 0, why: 'Aus 6 CO₂ + 6 H₂O entsteht Glucose mit höherer Energie: ΔH ≈ +2800 kJ/mol. Die Energie stammt aus dem Licht, das System nimmt Energie auf.' } },
+  { id: 'kaelte', cat: 'Chemie', e: '🧊', n: 'Kältepack (NH₄NO₃ löst sich)', task: 'In einem Kältepack löst sich Ammoniumnitrat in Wasser. Es wird kalt, wenn du es knickst.',
+    st: [{ e: '💧', n: 'Wasser (Zimmertemperatur)', f: 'therm', h: 'Teilchen bewegen sich, das Wasser ist warm.' }, { e: '🧪', n: 'Lösung mit getrennten Ionen', f: 'chem', h: 'Das Gitter des Salzes wurde aufgebrochen, die Energie ist im Stoff gespeichert.' }],
+    cv: ['Lösevorgang (endotherm)'], br: [{ from: 0, e: '🖐️', n: 'Wärme aus Hand und Umgebung', f: 'therm', h: 'Die Hand spürt es: Wärme fließt …' }],
+    bal: { inn: ['thermische Energie (aus Wasser/Umgebung)', 100], out: [['in der Lösung gespeichert', 100, 'chem']], approx: true },
+    sol: 'Beim Lösen von Ammoniumnitrat wird das <b>Salzgitter aufgebrochen</b>. Dafür wird Energie benötigt. Sie stammt aus der <b>thermischen Energie</b> des Wassers (und der Umgebung): Das Wasser wird kälter. Die Energie steckt danach in der Lösung, also als <b>chemische Energie</b> (Wechselwirkungsenergie der Teilchen). Der Vorgang ist <b>endotherm</b>.',
+    lkq: { q: 'Welches Vorzeichen hat ΔH<sub>L</sub> und welche Richtung hat die Wärme (aus Sicht des Systems Lösung)?', o: ['ΔH &gt; 0, Q &gt; 0 (System nimmt Wärme auf)', 'ΔH &lt; 0, Q &lt; 0', 'ΔH &gt; 0, Q &lt; 0', 'ΔH = 0, Q = 0'], ok: 0, why: 'Endotherm: Die Lösung nimmt Wärme aus Umgebung/Wasser auf (Q &gt; 0), ΔH = +25,7 kJ/mol. Im Kältepack kühlt dadurch alles ab.' } },
+  { id: 'haende', cat: 'Chemie', e: '🧤', n: 'Handwärmer (Natriumacetat)', task: 'Du knickst das Metallplättchen im Handwärmer. Die klare Flüssigkeit kristallisiert und wird warm.',
+    st: [{ e: '🧪', n: 'unterkühlte Natriumacetat-Lösung', f: 'chem', h: 'Die Stoffe haben noch „gespeicherte“ Energie.' }, { e: '🧤', n: 'warmes Kristallisat', f: 'therm', h: 'Der Handwärmer wird heiß.' }],
+    cv: ['Kristallisation (exotherm)'], br: [{ from: 1, e: '🖐️', n: 'Wärme an die Hand', f: 'therm', h: 'Die Hand wird warm.' }],
+    bal: { inn: ['chemische Energie (Kristallisationsenergie)', 100], out: [['Wärme an die Umgebung', 100, 'therm']], approx: true },
+    sol: 'In der unterkühlten Lösung ist <b>chemische Energie</b> gespeichert. Beim Kristallisieren wird sie frei und wird zu <b>thermischer Energie</b>. Der Handwärmer wird warm und gibt Wärme an die Hand ab: <b>exotherm</b>. Zum Wiederverwenden wird er erhitzt (Energiezufuhr, Kristalle lösen sich wieder).',
+    lkq: { q: 'Welches Vorzeichen hat Q für das System „Handwärmer“?', o: ['Q &lt; 0 (gibt Wärme ab)', 'Q &gt; 0 (nimmt Wärme auf)', 'Q = 0', 'Q kann nicht bestimmt werden'], ok: 0, why: 'Der Handwärmer gibt Wärme an die Hand ab, aus Sicht des Systems Q &lt; 0. Seine innere Energie sinkt (ΔU = Q + W &lt; 0, da W ≈ 0).' } },
+  { id: 'elektrolyse', cat: 'Chemie', e: '🔋', n: 'Elektrolyse von Wasser', task: 'Mit Gleichstrom wird Wasser zerlegt: Es entstehen Wasserstoff und Sauerstoff.',
+    st: [{ e: '🔌', n: 'Netzgerät', f: 'elek', h: 'Strom wird geliefert.' }, { e: '🧪', n: 'Wasserstoff und Sauerstoff', f: 'chem', h: 'Diese Gase können wieder reagieren (brennen, explodieren).' }],
+    cv: ['Elektrolyse (erzwungene Reaktion)'], br: [{ from: 1, e: '🌡️', n: 'Erwärmung der Zelle', f: 'therm', h: 'Der Zellinhalt wird etwas warm.' }],
+    bal: { inn: ['elektrische Energie', 100], out: [['chemische Energie (H₂, O₂)', 70, 'chem'], ['Wärme', 30, 'therm']], approx: true },
+    sol: '<b>Elektrische Energie</b> wird zugeführt und in der Zelle zur Zerlegung des Wassers genutzt. Sie wird in <b>chemische Energie</b> der Produkte Wasserstoff und Sauerstoff umgewandelt (gespeichert). Ein Teil wird zu <b>thermischer Energie</b> (die Zelle wird warm). Verbrennt der Wasserstoff später wieder, wird die chemische Energie wieder frei.',
+    lkq: { q: 'Welche Arbeit liegt hier vor, und welches Vorzeichen hat W für das System Elektrolysezelle?', o: ['elektrische Arbeit, W &gt; 0 (am System verrichtet)', 'Volumenarbeit, W &lt; 0', 'keine Arbeit, W = 0', 'elektrische Arbeit, W &lt; 0'], ok: 0, why: 'Die Stromquelle verrichtet elektrische Arbeit am System (Energie wird zugeführt): W &gt; 0. Ein Teil wird als Reaktionsenergie gespeichert, ein Teil geht als Wärme ab.' } }
+];
+const c7 = { i: 0, solved: {}, filter: 'all', shown: false };
+const c7Keys = sc => sc.st.map((_, i) => 's' + i).concat(sc.br.map((_, i) => 'b' + i));
+function c7Form(sc, k) { return k[0] === 's' ? sc.st[+k.slice(1)].f : sc.br[+k.slice(1)].f; }
+function c7Scene(sc) {
+  const N = sc.st.length, xs = N === 2 ? [230, 610] : [150, 420, 690], Y = 400, S = c7.solved;
+  const col = k => S[k] ? EF[c7Form(sc, k)][1] : '#6b768d';
+  let s = `<text x="24" y="40" font-family="sans-serif" font-size="22" font-weight="700" fill="#e8edf5">${sc.n}</text><text x="24" y="64" font-family="sans-serif" font-size="14" fill="#8d9bb0">${sc.cat} · Energie-Fließband</text>`;
+  const orbs = (path, c, n = 3) => { let o = ''; for (let i = 0; i < n; i++) o += `<circle r="7" fill="${c}" stroke="#fff" stroke-opacity=".7"><animateMotion dur="2.6s" begin="-${(i * .85).toFixed(2)}s" repeatCount="indefinite" path="${path}"/></circle>`; return o; };
+  // Förderbänder
+  for (let i = 0; i < N - 1; i++) {
+    const x1 = xs[i] + 74, x2 = xs[i + 1] - 74, p = `M${x1},${Y - 8} Q${(x1 + x2) / 2},${Y - 70} ${x2},${Y - 8}`, c = col('s' + i);
+    s += `<path d="${p}" fill="none" stroke="${c}" stroke-opacity=".35" stroke-width="12" stroke-linecap="round"/><path d="${p}" fill="none" stroke="${c}" stroke-width="3" stroke-dasharray="10 8" class="swirl2"/>${orbs(p, c)}<text x="${(x1 + x2) / 2}" y="${Y - 82}" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#c7d2e4">${sc.cv[i]}</text>`;
+  }
+  const cnt = {}; sc.br.forEach(b => cnt[b.from] = (cnt[b.from] || 0) + 1);
+  const seen = {};
+  sc.br.forEach((b, j) => {
+    const k = seen[b.from] = (seen[b.from] || 0), nb = cnt[b.from]; seen[b.from]++;
+    const bx = xs[b.from] + (k - (nb - 1) / 2) * 190 + (nb === 1 ? 0 : 0), by = 175, p = `M${xs[b.from] + (k - (nb - 1) / 2) * 30},${Y - 62} Q${bx},${(by + Y) / 2} ${bx},${by + 40}`, c = col('b' + j);
+    s += `<path d="${p}" fill="none" stroke="${c}" stroke-opacity=".35" stroke-width="10" stroke-linecap="round"/><path d="${p}" fill="none" stroke="${c}" stroke-width="3" stroke-dasharray="10 8" class="swirl2"/>${orbs(p, c, 2)}`;
+    s += shadow(bx, by + 52, 56, 12, .8) + `<ellipse cx="${bx}" cy="${by + 30}" rx="50" ry="16" fill="#273245" stroke="${c}" stroke-width="2.5"/><text x="${bx}" y="${by + 16}" text-anchor="middle" font-size="46">${b.e}</text><text x="${bx}" y="${by - 36}" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#cdd7e6">${b.n}</text>`;
+  });
+  sc.st.forEach((t, i) => {
+    const x = xs[i], c = col('s' + i), ef = S['s' + i] ? EF[t.f] : null;
+    s += shadow(x, Y + 36, 90, 16, .9) + `<ellipse cx="${x}" cy="${Y + 26}" rx="72" ry="24" fill="#18202e"/><rect x="${x - 72}" y="${Y}" width="144" height="26" fill="#18202e"/><ellipse cx="${x}" cy="${Y}" rx="72" ry="24" fill="#2b364a" stroke="${c}" stroke-width="3"/><text x="${x}" y="${Y - 6}" text-anchor="middle" font-size="58">${t.e}</text>`;
+    s += `<text x="${x}" y="${Y + 62}" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="700" fill="#e8edf5">${t.n}</text><rect x="${x - 96}" y="${Y + 72}" width="192" height="26" rx="13" fill="${ef ? ef[1] : '#2a3547'}"/><text x="${x}" y="${Y + 90}" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="800" fill="${ef ? '#10151c' : '#8d9bb0'}">${ef ? ef[0] : '?'}</text>`;
+  });
+  // Chips der Zweige
+  Object.keys(seen).forEach(k => delete seen[k]);
+  const cnt2 = {}; sc.br.forEach(b => cnt2[b.from] = (cnt2[b.from] || 0) + 1);
+  sc.br.forEach((b, j) => { const k = seen[b.from] = (seen[b.from] || 0); seen[b.from]++; const bx = xs[b.from] + (k - (cnt2[b.from] - 1) / 2) * 190, ef = S['b' + j] ? EF[b.f] : null; s += `<rect x="${bx - 90}" y="${175 + 62}" width="180" height="24" rx="12" fill="${ef ? ef[1] : '#2a3547'}"/><text x="${bx}" y="${175 + 79}" text-anchor="middle" font-family="sans-serif" font-size="12.5" font-weight="800" fill="${ef ? '#10151c' : '#8d9bb0'}">${ef ? ef[0] : '?'}</text>`; });
+  return labSVG(s);
+}
+function c7Render() {
+  const sc = C7[c7.i], keys = c7Keys(sc);
+  $('c7-stage').innerHTML = c7Scene(sc);
+  $('c7-pick').innerHTML = C7.map((x, i) => `<button data-i="${i}" class="${i === c7.i ? 'on' : ''}">${x.e} ${x.n.split(' (')[0]}${x.cat === 'Chemie' ? ' ⚗' : ''}</button>`).join('');
+  $('c7-pick').querySelectorAll('button').forEach(b => b.onclick = () => { c7.i = +b.dataset.i; c7.solved = {}; c7.shown = false; $('c7-fb').innerHTML = ''; c7Render(); });
+  $('c7-task').innerHTML = `<b>${sc.n}</b> (${sc.cat})<br>${sc.task}`;
+  const rowName = k => k[0] === 's' ? sc.st[+k.slice(1)] : sc.br[+k.slice(1)];
+  $('c7-rows').innerHTML = keys.map(k => { const r = rowName(k), ok = c7.solved[k]; return `<div class="c7row ${ok ? 'ok' : ''}"><span>${r.e} ${r.n}</span><select data-k="${k}" ${ok ? 'disabled' : ''}><option value="">– Energieform –</option>${Object.keys(EF).map(f => `<option value="${f}" ${ok && c7Form(sc, k) === f ? 'selected' : ''}>${EF[f][0]}</option>`).join('')}</select></div>`; }).join('');
+  $('c7-rows').querySelectorAll('select').forEach(sel => sel.onchange = () => {
+    if (!sel.value) return; const k = sel.dataset.k, r = rowName(k);
+    if (sel.value === c7Form(sc, k)) { c7.solved[k] = true; $('c7-fb').innerHTML = `✔ <b>Richtig:</b> ${r.n} → ${EF[sel.value][0]}.`; $('c7-fb').style.borderColor = '#43d17a'; }
+    else { $('c7-fb').innerHTML = `✘ Nicht ganz. <b>Tipp:</b> ${r.h}`; $('c7-fb').style.borderColor = '#ff6b6b'; sel.value = ''; sel.classList.add('shake'); }
+    c7Render();
+  });
+  const done = keys.every(k => c7.solved[k]);
+  if (!done) { $('c7-bal').innerHTML = ''; $('c7-after').innerHTML = ''; return; }
+  const b = sc.bal, tot = b.out.reduce((a, x) => a + x[1], 0), gk = isGK();
+  let h = `<h3>3. Energiebilanz</h3><div class="box"><div class="muted">Eingesetzt: ${b.inn[0]} ${b.inn[1]} J${b.approx ? ' (ungefähre Werte)' : ''}</div><div class="sk">${b.out.map(o => `<div style="flex:${o[1]};background:${EF[o[2]][1]}">${o[1]} J</div>`).join('')}</div><div class="muted">${b.out.map(o => `<span style="color:${EF[o[2]][1]}">■</span> ${o[0]}`).join(' · ')}</div>` + (gk ? `<div>Die Energie geht <b>nicht verloren</b>: ${b.inn[1]} J rein = ${b.out.map(o => o[1] + ' J ' + o[0]).join(' + ')}. Nur ein Teil ist nutzbar, der Rest ist Wärme an die Umgebung.</div>` : `<div>1. Hauptsatz im Dauerbetrieb (ΔU = 0): E<sub>zu</sub> = Σ E<sub>ab</sub> → ${b.inn[1]} J = ${b.out.map(o => o[1] + ' J').join(' + ')}.</div>`) + '</div>';
+  h += `<h3>4. Beschreibe die Umwandlung</h3><textarea id="c7-text" rows="4" placeholder="Schreibe in eigenen Worten: Welche Energieform wird in welche umgewandelt? Wo geht Energie hin?"></textarea><div class="btns"><button id="c7-sol">Musterbeschreibung zeigen</button></div><div class="box ${c7.shown ? 'hi' : ''}" id="c7-solbox">${c7.shown ? sc.sol : ''}</div>`;
+  $('c7-bal').innerHTML = h;
+  $('c7-sol').onclick = () => { c7.shown = true; $('c7-solbox').className = 'box hi'; $('c7-solbox').innerHTML = sc.sol; };
+  if (!gk) {
+    $('c7-after').innerHTML = `<h3>5. Vertiefung (Leistungskurs)</h3><div class="box">${sc.lkq.q}</div><div class="btns" id="c7-lk">${sc.lkq.o.map((o, i) => `<button data-i="${i}">${o}</button>`).join('')}</div><div class="box" id="c7-lkfb"></div>`;
+    $('c7-lk').querySelectorAll('button').forEach(b => b.onclick = () => { const ok = +b.dataset.i === sc.lkq.ok; $('c7-lkfb').innerHTML = (ok ? '✔ <b>Richtig.</b> ' : '✘ Nicht ganz. ') + sc.lkq.why; $('c7-lkfb').style.borderColor = ok ? '#43d17a' : '#ff6b6b'; });
+  } else $('c7-after').innerHTML = '';
+}
+function c7Init() { c7Render(); }
+tabHooks[7] = () => c7Render();
+
+// ===== 9. HAUPTPROGRAMM ======================================================
+function setMode(m) {
+  MODE.m = m; document.body.dataset.mode = m; try { localStorage.setItem('th-mode', m); } catch (e) {}
+  document.querySelectorAll('#mode button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+  refreshAll();
+}
+function refreshAll() { const cur = document.querySelector('#tabs button.on'); const h = cur && tabHooks[cur.dataset.t]; if (h) h(); }
+function showTab(t) {
+  document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x.dataset.t == t));
+  document.querySelectorAll('.tab').forEach(s => s.classList.toggle('on', s.id === 't' + t));
+  if (t != 3 && b3.play) b3Toggle(); if (t != 4) cancelAnimationFrame(b4.raf);
+  const h = tabHooks[t]; if (h) h();
+}
+document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => showTab(b.dataset.t));
+document.querySelectorAll('#mode button').forEach(b => { b.onclick = () => setMode(b.dataset.m); b.classList.toggle('on', b.dataset.m === MODE.m); });
+['b2Init', 'b3Init', 'b4Init', 'b5Init', 'b6Init', 'c7Init'].forEach(f => { if (typeof window[f] === 'function') window[f](); });
+setMode('gk'); showTab(1);
+
+</script>
+<a href="/Virtuelles-Chemielabor/impressum.html" style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-family: sans-serif; font-size: 12px; z-index: 9999;">Impressum &amp; Datenschutz</a>
+</body>
+</html>
