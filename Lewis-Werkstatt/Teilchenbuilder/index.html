@@ -2744,8 +2744,8 @@
           const ax = new THREE.Vector3().subVectors(pB, pA), len = ax.length(), u = ax.clone().normalize();
           const A = getAtom(b.a), B = getAtom(b.b), hBond = A.el === 'H' || B.el === 'H', rad = hBond ? 0.2 : 0.26;
           // σ: je ein Orbital pro Atom, die sich in der Mitte überlappen
-          molGroup.add(orbBlob(pA.clone().addScaledVector(u, len * 0.3), u, u, rad, rad, len * 0.46, SIG_A, 0.5));
-          molGroup.add(orbBlob(pB.clone().addScaledVector(u, -len * 0.3), u, u, rad, rad, len * 0.46, SIG_B, 0.5));
+          molGroup.add(orbBlob(pA.clone().addScaledVector(u, len * 0.3), u, u, rad, rad, len * 0.5, SIG_A, 0.5));
+          molGroup.add(orbBlob(pB.clone().addScaledVector(u, -len * 0.3), u, u, rad, rad, len * 0.5, SIG_B, 0.5));
           if (b.order < 2) return;
           let nrm = null;
           for (const [c, other] of [[b.a, b.b], [b.b, b.a]]) {
@@ -2760,8 +2760,8 @@
           const dirs = [nrm]; if (b.order === 3) dirs.push(new THREE.Vector3().crossVectors(u, nrm).normalize());
           // π: p-Orbitale beider Atome (je zwei Keulen über/unter der Achse) überlappen seitlich
           dirs.forEach(d => [1, -1].forEach(sg => {
-            molGroup.add(orbBlob(pA.clone().addScaledVector(d, sg * 0.34), u, d, len * 0.4, 0.17, 0.34, PI_A, 0.5));
-            molGroup.add(orbBlob(pB.clone().addScaledVector(d, sg * 0.34), u, d, len * 0.4, 0.17, 0.34, PI_B, 0.5));
+            molGroup.add(orbBlob(pA.clone().addScaledVector(d, sg * 0.34), u, d, len * 0.66, 0.17, 0.34, PI_A, 0.5));
+            molGroup.add(orbBlob(pB.clone().addScaledVector(d, sg * 0.34), u, d, len * 0.66, 0.17, 0.34, PI_B, 0.5));
           }));
         });
       }
