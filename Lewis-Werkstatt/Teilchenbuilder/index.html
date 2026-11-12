@@ -238,9 +238,14 @@
           <button class="mini-btn" id="btn-3d-reset" title="Ansicht zurücksetzen">⟲</button>
         </div>
       </div>
-      <div id="orb-legend" style="display:none;position:absolute;left:10px;top:auto;bottom:80px;z-index:5;max-width:calc(100% - 20px);padding:8px 11px;border-radius:12px;background:rgba(15,23,42,.82);border:1px solid rgba(148,163,184,.3);color:#e2e8f0;font-size:12px;line-height:1.45;pointer-events:none">
-        <div><span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:#38bdf8;margin-right:6px;vertical-align:-1px"></span><strong>σ-Bindung</strong>: Überlappung zweier Orbitale entlang der Bindungsachse</div>
-        <div><span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:#fb923c;margin-right:6px;vertical-align:-1px"></span><strong>π-Bindung</strong>: seitliche Überlappung zweier p-Orbitale (über und unter der Achse)</div>
+      <div id="orb-legend" style="display:none;position:absolute;left:10px;top:auto;bottom:80px;z-index:5;max-width:calc(100% - 20px);padding:6px 9px;border-radius:12px;background:rgba(15,23,42,.8);border:1px solid rgba(148,163,184,.3);color:#e2e8f0;font-size:11px;line-height:1.35">
+        <div style="display:flex;gap:4px;margin-bottom:4px;flex-wrap:wrap">
+          <button class="mini-btn active" data-orb="ao" style="padding:5px 8px;font-size:.72rem">Atom-O.</button>
+          <button class="mini-btn" data-orb="hy" style="padding:5px 8px;font-size:.72rem">Hybrid-O.</button>
+          <button class="mini-btn" data-orb="mo" style="padding:5px 8px;font-size:.72rem">Bindende MO</button>
+          <button class="mini-btn" data-orb="mo*" style="padding:5px 8px;font-size:.72rem">Antibind. MO</button>
+        </div>
+        <div id="orb-info"></div>
       </div>
       <div id="three-container"></div>
       <div id="labels-3d"></div>
@@ -2484,7 +2489,7 @@
       const dLight2 = new THREE.DirectionalLight(0x38bdf8, 0.35); dLight2.position.set(-8, -6, -6); scene.add(dLight2);
       const molGroup = new THREE.Group(); scene.add(molGroup);
 
-      let mode3D = 'ball', highlightMain3D = false, showLabels3D = false, spin3D = true, showLP3D = false, showOrb3D = false, lastHadLP = null;
+      let mode3D = 'ball', highlightMain3D = false, showLabels3D = false, spin3D = true, showLP3D = false, showOrb3D = false, orbKind = 'ao', curLP = {}, curSP = {}, lastHadLP = null;
       let label3DItems = [], currentAnalysis = null;
       const S3 = 1 / Math.sqrt(3);
       const TETRA_DIRS = [new THREE.Vector3(S3, S3, S3), new THREE.Vector3(S3, -S3, -S3), new THREE.Vector3(-S3, S3, -S3), new THREE.Vector3(-S3, -S3, S3)];
@@ -2703,7 +2708,7 @@
           }));
         }
 
-        if (orbView) buildOrbitals3D(posMap);
+        if (orbView) { curLP = lpMap; curSP = spMap; updateOrbInfo(); if (orbKind === 'hy') buildHybrid3D(posMap, lpMap, spMap); else (orbKind === 'ao' ? buildOrbitals3D : buildMO3D)(posMap); }
         else if (mode3D === 'ball') {
           bonds.forEach(b => {
             const pA = posMap[b.a], pB = posMap[b.b]; if (!pA || !pB) return;
@@ -2766,6 +2771,105 @@
         });
       }
 
+      // Molekülorbitale: je Bindung ein zusammenhängendes Orbital, Vorzeichen (Phase) als Farbe
+      // bindend: σ ohne Knoten, π mit Knotenebene in der Molekülebene; antibindend: zusätzlicher Knoten zwischen den Kernen
+      function orbNormal(b, u, posMap) {
+        let nrm = null;
+        for (const [c, other] of [[b.a, b.b], [b.b, b.a]]) {
+          for (const nb of getAtomBonds(c)) {
+            const oid = nb.a === c ? nb.b : nb.a; if (oid === other || oid === null || !posMap[oid]) continue;
+            const n = new THREE.Vector3().crossVectors(u, new THREE.Vector3().subVectors(posMap[oid], posMap[c]));
+            if (n.lengthSq() > 0.02) { nrm = n.normalize(); break; }
+          }
+          if (nrm) break;
+        }
+        if (!nrm) { nrm = new THREE.Vector3(0, 1, 0).cross(u); if (nrm.lengthSq() < 0.01) nrm = new THREE.Vector3(1, 0, 0).cross(u); nrm.normalize(); }
+        return nrm;
+      }
+      function buildMO3D(posMap) {
+        const PLUS = 0x38bdf8, MINUS = 0xf87171, anti = orbKind === 'mo*';
+        // Lappen entlang der Achse von Position t0 bis t1 (Abstände ab Atom A), seitlich um off versetzt
+        const lobe = (pA, u, t0, t1, d, off, sx, color) => {
+          const c = pA.clone().addScaledVector(u, (t0 + t1) / 2); if (d) c.addScaledVector(d, off);
+          return orbBlob(c, d || new THREE.Vector3(0, 1, 0).cross(u), u, sx, sx, Math.abs(t1 - t0) / 2, color, 0.55);
+        };
+        bonds.forEach(b => {
+          const pA = posMap[b.a], pB = posMap[b.b]; if (!pA || !pB) return;
+          const ax = new THREE.Vector3().subVectors(pB, pA), len = ax.length(), u = ax.clone().normalize();
+          const hBond = getAtom(b.a).el === 'H' || getAtom(b.b).el === 'H';
+          if (anti && hBond) return;
+          const gap = 0.06, ext = 0.5;
+          if (!anti) {
+            { const m = lobe(pA, u, -ext, len + ext, null, 0, hBond ? 0.22 : 0.26, PLUS); m.material.opacity = hBond ? 0.28 : 0.38; molGroup.add(m); }          // σ
+          } else {
+            molGroup.add(lobe(pA, u, -ext, len / 2 - gap, null, 0, 0.3, PLUS));                      // σ*
+            molGroup.add(lobe(pA, u, len / 2 + gap, len + ext, null, 0, 0.3, MINUS));
+          }
+          if (b.order < 2) return;
+          const n1 = orbNormal(b, u, posMap), dirs = [n1]; if (b.order === 3) dirs.push(new THREE.Vector3().crossVectors(u, n1).normalize());
+          dirs.forEach(d => [1, -1].forEach(sg => {
+            const col = sg > 0 ? PLUS : MINUS, off = 0.32;
+            if (!anti) molGroup.add(lobe(pA, u, -0.35, len + 0.35, d.clone().multiplyScalar(sg), off, 0.2, col));      // π: Knoten in der Molekülebene
+            else {                                                                                                   // π*: zusätzlich Knoten zwischen den Kernen
+              molGroup.add(lobe(pA, u, -0.35, len / 2 - gap, d.clone().multiplyScalar(sg), off, 0.2, col));
+              molGroup.add(lobe(pA, u, len / 2 + gap, len + 0.35, d.clone().multiplyScalar(sg), off, 0.2, sg > 0 ? MINUS : PLUS));
+            }
+          }));
+        });
+      }
+      // Hybridisierung: Zahl der σ-Bindungen + freien Paare (+ Einzelelektronen) = Zahl der Hybridorbitale
+      function hybridOf(a, lpMap, spMap) {
+        if (a.el === 'H') return null;
+        const sg = getAtomBonds(a.id).length, lp = (lpMap[a.id] || []).length + (spMap[a.id] || []).length, sn = sg + lp;
+        const names = { 2: 'sp', 3: 'sp²', 4: 'sp³', 5: 'sp³d', 6: 'sp³d²' };
+        return names[sn] ? { sn, name: names[sn] } : null;
+      }
+      function buildHybrid3D(posMap, lpMap, spMap) {
+        const GREEN = 0x4ade80, VIOLET = 0xa78bfa, PLUS = 0x38bdf8, MINUS = 0xf87171;
+        bonds.forEach(b => { const pA = posMap[b.a], pB = posMap[b.b]; if (pA && pB) molGroup.add(makeCylinder(pA, pB, 0.04, 0x64748b)); });
+        atoms.forEach(a => {
+          const pos = posMap[a.id], h = pos && hybridOf(a, lpMap, spMap); if (!h) return;
+          const dirs = [];
+          getAtomBonds(a.id).forEach(b => { const o = posMap[b.a === a.id ? b.b : b.a]; if (o) dirs.push({ d: new THREE.Vector3().subVectors(o, pos).normalize(), c: GREEN }); });
+          (lpMap[a.id] || []).forEach(d => dirs.push({ d: d.clone().normalize(), c: VIOLET }));
+          (spMap[a.id] || []).forEach(d => dirs.push({ d: d.clone().normalize(), c: 0xfdba74 }));
+          dirs.forEach(({ d, c }) => {
+            molGroup.add(orbLobe(pos.clone().addScaledVector(d, 0.42), d, 0.42, 0.22, c, 0.5));       // großer Lappen
+            molGroup.add(orbLobe(pos.clone().addScaledVector(d, -0.12), d, 0.12, 0.08, c, 0.4));       // kleiner Rücklappen
+          });
+          // nicht hybridisierte p-Orbitale (für π-Bindungen): senkrecht zur Bindungsebene
+          const multi = getAtomBonds(a.id).filter(b => b.order >= 2);
+          const nP = multi.reduce((m, b) => Math.max(m, b.order - 1), 0);
+          if (nP && h.sn <= 3) {
+            const b0 = multi[0], u = new THREE.Vector3().subVectors(posMap[b0.a === a.id ? b0.b : b0.a], pos).normalize(), n1 = orbNormal(b0, u, posMap);
+            const ps = [n1]; if (nP > 1) ps.push(new THREE.Vector3().crossVectors(u, n1).normalize());
+            ps.forEach(n => [1, -1].forEach(sg => molGroup.add(orbLobe(pos.clone().addScaledVector(n, sg * 0.38), n, 0.38, 0.17, sg > 0 ? PLUS : MINUS, 0.5))));
+          }
+          const div = document.createElement('div');
+          div.className = 'label-3d'; div.textContent = h.name; div.style.color = '#fde68a';
+          labels3DContainer.appendChild(div);
+          label3DItems.push({ el: div, pos: pos.clone().add(new THREE.Vector3(0, 0.85, 0)), always: true });
+        });
+      }
+      function updateOrbInfo() {
+        let sg = 0, pi = 0; bonds.forEach(b => { sg++; pi += Math.max(0, b.order - 1); });
+        const dot = (c, t) => `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${c};margin-right:4px;vertical-align:-1px"></span>${t}`;
+        const cnt = `<div style="color:#94a3b8">Hier: <strong style="color:#e2e8f0">${sg} σ</strong>${pi ? ` und <strong style="color:#e2e8f0">${pi} π</strong>` : ''}</div>`;
+        let t;
+        if (orbKind === 'hy') {
+          const groups = {}; atoms.forEach(a => { const h = hybridOf(a, curLP, curSP); if (h) { const k = a.el + ' ' + h.name; groups[k] = (groups[k] || 0) + 1; } });
+          const ang = { 'sp': '180°', 'sp²': '120°', 'sp³': '109,5°' };
+          const lst = Object.entries(groups).map(([k, n]) => `${n}× ${k}`).join(', ');
+          const hn = [...new Set(Object.keys(groups).map(k => k.split(' ')[1]))].map(n => ang[n] ? `${n}: ${ang[n]}` : n).join(' · ');
+          t = `<div style="color:#94a3b8">Hier: <strong style="color:#e2e8f0">${lst}</strong>${hn ? ` (${hn})` : ''}</div><div>${dot('#4ade80', 'Hybrid-O. (σ)')} ${dot('#a78bfa', 'freies Paar')}</div>${pi ? `<div>${dot('#38bdf8', '+')}${dot('#f87171', '−')} p-Orbital (π)</div>` : ''}`;
+          document.getElementById('orb-info').innerHTML = t; return;
+        }
+        if (orbKind === 'ao') t = `<div>${dot('#38bdf8', '<strong>σ</strong>: Überlappung entlang der Achse')}</div>${pi ? `<div>${dot('#fb923c', '<strong>π</strong>: seitliche p-Überlappung')}</div>` : ''}`;
+        else if (orbKind === 'mo') t = `<div>${dot('#38bdf8', '+')} ${dot('#f87171', '−')} (Vorzeichen) · <strong>σ</strong>: kein Knoten</div>${pi ? '<div><strong>π</strong>: Knotenebene in der Molekülebene</div>' : ''}`;
+        else t = `<div>${dot('#38bdf8', '+')} ${dot('#f87171', '−')} · <strong>σ*</strong>: Knoten zwischen den Kernen</div>${pi ? '<div><strong>π*</strong>: Knoten zwischen den Kernen und in der Ebene</div>' : ''}<div style="color:#94a3b8">unbesetzt (O₂: je 1 e⁻ in zwei π*)</div>`;
+        document.getElementById('orb-info').innerHTML = cnt + t;
+      }
+
       // Richtungen der freien Paare für organisch berechnete Geometrien: Elektronenpaar-Anordnung an die Bindungen anpassen
       function lonePairDirs3D(atom, posMap) {
         const n = nLP(atom); if (n <= 0 || n > 4 || !posMap[atom.id]) return [];
@@ -2811,7 +2915,7 @@
         renderer.render(scene, camera);
         const w = threeContainer.clientWidth, h = threeContainer.clientHeight;
         label3DItems.forEach(item => {
-          if (!showLabels3D || isQuizMode) { item.el.style.display = 'none'; return; }
+          if ((!showLabels3D && !item.always) || isQuizMode) { item.el.style.display = 'none'; return; }
           item.el.style.display = 'block';
           const wp = item.pos.clone().applyMatrix4(molGroup.matrixWorld).project(camera);
           item.el.style.left = `${(wp.x * 0.5 + 0.5) * w}px`;
@@ -3676,8 +3780,13 @@
       document.getElementById('btn-3d-orb').onclick = (e) => {
         showOrb3D = !showOrb3D; e.target.classList.toggle('active', showOrb3D);
         document.getElementById('orb-legend').style.display = showOrb3D ? 'block' : 'none';
-        build3DMolecule();
+        updateOrbInfo(); build3DMolecule();
       };
+      document.querySelectorAll('#orb-legend [data-orb]').forEach(btn => btn.onclick = () => {
+        orbKind = btn.dataset.orb;
+        document.querySelectorAll('#orb-legend [data-orb]').forEach(x => x.classList.toggle('active', x === btn));
+        updateOrbInfo(); build3DMolecule();
+      });
       document.getElementById('btn-3d-reset').onclick = () => { controls.resetView(); molGroup.rotation.set(0, 0, 0); };
       document.getElementById('btn-3d-spin').onclick = (e) => { spin3D = !spin3D; e.target.classList.toggle('active', spin3D); };
 
