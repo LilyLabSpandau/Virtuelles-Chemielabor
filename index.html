@@ -46,19 +46,6 @@
     .link-werkstatt  { left: 39.5%; top: 73.5%; width: 23%; height: 21%; }  /* Mörser mit Petrischalen */
     .werkstatt-label { position: absolute; left: 39.5%; width: 23%; top: 66%; text-align: center; pointer-events: none; font: 700 calc(var(--w) * 0.028) / 1 system-ui, -apple-system, sans-serif; color: #3a3a3a; }
 
-    /* Impressums-Link */
-    .impressum-link {
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
-      color: rgba(255, 255, 255, 0.7);
-      text-decoration: none;
-      font-size: 0.8rem;
-      background: rgba(0, 0, 0, 0.2);
-      padding: 5px 10px;
-      border-radius: 4px;
-    }
-    .impressum-link:hover { color: white; background: rgba(0,0,0,0.4); }
   </style>
 </head>
 <body>
@@ -74,7 +61,7 @@
     <a href="./Lewis-Werkstatt/index.html" class="lab-link link-werkstatt" title="Lewis-Werkstatt"></a>
     <span class="werkstatt-label">Lewis-Werkstatt</span>
 
-    <a href="./impressum.html" class="impressum-link">Impressum & Datenschutz</a>
+    <a href="/Virtuelles-Chemielabor/impressum.html" style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-family: sans-serif; font-size: 12px; z-index: 9999;">Impressum & Datenschutz</a>
   </div>
 
 <script>if ("serviceWorker" in navigator) window.addEventListener("load", function () { navigator.serviceWorker.register("sw.js").catch(function () {}); });</script>
