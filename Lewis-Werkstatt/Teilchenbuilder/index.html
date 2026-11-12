@@ -230,12 +230,17 @@
           <button class="mini-btn" id="btn-3d-space">Kalotten</button>
           <button class="mini-btn only-org" id="btn-3d-highlight">Hauptkette färben</button>
           <button class="mini-btn" id="btn-3d-lp">Freie Paare</button>
+          <button class="mini-btn" id="btn-3d-orb" title="Bindungen als σ- und π-Orbitale zeigen">σ / π</button>
         </div>
         <div class="overlay-pill">
           <button class="mini-btn only-org" id="btn-3d-labels">C-Nummern</button>
           <button class="mini-btn active" id="btn-3d-spin">Rotation</button>
           <button class="mini-btn" id="btn-3d-reset" title="Ansicht zurücksetzen">⟲</button>
         </div>
+      </div>
+      <div id="orb-legend" style="display:none;position:absolute;left:10px;bottom:10px;z-index:5;max-width:calc(100% - 20px);padding:8px 11px;border-radius:12px;background:rgba(15,23,42,.82);border:1px solid rgba(148,163,184,.3);color:#e2e8f0;font-size:12px;line-height:1.45;pointer-events:none">
+        <div><span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:#38bdf8;margin-right:6px;vertical-align:-1px"></span><strong>σ-Bindung</strong>: Überlappung entlang der Bindungsachse</div>
+        <div><span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:#fb923c;margin-right:6px;vertical-align:-1px"></span><strong>π-Bindung</strong>: seitliche Überlappung der p-Orbitale (über und unter der Achse)</div>
       </div>
       <div id="three-container"></div>
       <div id="labels-3d"></div>
@@ -631,7 +636,7 @@
 
       // Anorganik: 90°-Raster; bei vielen Bindungen/Paaren (erweitertes Oktett) zusätzlich die 45°-Diagonalen
       function computeInorgSlots(atom) {
-        const occ = [...getAtomBonds(atom.id).map(b => getBondAngleFrom(b, atom.id)), ...(atom.lonePairs || [])];
+        const occ = [...getAtomBonds(atom.id).map(b => getBondAngleFrom(b, atom.id)), ...(atom.lonePairs || []), ...(atom.singles || [])];
         if (occ.length === 0) return [0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2];
         const ref = occ[0];
         const grid4 = [0, 1, 2, 3].map(k => normAngle(ref + k * Math.PI / 2));
@@ -646,7 +651,7 @@
         if (forTool === 'lonepair' && atom.el === 'H') return [];
 
         const slots = computeIdealSlotsForAtom(atom);
-        const occupied = [...getAtomBonds(atom.id).map(b => getBondAngleFrom(b, atom.id)), ...(atom.lonePairs || [])];
+        const occupied = [...getAtomBonds(atom.id).map(b => getBondAngleFrom(b, atom.id)), ...(atom.lonePairs || []), ...(atom.singles || [])];
         const freeZones = [];
         slots.forEach(slotAngle => {
           if (!occupied.some(occ => angleDiff(occ, slotAngle) < 0.38)) {
@@ -666,6 +671,7 @@
           a.x = pivotX + (dx * cosA - dy * sinA);
           a.y = pivotY + (dx * sinA + dy * cosA);
           if (a.lonePairs) a.lonePairs = a.lonePairs.map(lp => normAngle(lp + deltaAngle));
+          if (a.singles) a.singles = a.singles.map(lp => normAngle(lp + deltaAngle));
         });
         bonds.forEach(b => { if (b.b === null && atomIdSet.has(b.a)) b.angle = normAngle(b.angle + deltaAngle); });
       }
@@ -744,6 +750,7 @@
             <button class="tool-btn" data-tool="bond">─ Bindung</button>
             <button class="tool-btn ring-btn" data-tool="ringclose">⬡ Ring</button>
             <button class="tool-btn" data-tool="lonepair"><span class="dots-icon"><span></span><span></span></span> Paar</button>
+            <button class="tool-btn" data-tool="single" title="Ungepaartes Elektron (Radikal), z. B. am Sauerstoff-Molekül"><span class="dots-icon"><span></span></span> Einzel-e⁻</button>
             <button class="tool-btn action" id="btn-autolp" title="Zeichnet alle freien Elektronenpaare ein">✨ Paare ergänzen</button>
             <button class="tool-btn eraser" data-tool="eraser">🧽 Radierer</button>
             <button class="tool-btn" data-tool="hand">✋ Hand</button>
@@ -799,6 +806,7 @@
         else if (activeTool === 'ringclose') hintEl.textContent = `⬡ Ringschluss: ${tap} auf ein Atom – es verbindet sich mit dem nächsten freien Nicht-H-Atom.`;
         else if (activeTool === 'bond') hintEl.textContent = `─ Bindung: ${tap} auf eine Bindung: Einfach → Doppel → Dreifach.`;
         else if (activeTool === 'lonepair') hintEl.textContent = `•• Elektronenpaar: ${tap} auf eine rote Zone am Atom (oder auf das Atom selbst).`;
+        else if (activeTool === 'single') hintEl.textContent = `• Einzelelektron: ${tap} auf eine orange Zone am Atom (ungepaartes Elektron, z. B. •Ö–Ö• für das reale O₂).`;
         else hintEl.textContent = `Element ${activeTool}: ${tap} auf eine blaue Zone am Atom – oder auf freie Fläche für ein neues Atom.`;
       }
 
@@ -830,6 +838,10 @@
               const d = Math.hypot(m.x - (atom.x + Math.cos(ang) * 15), m.y - (atom.y + Math.sin(ang) * 15));
               if (d <= 11 * HIT_SCALE) cands.push({ dist: d - 1, target: { type: 'lonepair', atom, lpIndex: idx, angle: ang } });
             });
+            (atom.singles || []).forEach((ang, idx) => {
+              const d = Math.hypot(m.x - (atom.x + Math.cos(ang) * 15), m.y - (atom.y + Math.sin(ang) * 15));
+              if (d <= 11 * HIT_SCALE) cands.push({ dist: d - 1, target: { type: 'single', atom, lpIndex: idx, angle: ang } });
+            });
             const dA = Math.hypot(m.x - atom.x, m.y - atom.y);
             if (dA <= 14 * HIT_SCALE) cands.push({ dist: dA, target: { type: 'atom', atom } });
           });
@@ -853,8 +865,8 @@
           return bestAtom ? { type: 'ringclose', atom: bestAtom, partner: findNearestRingPartner(bestAtom) } : null;
         }
 
-        if (ELEMENT_SPECS[tool] || tool === 'lonepair') {
-          const zoneMode = tool === 'lonepair' ? 'lonepair' : 'bond';
+        if (ELEMENT_SPECS[tool] || tool === 'lonepair' || tool === 'single') {
+          const zoneMode = (tool === 'lonepair' || tool === 'single') ? 'lonepair' : 'bond';
           let bestZone = null, bestDist = 16 * (HIT_SCALE > 1 ? 1.3 : 1);
           atoms.forEach(atom => {
             getFreeZonesForAtom(atom, zoneMode).forEach(z => {
@@ -938,7 +950,8 @@
         ctx.translate(-cx, -cy);
 
         const showBondZones = Boolean(ELEMENT_SPECS[activeTool]);
-        const showLPZones = (activeTool === 'lonepair');
+        const showSZones = (activeTool === 'single');
+        const showLPZones = (activeTool === 'lonepair') || showSZones;
 
         if (showBondZones || showLPZones) {
           const zoneMode = showLPZones ? 'lonepair' : 'bond';
@@ -947,8 +960,8 @@
               const sp = toScreen(z.zx, z.zy);
               const isHovered = hoverTarget && hoverTarget.type === 'zone' && hoverTarget.zone.atomId === z.atomId && angleDiff(hoverTarget.zone.angle, z.angle) < 0.1;
               ctx.save();
-              ctx.strokeStyle = showLPZones ? (isHovered ? "#dc2626" : "rgba(220,38,38,0.5)") : (isHovered ? "#0284c7" : "rgba(2,132,199,0.45)");
-              ctx.fillStyle = showLPZones ? (isHovered ? "rgba(220,38,38,0.24)" : "rgba(220,38,38,0.08)") : (isHovered ? "rgba(2,132,199,0.24)" : "rgba(2,132,199,0.07)");
+              ctx.strokeStyle = showSZones ? (isHovered ? "#ea580c" : "rgba(234,88,12,0.55)") : showLPZones ? (isHovered ? "#dc2626" : "rgba(220,38,38,0.5)") : (isHovered ? "#0284c7" : "rgba(2,132,199,0.45)");
+              ctx.fillStyle = showSZones ? (isHovered ? "rgba(234,88,12,0.28)" : "rgba(234,88,12,0.1)") : showLPZones ? (isHovered ? "rgba(220,38,38,0.24)" : "rgba(220,38,38,0.08)") : (isHovered ? "rgba(2,132,199,0.24)" : "rgba(2,132,199,0.07)");
               ctx.lineWidth = isHovered ? 2.2 : 1.4;
               ctx.setLineDash(isHovered ? [] : [3, 2]);
               ctx.beginPath(); ctx.arc(sp.x, sp.y, isHovered ? (touchUI ? 12 : 9) : (touchUI ? 10 : 7.5), 0, Math.PI * 2); ctx.fill(); ctx.stroke();
@@ -957,6 +970,9 @@
                 const pAtom = toScreen(atom.x, atom.y), endPos = toScreen(atom.x + Math.cos(z.angle) * STUB_LEN, atom.y + Math.sin(z.angle) * STUB_LEN);
                 ctx.strokeStyle = "#0284c7"; ctx.lineWidth = 2.4;
                 ctx.beginPath(); ctx.moveTo(pAtom.x + Math.cos(z.angle) * 13, pAtom.y + Math.sin(z.angle) * 13); ctx.lineTo(endPos.x, endPos.y); ctx.stroke();
+              } else if (isHovered && activeTool === 'single') {
+                const pAtom = toScreen(atom.x, atom.y);
+                ctx.fillStyle = "#ea580c"; ctx.beginPath(); ctx.arc(pAtom.x + Math.cos(z.angle) * 15, pAtom.y + Math.sin(z.angle) * 15, 3.4, 0, Math.PI * 2); ctx.fill();
               } else if (isHovered && activeTool === 'lonepair') {
                 const pAtom = toScreen(atom.x, atom.y), lx = pAtom.x + Math.cos(z.angle) * 15, ly = pAtom.y + Math.sin(z.angle) * 15;
                 const tx = -Math.sin(z.angle) * 6, ty = Math.cos(z.angle) * 6;
@@ -1054,6 +1070,13 @@
             }
             ctx.strokeStyle = isHoveredLP ? "#dc2626" : spec.color2D; ctx.lineWidth = 2.4; ctx.lineCap = "round";
             ctx.beginPath(); ctx.moveTo(lx - tx, ly - ty); ctx.lineTo(lx + tx, ly + ty); ctx.stroke();
+          });
+          (atom.singles || []).forEach((ang, idx) => {
+            const isHS = hoverTarget && hoverTarget.type === 'single' && hoverTarget.atom.id === atom.id && hoverTarget.lpIndex === idx;
+            const lx = p.x + Math.cos(ang) * 15, ly = p.y + Math.sin(ang) * 15;
+            if (isHS) { ctx.fillStyle = "rgba(239, 68, 68, 0.4)"; ctx.beginPath(); ctx.arc(lx, ly, 8, 0, Math.PI * 2); ctx.fill(); }
+            ctx.fillStyle = isHS ? "#dc2626" : spec.color2D;
+            ctx.beginPath(); ctx.arc(lx, ly, 3.4, 0, Math.PI * 2); ctx.fill();
           });
         });
 
@@ -1247,6 +1270,7 @@
         if (activeTool === 'eraser' && hoverTarget) {
           if (hoverTarget.type === 'bond') hintEl.textContent = "🧽 Klick löscht nur diese Bindung.";
           else if (hoverTarget.type === 'lonepair') hintEl.textContent = "🧽 Klick löscht dieses freie Elektronenpaar.";
+          else if (hoverTarget.type === 'single') hintEl.textContent = "🧽 Klick löscht dieses Einzelelektron.";
           else if (hoverTarget.type === 'atom') {
             hintEl.textContent = hoverTarget.atom.el === 'H'
               ? "🧽 Klick löscht nur dieses H-Atom (Bindung bleibt erhalten)."
@@ -1400,6 +1424,20 @@
           }
         }
 
+        if (activeTool === 'single') {
+          if (hit && hit.type === 'zone') {
+            const atom = getAtom(hit.zone.atomId);
+            if (atom) { (atom.singles = atom.singles || []).push(hit.zone.angle); hoverTarget = null; markDirty(); }
+            return;
+          }
+          if (hit && hit.type === 'single') { hit.atom.singles.splice(hit.lpIndex, 1); hoverTarget = null; markDirty(); return; }
+          if (hit && hit.type === 'atom') {
+            const zones = getFreeZonesForAtom(hit.atom, 'single');
+            if (zones.length > 0) (hit.atom.singles = hit.atom.singles || []).push(zones[0].angle); else hit.atom.singles = [];
+            hoverTarget = null; markDirty(); return;
+          }
+        }
+
         if (activeTool === 'lonepair') {
           if (hit && hit.type === 'zone') {
             const atom = getAtom(hit.zone.atomId);
@@ -1418,6 +1456,7 @@
 
         if (activeTool === 'eraser' && hit) {
           if (hit.type === 'lonepair') { hit.atom.lonePairs.splice(hit.lpIndex, 1); hoverTarget = null; markDirty(); return; }
+          if (hit.type === 'single') { hit.atom.singles.splice(hit.lpIndex, 1); hoverTarget = null; markDirty(); return; }
           if (hit.type === 'bond') { bonds = bonds.filter(b => b.id !== hit.bond.id); hoverTarget = null; markDirty(); return; }
           if (hit.type === 'atom') {
             const targetAtom = hit.atom;
@@ -1469,10 +1508,11 @@
       // ---- Ladungen automatisch erkennen ----
       // Mit eingezeichneten freien Paaren: Formalladung = Valenzelektronen − 2·Paare − Bindungen.
       // Ohne eingezeichnete Paare: die Ladung wählen, bei der das Atom ein vollständiges Elektronen-Oktett (bzw. erweitertes Oktett) hat.
-      const nLP = a => Math.max(0, (ELEMENT_SPECS[a.el].ve - getUsedValence(a.id) - (a.charge || 0)) / 2);
+      const nRad = a => (a.singles ? a.singles.length : 0);
+      const nLP = a => Math.max(0, (ELEMENT_SPECS[a.el].ve - getUsedValence(a.id) - (a.charge || 0) - nRad(a)) / 2);
       const anyLonePairDrawn = () => atoms.some(a => a.lonePairs && a.lonePairs.length > 0);
       function inferChargeFor(atom) {
-        const sp = ELEMENT_SPECS[atom.el], bs = getUsedValence(atom.id), el = atom.el;
+        const sp = ELEMENT_SPECS[atom.el], bs = getUsedValence(atom.id), el = atom.el, sg = nRad(atom);
         const metalLike = Boolean(sp.metal) || ['B', 'Be', 'Al'].includes(el);
         const lim = bs === 0 ? 4 : (metalLike ? 3 : ((sp.period || 2) >= 3 ? 2 : 1));
         // Halogen zwischen Halogenen (I₃⁻, ICl₂⁻ …): Anion bevorzugen
@@ -1480,10 +1520,10 @@
         const halogenCenter = HAL.includes(el) && nbEls.length > 1 && nbEls.every(x => HAL.includes(x));
         let best = null;
         for (let c = -lim; c <= lim; c++) {
-          const lp2 = sp.ve - bs - c;
+          const lp2 = sp.ve - bs - c - sg;
           if (lp2 < 0 || lp2 % 2) continue;
-          const e = lp2 + 2 * bs;
-          let ok = el === 'H' ? (e === 2 || (bs === 0 && c === 1 && e === 0)) : (e >= inorgMinElectrons(el) && e <= inorgMaxElectrons(el));
+          const e = lp2 + 2 * bs + sg;
+          let ok = el === 'H' ? (e === 2 || (bs === 0 && c === 1 && e === 0) || (sg > 0 && e === 1)) : (e >= inorgMinElectrons(el) - sg && e <= inorgMaxElectrons(el));
           if (sp.metal && bs === 0 && e !== 0) ok = false;   // einzelnes Metallatom: immer Kation
           if (!ok) continue;
           const pref = (sp.metal || (el === 'H' && bs === 0)) ? (c > 0 ? 0 : 1) : (halogenCenter ? (c < 0 ? 0 : 1) : Math.abs(e - 8));
@@ -1494,7 +1534,7 @@
       function refreshCharges() {
         const drawn = anyLonePairDrawn();
         atoms.forEach(a => {
-          if (drawn) a.charge = ELEMENT_SPECS[a.el].ve - 2 * (a.lonePairs ? a.lonePairs.length : 0) - getUsedValence(a.id);
+          if (drawn) a.charge = ELEMENT_SPECS[a.el].ve - 2 * (a.lonePairs ? a.lonePairs.length : 0) - nRad(a) - getUsedValence(a.id);
           else { const r = inferChargeFor(a); a.charge = r ? r.c : 0; }
         });
       }
@@ -2444,7 +2484,7 @@
       const dLight2 = new THREE.DirectionalLight(0x38bdf8, 0.35); dLight2.position.set(-8, -6, -6); scene.add(dLight2);
       const molGroup = new THREE.Group(); scene.add(molGroup);
 
-      let mode3D = 'ball', highlightMain3D = false, showLabels3D = false, spin3D = true, showLP3D = false, lastHadLP = null;
+      let mode3D = 'ball', highlightMain3D = false, showLabels3D = false, spin3D = true, showLP3D = false, showOrb3D = false, lastHadLP = null;
       let label3DItems = [], currentAnalysis = null;
       const S3 = 1 / Math.sqrt(3);
       const TETRA_DIRS = [new THREE.Vector3(S3, S3, S3), new THREE.Vector3(S3, -S3, -S3), new THREE.Vector3(-S3, S3, -S3), new THREE.Vector3(-S3, -S3, S3)];
@@ -2609,8 +2649,8 @@
         if (!atoms.length) return;
 
         const inorg3D = Boolean(currentAnalysis && currentAnalysis.inorg);
-        let posMap, lpMap = {};
-        if (inorg3D) { const r = computeInorganic3D(); posMap = r.posMap; lpMap = r.lpMap; }
+        let posMap, lpMap = {}, spMap = {};
+        if (inorg3D) { const r = computeInorganic3D(); posMap = r.posMap; lpMap = r.lpMap; spMap = r.spMap || {}; }
         else { posMap = computeCollisionFree3DPositions(); atoms.forEach(a => { if (a.el !== 'H') lpMap[a.id] = lonePairDirs3D(a, posMap); }); }
         const center = new THREE.Vector3(), heavyAtoms = inorg3D ? atoms.slice() : atoms.filter(a => a.el !== 'H');
         heavyAtoms.forEach(a => center.add(posMap[a.id]));
@@ -2618,10 +2658,11 @@
         Object.values(posMap).forEach(v => v.sub(center));
 
         const mainSet = new Set(currentAnalysis ? currentAnalysis.mainChain : []);
+        const orbView = showOrb3D && mode3D === 'ball';
         atoms.forEach(a => {
           const pos = posMap[a.id]; if (!pos) return;
           const spec = ELEMENT_SPECS[a.el] || ELEMENT_SPECS.C;
-          const radius = mode3D === 'space' ? spec.vdw : spec.radius3D;
+          const radius = mode3D === 'space' ? spec.vdw : (orbView ? spec.radius3D * 0.55 : spec.radius3D);
           let color = spec.color3D;
           if (highlightMain3D && a.el === 'C') color = mainSet.has(a.id) ? 0x0ea5e9 : 0xf97316;
 
@@ -2650,7 +2691,20 @@
           }));
         }
 
-        if (mode3D === 'ball') {
+        if (showLP3D && mode3D === 'ball') {
+          atoms.forEach(a => (spMap[a.id] || []).forEach(d => {
+            const lobe = new THREE.Mesh(new THREE.SphereGeometry(0.3, 20, 20), new THREE.MeshStandardMaterial({ color: 0xfdba74, transparent: true, opacity: 0.55, roughness: 0.3, depthWrite: false }));
+            lobe.scale.set(0.6, 0.6, 1.25);
+            lobe.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), d);
+            lobe.position.copy(posMap[a.id]).addScaledVector(d, (ELEMENT_SPECS[a.el].radius3D || 0.4) + 0.1);
+            molGroup.add(lobe);
+            const dot = new THREE.Mesh(new THREE.SphereGeometry(0.07, 12, 12), new THREE.MeshBasicMaterial({ color: 0x7c2d12 }));
+            dot.position.copy(lobe.position); molGroup.add(dot);
+          }));
+        }
+
+        if (orbView) buildOrbitals3D(posMap);
+        else if (mode3D === 'ball') {
           bonds.forEach(b => {
             const pA = posMap[b.a], pB = posMap[b.b]; if (!pA || !pB) return;
             const isHBond = getAtom(b.a).el === 'H' || getAtom(b.b).el === 'H';
@@ -2664,6 +2718,38 @@
             else if (b.order === 3) [-0.17, 0, 0.17].forEach(off => molGroup.add(makeCylinder(pA.clone().addScaledVector(perp, off), pB.clone().addScaledVector(perp, off), 0.06, 0xa855f7)));
           });
         }
+      }
+
+      // σ-/π-Ansicht: σ = Überlappung entlang der Achse, π = seitliche p-Überlappung (je eine Keule oberhalb und unterhalb)
+      function orbLobe(center, dir, halfLen, rad, color, opacity) {
+        const m = new THREE.Mesh(new THREE.SphereGeometry(1, 28, 20), new THREE.MeshStandardMaterial({ color, transparent: true, opacity, roughness: 0.35, depthWrite: false }));
+        m.scale.set(rad, rad, halfLen);
+        m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), dir.clone().normalize());
+        m.position.copy(center); return m;
+      }
+      function buildOrbitals3D(posMap) {
+        const SIG = 0x38bdf8, PI = 0xfb923c;
+        bonds.forEach(b => {
+          const pA = posMap[b.a], pB = posMap[b.b]; if (!pA || !pB) return;
+          const ax = new THREE.Vector3().subVectors(pB, pA), len = ax.length(), u = ax.clone().normalize(), mid = pA.clone().addScaledVector(ax, 0.5);
+          const A = getAtom(b.a), B = getAtom(b.b), hBond = A.el === 'H' || B.el === 'H';
+          molGroup.add(orbLobe(mid, u, len / 2 + 0.22, hBond ? 0.2 : 0.26, SIG, 0.5));
+          if (b.order < 2) return;
+          // Ebene der Bindung: aus einem weiteren Nachbarn von A oder B; sonst beliebig senkrecht
+          let nrm = null;
+          for (const [c, other] of [[b.a, b.b], [b.b, b.a]]) {
+            for (const nb of getAtomBonds(c)) {
+              const oid = nb.a === c ? nb.b : nb.a; if (oid === other || oid === null || !posMap[oid]) continue;
+              const v = new THREE.Vector3().subVectors(posMap[oid], posMap[c]), n = new THREE.Vector3().crossVectors(u, v);
+              if (n.lengthSq() > 0.02) { nrm = n.normalize(); break; }
+            }
+            if (nrm) break;
+          }
+          if (!nrm) { nrm = new THREE.Vector3(0, 1, 0).cross(u); if (nrm.lengthSq() < 0.01) nrm = new THREE.Vector3(1, 0, 0).cross(u); nrm.normalize(); }
+          const dirs = [nrm]; if (b.order === 3) dirs.push(new THREE.Vector3().crossVectors(u, nrm).normalize());
+          const off = b.order === 3 ? 0.4 : 0.36;
+          dirs.forEach(d => [1, -1].forEach(sg => molGroup.add(orbLobe(mid.clone().addScaledVector(d, sg * off), u, len / 2 + 0.2, 0.2, PI, 0.5))));
+        });
       }
 
       // Richtungen der freien Paare für organisch berechnete Geometrien: Elektronenpaar-Anordnung an die Bindungen anpassen
@@ -2884,14 +2970,14 @@
         return 8;
       }
       function formalChargeOf(atom) {
-        return ELEMENT_SPECS[atom.el].ve - 2 * (atom.lonePairs ? atom.lonePairs.length : 0) - getUsedValence(atom.id);
+        return ELEMENT_SPECS[atom.el].ve - 2 * (atom.lonePairs ? atom.lonePairs.length : 0) - nRad(atom) - getUsedValence(atom.id);
       }
       function validateInorgElectrons() {
         refreshCharges();
         const drawn = anyLonePairDrawn();
         for (const atom of atoms) {
           const spec = ELEMENT_SPECS[atom.el], bs = getUsedValence(atom.id), lp = drawn ? (atom.lonePairs ? atom.lonePairs.length : 0) : nLP(atom);
-          const el2 = 2 * (bs + lp);
+          const sgl = nRad(atom), el2 = 2 * (bs + lp) + sgl;
           const isHplus = atom.el === 'H' && el2 === 0 && (atom.charge || 0) === 1;
           if (!drawn) {
             if (!inferChargeFor(atom)) {
@@ -2907,9 +2993,9 @@
             showValidationMessage(`⚠️ <strong>Zu viele Elektronen am ${spec.name}:</strong> ${el2} Elektronen in Bindungen und freien Paaren (erlaubt: höchstens ${inorgMaxElectrons(atom.el)}).`, "error");
             return false;
           }
-          if (!isHplus && el2 < inorgMinElectrons(atom.el)) {
+          if (!isHplus && el2 < inorgMinElectrons(atom.el) - sgl) {
             invalidAtomIds.add(atom.id); drawPaper();
-            const need = (inorgMinElectrons(atom.el) - el2) / 2;
+            const need = Math.ceil((inorgMinElectrons(atom.el) - sgl - el2) / 2);
             showValidationMessage(atom.el === 'H'
               ? `⚠️ <strong>Wasserstoff</strong> braucht ein Elektronenpaar (eine Bindung).`
               : `⚠️ <strong>Freie Paare unvollständig am ${spec.name}:</strong> nur ${el2} Elektronen. Es fehlen noch ${need} Elektronenpaar${need > 1 ? 'e' : ''}. Zeichne entweder alle freien Paare ein – oder keine, dann ergänzt der Builder sie selbst.`, "error");
@@ -2927,7 +3013,7 @@
         atoms.forEach(a => {
           if (a.el === 'H') return;
           const spec = ELEMENT_SPECS[a.el];
-          const want = (spec.ve - getUsedValence(a.id) - (a.charge || 0)) / 2;
+          const want = (spec.ve - getUsedValence(a.id) - (a.charge || 0) - nRad(a)) / 2;
           if (!Number.isInteger(want) || want < 0 || want > 6) return;
           a.lonePairs = [];
           const zones = getFreeZonesForAtom(a, 'lonepair');
@@ -2981,13 +3067,13 @@
       }
 
       function computeInorganic3D() {
-        const posMap = {}, lpMap = {};
+        const posMap = {}, lpMap = {}, spMap = {};
         const nbrs = id => getAtomBonds(id).filter(b => b.b !== null).map(b => ({ atom: getAtom(b.a === id ? b.b : b.a), bond: b }));
 
         if (findAllHeavyCycles().length > 0) {
           const sc = 1.6 / BOND_LEN_HEAVY;
           atoms.forEach((a, i) => { posMap[a.id] = V3(a.x * sc, -a.y * sc, (i % 2 ? 1 : -1) * 0.15); });
-          return { posMap, lpMap };
+          return { posMap, lpMap, spMap };
         }
         let offX = 0;
         getComponents().sort((x, y) => y.length - x.length).forEach(comp => {
@@ -2998,10 +3084,10 @@
         while (queue.length) {
           const { id, parent } = queue.shift();
           const atom = getAtom(id), pos = posMap[id];
-          const all = nbrs(id), E = nLP(atom), sn = all.length + E;
+          const all = nbrs(id), E = nLP(atom), sn = all.length + E + nRad(atom);
           const base = domainDirs(sn);
-          const lpSlots = [], ligSlots = [];
-          base.forEach((_, i) => (i < E ? lpSlots : ligSlots).push(i));
+          const lpSlots = [], spSlots = [], ligSlots = [], S1 = nRad(atom);
+          base.forEach((_, i) => (i < E ? lpSlots : (i < E + S1 ? spSlots : ligSlots)).push(i));
           let dirs = base.map(d => d.clone());
           let kids = all.filter(n => !visited.has(n.atom.id) && n.atom.id !== parent);
           let kidSlots = ligSlots.slice();
@@ -3035,6 +3121,7 @@
             visited.add(k.atom.id); queue.push({ id: k.atom.id, parent: id });
           });
           lpMap[id] = lpSlots.map(s => dirs[s].clone().normalize());
+          spMap[id] = spSlots.map(s => dirs[s].clone().normalize());
         }
         let minX = Infinity, maxX = -Infinity;
         comp.forEach(id => { minX = Math.min(minX, posMap[id].x); maxX = Math.max(maxX, posMap[id].x); });
@@ -3042,7 +3129,7 @@
         offX += (maxX - minX) + 2.0;
         });
         atoms.forEach(a => { if (!posMap[a.id]) posMap[a.id] = V3(0, 0, 0); });
-        return { posMap, lpMap };
+        return { posMap, lpMap, spMap };
       }
 
       // ---- Analyse / Namen ----
@@ -3179,7 +3266,7 @@
 
         // Schritt-Texte
         const bondsList = bonds.filter(b => b.b !== null), nSingle = bondsList.filter(b => b.order === 1).length, nDouble = bondsList.filter(b => b.order === 2).length, nTriple = bondsList.filter(b => b.order === 3).length;
-        const lpTotal = atoms.reduce((s, a) => s + nLP(a), 0);
+        const lpTotal = atoms.reduce((s, a) => s + nLP(a), 0), spTotal = atoms.reduce((s, a) => s + nRad(a), 0);
         const veSum = atoms.reduce((s, a) => s + ELEMENT_SPECS[a.el].ve, 0) - q;
         const compText = els.map(e => `${cnt[e]} × ${ELEMENT_SPECS[e].de} (${e})`).join(', ');
         const bondTxt = [nSingle ? `${nSingle} Einfachbindung${nSingle > 1 ? 'en' : ''}` : '', nDouble ? `${nDouble} Doppelbindung${nDouble > 1 ? 'en' : ''}` : '', nTriple ? `${nTriple} Dreifachbindung${nTriple > 1 ? 'en' : ''}` : ''].filter(Boolean).join(', ');
@@ -3195,11 +3282,16 @@
           return `<strong>${ELEMENT_SPECS[c.el].de} (${c.el})</strong>: ${v.X} Bindungspartner + ${v.E} freie${v.E === 1 ? 's' : ''} Elektronenpaar${v.E === 1 ? '' : 'e'} = ${v.X + v.E} Bereiche → Elektronenpaare ordnen sich <strong>${v.eg}</strong> an → Teilchenform: <strong>${v.mg}</strong>${v.ang !== '—' ? ` (Bindungswinkel: ${v.ang})` : ''}`;
         }).join('<br>');
 
+        let o2note = '';
+        if (atoms.length === 2 && cnt.O === 2 && q === 0) {
+          if (spTotal === 2) o2note = '<br>🔬 Diese Formel zeigt das <strong>reale O₂-Molekül</strong>: zwei ungepaarte Elektronen (Diradikal, deshalb paramagnetisch). Die Bindungsordnung ist 2 (σ + π), die zwei ungepaarten Elektronen sitzen in antibindenden π*-Orbitalen.';
+          else if (nDouble === 1) o2note = '<br>ℹ️ Das ist die <strong>vereinfachte Schreibweise</strong> mit Doppelbindung. Das reale O₂ hat zwei ungepaarte Elektronen (•Ö–Ö•) – zeichne sie mit „Einzel-e⁻“.';
+        }
         const steps = [
           { title: '1. Zusammensetzung & Ladung', text: `${compText}. Gesamtladung: <strong>${chargeText(q)}</strong>.` },
-          { title: '2. Lewis-Formel', text: `${bondTxt} und ${lpTotal} freie Elektronenpaare. Valenzelektronen insgesamt: <strong>${veSum}</strong>${charged.length ? `. Formalladungen: ${charged.map(a => `${a.el} ${chargeText(a.charge)}`).join(', ')}` : ''}.` },
+          { title: '2. Lewis-Formel', text: `${bondTxt} und ${lpTotal} freie Elektronenpaare${spTotal ? ` sowie <strong>${spTotal} ungepaarte${spTotal === 1 ? 's Elektron' : ' Elektronen'}</strong> (Radikal-Schreibweise)` : ''}. Valenzelektronen insgesamt: <strong>${veSum}</strong>${charged.length ? `. Formalladungen: ${charged.map(a => `${a.el} ${chargeText(a.charge)}`).join(', ')}` : ''}.` },
           { title: '3. Geometrie (EPA-Modell)', text: `Elektronenpaare stoßen sich ab und gehen möglichst weit auseinander.<br>${geo}` },
-          { title: '4. Name & Formel', text: nameKnown ? `${how}<br>Summenformel: <strong>${formulaStr}</strong>` : `Für dieses Teilchen ist im Builder noch kein Name hinterlegt. Summenformel: <strong>${formulaStr}</strong>.` }
+          { title: '4. Name & Formel', text: nameKnown ? `${how}${o2note}<br>Summenformel: <strong>${formulaStr}</strong>` : `Für dieses Teilchen ist im Builder noch kein Name hinterlegt. Summenformel: <strong>${formulaStr}</strong>.` }
         ];
         return {
           inorg: true, classLabel: cls, iupacName: nameKnown ? name : formulaStr,
@@ -3214,7 +3306,7 @@
       function loadTemplateMolecule(heavyAtoms, heavyBonds, opts = {}) {
         if (atoms.length) pushUndo(snapshotState());
         atoms = []; bonds = []; nextId = 100; panAcc = { x: 0, y: 0 }; paperZoom = 1.0;
-        heavyAtoms.forEach(ha => atoms.push({ id: ha.id, el: ha.el, x: ha.x, y: ha.y, charge: ha.charge || 0, lonePairs: ha.lonePairs ? [...ha.lonePairs] : [] }));
+        heavyAtoms.forEach(ha => atoms.push({ id: ha.id, el: ha.el, x: ha.x, y: ha.y, charge: ha.charge || 0, lonePairs: ha.lonePairs ? [...ha.lonePairs] : [], singles: ha.singles ? [...ha.singles] : [] }));
         heavyBonds.forEach(hb => bonds.push({ id: nextId++, a: hb.a, b: hb.b, angle: 0, order: hb.order }));
         if (!opts.noAutoH && !opts.noAdjust) autoAdjust2DBondLengths();
 
@@ -3231,7 +3323,7 @@
             }
           }
           if (heavyAtoms.find(x => x.id === a.id && x.autoLP)) {
-            const n = opts.noAutoH ? (spec.ve - getUsedValence(a.id) - (a.charge || 0)) / 2 : spec.lonePairs;
+            const n = opts.noAutoH ? (spec.ve - getUsedValence(a.id) - (a.charge || 0) - nRad(a)) / 2 : spec.lonePairs;
             a.lonePairs = [];
             for (let i = 0; i < n; i++) { const z = getFreeZonesForAtom(a, 'lonepair'); if (!z.length) break; a.lonePairs.push(z[0].angle); }
           }
@@ -3567,6 +3659,11 @@
       document.getElementById('btn-3d-highlight').onclick = (e) => { highlightMain3D = !highlightMain3D; e.target.classList.toggle('active', highlightMain3D); build3DMolecule(); };
       document.getElementById('btn-3d-labels').onclick = (e) => { showLabels3D = !showLabels3D; e.target.classList.toggle('active', showLabels3D); };
       document.getElementById('btn-3d-lp').onclick = (e) => { showLP3D = !showLP3D; e.target.classList.toggle('active', showLP3D); build3DMolecule(); };
+      document.getElementById('btn-3d-orb').onclick = (e) => {
+        showOrb3D = !showOrb3D; e.target.classList.toggle('active', showOrb3D);
+        document.getElementById('orb-legend').style.display = showOrb3D ? 'block' : 'none';
+        build3DMolecule();
+      };
       document.getElementById('btn-3d-reset').onclick = () => { controls.resetView(); molGroup.rotation.set(0, 0, 0); };
       document.getElementById('btn-3d-spin').onclick = (e) => { spin3D = !spin3D; e.target.classList.toggle('active', spin3D); };
 
