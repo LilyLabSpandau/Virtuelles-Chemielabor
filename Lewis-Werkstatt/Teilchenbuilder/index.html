@@ -238,9 +238,9 @@
           <button class="mini-btn" id="btn-3d-reset" title="Ansicht zurücksetzen">⟲</button>
         </div>
       </div>
-      <div id="orb-legend" style="display:none;position:absolute;left:10px;bottom:10px;z-index:5;max-width:calc(100% - 20px);padding:8px 11px;border-radius:12px;background:rgba(15,23,42,.82);border:1px solid rgba(148,163,184,.3);color:#e2e8f0;font-size:12px;line-height:1.45;pointer-events:none">
-        <div><span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:#38bdf8;margin-right:6px;vertical-align:-1px"></span><strong>σ-Bindung</strong>: Überlappung entlang der Bindungsachse</div>
-        <div><span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:#fb923c;margin-right:6px;vertical-align:-1px"></span><strong>π-Bindung</strong>: seitliche Überlappung der p-Orbitale (über und unter der Achse)</div>
+      <div id="orb-legend" style="display:none;position:absolute;left:10px;top:auto;bottom:80px;z-index:5;max-width:calc(100% - 20px);padding:8px 11px;border-radius:12px;background:rgba(15,23,42,.82);border:1px solid rgba(148,163,184,.3);color:#e2e8f0;font-size:12px;line-height:1.45;pointer-events:none">
+        <div><span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:#38bdf8;margin-right:6px;vertical-align:-1px"></span><strong>σ-Bindung</strong>: Überlappung zweier Orbitale entlang der Bindungsachse</div>
+        <div><span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:#fb923c;margin-right:6px;vertical-align:-1px"></span><strong>π-Bindung</strong>: seitliche Überlappung zweier p-Orbitale (über und unter der Achse)</div>
       </div>
       <div id="three-container"></div>
       <div id="labels-3d"></div>
@@ -2727,15 +2727,26 @@
         m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), dir.clone().normalize());
         m.position.copy(center); return m;
       }
+      // Ellipsoid mit eigenen Achsen: Halbachse sx entlang xd, sz entlang zd, sy dazwischen
+      function orbBlob(center, xd, zd, sx, sy, sz, color, opacity) {
+        const m = new THREE.Mesh(new THREE.SphereGeometry(1, 28, 20), new THREE.MeshStandardMaterial({ color, transparent: true, opacity, roughness: 0.35, depthWrite: false }));
+        const z = zd.clone().normalize(); let x = xd.clone().normalize();
+        if (new THREE.Vector3().crossVectors(z, x).lengthSq() < 1e-4) { x = new THREE.Vector3(0, 1, 0).cross(z); if (x.lengthSq() < 1e-4) x = new THREE.Vector3(1, 0, 0).cross(z); x.normalize(); }
+        const y = new THREE.Vector3().crossVectors(z, x).normalize();
+        const x2 = new THREE.Vector3().crossVectors(y, z).normalize();
+        m.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(x2, y, z));
+        m.scale.set(sx, sy, sz); m.position.copy(center); return m;
+      }
       function buildOrbitals3D(posMap) {
-        const SIG = 0x38bdf8, PI = 0xfb923c;
+        const SIG_A = 0x38bdf8, SIG_B = 0x6366f1, PI_A = 0xfb923c, PI_B = 0xfacc15;
         bonds.forEach(b => {
           const pA = posMap[b.a], pB = posMap[b.b]; if (!pA || !pB) return;
-          const ax = new THREE.Vector3().subVectors(pB, pA), len = ax.length(), u = ax.clone().normalize(), mid = pA.clone().addScaledVector(ax, 0.5);
-          const A = getAtom(b.a), B = getAtom(b.b), hBond = A.el === 'H' || B.el === 'H';
-          molGroup.add(orbLobe(mid, u, len / 2 + 0.22, hBond ? 0.2 : 0.26, SIG, 0.5));
+          const ax = new THREE.Vector3().subVectors(pB, pA), len = ax.length(), u = ax.clone().normalize();
+          const A = getAtom(b.a), B = getAtom(b.b), hBond = A.el === 'H' || B.el === 'H', rad = hBond ? 0.2 : 0.26;
+          // σ: je ein Orbital pro Atom, die sich in der Mitte überlappen
+          molGroup.add(orbBlob(pA.clone().addScaledVector(u, len * 0.3), u, u, rad, rad, len * 0.46, SIG_A, 0.5));
+          molGroup.add(orbBlob(pB.clone().addScaledVector(u, -len * 0.3), u, u, rad, rad, len * 0.46, SIG_B, 0.5));
           if (b.order < 2) return;
-          // Ebene der Bindung: aus einem weiteren Nachbarn von A oder B; sonst beliebig senkrecht
           let nrm = null;
           for (const [c, other] of [[b.a, b.b], [b.b, b.a]]) {
             for (const nb of getAtomBonds(c)) {
@@ -2747,8 +2758,11 @@
           }
           if (!nrm) { nrm = new THREE.Vector3(0, 1, 0).cross(u); if (nrm.lengthSq() < 0.01) nrm = new THREE.Vector3(1, 0, 0).cross(u); nrm.normalize(); }
           const dirs = [nrm]; if (b.order === 3) dirs.push(new THREE.Vector3().crossVectors(u, nrm).normalize());
-          const off = b.order === 3 ? 0.4 : 0.36;
-          dirs.forEach(d => [1, -1].forEach(sg => molGroup.add(orbLobe(mid.clone().addScaledVector(d, sg * off), u, len / 2 + 0.2, 0.2, PI, 0.5))));
+          // π: p-Orbitale beider Atome (je zwei Keulen über/unter der Achse) überlappen seitlich
+          dirs.forEach(d => [1, -1].forEach(sg => {
+            molGroup.add(orbBlob(pA.clone().addScaledVector(d, sg * 0.34), u, d, len * 0.4, 0.17, 0.34, PI_A, 0.5));
+            molGroup.add(orbBlob(pB.clone().addScaledVector(d, sg * 0.34), u, d, len * 0.4, 0.17, 0.34, PI_B, 0.5));
+          }));
         });
       }
 
