@@ -19,6 +19,7 @@ nav button small { opacity: .7; font-weight: 500; }
 #mode button { border: 0; background: #1a212c; color: #c5d0e0; padding: 7px 12px; font-size: 13px; font-weight: 600; cursor: pointer; }
 #mode button.on { background: #7b3fe4; color: #fff; }
 body[data-mode=gk] .lk, body[data-mode=lk] .gk { display: none !important; }
+.btns button.del { border-color: #7a3a3a; color: #ffb4ab; }
 .gloss dt { font-weight: 700; color: #90caf9; margin-top: 7px; }
 .gloss dd { margin: 2px 0 0 0; }
 main { flex: 1; min-height: 0; position: relative; }
@@ -154,7 +155,7 @@ label.chk { display: inline-flex; align-items: center; gap: 6px; margin: 3px 12p
     <div class="pal" id="lw-pal"></div>
     <div class="btns">
       <button id="lw-undo">↩ Letzte entfernen</button>
-      <button id="lw-clear">Leeren</button>
+      <button id="lw-clear" class="del">🗑 Alles löschen</button>
       <button id="lw-rand">🎲 Zufällige Kette</button>
     </div>
     <label class="chk"><input type="checkbox" id="lw-plane" checked> Peptidbindung markieren</label>
@@ -274,14 +275,15 @@ label.chk { display: inline-flex; align-items: center; gap: 6px; margin: 3px 12p
       </ul>
       <p class="muted">Die Vorhersage im Modell folgt den Neigungswerten nach Chou und Fasman (Balken unten). Die Struktur entsteht hier aus der Reihenfolge der Aminosäuren, die du baust.</p>
     </details>
-    <h3>Peptidkette bauen</h3>
+    <h3>Deine Peptidkette</h3>
+    <p class="muted" style="margin:2px 0 6px">Hier siehst du die Kette aus Reiter 1. Änderungen gelten für beide Reiter.</p>
     <div class="legend" id="sc-leg"></div>
     <div class="pal" id="sc-pal"></div>
     <div class="btns">
       <button id="sc-undo">↩ Letzte entfernen</button>
-      <button id="sc-clear">Leeren</button>
+      <button id="sc-clear" class="del">🗑 Alles löschen</button>
     </div>
-    <h3>Beispiele</h3>
+    <h3>Beispiele (ersetzen deine Kette)</h3>
     <div class="btns" id="sc-pre"></div>
     <h3>Anzeige</h3>
     <label class="chk"><input type="checkbox" id="sc-hb" checked> Wasserstoffbrücken</label>
@@ -614,14 +616,15 @@ function lwRender() {
 }
 function lwInit() {
   const pal = document.getElementById('lw-pal');
-  AA.forEach(a => { const b = document.createElement('button'); b.className = 'aa'; b.style.setProperty('--c', CLS[a.cls].col); b.innerHTML = `<b>${a.c}</b><small>${a.o}</small>`; b.title = `${a.n} – ${a.rf}`; b.onclick = () => { if (lw.seq.length >= 10) { flash('Für die Lewis-Formel sind höchstens 10 Aminosäuren möglich.'); return; } lw.seq.push(a); lw.sel = -1; lwRender(); }; pal.appendChild(b); });
+  AA.forEach(a => { const b = document.createElement('button'); b.className = 'aa'; b.style.setProperty('--c', CLS[a.cls].col); b.innerHTML = `<b>${a.c}</b><small>${a.o}</small>`; b.title = `${a.n} – ${a.rf}`; b.onclick = () => { if (lw.seq.length >= 20) { flash('Höchstens 20 Aminosäuren.'); return; } lw.seq.push(a); lw.sel = -1; lwRender(); }; pal.appendChild(b); });
   document.getElementById('lw-undo').onclick = () => { lw.seq.pop(); lw.sel = -1; lwRender(); };
   document.getElementById('lw-clear').onclick = () => { lw.seq = []; lw.sel = -1; lwRender(); };
-  document.getElementById('lw-rand').onclick = () => { const n = 3 + Math.floor(Math.random() * 3); lw.seq = Array.from({ length: n }, () => AA[Math.floor(Math.random() * 20)]); lw.sel = -1; lwRender(); };
+  document.getElementById('lw-rand').onclick = () => { const n = 8 + Math.floor(Math.random() * 5); lw.seq = Array.from({ length: n }, () => AA[Math.floor(Math.random() * 20)]); lw.sel = -1; lwRender(); };
   document.getElementById('lw-plane').onchange = e => { lw.showPlane = e.target.checked; lwRender(); };
   document.getElementById('lw-col').onchange = e => { LW.colorSC = e.target.checked; lwRender(); };
   lwRender();
 }
+tabHooks[1] = () => { lwRender(); };
 
 // ===== 3. GEOMETRIE: Peptidrückgrat aus Torsionswinkeln (NeRF) ==============
 const D2R = Math.PI / 180;
@@ -933,6 +936,7 @@ function rSphereGroup(ch, gi, selIdx, labels) {
 
 // ----- Szene aufbauen -----
 function scBuild() {
+  if (lw.seq.length !== sc.seq.length || lw.seq.some((a, i) => a !== sc.seq[i])) { lw.seq = sc.seq.slice(); lw.sel = -1; }
   const seq = sc.seq, n = seq.length;
   if (sc.grp) { sc.view.scene.remove(sc.grp); sc.grp = null; }
   sc.st = n ? predictSS(seq) : []; sc.hbCount = { H: 0, E: 0 };
@@ -1014,7 +1018,7 @@ function scApplyVis() {
 function scUI() {
   const n = sc.seq.length, chain = document.getElementById('sc-chain'), st = sc.st || [];
   const sCol = { H: '#4cd964', E: '#ff453a', C: '#a0a7b4' };
-  chain.innerHTML = n ? '<span class="muted" style="font-size:12px;margin-right:2px">N</span>' + sc.seq.map((a, i) => `<span class="cc${sc.sel === i ? ' sel' : ''}" data-i="${i}" style="background:${CLS[a.cls].col};--s:${sCol[st[i] || 'C']}">${a.c}</span>`).join('') + '<span class="muted" style="font-size:12px;margin-left:2px">C</span>' : '<span class="chips hud" style="position:static;padding:6px 10px;background:rgba(13,17,23,.82);border:1px solid #2a3547;border-radius:10px;font-size:12.5px;color:#b6c3d6">Wähle rechts Aminosäuren oder ein Beispiel.</span>';
+  chain.innerHTML = n ? '<span class="muted" style="font-size:12px;margin-right:2px">N</span>' + sc.seq.map((a, i) => `<span class="cc${sc.sel === i ? ' sel' : ''}" data-i="${i}" style="background:${CLS[a.cls].col};--s:${sCol[st[i] || 'C']}">${a.c}</span>`).join('') + '<span class="muted" style="font-size:12px;margin-left:2px">C</span>' : '<span class="chips hud" style="position:static;padding:6px 10px;background:rgba(13,17,23,.82);border:1px solid #2a3547;border-radius:10px;font-size:12.5px;color:#b6c3d6">Noch keine Kette. Baue sie im Reiter 1 oder wähle hier Aminosäuren / ein Beispiel.</span>';
   chain.querySelectorAll('.cc').forEach(c => c.onclick = () => { sc.sel = sc.sel === +c.dataset.i ? -1 : +c.dataset.i; scBuild(); });
   document.getElementById('sc-legend').innerHTML = (isGK() ? `<span style="white-space:nowrap"><span style="color:#4cd964">■</span> α-Helix (Spirale)</span> &nbsp; <span style="white-space:nowrap"><span style="color:#ff453a">■</span> β-Faltblatt (Pfeil)</span> &nbsp; <span style="white-space:nowrap"><span style="color:#a0a7b4">■</span> Schleife</span> &nbsp; <span style="white-space:nowrap"><span style="color:#ffee58">┅</span> Wasserstoffbrücke</span>` : `<span style="white-space:nowrap"><span style="color:#4cd964">■</span> α-Helix</span> &nbsp; <span style="white-space:nowrap"><span style="color:#ff453a">■</span> β-Faltblatt</span> &nbsp; <span style="white-space:nowrap"><span style="color:#a0a7b4">■</span> Schleife/Knäuel</span> &nbsp; <span style="white-space:nowrap"><span style="color:#ffee58">┅</span> H-Brücke</span>`);
   // Neigungsbalken
@@ -1023,7 +1027,7 @@ function scUI() {
   bars.querySelectorAll('.col').forEach(c => c.onclick = () => { sc.sel = sc.sel === +c.dataset.i ? -1 : +c.dataset.i; scBuild(); });
   // Info
   const info = document.getElementById('sc-info'); let h = '';
-  if (n < 6) h = n ? 'Für eine erkennbare Sekundärstruktur braucht es mindestens 5–6 Aminosäuren. Füge weitere hinzu.' : 'Baue eine Kette (mindestens 6 Aminosäuren) oder wähle ein Beispiel.';
+  if (n < 6) h = n ? 'Für eine erkennbare Sekundärstruktur braucht es mindestens 5–6 Aminosäuren. Füge weitere hinzu.' : 'Baue eine Kette (mindestens 6 Aminosäuren) im Reiter 1 oder hier – oder wähle ein Beispiel.';
   else {
     const runs = []; { let i = 0; while (i < n) { let j = i; while (j < n && st[j] === st[i]) j++; runs.push({ t: st[i], a: i, b: j - 1 }); i = j; } }
     const nm = isGK() ? { H: 'α-Helix (Spirale)', E: 'β-Faltblatt (Strang, Pfeil)', C: 'Schleife / Knäuel' } : { H: 'α-Helix', E: 'β-Faltblatt (Strang)', C: 'Schleife / Knäuel' }, hs = runs.filter(r => r.t === 'H').length, es = runs.filter(r => r.t === 'E').length;
@@ -1044,16 +1048,16 @@ function scInit() {
   const view = document.getElementById('sc-view'), cam = new THREE.PerspectiveCamera(40, 1, 0.5, 600), scene = newScene();
   sc.view = { scene, camera: cam, el: view, orbit: new Orbit(cam, V3(0, 0, 0), 40, 0.25, 0.8), tick: null };
   const pal = document.getElementById('sc-pal');
-  AA.forEach(a => { const b = document.createElement('button'); b.className = 'aa'; b.style.setProperty('--c', CLS[a.cls].col); b.innerHTML = `<b>${a.c}</b><small>${a.o}</small>`; b.title = `${a.n} – Helix ${a.pa} / Faltblatt ${a.pb}`; b.onclick = () => { if (sc.seq.length >= 30) { flash('Höchstens 30 Aminosäuren.'); return; } sc.seq.push(a); sc.sel = -1; scBuild(); }; pal.appendChild(b); });
+  AA.forEach(a => { const b = document.createElement('button'); b.className = 'aa'; b.style.setProperty('--c', CLS[a.cls].col); b.innerHTML = `<b>${a.c}</b><small>${a.o}</small>`; b.title = `${a.n} – Helix ${a.pa} / Faltblatt ${a.pb}`; b.onclick = () => { if (sc.seq.length >= 20) { flash('Höchstens 20 Aminosäuren.'); return; } sc.seq.push(a); sc.sel = -1; scBuild(); }; pal.appendChild(b); });
   document.getElementById('sc-undo').onclick = () => { sc.seq.pop(); sc.sel = -1; scBuild(); };
   document.getElementById('sc-clear').onclick = () => { sc.seq = []; sc.sel = -1; scBuild(); };
   scPresets();
   document.getElementById('sc-hb').onchange = e => { sc.hb = e.target.checked; scApplyVis(); };
   document.getElementById('sc-side').onchange = e => { sc.side = e.target.checked; scApplyVis(); };
   document.getElementById('sc-rib').onchange = e => { sc.rib = e.target.checked; scApplyVis(); };
-  sc.seq = SC_PRE[2][1].map(c => AAby[c]); scBuild();
+  sc.seq = lw.seq.slice(); scBuild();
 }
-tabHooks[2] = () => { if (!sc.view) scInit(); showMain(sc.view); };
+tabHooks[2] = () => { if (!sc.view) scInit(); else { sc.seq = lw.seq.slice(); sc.sel = -1; scBuild(); } showMain(sc.view); };
 
 // ===== 6. DETAILMODELLE (Atome) für Tertiär- und Quartärstruktur ==============
 const AAn = c => AAby[c];
