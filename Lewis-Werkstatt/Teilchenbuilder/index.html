@@ -3086,9 +3086,63 @@
         return { inorg: true, ionic: true, classLabel: 'Ionenverbindung (Salz)', iupacName: nameKnown ? name : formulaStr, altName: nameKnown ? '' : 'Kein Name hinterlegt', accepted, formulaStr, molarMass, mainChain: [], chainLabels: {}, steps };
       }
 
+      // Einfach geladene organische Ionen (Alkoholat, Carboxylat, Ammonium): über das neutrale Ausgangsmolekül benennen
+      function analyzeOrganicIon() {
+        const q = totalCharge();
+        if (Math.abs(q) !== 1 || getComponents().length > 1) return null;
+        if (!atoms.every(a => ORG_ELEMENTS.includes(a.el)) || !atoms.some(a => a.el === 'C')) return null;
+        if (!bonds.some(b => b.b !== null && ((getAtom(b.a).el === 'C' && ['C', 'H'].includes(getAtom(b.b).el)) || (getAtom(b.b).el === 'C' && getAtom(b.a).el === 'H')))) return null;
+        const charged = atoms.filter(a => a.charge);
+        if (charged.length !== 1) return null;
+        const X = charged[0];
+        const saveA = atoms, saveB = bonds, saveId = nextId;
+        let neutral = null;
+        try {
+          const A = atoms.map(a => ({ ...a, lonePairs: [...(a.lonePairs || [])] })); let B = bonds.map(b => ({ ...b }));
+          const xa = A.find(a => a.id === X.id); let ok = false;
+          if (q === -1 && (X.el === 'O' || X.el === 'S')) {
+            xa.charge = 0; A.push({ id: 900000, el: 'H', x: xa.x + 34, y: xa.y, charge: 0, lonePairs: [] });
+            B.push({ id: 900001, a: xa.id, b: 900000, angle: 0, order: 1 }); ok = true;
+          } else if (q === 1 && X.el === 'N') {
+            const hb = B.find(b => b.b !== null && (b.a === X.id || b.b === X.id) && A.find(a => a.id === (b.a === X.id ? b.b : b.a)).el === 'H');
+            if (hb) { const hid = hb.a === X.id ? hb.b : hb.a; B = B.filter(b => b !== hb); A.splice(A.findIndex(a => a.id === hid), 1); xa.charge = 0; ok = true; }
+          }
+          if (ok) { atoms = A; bonds = B; neutral = analyzeMolecule(); applyTrivialName(neutral); }
+        } catch (e) { neutral = null; } finally { atoms = saveA; bonds = saveB; nextId = saveId; }
+        if (!neutral || !neutral.iupacName || neutral.iupacName === '?') return null;
+        const base = neutral.iupacName;
+        const toAnion = n => /benzoesäure$/i.test(n) ? n.replace(/benzoesäure$/i, 'Benzoat') : (/säure$/i.test(n) ? n.replace(/säure$/i, 'oat') : (/ol$/i.test(n) ? n + 'at' : null));
+        const toCation = n => /amin$/i.test(n) ? n + 'ium' : null;
+        const stem = q < 0 ? toAnion(base) : toCation(base);
+        if (!stem) return null;
+        const alts = [];
+        const triv = TRIVIAL_NAMES[base.trim().toLowerCase()], salt = triv && triv.match(/Salze: ([^)]+)\)/);
+        if (q < 0 && salt) alts.push(salt[1].replace(/e$/, '') + '-Ion');
+        (neutral.accepted || []).forEach(n => { const t = q < 0 ? toAnion(n) : toCation(n); if (t && t !== stem) alts.push(t + '-Ion'); });
+        const am = q > 0 && base.match(/^(Meth|Eth|Prop|But|Pent|Hex)anamin$/);
+        if (am) alts.push(am[1] + 'ylammonium-Ion');
+        const name = stem + '-Ion';
+        const cnt = inorgCounts();
+        const hill = Object.keys(cnt).sort((a, b) => (a === 'C' ? -2 : a === 'H' ? -1 : 0) - (b === 'C' ? -2 : b === 'H' ? -1 : 0) || a.localeCompare(b));
+        const formulaStr = hill.map(e => e + (cnt[e] > 1 ? subDig(cnt[e]) : '')).join('') + chargeSup(q);
+        const molarMass = atoms.reduce((sum, a) => sum + ELEMENT_SPECS[a.el].mass, 0).toFixed(2).replace('.', ',');
+        const isAcid = /säure$/i.test(base);
+        const cls = q > 0 ? 'Ammonium-Ion (organisches Kation)' : (isAcid ? 'Carboxylat-Ion (Anion)' : (/phenol$/i.test(base) ? 'Phenolat-Ion (Anion)' : 'Alkanolat-Ion (Anion)'));
+        const accepted = [];
+        [stem, ...alts.map(a => a.replace(/-Ion$/, ''))].forEach(n => { accepted.push(n + '-Ion', n, n + 'ion', n + '-ion'); });
+        const steps = [
+          { title: '1. Teilchen & Ladung', text: `Das Teilchen trägt die Ladung <strong>${chargeText(q)}</strong>. Es entsteht, wenn ein Molekül ein H⁺-Ion ${q < 0 ? 'abgibt' : 'aufnimmt'}. Das zugehörige neutrale Molekül (${neutral.formulaStr}) ist <strong>${base}</strong> (${neutral.classLabel}).` },
+          { title: '2. Neutrales Molekül benennen', text: `Mit den üblichen IUPAC-Regeln heißt das neutrale Molekül <strong>${base}</strong>.` },
+          { title: '3. Endung anpassen', text: q > 0 ? 'Amin → Ammonium-Ion: Die Endung <strong>-amin</strong> wird zu <strong>-aminium</strong>.' : (isAcid ? 'Carbonsäure → Carboxylat: Die Endung <strong>-säure</strong> wird zu <strong>-oat</strong>.' : 'Alkohol → Alkoholat: Die Endung <strong>-ol</strong> wird zu <strong>-olat</strong>.') },
+          { title: '4. Name & Formel', text: `Name: <strong>${name}</strong>${alts.length ? `<br>Auch: ${alts.join(', ')}` : ''}<br>Summenformel: <strong>${formulaStr}</strong>` }
+        ];
+        return { inorg: true, classLabel: cls, iupacName: name, altName: alts.length ? `Auch: ${alts.join(', ')}` : '', accepted, formulaStr, molarMass, mainChain: [], chainLabels: {}, steps };
+      }
+
       function analyzeInorganic() {
         const comps = getComponents();
         if (comps.length > 1) return analyzeIonic(comps);
+        if (!INORG_DB[inorgKeyFromCounts(inorgCounts(), totalCharge())]) { const oi = analyzeOrganicIon(); if (oi) return oi; }
         const cnt = inorgCounts(), q = totalCharge();
         const key = inorgKeyFromCounts(cnt, q), entry = INORG_DB[key];
         const els = Object.keys(cnt).sort((a, b) => FORMULA_ORDER.indexOf(a) - FORMULA_ORDER.indexOf(b));
