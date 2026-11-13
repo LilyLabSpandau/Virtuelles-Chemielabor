@@ -1200,6 +1200,8 @@ function a4Charts(aa, pH) {
   const f0 = aaFrac(aa, pH), e0 = f0.reduce((a, x, k) => a + x * k, 0); t += `<circle cx="${ex(e0)}" cy="${ty(pH)}" r="5.5" fill="#7b3fe4" stroke="#fff"/></svg>`;
   return `<h3>Anteile der Teilchen (Anion/Kation) in Abhängigkeit vom pH</h3>${s}<div class="muted">Farben: ${[...Array(n).keys()].map(k => `<span style="color:${chgCol(aaCharge(aa, k))}">● ${sgn(aaCharge(aa, k)) || '0'}</span>`).join(' ')} · gelb gestrichelt: pK<sub>s</sub> · weiß: pI · violett: aktueller pH</div><h3>Titrationskurve (Zugabe von OH⁻)</h3>${t}<div class="muted">Aus der vollständig protonierten Form; die Wendepunkte der Stufen liegen bei den pK<sub>s</sub>-Werten, am pI ist die Nettoladung null.</div>`;
 }
+let a4Raf = 0;
+function a4Soon() { if (a4Raf) return; a4Raf = requestAnimationFrame(() => { a4Raf = 0; a4Render(); }); }
 function a4Render() {
   const aa = a4.aa, pH = a4.pH, f = aaFrac(aa, pH), k = aaDominant(aa, pH), st = stateOf(aa, k), m = aaModel(aa, st), o = aaSVG(m, { S: 56, groups: false, m: 0.6 });
   $('a4-stage').innerHTML = `<div class="a4lab">${a4Lab(aa, pH)}</div>${o.svg}`;
@@ -1208,9 +1210,11 @@ function a4Render() {
   // pH-Leiste
   const pks = aa.steps.map(s => s.pk), b = [0, ...pks, 14];
   const zones = b.slice(0, -1).map((lo, i) => `<div style="flex:${(b[i + 1] - lo).toFixed(2)};background:${chgCol(aaCharge(aa, i))}">${sgn(aaCharge(aa, i)) || '0'}</div>`).join('');
-  $('a4-ph').innerHTML = `<div class="row"><b>pH</b><input type="range" id="a4-sl" min="0" max="14" step="0.1" value="${pH}"><b style="min-width:34px;text-align:right">${fmt(pH, 1)}</b></div><div class="phgrad"></div><div class="zone">${zones}</div>`;
-  $('a4-sl').oninput = e => { a4.pH = +e.target.value; a4Render(); };
-  $('a4-sl').onchange = () => { };
+  if (!$('a4-sl')) {   // Regler nur einmal anlegen, damit das Ziehen nicht abreißt
+    $('a4-ph').innerHTML = `<div class="row"><b>pH</b><input type="range" id="a4-sl" min="0" max="14" step="0.1" value="${pH}"><b id="a4-phv" style="min-width:34px;text-align:right"></b></div><div class="phgrad"></div><div class="zone" id="a4-zone"></div>`;
+    $('a4-sl').oninput = e => { a4.pH = +e.target.value; a4Soon(); };
+  }
+  $('a4-sl').value = pH; $('a4-phv').textContent = fmt(pH, 1); $('a4-zone').innerHTML = zones;
   // Infobox
   const near = Math.abs(pH - aa.pI) < .12;
   let t = `<b>Überwiegende Form:</b> ${specName(aa, k)}, Gesamtladung <b>${sgn(z) || '0'}</b>.`;
