@@ -1,449 +1,523 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lern-Checkliste: Chemie Leistungskurs (Q1-Q4)</title>
-    
-    <!-- MathJax for rendering chemical and mathematical formulas -->
-    <script id="MathJax-script" async src="../../vendor/mathjax/tex-mml-chtml.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>Semestercheckliste Chemie (Q1–Q4)</title>
+<script>
+window.MathJax = { tex: { inlineMath: [['\\(', '\\)']] }, options: { skipHtmlTags: ['script','noscript','style','textarea','pre'] } };
+</script>
+<script id="MathJax-script" async src="../../vendor/mathjax/tex-mml-chtml.js"></script>
+<style>
+:root{
+  --bg1:#0b1020; --bg2:#141a33; --card:#171e3a; --card2:#1d2547; --line:rgba(255,255,255,.10);
+  --text:#e9edff; --muted:#9aa5cf; --gk:#4fd1c5; --lk:#ffb347; --ok:#5eea8f;
+  --q1:#ff6b9d; --q2:#ffb347; --q3:#a78bfa; --q4:#4fd1c5;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--text);
+  background:radial-gradient(1200px 700px at 10% -10%,#26307a55,transparent),radial-gradient(900px 600px at 100% 0%,#7a2a6a33,transparent),linear-gradient(180deg,var(--bg1),var(--bg2));
+  background-attachment:fixed;min-height:100vh;line-height:1.55;padding:0 0 70px}
+.wrap{max-width:960px;margin:0 auto;padding:18px 16px 40px}
+.back{display:inline-block;color:var(--muted);text-decoration:none;font-size:.9rem;margin:4px 0 10px}
+.back:hover{color:var(--text)}
+h1{margin:6px 0 4px;font-size:clamp(1.5rem,5vw,2.3rem);line-height:1.15;background:linear-gradient(90deg,#ff6b9d,#ffb347,#a78bfa,#4fd1c5);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{margin:0 0 14px;color:var(--muted);font-size:.95rem}
+.panel2{background:rgba(11,16,32,.6);border:1px solid var(--line);border-radius:16px;padding:4px 12px 12px;margin:0 0 18px}
+.panel{position:sticky;top:0;z-index:20;background:rgba(11,16,32,.92);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:16px;padding:8px;margin:0 0 12px}
+.seg{display:flex;background:#0d1330;border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px}
+.seg button{flex:1;border:0;border-radius:9px;padding:8px 6px;font-size:1rem;font-weight:700;color:var(--muted);background:transparent;cursor:pointer;min-height:44px}
+.seg button small{display:block;font-weight:500;font-size:.72rem;opacity:.85}
+body[data-mode="gk"] .seg .b-gk{background:linear-gradient(135deg,#1fa89c,#4fd1c5);color:#04201d}
+body[data-mode="lk"] .seg .b-lk{background:linear-gradient(135deg,#ff9a3c,#ffcf6b);color:#2b1700}
+.prog{display:flex;align-items:center;gap:12px;margin-top:8px}
+.bar{flex:1;height:12px;border-radius:99px;background:#0d1330;border:1px solid var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--ok),#a3ff6b);transition:width .35s}
+.pct{font-weight:800;min-width:92px;text-align:right;font-size:.92rem}
+.tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.tools button,.tools label.fb{border:1px solid var(--line);background:#1b2350;color:var(--text);border-radius:10px;padding:9px 12px;font-size:.85rem;cursor:pointer;min-height:40px}
+.tools button:hover{background:#26306b}
+.tools .danger.arm{background:#8a1f3a;border-color:#ff6b8a}
+.tools .push{margin-left:auto}
+.tools .toggle{display:inline-flex;align-items:center;gap:8px}
+.note{font-size:.8rem;color:var(--muted);margin:9px 0 0}
+.toast{position:fixed;left:50%;bottom:62px;transform:translateX(-50%);background:#232c63;border:1px solid var(--line);color:var(--text);padding:10px 16px;border-radius:12px;font-size:.9rem;opacity:0;pointer-events:none;transition:opacity .25s;z-index:60;max-width:90vw}
+.toast.show{opacity:1}
 
-    <style>
-        :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #34495e;
-            --accent-color: #3498db;
-            --bg-color: #f8f9fa;
-            --card-bg: #ffffff;
-            --border-color: #e0e6ed;
-            --text-color: #333333;
-            --success-color: #2ecc71;
-            --danger-color: #e74c3c;
-        }
+.q{margin:26px 0 8px;display:flex;align-items:center;gap:12px}
+.q .tag{font-weight:900;font-size:1.05rem;padding:6px 12px;border-radius:10px;color:#0b1020}
+.q h2{margin:0;font-size:clamp(1.05rem,3.6vw,1.35rem)}
+.q1 .tag{background:var(--q1)} .q2 .tag{background:var(--q2)} .q3 .tag{background:var(--q3)} .q4 .tag{background:var(--q4)}
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-        }
+details.field{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--c);border-radius:16px;margin:12px 0;overflow:hidden}
+.f1{--c:var(--q1)} .f2{--c:var(--q2)} .f3{--c:var(--q3)} .f4{--c:var(--q4)}
+details.field>summary{list-style:none;cursor:pointer;padding:14px 14px;display:flex;align-items:center;gap:10px;-webkit-tap-highlight-color:transparent}
+details.field>summary::-webkit-details-marker{display:none}
+.num{font-weight:800;color:var(--c);font-size:.9rem;white-space:nowrap}
+.ft{font-weight:700;font-size:1.05rem;flex:1;min-width:0}
+.cnt{font-size:.8rem;color:var(--muted);background:#0d1330;border:1px solid var(--line);border-radius:99px;padding:3px 10px;white-space:nowrap}
+.cnt.done{color:#04200f;background:var(--ok);border-color:transparent;font-weight:700}
+.chev{transition:transform .2s;color:var(--muted)}
+details.field[open]>summary .chev{transform:rotate(90deg)}
+.fb2{padding:0 14px 14px}
+.intro{color:var(--muted);font-size:.93rem;margin:2px 0 12px}
+.lkonly{display:none;background:#2a2147;border:1px dashed #a78bfa88;border-radius:12px;padding:12px 14px;color:#d8ccff;font-size:.92rem}
+body[data-mode="gk"] .field.onlylk .lkonly{display:block}
+body[data-mode="gk"] .field.onlylk .items,body[data-mode="gk"] .field.onlylk .blocks{display:none}
 
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
+.item{display:flex;gap:12px;padding:11px 8px;border-top:1px solid var(--line);border-radius:10px}
+.item:first-child{border-top:0}
+body[data-mode="gk"] .item[data-lvl="lk"]{display:none}
+.item.done .tt{color:var(--muted);text-decoration:line-through;text-decoration-color:#9aa5cf66}
+.ck{flex:none;width:34px;height:34px;display:flex;align-items:center;justify-content:center;margin:-2px 0 0 -4px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.ck input{position:absolute;opacity:0;width:34px;height:34px;margin:0;cursor:pointer}
+.ck .box{width:24px;height:24px;border-radius:8px;border:2px solid #6f7cc0;background:#0d1330;display:flex;align-items:center;justify-content:center;transition:.15s}
+.ck input:checked+.box{background:var(--ok);border-color:var(--ok)}
+.ck input:checked+.box::after{content:"";width:6px;height:12px;border:solid #04200f;border-width:0 3px 3px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.ck input:focus-visible+.box{outline:3px solid #fff8}
+.ib{flex:1;min-width:0}
+.tt{font-weight:650;font-size:1rem}
+.badge{display:inline-block;font-size:.68rem;font-weight:800;border-radius:6px;padding:1px 7px;margin-left:7px;vertical-align:2px;letter-spacing:.03em}
+.badge.lk{background:var(--lk);color:#2b1700}
+.badge.gk{background:var(--gk);color:#04201d}
+details.more{margin-top:4px}
+details.more>summary{list-style:none;cursor:pointer;color:#9fb2ff;font-size:.85rem;padding:4px 0;display:inline-block;-webkit-tap-highlight-color:transparent}
+details.more>summary::-webkit-details-marker{display:none}
+details.more>summary::before{content:"▸ ";}
+details.more[open]>summary::before{content:"▾ ";}
+.det{margin:4px 0 4px;color:#cfd6f6;font-size:.93rem}
+.links{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.links a{display:inline-flex;align-items:center;gap:6px;text-decoration:none;font-size:.8rem;color:#eaf0ff;background:linear-gradient(135deg,#2c3a8c,#44307d);border:1px solid #6f7cc066;border-radius:99px;padding:6px 12px;min-height:34px}
+.links a:hover{filter:brightness(1.2)}
+.links a.lklink{background:linear-gradient(135deg,#7a4a10,#8a5a1c);border-color:#ffb34788}
+body[data-mode="gk"] .links a.lklink{display:none}
 
-        header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        h1 {
-            color: var(--primary-color);
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-
-        .overall-progress-container {
-            background-color: var(--border-color);
-            border-radius: 10px;
-            height: 20px;
-            width: 100%;
-            margin: 20px 0;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .overall-progress-bar {
-            background-color: var(--success-color);
-            height: 100%;
-            width: 0%;
-            transition: width 0.4s ease;
-        }
-
-        .progress-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 0.8em;
-            font-weight: bold;
-            color: #fff;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-        }
-
-        .semester-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            margin-bottom: 30px;
-            padding: 25px;
-            border-left: 6px solid var(--accent-color);
-        }
-
-        .semester-card h2 {
-            color: var(--secondary-color);
-            margin-top: 0;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .topic-group {
-            margin-top: 20px;
-        }
-
-        .topic-group h3 {
-            color: var(--accent-color);
-            font-size: 1.2em;
-            margin-bottom: 15px;
-        }
-
-        .checklist-item {
-            display: flex;
-            align-items: flex-start;
-            margin-bottom: 12px;
-            padding: 8px;
-            border-radius: 6px;
-            transition: background-color 0.2s;
-        }
-
-        .checklist-item:hover {
-            background-color: #f1f4f8;
-        }
-
-        .checklist-item input[type="checkbox"] {
-            margin-top: 6px;
-            margin-right: 15px;
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-            accent-color: var(--accent-color);
-        }
-
-        .checklist-item label {
-            cursor: pointer;
-            flex: 1;
-            font-size: 1.05em;
-        }
-
-        .completed label {
-            color: #7f8c8d;
-            text-decoration: line-through;
-        }
-
-        .controls {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: flex-end;
-            margin-bottom: 20px;
-            background: var(--card-bg);
-            padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-
-        button {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9em;
-            transition: background-color 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        button:hover {
-            background-color: var(--secondary-color);
-        }
-
-        button.btn-success {
-            background-color: var(--success-color);
-        }
-        button.btn-success:hover {
-            background-color: #27ae60;
-        }
-
-        button.btn-danger {
-            background-color: var(--danger-color);
-        }
-        button.btn-danger:hover {
-            background-color: #c0392b;
-        }
-
-        .info-text {
-            width: 100%;
-            font-size: 0.85em;
-            color: #7f8c8d;
-            text-align: right;
-            margin-bottom: 5px;
-        }
-
-        @media (max-width: 600px) {
-            .semester-card {
-                padding: 15px;
-            }
-            .controls {
-                justify-content: center;
-            }
-        }
-    
-    /* Kleine Bildschirme */
-    @media (max-width: 600px) {
-        h1 { font-size: 1.7em; overflow-wrap: anywhere; }
-    }
-    </style>
+.blocks{margin-top:10px;display:grid;gap:10px}
+.blk{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.blk h4{margin:0 0 7px;font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:.82rem;padding:4px 10px;border-radius:99px;background:#0f1536;border:1px solid var(--line)}
+.chip.lk{border-color:#ffb34777;color:#ffd9a0}
+body[data-mode="gk"] .chip.lk{display:none}
+.exl{margin:0;padding-left:18px;font-size:.9rem}
+.exl li{margin:3px 0}
+body[data-mode="gk"] .exl li.lk{display:none}
+.exl li.lk::marker{color:var(--lk)}
+.nomod{font-size:.82rem;color:var(--muted);margin:10px 0 0;font-style:italic}
+.empty{display:none;text-align:center;color:var(--muted);padding:20px}
+.foot{color:var(--muted);font-size:.8rem;margin-top:26px;text-align:center}
+.hide-done .item.done{display:none}
+@media (max-width:560px){.wrap{padding:12px 12px 40px}.tools .push{margin-left:0}.pct{min-width:78px}}
+</style>
 </head>
-<body>
+<body data-mode="lk">
+<div class="wrap">
+  <a class="back" href="../index.html">← Schultools</a>
+  <h1>Semestercheckliste Chemie</h1>
+  <p class="sub">Q1–Q4 nach dem Rahmenlehrplan Chemie (Berlin/Brandenburg, gymnasiale Oberstufe). Wähle deinen Kurs – die Liste passt sich an.</p>
 
-    <div class="container">
-        <header>
-            <h1>Qualifikationsphase Chemie (LK)</h1>
-            <p>Interaktive Lern-Checkliste basierend auf dem Rahmenlehrplan für die gymnasiale Oberstufe</p>
-            
-            <div class="overall-progress-container">
-                <div class="overall-progress-bar" id="progress-bar"></div>
-                <div class="progress-text" id="progress-text">0% abgeschlossen</div>
-            </div>
-        </header>
-
-        <!-- Neue Steuerungsleiste für Speichern/Laden -->
-        <div class="controls">
-            <div class="info-text">
-                💡 Dein Fortschritt wird automatisch im Browser gespeichert. Du kannst ihn aber auch als Datei exportieren, um ihn z.B. auf dem Handy weiter zu nutzen.
-            </div>
-            <button onclick="document.getElementById('import-file').click()">📂 Laden (.json)</button>
-            <input type="file" id="import-file" style="display: none;" accept=".json" onchange="importProgress(event)">
-            
-            <button class="btn-success" onclick="exportProgress()">💾 Speichern (.json)</button>
-            
-            <button class="btn-danger" onclick="resetProgress()">🗑️ Zurücksetzen</button>
-        </div>
-
-        <!-- Q1 -->
-        <div class="semester-card">
-            <h2>Q1: Natürliche und synthetische makromolekulare Stoffe</h2>
-            
-            <div class="topic-group">
-                <h3>3.2.1 Proteine</h3>
-                <div class="checklist-item"><input type="checkbox" id="q1-1"><label for="q1-1">Aminosäuren als chirale Verbindungen erkennen (asymmetrisch substituiertes C-Atom, Enantiomere)</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q1-2"><label for="q1-2">\(\alpha\)-L- und \(\alpha\)-D-Aminosäuren in der Fischer-Projektion darstellen</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q1-3"><label for="q1-3">Zwitterionen-Struktur und resultierende Eigenschaften (Schmelzpunkt, Löslichkeit, Säure-Base-Verhalten) erklären</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q1-4"><label for="q1-4">Peptidbildung und -spaltung als Kondensation und Hydrolyse formulieren</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q1-5"><label for="q1-5">Strukturebenen (Primär- bis Quartärstruktur) unter Einbeziehung inter- und intramolekularer Wechselwirkungen beschreiben</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q1-6"><label for="q1-6">Ursachen und Folgen der Denaturierung von Proteinen auf Teilchenebene erklären</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q1-7"><label for="q1-7">Proteinnachweise (Ninhydrin- und Biuret-Reaktion) anwenden</label></div>
-            </div>
-
-            <div class="topic-group">
-                <h3>3.2.2 Kunststoffe – problematische Alleskönner</h3>
-                <div class="checklist-item"><input type="checkbox" id="q1-8"><label for="q1-8">Kunststoffe nach Struktur und Verhalten (Thermoplaste, Duroplaste, Elastomere) klassifizieren</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q1-9"><label for="q1-9">Mechanismus der radikalischen Polymerisation (Start, Wachstum, Abbruch) formulieren</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q1-10"><label for="q1-10">Mechanismus der elektrophilen Addition (z. B. Bildung von Vinylchlorid) erklären</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q1-11"><label for="q1-11">Mechanismus der nucleophilen Substitution (S_N) am Beispiel der Synthese von Alkoholen aus Halogenalkanen beschreiben</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q1-12"><label for="q1-12">Polykondensation (Polyester, Polyamide) darstellen und Repetiereinheiten ermitteln</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q1-13"><label for="q1-13">Beispiele für Copolymerisation erläutern</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q1-14"><label for="q1-14">Recyclingverfahren (werkstofflich, rohstofflich, thermisch) und Umweltproblematik bewerten</label></div>
-            </div>
-        </div>
-
-        <!-- Q2 -->
-        <div class="semester-card">
-            <h2>Q2: Verlauf chemischer Reaktionen</h2>
-            
-            <div class="topic-group">
-                <h3>3.2.3 Chemische Thermodynamik</h3>
-                <div class="checklist-item"><input type="checkbox" id="q2-1"><label for="q2-1">Kalorimetrische Berechnungen anwenden: \(Q = m \cdot c \cdot \Delta T\)</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q2-2"><label for="q2-2">Satz von Hess nutzen und molare Standardreaktionsenthalpien \(\Delta_r H_m^0\) berechnen</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q2-3"><label for="q2-3">Gitterenthalpie, Hydratationsenthalpie und Solvatation beim Lösevorgang erklären</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q2-4"><label for="q2-4">Entropiebegriff verstehen und Entropieänderung \(\Delta_r S_m^0\) berechnen</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q2-5"><label for="q2-5">Gibbs-Helmholtz-Gleichung (\(\Delta_r G_m^0 = \Delta_r H_m^0 - T \cdot \Delta_r S_m^0\)) zur Beurteilung der Spontaneität (exergonisch/endergonisch) anwenden</label></div>
-            </div>
-
-            <div class="topic-group">
-                <h3>3.2.4 Reaktionsgeschwindigkeit und Katalyse</h3>
-                <div class="checklist-item"><input type="checkbox" id="q2-6"><label for="q2-6">Einfluss von Temperatur, Konzentration und Zerteilungsgrad (Stoßtheorie, RGT-Regel) erläutern</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q2-7"><label for="q2-7">Quantitative Auswertung: \(v = \frac{\Delta c}{\Delta t}\) und Geschwindigkeitsgesetz \(v = k \cdot c\)</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q2-8"><label for="q2-8">Mechanismus der radikalischen Substitution (z. B. Halogenierung von Alkanen) formulieren</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q2-9"><label for="q2-9">Wirkungsweise von Katalysatoren (Aktivierungsenergie) im Energiediagramm darstellen</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q2-10"><label for="q2-10">Katalyse-Arten (homogen, heterogen, Oberflächenkatalyse, Autokatalyse, Enzyme) differenzieren</label></div>
-            </div>
-
-            <div class="topic-group">
-                <h3>3.2.5 Chemisches Gleichgewicht</h3>
-                <div class="checklist-item"><input type="checkbox" id="q2-11"><label for="q2-11">Massenwirkungsgesetz (MWG) aus den Reaktionsgeschwindigkeiten der Hin- und Rückreaktion herleiten</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q2-12"><label for="q2-12">MWG anwenden (Berechnung von Gleichgewichtskonstanten und -konzentrationen)</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q2-13"><label for="q2-13">Prinzip von Le Chatelier (Temperatur-, Druck-, Konzentrationsänderung) anwenden</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q2-14"><label for="q2-14">Löslichkeitsgleichgewicht, Löslichkeitsprodukt \(K_L\) interpretieren und konduktometrische Fällungstitration auswerten</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q2-15"><label for="q2-15">Mechanistische Betrachtung der säurekatalysierten Estersynthese durchführen</label></div>
-            </div>
-        </div>
-
-        <!-- Q3 -->
-        <div class="semester-card">
-            <h2>Q3: Das Donator-Akzeptor-Prinzip</h2>
-            
-            <div class="topic-group">
-                <h3>3.2.6 Säure-Base-Reaktionen</h3>
-                <div class="checklist-item"><input type="checkbox" id="q3-1"><label for="q3-1">Säure-Base-Theorie nach Brønsted und Strukturmerkmale von Ampholyten erklären</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q3-2"><label for="q3-2">Autoprotolyse des Wassers, Ionenprodukt \(K_W\), pH und pOH-Wert berechnen (\(pK_W = pH + pOH\))</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q3-3"><label for="q3-3">Säure-Base-Konstanten \(K_S, K_B\) und \(pK_S, pK_B\) interpretieren und induktiven Effekt bewerten</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q3-4"><label for="q3-4">pH-Werte für starke und mittelstarke/schwache Säuren (Näherungsformel) berechnen</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q3-5"><label for="q3-5">Koordinative Bindung am Beispiel von Aquakomplexen (hydratisierte Metall-Ionen) und deren pH-Werte erläutern</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q3-6"><label for="q3-6">Titrationskurven (ein-/mehrprotonig, stark/schwach) charakterisieren (Äquivalenz-, Halbäquivalenz-, Neutralpunkt)</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q3-7"><label for="q3-7">Puffersysteme in Natur und Technik sowie deren Wirkungsweise auf Teilchenebene erklären</label></div>
-            </div>
-
-            <div class="topic-group">
-                <h3>3.2.7 Indikatorfarbstoffe</h3>
-                <div class="checklist-item"><input type="checkbox" id="q3-8"><label for="q3-8">Zusammenhang zwischen Licht, Absorption, Reflexion und Farbigkeit (Energiestufenmodell) beschreiben</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q3-9"><label for="q3-9">Mesomeriemodell, aromatisches System und delokalisierte \(\pi\)-Elektronen verstehen</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q3-10"><label for="q3-10">Mechanismus der elektrophilen Erstsubstitution am Aromaten formulieren</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q3-11"><label for="q3-11">Chromophore, auxochrome und antiauxochrome Gruppen (bathochromer/hypsochromer Effekt) identifizieren</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q3-12"><label for="q3-12">Molekülstrukturen (Azofarbstoffe, Triphenylmethanfarbstoffe) und deren Farbwechsel nach Brønsted erklären</label></div>
-            </div>
-
-            <div class="topic-group">
-                <h3>3.2.8 Redoxreaktionen</h3>
-                <div class="checklist-item"><input type="checkbox" id="q3-13"><label for="q3-13">Regeln zur Bestimmung der Oxidationszahlen (anorganisch und organisch) anwenden</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q3-14"><label for="q3-14">Elektronenkonfiguration nach dem Bohr-Sommerfeld-Atommodell ableiten und mit Oxidationsstufen verknüpfen</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q3-15"><label for="q3-15">Redoxreaktionen aufstellen und Redoxreihe der Metalle nutzen</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q3-16"><label for="q3-16">Disproportionierung und Synproportionierung als spezielle Redoxreaktionen erklären</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q3-17"><label for="q3-17">Oxidationsreihe organischer Stoffe (Alkanol \(\rightarrow\) Alkanal \(\rightarrow\) Alkansäure) formulieren und Fehling-/Tollens-Probe beschreiben</label></div>
-            </div>
-        </div>
-
-        <!-- Q4 -->
-        <div class="semester-card">
-            <h2>Q4: Elektrische Energie aus chemischen Reaktionen</h2>
-            
-            <div class="topic-group">
-                <h3>3.2.9 Elektrochemie</h3>
-                <div class="checklist-item"><input type="checkbox" id="q4-1"><label for="q4-1">Bau und Arbeitsweise galvanischer Zellen (z. B. Daniell-Element) beschreiben</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q4-2"><label for="q4-2">Zellspannungen unter Standardbedingungen mit Standardelektrodenpotenzialen berechnen</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q4-3"><label for="q4-3">Konzentrationsabhängigkeit des Potenzials erfassen und Nernst-Gleichung berechnen: \(E = E^0 + \frac{R\cdot T}{z\cdot F} \cdot \ln\frac{c(Ox)}{c(Red)}\)</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q4-4"><label for="q4-4">Konzentrationszellen aufbauen und Zellspannungen auswerten</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q4-5"><label for="q4-5">Vorgänge bei der Elektrolyse (inkl. Zersetzungsspannung, Überspannung) und Faraday-Gesetze zur quantitativen Bestimmung nutzen</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q4-6"><label for="q4-6">Elektrochemische Korrosion (Lokalelement, Sauerstoff-/Säurekorrosion) erläutern</label></div>
-                <div class="checklist-item"><input type="checkbox" id="q4-7"><label for="q4-7">Korrosionsschutz (Opferanode) und die Anwendung superhydrophober Nanomaterialien bewerten</label></div>
-            </div>
-        </div>
-
+  <div class="panel">
+    <div class="seg" role="group" aria-label="Kursart">
+      <button class="b-gk" id="bGK" type="button" aria-pressed="false">Grundkurs<small>Pflichtinhalte</small></button>
+      <button class="b-lk" id="bLK" type="button" aria-pressed="true">Leistungskurs<small>Grundkurs + Vertiefung</small></button>
     </div>
+    <div class="prog"><div class="bar"><i id="barFill"></i></div><div class="pct" id="pctTxt">0 %</div></div>
+  </div>
+  <div class="panel2">
+    <div class="tools">
+      <button type="button" id="bOpen">Alle Erklärungen auf</button>
+      <button type="button" id="bClose">Alle zu</button>
+      <button type="button" class="toggle" id="bHide" aria-pressed="false">Erledigtes ausblenden</button>
+      <button type="button" class="push" id="bExp">💾 Speichern (.json)</button>
+      <label class="fb" for="impFile">📂 Laden (.json)</label>
+      <input type="file" id="impFile" accept=".json,application/json" hidden>
+      <button type="button" class="danger" id="bReset">🗑️ Zurücksetzen</button>
+    </div>
+    <p class="note">Dein Fortschritt wird automatisch in diesem Browser gespeichert. Der Fortschritt zählt nur die Punkte deines Kurses. Die Datei (.json) hilft dir, ihn auf ein anderes Gerät mitzunehmen.</p>
+  </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-            
-            // Lade gespeicherten Stand (LocalStorage = automatisches Speichern auf demselben Gerät)
-            checkboxes.forEach(box => {
-                const isChecked = localStorage.getItem(box.id) === 'true';
-                box.checked = isChecked;
-                updateStyle(box);
-                
-                // Füge Event-Listener hinzu
-                box.addEventListener('change', (e) => {
-                    localStorage.setItem(e.target.id, e.target.checked);
-                    updateStyle(e.target);
-                    updateProgress();
-                });
-            });
-            
-            updateProgress();
+  <div id="root"></div>
+  <div class="empty" id="emptyMsg">Alles Erledigte ist ausgeblendet.</div>
+  <p class="foot">Grundlage: Rahmenlehrplan Teil C Chemie (2021). Inhalte, Fachbegriffe und die genannten Experimente/Untersuchungen sind dort verbindlich; die Beispiele in „z. B.“ dürfen je nach Schule variieren. Die Kontexte sind Vorschläge.</p>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* Daten der Checkliste – nach Rahmenlehrplan Chemie Teil C (Berlin/Brandenburg 2021), Qualifikationsphase.
+   lvl 'gk' = Grundkurs (gilt auch im LK), lvl 'lk' = zusätzlich im Leistungskurs.
+   Formeln: ⟦...⟧ wird zu \( ... \) */
+const BASE = '../../Sekundarstufe-II/';
+const Q1 = BASE + 'Q1-Natuerliche-und-synthetische-makromolekulare-Stoffe/';
+const Q2 = BASE + 'Q2-Verlauf-chemischer-Reaktionen/';
+const Q3 = BASE + 'Q3-Das-Donator-Akzeptor-Prinzip/';
+const LINKS = {
+  as:  ['Aminosäuren', Q1 + '1-Proteine/Aminosaeuren/index.html'],
+  bi:  ['Biuretprobe', Q1 + '1-Proteine/Biuretprobe/index.html'],
+  ps:  ['Strukturebenen der Proteine', Q1 + '1-Proteine/Proteinstrukturen/index.html'],
+  th:  ['Systeme und 1. Hauptsatz', Q2 + '1-Chemische-Thermodynamik/Systeme-und-1-Hauptsatz/index.html'],
+  gl:  ['Gleichgewicht (Eisen(III)-thiocyanat)', Q2 + '3-Chemisches-Gleichgewicht/Gleichgewicht/index.html'],
+  hb:  ['Haber-Bosch-Verfahren', Q2 + '3-Chemisches-Gleichgewicht/Haber-Bosch-Verfahren/index.html'],
+  ko:  ['Konduktometrie', Q2 + '3-Chemisches-Gleichgewicht/Konduktometrie/index.html'],
+  ns:  ['Reaktionsmechanismen (SN1, SN2, Veresterung)', Q2 + '3-Chemisches-Gleichgewicht/Nukleophile-Substitution/index.html'],
+  co:  ['CO₂-Carbonat-Kreislauf', Q2 + '3-Chemisches-Gleichgewicht/Der-Kohlenstoffdioxid-Carbonat-Kreislauf/index.html'],
+  br:  ['Brønsted-Konzept', Q3 + '1-Säure-Base-Reaktionen/Säure-Base-Konzept-Brönsted/index.html'],
+  kon: ['Säure-Base-Konstanten (pH & Säurestärke)', Q3 + '1-Säure-Base-Reaktionen/Saeure-Basen-Konstanten/index.html'],
+  ti:  ['Säure-Base-Titration', Q3 + '1-Säure-Base-Reaktionen/Saeure-Base-Titration/index.html'],
+  lf:  ['Licht und Farbe', Q3 + '2-Indikatorfarbstoffe/Zusammenhang-von-Licht-und-Farbe/index.html'],
+  ig:  ['Indikatoren-Grundlagen', Q3 + '2-Indikatorfarbstoffe/Indikatoren-Grundlagen/index.html'],
+  su:  ['Sulfit-Titration (Iodometrie)', Q3 + '3-Redoxreaktionen/Sulfit-Titration/index.html'],
+  ec:  ['Elektronenkonfiguration', Q3 + '4-Atombau-und-Orbitalmodell/Elektronenkonfiguration/index.html'],
+  om:  ['Orbitale und Orbitalmodell', Q3 + '4-Atombau-und-Orbitalmodell/Orbitalmodell/index.html'],
+  kl:  ['Klausurtraining Säure-Base & Redox', Q3 + '5-Arbeitentraining-und-Wiederholung/Klausurtraining/index.html'],
+  lv:  ['Lewis-Werkstatt: Vorzeichner', '../../Lewis-Werkstatt/Vorzeichner/index.html'],
+  lt:  ['Lewis-Werkstatt: Teilchenbuilder', '../../Lewis-Werkstatt/Teilchenbuilder/index.html']
+};
+
+const FIELDS = [
+/* ───────────── Q1 ───────────── */
+{ q: 1, id: 'p', num: '3.2.1', title: 'Proteine',
+  intro: 'Proteine sind Biopolymere von fundamentaler Bedeutung. Du erschließt dir Bau und Eigenschaften der α-Aminosäuren als Monomere und erklärst Eigenschaften der Proteine (z. B. die Denaturierung) über die Strukturebenen. Im Leistungskurs kommt die Chiralität hinzu.',
+  items: [
+    ['p1','gk','Aufbau von α-Aminosäuren','Allgemeine Struktur: zentrales Cα-Atom mit Amino-Gruppe, Carboxy-Gruppe, H-Atom und Rest R. Du zeichnest die Lewis-Formel, benennst die funktionellen Gruppen und erkennst, dass allein der Rest die 20 proteinogenen Aminosäuren unterscheidet.',['as','lv']],
+    ['p2','gk','Eigenschaften: Aggregatzustand, Löslichkeit, Säure-Base-Verhalten','Aminosäuren sind bei Raumtemperatur Feststoffe mit hohen Schmelztemperaturen und meist gut wasserlöslich. Du erklärst das über die Zwitterion-Struktur (innere Salzstruktur, Ionengitter, Ion-Dipol-Wechselwirkungen mit Wasser) und über das Verhalten als Ampholyt in Abhängigkeit vom pH-Wert (Kation, Zwitterion, Anion).',['as',['as','Elektrophorese (Tab 7) als Vertiefung','lk']]],
+    ['p3','gk','Einteilung der Aminosäuren nach ihren Resten','Rest unpolar/hydrophob, polar ungeladen, sauer oder basisch. Du ordnest begründet zu (funktionelle Gruppe im Rest, Verhalten in Wasser) und kennst den Begriff der essenziellen Aminosäuren.',['as']],
+    ['p4','gk','Bedeutung und Funktion der Proteine; Skleroproteine und Sphäroproteine','Proteine als Struktur-, Transport-, Schutz- und Enzymproteine. Faserförmige, wasserunlösliche Skleroproteine unterscheidest du von kugelförmigen, meist wasserlöslichen Sphäroproteinen und stellst den Zusammenhang zwischen Form und Funktion her.',['ps']],
+    ['p5','gk','Peptidbildung und -spaltung','Zwei Aminosäuren verknüpfen sich unter Wasserabspaltung zur Peptidbindung (Kondensation); die Umkehrung ist die Hydrolyse. Du formulierst die Reaktionsgleichungen mit Lewis-Formeln und gibst die Sequenz eines Peptids korrekt an (N-Terminus → C-Terminus).',['ps','lv']],
+    ['p6','gk','Strukturebenen (Primär- bis Quartärstruktur) und Wechselwirkungen','Primärstruktur = Aminosäuresequenz; Sekundärstruktur (α-Helix, β-Faltblatt) durch Wasserstoffbrücken; Tertiärstruktur durch Wechselwirkungen zwischen den Resten (Disulfidbrücken, Ionenbindungen, Wasserstoffbrücken, hydrophobe Wechselwirkungen); Quartärstruktur = Zusammenlagerung mehrerer Untereinheiten. Du ordnest jeder Ebene die passenden inter- und intramolekularen Wechselwirkungen zu.',['ps']],
+    ['p7','gk','Eigenschaften der Proteine und Denaturierung','Denaturierung durch Hitze, Säuren/Basen, Schwermetall-Ionen, Alkohol oder Salze. Du erklärst auf Teilchenebene, welche Wechselwirkungen gestört werden, welche Ebenen betroffen sind (nicht die Primärstruktur) und warum sich Eigenschaften wie die Löslichkeit ändern.',['ps']],
+    ['p8','gk','Nachweisreaktionen: Ninhydrin- und Biuret-Reaktion','Du führst beide Nachweise durch, beschreibst Reagenz, Beobachtung und Aussage und begründest, was der jeweilige Test nachweist und wo seine Grenzen liegen (z. B. Biuret-Reaktion erst ab mehreren Peptidbindungen).',['bi']],
+    ['p9','gk','Integrierte Wiederholung am Beispiel der Aminosäuren','Funktionelle Gruppen (Doppelbindung, Hydroxy-, Carbonyl-, Carboxy-, Estergruppe), Elektronenpaarbindung, EPA-Modell und intermolekulare Wechselwirkungen sicher anwenden und Eigenschaften damit begründen.',['lt','lv']],
+    ['p10','lk','Chiralität bei Aminosäuren','Asymmetrisch substituiertes C-Atom (vier verschiedene Substituenten) → Enantiomere verhalten sich wie Bild und Spiegelbild und lassen sich nicht zur Deckung bringen. Du prüfst Aminosäuren auf Chiralität und erkennst die Ausnahme unter den proteinogenen Aminosäuren.',['as']],
+    ['p11','lk','α-L- und α-D-Aminosäuren in der Fischer-Projektion','Fischer-Projektion korrekt zeichnen und lesen (Kohlenstoffkette senkrecht, Carboxy-Gruppe oben) und die Konfiguration als L oder D zuordnen. Du arbeitest heraus, warum in Proteinen praktisch nur α-L-Aminosäuren vorkommen.',['as']],
+    ['p12','lk','EPA-Modell an der Peptidbindung','Peptidbindung planar (Teilchen in einer Ebene), am Cα-Atom tetraedrische Anordnung. Du leitest mit dem EPA-Modell die Geometrie ab und erklärst, was das für die Faltung der Kette bedeutet.',['ps','lt']]
+  ],
+  terms: { gk: ['Amino-Gruppe','Zwitterion','Primär-, Sekundär-, Tertiär-, Quartärstruktur','Kondensation','Hydrolyse','Peptidbindung','essenzielle Aminosäuren'],
+           lk: ['Chiralität','FISCHER-Projektion','asymmetrisch substituiertes C-Atom','Enantiomer','α-L-/α-D-Aminosäure','EPA-Modell'] },
+  exp:   { gk: ['Ninhydrin-Reaktion','Biuret-Reaktion','Denaturierung von Proteinen'], lk: [] },
+  ctx: ['Enzyme – die wichtigsten Helfer im Stoffwechsel','Glutenfreie Ernährung – Kleberproteine','Glutamat und Co. – Geschmacksverstärker','Vom Knochen zum Gummibärchen – Gelatine','Die Chemie der Fertiggerichte','Schön sein mit Schneckenschleim','Proteinshakes – gesundes Nahrungsmittel?']
+},
+{ q: 1, id: 'k', num: '3.2.2', title: 'Kunststoffe – problematische Alleskönner',
+  intro: 'Du ordnest Kunststoffe nach Struktur und Eigenschaften, bestimmst die Reaktionstypen ihrer Herstellung und bewertest Verarbeitung, Recycling und Umweltproblematik. Der Leistungskurs betrachtet zusätzlich die Mechanismen der radikalischen Polymerisation und der nucleophilen Substitution.',
+  items: [
+    ['k1','gk','Einteilung: Thermoplaste, Duroplaste, Elastomere','Du ordnest Kunststoffe nach ihrem thermischen und mechanischen Verhalten ein und führst die Eigenschaften auf den Molekülbau zurück: unvernetzte Ketten, engmaschige bzw. weitmaschige Vernetzung, zwischenmolekulare Wechselwirkungen.',[]],
+    ['k2','gk','Reaktionstypen der Kunststoffherstellung: Addition und Substitution','Du bestimmst an verschiedenen Beispielen, ob eine Addition oder eine Substitution vorliegt, und begründest, warum die funktionellen Gruppen der Monomere die Art der Synthese festlegen.',['ns']],
+    ['k3','gk','Elektrophile Addition am Beispiel Vinylchlorid','Mechanismus mit Fachsprache: Polarisierung, elektrophiler Angriff, Übergangskomplex, heterolytische Spaltung, Carbenium-Ion. Du stellst den Mechanismus mit Strukturformeln dar und beschreibst jeden Schritt in Worten.',['lv']],
+    ['k4','gk','Polymerisation (z. B. PE, PVC) und Repetiereinheiten','Polymerisate entstehen aus Monomeren mit C=C-Doppelbindung. Du formulierst die Reaktionsgleichung, gibst die konstitutionelle Repetiereinheit an und unterscheidest Monomer, Makromolekül und Polymer.',['lv']],
+    ['k5','gk','Polykondensation (z. B. PET)','Polykondensate entstehen aus mehrfunktionellen Monomeren unter Abspaltung kleiner Moleküle. Beim Polyester verknüpft die Veresterung eine Dicarbonsäure mit einem Diol. Du formulierst die Gleichung und die Repetiereinheit.',['ns']],
+    ['k6','gk','Vernetzung und Eigenschaften','Wie die Vernetzung (z. B. beim Vulkanisieren oder bei Duroplasten) Härte, Elastizität und Verformbarkeit beeinflusst, und wie sich das im Alltag zeigt.',[]],
+    ['k7','gk','Verarbeitung von Thermoplasten','Zwei Verfahren, mit denen sich aus Thermoplasten Alltagsgegenstände herstellen lassen (z. B. Spritzgießen, Extrudieren), und warum gerade Thermoplaste dafür geeignet sind.',[]],
+    ['k8','gk','Recycling: werkstofflich, rohstofflich, thermisch','Du unterscheidest die drei Verwertungswege (Pyrolyse und Hydrolyse als rohstoffliche Verfahren), kennst das Schwimm-Sink-Verfahren zur Trennung und beschreibst die Energieumwandlungen bei der thermischen Verwertung.',[]],
+    ['k9','gk','Umweltproblematik und nachhaltige Alternative','Du recherchierst zielgerichtet, beurteilst die Verwendung von Kunststoffen aus ökonomischer, ökologischer und sozialer Sicht und stellst ein Beispiel für eine nachhaltige Alternative vor.',[]],
+    ['k10','lk','Einteilung nach Rohstoffquelle und Abbaubarkeit','Erdölbasiert oder biobasiert, abbaubar oder nicht abbaubar – du erkennst, dass beides unabhängig voneinander ist, und bewertest damit Aussagen wie „biobasiert ist besser“.',[]],
+    ['k11','lk','Radikalische Polymerisation – Mechanismus','Startradikal durch homolytische Spaltung eines Initiators → Kettenstart (Initiation) → Monomer-Radikal → Kettenwachstum → Kettenabbruch. Du zeichnest alle Schritte mit Strukturformeln (z. B. PS, PMMA) und beschreibst sie in Fachsprache.',['lv']],
+    ['k12','lk','Copolymerisation','Copolymere entstehen aus mindestens zwei verschiedenen Monomeren. Du erklärst, wie Art und Anordnung der Monomere die Eigenschaften bestimmen.',[]],
+    ['k13','lk','Polyester über nucleophile Substitution','Nucleophil, nucleophiler Angriff: Du beschreibst die Monomer-Verknüpfung beim Polyester als Substitution am Carbonyl-C-Atom.',['ns','lv']],
+    ['k14','lk','Polyamide (z. B. Nylon)','Amid-Gruppe als Verknüpfung, Diamin und Dicarbonsäure(-derivat) als Monomere. Du stellst die Gesamtreaktionsgleichung und die Repetiereinheit auf.',['lv']],
+    ['k15','lk','Wertstoffkreislauf eines rohstofflich recycelbaren Kunststoffs (z. B. PET)','Du beschreibst den Stoffkreislauf von der Herstellung über Gebrauch und Sammlung bis zur Wiederverwertung und bewertest ihn.',[]]
+  ],
+  terms: { gk: ['Monomer, Makromolekül, Polymer','Elektrophil, elektrophiler Angriff','Polarisierung','Übergangskomplex','heterolytische Spaltung','Carbenium-Ion','Veresterung, Kondensationsreaktion','Polymerisat, Polykondensat','Pyrolyse, Hydrolyse','Schwimm-Sink-Verfahren'],
+           lk: ['Startradikal','homolytische Spaltung','Initiation, Kettenstart','Monomer-Radikal','Kettenwachstum','Kettenabbruch','Copolymer','Nucleophil, nucleophiler Angriff','Amid-Gruppe'] },
+  exp:   { gk: ['Eigenschaften von Kunststoffen untersuchen','Polykondensation zur Herstellung eines Polyesters'], lk: ['Herstellung eines Polyamids (z. B. Nylon) oder eines Polymerisats (z. B. PS, PMMA)'] },
+  ctx: ['Endliche Rohstoffquelle – vom Erdöl zu Kunststoffmonomeren','Teflon: Bratpfanne und Funktionskleidung','Vom Kaugummi zum Autoreifen: Kautschuk','Von der Seide zum Nylon','Formel 1 – mehr Sicherheit mit Kevlar','Superabsorbierende Polymere in Babywindeln','Die nachwachsende Kunststofftüte','PLA versus PET','Recycling: von der PET-Flasche zum Pullover']
+},
+/* ───────────── Q2 ───────────── */
+{ q: 2, id: 't', num: '3.2.3', title: 'Chemische Thermodynamik',
+  intro: 'Du erfasst den Energieumsatz chemischer Reaktionen qualitativ und quantitativ (Kalorimetrie, Satz von HESS). Im Leistungskurs kommen die Triebkräfte und die Spontaneität hinzu (Entropie, GIBBS-HELMHOLTZ-Gleichung).',
+  items: [
+    ['t1','gk','1. Hauptsatz als Energieerhaltungssatz und Energieformen','Im Grundkurs nur als Energieerhaltungssatz: Energie geht nicht verloren, sondern wird zwischen Formen und zwischen System und Umgebung umgewandelt. Du benennst die beteiligten Energieformen und beschreibst die Umwandlung.',['th']],
+    ['t2','gk','Offenes, geschlossenes und isoliertes System','Du ordnest Alltags- und Laborbeispiele den drei Systemarten zu, indem du prüfst, ob Stoff und/oder Energie ausgetauscht werden können.',['th']],
+    ['t3','gk','Temperatur, kinetische Energie der Teilchen und Aggregatzustand','Temperatur als Maß für die mittlere kinetische Energie der Teilchen; wie sich Teilchenbewegung und Aggregatzustand beim Erwärmen und Abkühlen ändern.',['th']],
+    ['t4','gk','Energiediagramme chemischer Reaktionen','Du zeichnest und liest Energiediagramme exothermer und endothermer Reaktionen mit Aktivierungsenergie und Reaktionsenthalpie und deutest Phänomene als exotherm oder endotherm.',['th']],
+    ['t5','gk','Kalorimetrie: Q = m · c · ΔT','Spezifische Wärmekapazität, Kalorimeter, Temperaturänderung → ausgetauschte Wärme. Du führst kalorimetrische Untersuchungen durch, wertest sie aus und führst eine detaillierte Fehlerbetrachtung durch (Wärmeverluste!).',['th']],
+    ['t6','gk','Molare Standardenthalpien und Kennzeichnung der Reaktanden','Reaktions-, Bildungs-, Lösungs- und Verbrennungsenthalpie; Kennzeichnung der Stoffe mit (s), (l), (g) oder (aq) in thermodynamischen Gleichungen.',[]],
+    ['t7','gk','Satz von HESS und Berechnung von ⟦\\Delta_r H_m^0⟧','Berechnung aus Bildungsenthalpien: ⟦\\Delta_r H_m^0 = \\sum \\Delta_f H_m^0(\\text{Produkte}) - \\sum \\Delta_f H_m^0(\\text{Edukte})⟧. Du berücksichtigst Stöchiometriefaktoren und Vorzeichen.',[]],
+    ['t8','gk','Ionenbindung, Ionengitter, Solvatation, Ion-Dipol-Wechselwirkung','Struktur und Eigenschaften von Ionen- und Molekülsubstanzen; ohne Gittertypen. Du erklärst die Lösung eines Salzes in Wasser als Solvatation durch Ion-Dipol-Wechselwirkungen.',[]],
+    ['t9','lk','Gitter- und Hydratationsenthalpie beim Lösen','Warum sich ein Salz unter Erwärmung oder Abkühlung löst: Zusammenspiel von Gitterenthalpie und Hydratationsenthalpie, auch mit Kristallwasser.',[]],
+    ['t10','lk','Entropie und 2. Hauptsatz','Entropie als Maß für die Unordnung/Verteilung von Energie und Teilchen. Berechnung ⟦\\Delta_r S_m^0 = \\sum S_m^0(\\text{Produkte}) - \\sum S_m^0(\\text{Edukte})⟧ und Abschätzung des Vorzeichens.',[]],
+    ['t11','lk','GIBBS-HELMHOLTZ-Gleichung und Grenztemperatur','⟦\\Delta_r G_m^0 = \\Delta_r H_m^0 - T\\cdot\\Delta_r S_m^0⟧: Du berechnest die freie Reaktionsenthalpie bei verschiedenen Temperaturen sowie Grenztemperaturen und entscheidest über exergonisch/endergonisch.',[]],
+    ['t12','lk','Freie molare Standardreaktionsenthalpie aus Bildungsenthalpien','⟦\\Delta_r G_m^0 = \\sum \\Delta_f G_m^0(\\text{Produkte}) - \\sum \\Delta_f G_m^0(\\text{Edukte})⟧ und Aussagen über die Spontaneität, Prinzip von BERTHELOT und THOMSON.',[]]
+  ],
+  terms: { gk: ['Aktivierungsenergie','offenes, geschlossenes, isoliertes System','molare Standardenthalpien (Reaktions-, Bildungs-, Lösungs-, Verbrennungsenthalpie)','spezifische Wärmekapazität','(s), (l), (g), (aq)','Ion-Dipol-Wechselwirkung'],
+           lk: ['Gitterenthalpie, Hydratationsenthalpie','Kristallwasser','exergonisch, endergonisch','freie molare Standardreaktionsenthalpie','freie molare Standardbildungsenthalpie'] },
+  exp:   { gk: ['Je eine endotherme und eine exotherme Reaktion kalorimetrisch untersuchen (z. B. Lösungs- oder Verbrennungsenthalpie)'], lk: ['Experiment zum Einfluss der Entropie (z. B. Natriumcarbonat-Decahydrat mit Citronensäure)','Bildungsenthalpie qualitativ bestimmen'] },
+  ctx: ['Diesel, Benzin & Co. – Treibstoffe der Zukunft?','Selbsterhitzende Getränke- oder Suppendosen','Die Kälte-Sofortkompresse','Selbsterhitzende Hand- und Taschenwärmer','Latentwärmespeicher am Bau','Biokraftwerke','Power-to-Gas-Verfahren']
+},
+{ q: 2, id: 'r', num: '3.2.4', title: 'Reaktionsgeschwindigkeit und Katalyse',
+  intro: 'Reaktionen verlaufen unterschiedlich schnell. Du planst Experimente zu den Einflussfaktoren, erklärst sie mit der Stoßtheorie und untersuchst Katalysatoren. Im Leistungskurs beschreibst du die Geschwindigkeit auch quantitativ und betrachtest Katalyse vertieft auf Teilchenebene.',
+  items: [
+    ['r1','gk','Einfluss von Temperatur, Konzentration und Zerteilungsgrad','Du formulierst Vermutungen, planst Experimente mit Variablenkontrolle und untersuchst die Abhängigkeit der Reaktionsgeschwindigkeit von den drei Faktoren.',[]],
+    ['r2','gk','Stoßtheorie','Nur wirksame Zusammenstöße führen zur Reaktion: ausreichende Mindestenergie (Aktivierungsenergie) und günstige Orientierung. Du erklärst die Einflussfaktoren damit.',[]],
+    ['r3','gk','RGT-Regel','Näherungsregel zur Temperaturabhängigkeit; du wendest sie an und erklärst sie mit der Stoßtheorie.',[]],
+    ['r4','gk','Reaktionsgeschwindigkeit im Reaktionsverlauf (qualitativ)','Mittlere Reaktionsgeschwindigkeit; du erklärst, warum die Geschwindigkeit im Verlauf abnimmt, anhand eines selbst aufgenommenen Konzentrations-Zeit-Diagramms.',[]],
+    ['r5','gk','Radikalische Substitution (Alkane und Halogene)','Abhängigkeit von Licht oder Wärme; Mechanismus mit Radikalbildung (homolytische Spaltung), Kettenstart, Kettenfortpflanzung und Kettenabbruch (Rekombination). Du stellst die Schritte mit Strukturformeln dar.',['lv']],
+    ['r6','gk','Wirkungsweise von Katalysatoren und Energieverlauf','Ein Katalysator eröffnet einen neuen Reaktionsweg mit niedrigerer Aktivierungsenergie und wird nicht verbraucht. Du vergleichst Energiediagramme katalysierter und nichtkatalysierter Reaktionen (Übergangszustand).',[]],
+    ['r7','gk','Homogene und heterogene Katalyse, Biokatalysatoren, Inhibitoren','Du unterscheidest die Katalyseformen anhand von Beispielen, beschreibst Enzyme als Biokatalysatoren und erklärst, was ein Inhibitor bewirkt.',[['hb','Heterogene Katalyse im Haber-Bosch-Verfahren']]],
+    ['r8','lk','Geschwindigkeit quantitativ: ⟦v = \\frac{\\Delta c}{\\Delta t}⟧ und ⟦v = k\\cdot c⟧','Du wertest die Veränderung der Geschwindigkeit während der Reaktion in Bezug auf Edukte und Produkte aus und deutest den Zusammenhang v ~ c.',[]],
+    ['r9','lk','Autokatalyse','Ein Reaktionsprodukt beschleunigt die Reaktion selbst; du erkennst das am Verlauf der Reaktion und erklärst die Besonderheit.',[]],
+    ['r10','lk','Oberflächenkatalyse (Modell)','Diffusion, Adsorption, Dissoziation, Desorption: Du nutzt ein Modell, um die Vorgänge auf der Katalysatoroberfläche zu veranschaulichen, und erklärst die Wechselwirkungen zwischen Teilchen und Oberfläche.',[['hb','Katalysator im Haber-Bosch-Verfahren']]]
+  ],
+  terms: { gk: ['Aktivierungsenergie','wirksamer Zusammenstoß','Mindestenergie, kinetische Energie','mittlere Reaktionsgeschwindigkeit','Inhibitor','Radikal, Radikalbildung, homolytische Spaltung','Kettenstart, Alkylradikal, Kettenfortpflanzung, Kettenabbruch (Rekombination)'],
+           lk: ['Diffusion','Adsorption','Dissoziation','Desorption'] },
+  exp:   { gk: ['Abhängigkeit der Reaktionsgeschwindigkeit von Temperatur, Konzentration und Zerteilungsgrad','Aufnahme des zeitlichen Verlaufs einer Reaktion','Reaktionsgeschwindigkeit mit einem Katalysator beeinflussen'], lk: ['Autokatalyse'] },
+  ctx: ['Kinetik in der Küche: Kühlschrank, Dampfdrucktopf','Explosionen – superschnelle Reaktionen','Autoabgaskatalysatoren','AdBlue und SCR-Katalysator','Biokatalysatoren: Die Katalase in Kartoffeln','Katalyse bei Kontaktlinsenreinigern']
+},
+{ q: 2, id: 'g', num: '3.2.5', title: 'Chemisches Gleichgewicht',
+  intro: 'Du beschreibst das dynamische Gleichgewicht, wendest das Massenwirkungsgesetz und das Prinzip von LE CHATELIER an. Im Leistungskurs leitest du das MWG her, behandelst Löslichkeitsgleichgewichte (Konduktometrie), die Estersynthese mechanistisch und ein technisches Verfahren.',
+  items: [
+    ['g1','gk','Umkehrbarkeit und Merkmale des chemischen Gleichgewichts','Umkehrbare Reaktionen, Gleichgewichtspfeil; du grenzt mit Modellen den statischen Zustand auf Stoffebene vom dynamischen Zustand auf Teilchenebene ab und diskutierst Grenzen der Modelle.',['gl']],
+    ['g2','gk','Massenwirkungsgesetz und Gleichgewichtskonstante','Aufstellen des MWG, Berechnen und Interpretieren von K (Lage des Gleichgewichts).',['gl']],
+    ['g3','gk','Gleichgewichtskonzentrationen berechnen (Δν = 0)','Berechnungen nur für Fälle mit Δν = 0, also wenn die Summe der Stöchiometriefaktoren der Produkte gleich der der Edukte ist – auch am Beispiel der Estersynthese. Du stellst die Gleichgewichtskonzentrationen mit dem MWG auf und löst nach der gesuchten Größe.',['ns']],
+    ['g4','gk','Temperaturabhängigkeit der Gleichgewichtskonstante','Wie sich K bei exothermen und endothermen Reaktionen mit der Temperatur ändert, und was das für die Gleichgewichtslage bedeutet.',['gl','hb']],
+    ['g5','gk','Prinzip von LE CHATELIER (Prinzip des kleinsten Zwangs)','Beeinflussung der Gleichgewichtslage durch Temperatur-, Druck- und Konzentrationsänderung. Du sagst Verschiebungen voraus und begründest sie.',['gl','hb',['co','Beispiel Carbonat-Hydrogencarbonat-Gleichgewicht']]],
+    ['g6','lk','Herleitung des MWG aus den Geschwindigkeiten von Hin- und Rückreaktion','Im Gleichgewicht sind beide Geschwindigkeiten gleich; daraus ergibt sich K als Verhältnis der Geschwindigkeitskonstanten.',[]],
+    ['g7','lk','Säurekatalysierte Estersynthese – Mechanismus','Protonierung, nucleophiler Angriff, Zwischenprodukt, Rückgewinnung des Katalysators, Kondensationsreaktion. Du stellst die Schritte mit Strukturformeln dar und erklärst die Rolle des Katalysators im Gleichgewicht.',['ns','lv']],
+    ['g8','lk','MWG an einem technischen Verfahren (z. B. HABER-BOSCH)','Du wendest MWG und LE CHATELIER auf die Ammoniaksynthese an, diskutierst den Kompromiss aus Temperatur, Druck und Katalysator und bewertest das Verfahren.',['hb']],
+    ['g9','lk','Löslichkeitsgleichgewicht, Löslichkeitsprodukt und Fällungsreaktionen','Gesättigte Lösung, Bodenkörper, Kristallisation; Interpretation von ⟦K_L⟧-Werten und Anwenden des LE CHATELIER-Prinzips auf Lösungsgleichgewichte.',['co']],
+    ['g10','lk','Konduktometrische Fällungstitration','Grundlagen der Leitfähigkeitsmessung, Aufnahme und Auswertung einer Titrationskurve mit Diagramm.',['ko']]
+  ],
+  terms: { gk: ['Gleichgewichtspfeil','Prinzip des kleinsten Zwangs'],
+           lk: ['Protonierung','nucleophiler Angriff','Zwischenprodukt','Rückgewinnung des Katalysators','Kondensationsreaktion','gesättigte Lösung','Bodenkörper','Kristallisation'] },
+  exp:   { gk: ['Modellversuch zum chemischen Gleichgewicht','Verschiebung des Gleichgewichts veranschaulichen (z. B. Konzentrationsänderung eines Eduktes)'], lk: ['Konduktometrische Fällungstitration'] },
+  ctx: ['Düngemittel und Sprengstoffe: OSTWALD- und HABER-BOSCH-Verfahren','Doppelkontaktverfahren','Lebensmittelaromen: die Estersynthese','Wasserkocher und Tropfsteine','Oxalsäure-Gehalt von Rhabarber','12 Kriterien der Green Chemistry']
+},
+/* ───────────── Q3 ───────────── */
+{ q: 3, id: 's', num: '3.2.6', title: 'Säure-Base-Reaktionen',
+  intro: 'Du wendest das Donator-Akzeptor-Prinzip auf Protonenübergänge an. Der Grundkurs betrachtet starke Säuren und Titrationen mit Indikatoren, der Leistungskurs auch schwache und mehrprotonige Säuren, Titrationskurven und Puffer (ohne Pufferberechnungen).',
+  items: [
+    ['s1','gk','BRÖNSTED-Theorie und Donator-Akzeptor-Prinzip','Säure = Protonendonator, Base = Protonenakzeptor; korrespondierende Säure-Base-Paare, Oxonium-Ion, Ampholyt/amphoter. Du erkennst typische Strukturmerkmale von Säure- und Base-Teilchen und formulierst die Reaktionsgleichungen.',['br','lv']],
+    ['s2','gk','Umkehrbarkeit von Protolysereaktionen und Nachweisreaktionen','Protolysen sind umkehrbare Gleichgewichtsreaktionen. Nachweise von Chlorid-, Bromid-, Carbonat-, Hydroxid-, Oxonium- und Ammonium-Ionen.',['br']],
+    ['s3','gk','Autoprotolyse des Wassers, Ionenprodukt und pH-Wert','Du leitest das Ionenprodukt des Wassers her und definierst den pH-Wert.',['kon']],
+    ['s4','gk','pH-Wert bei vollständiger Protolyse','⟦pH = -\\lg c(H_3O^+)⟧ bei starken Säuren; sinnvolle Berechnungen an verschiedenen Beispielen.',['kon']],
+    ['s5','gk','MWG auf Protolysen anwenden: Säure-Base-Konstanten','⟦K_S, K_B⟧ sowie ⟦pK_S, pK_B⟧ interpretieren: Welche Säure/Base ist stärker, wie liegt das Gleichgewicht?',['kon']],
+    ['s6','gk','Säure-Base-Titration mit Indikatoren','Neutralisationstitration zur Konzentrationsbestimmung, Äquivalenzpunkt im neutralen Milieu, Umschlagpunkt des Indikators, stöchiometrische Berechnung der Maßanalyse.',['ti','ig']],
+    ['s7','lk','Mehrstufige Protolyse und induktiver Effekt','Mehrprotonige Säuren in Stufen; wie Substituenten (induktiver Effekt) die Acidität organischer Säuren beeinflussen.',['kon']],
+    ['s8','lk','pOH, pK_W und Herleitung der Säure-Base-Konstanten','⟦pK_W = pH + pOH⟧; Herleitung von K_S und K_B aus dem MWG.',['kon']],
+    ['s9','lk','pH-Wert bei unvollständiger Protolyse','Starke bzw. mittelstarke bis schwache Säuren: ⟦c(H_3O^+) = -\\frac{K_S}{2} + \\sqrt{\\left(\\frac{K_S}{2}\\right)^2 + K_S\\cdot c_0(HA)}⟧ bzw. ⟦pH = \\tfrac12(pK_S - \\lg c_0(HA))⟧.',['kon','kl']],
+    ['s10','lk','pH-Werte von Salzlösungen; koordinative Bindung','Hydratisierte Metall-Ionen als Aquakomplexe (Zentralteilchen, Liganden, koordinative Bindung) erklären saure Salzlösungen. Du bestimmst pH-Werte von Salzlösungen und deutest sie.',[]],
+    ['s11','lk','Titrationskurven','Verlauf und Interpretation von Titrationskurven ein- und mehrprotoniger Säuren (starke Säuren mit schwachen Basen und umgekehrt). Du ermittelst charakteristische Punkte: Äquivalenzpunkt, Halbäquivalenzpunkt, Neutralpunkt.',['ig','ti']],
+    ['s12','lk','Puffersysteme','Definition, Zusammensetzung, Beispiele und Bedeutung in Natur und Technik; Pufferwirkung auf Teilchenebene erklären (ohne Berechnungen) und experimentell veranschaulichen.',['kl']]
+  ],
+  terms: { gk: ['BRÖNSTED-Säure, BRÖNSTED-Base','Protonendonator, -akzeptor','korrespondierende Säure-Base-Paare','Oxonium-Ion','amphoter, Ampholyt','Neutralisationstitration','Umschlagpunkt','Äquivalenzpunkt'],
+           lk: ['Neutralpunkt','Halbäquivalenzpunkt','Ligand, Zentralteilchen','koordinative Bindung'] },
+  exp:   { gk: ['Nachweise von Chlorid-, Bromid-, Carbonat-, Hydroxid-, Oxonium- und Ammonium-Ionen','Säure-Base-Titration bei vollständiger Protolyse (z. B. Salzsäure/Natronlauge)'], lk: ['pH-Werte von Salzlösungen bestimmen','Pufferwirkung veranschaulichen'] },
+  ctx: ['Traditionelle Hausmittel oder moderne Haushaltsreiniger?','Cola – Starke Erfrischung mit schwachen Säuren','Äpfel, Weintrauben & Co','Reinigung des Swimmingpools','Antazida','Blutpuffer','Zahnpflegekaugummis','Der Salzkristall-Deostick']
+},
+{ q: 3, id: 'i', num: '3.2.7', title: 'Indikatorfarbstoffe', onlyLK: true,
+  intro: 'Farbigkeit als Wechselwirkung von elektromagnetischer Strahlung und Elektronen; Zusammenhang von Molekülstruktur und Farbe; Funktionsprinzip von Indikatoren. Dieses Themenfeld steht im Rahmenlehrplan nur im Leistungskurs.',
+  items: [
+    ['i1','lk','Licht, Wechselwirkung mit Materie und Energiestufenmodell','Licht als elektromagnetische Strahlung; Elektronen werden durch Absorption angeregt (Anregungsenergie). Du erklärst Farbigkeit mit dem Energiestufenmodell und trennst Stoff- und Teilchenebene.',['lf']],
+    ['i2','lk','Spektrum, Absorption und Reflexion','Elektromagnetisches Spektrum, Absorptionsspektrum, Absorptionsmaximum; aus dem Spektrum die wahrgenommene Farbe ableiten.',['lf']],
+    ['i3','lk','Konjugiertes Doppelbindungssystem und Mesomeriemodell','Delokalisierte π-Elektronen (ohne orbitaltheoretische Betrachtung) und Mesomerie: Du zeichnest Grenzstrukturen und erklärst, wie die Größe des delokalisierten Systems die Farbigkeit beeinflusst.',['lv']],
+    ['i4','lk','Aromatisches System und elektrophile Erstsubstitution','Du erkennst aromatische Systeme und beschreibst die typische Reaktion, die elektrophile Substitution, mechanistisch.',['lv']],
+    ['i5','lk','Chromophore und auxochrome/antiauxochrome Gruppen','Mesomere Effekte; bathochromer und hypsochromer Effekt. Du sagst Farbänderungen aus Strukturänderungen voraus.',[]],
+    ['i6','lk','Triphenylmethan- und Azofarbstoffe','Struktur ausgewählter Farbstoffmoleküle, Bedeutung und Verwendung sowie Sicherheitsaspekte von Azofarbstoffen im Alltag.',[]],
+    ['i7','lk','Indikatoren nach BRÖNSTED','Indikatorsäure und -base: Protonenabgabe verändert das delokalisierte Elektronensystem und damit die Farbe. Du erklärst die Funktion der Indikatoren und beschreibst die Reaktionen mit dem Donator-Akzeptor-Prinzip.',['ig','br']],
+    ['i8','lk','Chromatografie und Rf-Werte','Qualitative Analyse von Farbstoffgemischen (z. B. Unitest); Rf-Werte bestimmen und interpretieren.',[]]
+  ],
+  terms: { gk: [],
+           lk: ['elektromagnetisches Spektrum','Absorption, Reflexion','Absorptionsspektrum, Absorptionsmaximum','Anregungsenergie','konjugiertes Doppelbindungssystem','Chromophor, auxochrome und antiauxochrome Gruppen','mesomere Effekte','delokalisierte π-Elektronen','bathochromer und hypsochromer Effekt','Indikatorsäure und -base'] },
+  exp:   { gk: [], lk: ['Reaktionen von Indikatorfarbstoffen mit Säuren und Basen','Chromatografische Untersuchung von Farbstoffgemischen'] },
+  ctx: ['Tintenschreck – Chemie der Tinte und des Tintenkillers','Kohlefreies Durchschreibpapier','Wandelbare Blütenfarbstoffe','Universalindikator','Alizarin als Färbemittel','Thermochrome Farbstoffe']
+},
+{ q: 3, id: 'o', num: '3.2.8', title: 'Redoxreaktionen',
+  intro: 'Du erweiterst deine Kenntnisse über Redoxreaktionen durch das Modell der Oxidationszahlen, wendest sie auf anorganische und organische Reaktionen an und achtest auf die Fachsprache. Im Leistungskurs verknüpfst du Atombau und Oxidationsstufen.',
+  items: [
+    ['o1','gk','Metalle: Bau, Eigenschaften, Verwendung','Metallbindung, Metallgitter, Elektronengas und Valenzelektronen: Du erklärst Eigenschaften und Verwendung von Metallen über ihren Bau.',[]],
+    ['o2','gk','Redoxreihe der Metalle und Rohstoffgewinnung','Redoxreaktion zur Gewinnung eines Metalls (z. B. Eisen oder Kupfer); Redoxreihe der Metalle; Abscheidung von Metallen aus Metallsalzlösungen.',[]],
+    ['o3','gk','Redoxreaktionen als Elektronenübergänge','Oxidation, Reduktion, Elektronen-Donator und -Akzeptor, korrespondierende Redoxpaare, Oxidations- und Reduktionsmittel – konsequent zwischen Stoff- und Teilchenebene unterscheiden.',['kl']],
+    ['o4','gk','Oxidationszahlen bestimmen','Regeln zur Bestimmung der Oxidationszahlen in anorganischen und organischen Verbindungen; Redoxreaktionen daran erkennen.',['kl']],
+    ['o5','gk','Oxidationsreihe vom Alkanol zur Alkansäure','Primäres Alkanol → Alkanal → Alkansäure; Oxidationszahlen des funktionellen Kohlenstoff-Atoms; Nachweis der reduzierenden Wirkung der Aldehyd-Gruppe (FEHLING- oder TOLLENS-Probe).',['lv']],
+    ['o6','gk','Redoxgleichungen mit Teilgleichungen','Du stellst Oxidations- und Reduktionsteilgleichungen auf, gleichst Elektronen und Ladungen aus und fasst zur Gesamtgleichung zusammen.',['su','kl']],
+    ['o7','lk','BOHR-SOMMERFELD-Atommodell, Elektronenkonfiguration und Oxidationsstufen','Elektronenkonfiguration der Haupt- und Nebengruppenelemente; Ableiten der möglichen Oxidationsstufen und Diskussion der Grenzen des Modells.',['ec','om']],
+    ['o8','lk','Disproportionierung und Synproportionierung','Besondere Beispiele für das Donator-Akzeptor-Prinzip: ein Element wird gleichzeitig oxidiert und reduziert (Disproportionierung) bzw. entsteht aus zwei Oxidationsstufen (Synproportionierung).',['kl']],
+    ['o9','lk','Redoxtitration und Oxidation von Alkanolen (Experimente)','Redoxtitration quantitativ durchführen und auswerten; Oxidation von Alkanolen experimentell untersuchen.',['su']]
+  ],
+  terms: { gk: ['Elektronengas, Valenzelektronen','Oxidation, Reduktion','korrespondierende Redoxpaare','Oxidationsmittel, Reduktionsmittel','Elektronen-Donator, Elektronen-Akzeptor','Oxidationszahl'],
+           lk: ['Disproportionierung','Synproportionierung'] },
+  exp:   { gk: ['Metalle aus Metallsalzlösungen abscheiden','Nachweis der reduzierenden Wirkung der Aldehyd-Gruppe (FEHLING- oder TOLLENS-Probe)'], lk: ['Oxidation von Alkanolen','Redoxtitration'] },
+  ctx: ['Vom Eisenerz zum Roheisen','Ötzis Kupferbeil','Vom Quarzsand zum Mikrochip','Rost und Wärmepflaster','Farbenspiel der Redoxreaktionen','Bleich- und Desinfektionsmittel','OLED-Display']
+},
+/* ───────────── Q4 ───────────── */
+{ q: 4, id: 'e', num: '3.2.9', title: 'Elektrochemie',
+  intro: 'Spannungsquellen, Elektrolyse und Korrosion. Der Grundkurs erörtert vorwiegend phänomenologisch; der Leistungskurs untermauert quantitativ (NERNST-Gleichung, FARADAY-Gesetze) und ergänzt Konzentrationszellen und Nanomaterialien.',
+  items: [
+    ['e1','gk','Galvanische Zelle am Beispiel des DANIELL-Elements','Aufbau und Arbeitsweise, Donator- und Akzeptor-Halbzelle, Anode und Kathode, elektrochemische Doppelschicht; Reaktionsgleichungen entwickeln und Energieumwandlung beschreiben. Du baust ein galvanisches Element und misst die Zellspannung.',[]],
+    ['e2','gk','Standardwasserstoff-Zelle, Spannungsreihe, Zellspannung','Standardelektrodenpotenziale ermitteln; ⟦U = E^0(\\text{Akzeptor}) - E^0(\\text{Donator})⟧ unter Standardbedingungen berechnen.',[]],
+    ['e3','gk','Arten elektrochemischer Spannungsquellen','Primärelement, Sekundärelement (Akkumulator) und Brennstoffzelle: Aufbau, Vorgänge beim Entladen und Laden, Umkehrbarkeit.',[]],
+    ['e4','gk','Elektrolyse – theoretische Grundlagen und technische Elektrolyse','Elektrolysezelle, erzwungene Reaktion, Elektronenübergänge; ein technisches Beispiel (z. B. Aluminiumgewinnung).',[]],
+    ['e5','gk','Elektrochemische Korrosion','Lokalelement, Sauerstoffkorrosion und Säurekorrosion von Metallen; du untersuchst Korrosionsvorgänge experimentell.',[]],
+    ['e6','gk','Korrosionsschutz mit Opferanoden','Wie ein unedleres Metall ein edleres schützt; Auswahl geeigneter Opferanoden anhand der Spannungsreihe.',[]],
+    ['e7','lk','Konzentrationsabhängigkeit und NERNST-Gleichung','⟦E = E^0 + \\frac{R\\cdot T}{z\\cdot F}\\cdot\\ln\\frac{c(Ox)}{c(Red)}⟧ nur für Redoxpaare Metall-Atom/Metall-Ion; Konzentrationszellen planen (Variablenkontrolle), bauen und auswerten.',[]],
+    ['e8','lk','Elektrolyse einer wässrigen Lösung','Zersetzungsspannung und Überspannung; Vorgänge an den Elektroden (z. B. Zinkiodid-Lösung).',[]],
+    ['e9','lk','FARADAY-Gesetze','⟦n = \\frac{I\\cdot t}{z\\cdot F}⟧ (1. Gesetz) und ⟦\\frac{n_1}{n_2} = \\frac{z_2}{z_1}⟧ (2. Gesetz): quantitative Auswertung von Elektrolysen.',[]],
+    ['e10','lk','Nanomaterial und superhydrophobe Beschichtung','Definition und Beispiele für Strukturen und Oberflächeneigenschaften eines Nanomaterials; Experiment zur Herstellung einer superhydrophoben Beschichtung (z. B. Kupfer mit Laurinsäure).',[]],
+    ['e11','lk','Freiwillige und erzwungene Reaktionen (Energiekonzept)','Galvanische Zelle (freiwillig) und Elektrolyse (erzwungen) im Vergleich; Energieumwandlungen in beiden.',[]]
+  ],
+  terms: { gk: ['elektrochemische Doppelschicht','elektrochemische Elektrode','Donator- und Akzeptor-Halbzelle','Kathode, Anode','Elektrolysezelle'],
+           lk: ['Konzentrationszelle','Überspannung','Zersetzungsspannung'] },
+  exp:   { gk: ['Ein galvanisches Element bauen und die Zellspannung messen','Vorgänge bei Korrosion untersuchen'], lk: ['Konzentrationszelle','Elektrolyse einer wässrigen Lösung (z. B. Zinkiodid)','Herstellung einer superhydrophoben Beschichtung (z. B. Kupfer mit Laurinsäure)'] },
+  ctx: ['Von der Wasserelektrolyse zur Brennstoffzelle','Von der VOLTA-Säule zum Lithium-Ionen-Akkumulator','Damit der Rost nicht alles frisst …','Elektromobil durch die Zukunft?','Reinigung von Silberbesteck','Herzschrittmacher mit Glucose-Brennstoffzelle','Aluminium: leichtes Metall, leicht zu gewinnen?','Die Feststoffbatterie']
+}
+];
+const QTITLES = {
+  1: 'Natürliche und synthetische makromolekulare Stoffe',
+  2: 'Verlauf chemischer Reaktionen',
+  3: 'Das Donator-Akzeptor-Prinzip',
+  4: 'Elektrische Energie aus chemischen Reaktionen'
+};
+
+</script>
+<script>
+(function(){
+  var PFX = 'cl2-', MODEKEY = 'cl2-mode';
+  var root = document.getElementById('root');
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function fx(s){return esc(s).replace(/⟦([\s\S]*?)⟧/g,function(_,m){return '\\('+m+'\\)';});}
+  function store(k,v){try{ if(v===null) localStorage.removeItem(k); else localStorage.setItem(k,v);}catch(e){}}
+  function load(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+
+  function linkHTML(spec){
+    var key, hint, lvl;
+    if(typeof spec === 'string'){ key = spec; }
+    else { key = spec[0]; hint = spec[1]; lvl = spec[2]; }
+    var L = LINKS[key]; if(!L) return '';
+    var label = esc(L[0]) + (hint ? ' <span style="opacity:.75">· ' + esc(hint) + '</span>' : '');
+    return '<a class="' + (lvl==='lk'?'lklink':'') + '" href="' + encodeURI(L[1]) + '">🔗 ' + label + '</a>';
+  }
+
+  var html = '', lastQ = 0;
+  FIELDS.forEach(function(f){
+    if(f.q !== lastQ){
+      lastQ = f.q;
+      html += '<div class="q q'+f.q+'"><span class="tag">Q'+f.q+'</span><h2>'+esc(QTITLES[f.q])+'</h2></div>';
+    }
+    var hasLinks = f.items.some(function(i){return i[4] && i[4].length;});
+    html += '<details class="field f'+f.q+(f.onlyLK?' onlylk':'')+'" data-field="'+f.id+'" open>';
+    html += '<summary><span class="num">'+f.num+'</span><span class="ft">'+esc(f.title)+'</span><span class="cnt" data-cnt="'+f.id+'"></span><span class="chev">▸</span></summary>';
+    html += '<div class="fb2"><p class="intro">'+fx(f.intro)+'</p>';
+    if(f.onlyLK) html += '<div class="lkonly">Dieses Themenfeld ist im <b>Grundkurs nicht verbindlich</b> – es steht im Rahmenlehrplan nur für den Leistungskurs. Wechsle oben auf „Leistungskurs“, um die Punkte zu sehen.</div>';
+    html += '<div class="items">';
+    f.items.forEach(function(it){
+      var id = it[0], lvl = it[1], title = it[2], det = it[3], links = it[4] || [];
+      html += '<div class="item" data-lvl="'+lvl+'" data-id="'+id+'">';
+      html += '<label class="ck"><input type="checkbox" id="c-'+id+'" aria-label="'+esc(title)+'"><span class="box"></span></label>';
+      html += '<div class="ib"><div class="tt">'+fx(title)+(lvl==='lk'?'<span class="badge lk">LK</span>':'')+'</div>';
+      html += '<details class="more"><summary>Genauer</summary><div class="det">'+fx(det)+'</div></details>';
+      if(links.length) html += '<div class="links">'+links.map(linkHTML).join('')+'</div>';
+      html += '</div></div>';
+    });
+    html += '</div><div class="blocks">';
+    var tg = f.terms.gk.map(function(t){return '<span class="chip">'+fx(t)+'</span>';}).join('');
+    var tl = f.terms.lk.map(function(t){return '<span class="chip lk">'+fx(t)+'</span>';}).join('');
+    if(tg||tl) html += '<div class="blk"><h4>Verbindliche Fachbegriffe</h4><div class="chips">'+tg+tl+'</div></div>';
+    var eg = f.exp.gk.map(function(t){return '<li>'+fx(t)+'</li>';}).join('');
+    var el = f.exp.lk.map(function(t){return '<li class="lk">'+fx(t)+' <span class="badge lk">LK</span></li>';}).join('');
+    if(eg||el) html += '<div class="blk"><h4>Verbindliche Experimente und Untersuchungen</h4><ul class="exl">'+eg+el+'</ul></div>';
+    if(f.ctx && f.ctx.length) html += '<div class="blk"><h4>Mögliche Kontexte (Vorschläge des Rahmenlehrplans)</h4><div class="chips">'+f.ctx.map(function(t){return '<span class="chip">'+fx(t)+'</span>';}).join('')+'</div></div>';
+    if(!hasLinks) html += '<p class="nomod">Zu diesem Themenfeld gibt es auf der Seite noch kein passendes Lernmodul.</p>';
+    html += '</div></div></details>';
+  });
+  root.innerHTML = html;
+
+  var mode = 'lk';
+  function setMode(m, silent){
+    mode = m; document.body.setAttribute('data-mode', m);
+    document.getElementById('bGK').setAttribute('aria-pressed', m==='gk');
+    document.getElementById('bLK').setAttribute('aria-pressed', m==='lk');
+    store(MODEKEY, m); update();
+  }
+  function visibleItems(){
+    return Array.prototype.filter.call(document.querySelectorAll('.item'), function(el){
+      if(mode==='gk' && el.getAttribute('data-lvl')==='lk') return false;
+      return true;
+    });
+  }
+  function update(){
+    var vis = visibleItems(), done = 0;
+    vis.forEach(function(el){
+      var c = el.querySelector('input'); var d = c.checked; if(d) done++;
+      el.classList.toggle('done', d);
+    });
+    var pct = vis.length ? Math.round(done*100/vis.length) : 0;
+    document.getElementById('barFill').style.width = pct + '%';
+    document.getElementById('pctTxt').textContent = pct + ' % (' + done + '/' + vis.length + ')';
+    FIELDS.forEach(function(f){
+      var its = vis.filter(function(el){return el.closest('[data-field="'+f.id+'"]');});
+      var n = its.filter(function(el){return el.querySelector('input').checked;}).length;
+      var span = document.querySelector('[data-cnt="'+f.id+'"]');
+      if(its.length === 0){ span.textContent = 'nur LK'; span.classList.remove('done'); }
+      else { span.textContent = n + '/' + its.length; span.classList.toggle('done', n===its.length); }
+    });
+    var anyVisible = vis.some(function(el){return !el.classList.contains('done');}) || !document.body.classList.contains('hide-done');
+    document.getElementById('emptyMsg').style.display = (document.body.classList.contains('hide-done') && !vis.some(function(el){return !el.classList.contains('done');})) ? 'block' : 'none';
+  }
+
+  // Gespeicherten Stand laden
+  document.querySelectorAll('.item input').forEach(function(c){
+    var id = c.id.replace(/^c-/,'');
+    c.checked = load(PFX+id)==='1';
+    c.addEventListener('change', function(){ store(PFX+id, c.checked ? '1' : null); update(); });
+  });
+  var sm = load(MODEKEY); setMode(sm==='gk' ? 'gk' : 'lk');
+
+  document.getElementById('bGK').onclick = function(){ setMode('gk'); };
+  document.getElementById('bLK').onclick = function(){ setMode('lk'); };
+  function setAllMore(open){ document.querySelectorAll('details.more').forEach(function(d){d.open = open;}); }
+  document.getElementById('bOpen').onclick = function(){ document.querySelectorAll('details.field').forEach(function(d){d.open=true;}); setAllMore(true); };
+  document.getElementById('bClose').onclick = function(){ setAllMore(false); };
+  var hideBtn = document.getElementById('bHide');
+  hideBtn.onclick = function(){
+    var on = !document.body.classList.contains('hide-done');
+    document.body.classList.toggle('hide-done', on);
+    hideBtn.setAttribute('aria-pressed', on); hideBtn.textContent = on ? 'Erledigtes anzeigen' : 'Erledigtes ausblenden';
+    update();
+  };
+
+  var toastEl = document.getElementById('toast'), tt;
+  function toast(msg){ toastEl.textContent = msg; toastEl.classList.add('show'); clearTimeout(tt); tt = setTimeout(function(){toastEl.classList.remove('show');}, 2600); }
+
+  document.getElementById('bExp').onclick = function(){
+    var data = {version:2, mode:mode, done:{}};
+    document.querySelectorAll('.item input').forEach(function(c){ if(c.checked) data.done[c.id.replace(/^c-/,'')] = true; });
+    var blob = new Blob([JSON.stringify(data)], {type:'application/json'});
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'chemie_checkliste_fortschritt.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){URL.revokeObjectURL(a.href);}, 1500);
+    toast('Fortschritt als Datei gespeichert.');
+  };
+  document.getElementById('impFile').addEventListener('change', function(ev){
+    var file = ev.target.files[0]; if(!file) return;
+    var r = new FileReader();
+    r.onload = function(){
+      try{
+        var d = JSON.parse(r.result);
+        if(!d || d.version !== 2 || !d.done) throw new Error('format');
+        document.querySelectorAll('.item input').forEach(function(c){
+          var id = c.id.replace(/^c-/,''); c.checked = !!d.done[id]; store(PFX+id, c.checked ? '1' : null);
         });
+        if(d.mode==='gk' || d.mode==='lk') setMode(d.mode); else update();
+        toast('Fortschritt geladen.');
+      }catch(e){ toast('Diese Datei passt nicht zu dieser Checkliste (nur Dateien der neuen Version).'); }
+      ev.target.value = '';
+    };
+    r.readAsText(file);
+  });
+  var rb = document.getElementById('bReset'), rt;
+  rb.onclick = function(){
+    if(!rb.classList.contains('arm')){
+      rb.classList.add('arm'); rb.textContent = 'Wirklich alles löschen?';
+      rt = setTimeout(function(){rb.classList.remove('arm'); rb.textContent='🗑️ Zurücksetzen';}, 4000); return;
+    }
+    clearTimeout(rt); rb.classList.remove('arm'); rb.textContent = '🗑️ Zurücksetzen';
+    document.querySelectorAll('.item input').forEach(function(c){ c.checked = false; store(PFX+c.id.replace(/^c-/,''), null); });
+    update(); toast('Fortschritt zurückgesetzt.');
+  };
 
-        function updateStyle(checkbox) {
-            if (checkbox.checked) {
-                checkbox.parentElement.classList.add('completed');
-            } else {
-                checkbox.parentElement.classList.remove('completed');
-            }
-        }
-
-        function updateProgress() {
-            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-            const total = checkboxes.length;
-            const checked = document.querySelectorAll('input[type="checkbox"]:checked').length;
-            
-            const percentage = total === 0 ? 0 : Math.round((checked / total) * 100);
-            
-            document.getElementById('progress-bar').style.width = percentage + '%';
-            document.getElementById('progress-text').innerText = percentage + '% abgeschlossen';
-        }
-
-        // --- NEUE EXPORT/IMPORT FUNKTIONEN ---
-
-        function exportProgress() {
-            const data = {};
-            document.querySelectorAll('input[type="checkbox"]').forEach(box => {
-                data[box.id] = box.checked;
-            });
-            
-            const jsonStr = JSON.stringify(data);
-            const blob = new Blob([jsonStr], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = "chemie_lk_fortschritt.json";
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        function importProgress(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    
-                    for (const id in data) {
-                        const box = document.getElementById(id);
-                        if (box) {
-                            box.checked = data[id];
-                            localStorage.setItem(id, data[id]); // Update lokalen Speicher direkt mit
-                            updateStyle(box);
-                        }
-                    }
-                    
-                    updateProgress();
-                    alert("Fortschritt erfolgreich geladen! 🚀");
-                } catch (err) {
-                    alert("Fehler beim Laden der Datei. Ist es die richtige Datei?");
-                }
-                
-                // Input zurücksetzen, damit die gleiche Datei bei Bedarf erneut geladen werden kann
-                event.target.value = "";
-            };
-            
-            reader.readAsText(file);
-        }
-
-        function resetProgress() {
-            if (confirm('Möchten Sie Ihren gesamten Fortschritt wirklich löschen?')) {
-                const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-                checkboxes.forEach(box => {
-                    box.checked = false;
-                    localStorage.removeItem(box.id);
-                    updateStyle(box);
-                });
-                updateProgress();
-            }
-        }
-    </script>
+  update();
+})();
+</script>
 <a href="/Virtuelles-Chemielabor/impressum.html" style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-family: sans-serif; font-size: 12px; z-index: 9999;">Impressum & Datenschutz</a>
 </body>
 </html>
