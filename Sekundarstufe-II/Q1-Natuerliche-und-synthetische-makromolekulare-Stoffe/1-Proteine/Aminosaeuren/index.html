@@ -849,6 +849,10 @@ function aaSVG(m, opts = {}) {
     s += `<text x="${px}" y="${py + 6.5}" text-anchor="middle" font-size="${a.el === 'H' ? 16 : 19}" font-weight="700" fill="${col}">${a.el}</text>${hl}`;
     if (a.chg) { const cx = px + 15, cy = py - 15; s += `<circle cx="${cx}" cy="${cy}" r="7.5" fill="#10151c" stroke="${a.chg > 0 ? '#80d8ff' : '#ff8a80'}" stroke-width="1.8"/><text x="${cx}" y="${cy + 4.2}" text-anchor="middle" font-size="12.5" font-weight="800" fill="${a.chg > 0 ? '#80d8ff' : '#ff8a80'}">${a.chg > 0 ? '+' : '−'}</text>`; }
   });
+  if (opts.groups && (opts.hl === 'ca' || opts.showAll)) {
+    const cx = X(r.A.x), cy = Y(r.A.y), on = opts.hl === 'ca';
+    s += `<ellipse cx="${cx}" cy="${cy}" rx="${on ? 25 : 22}" ry="${on ? 17 : 15}" fill="#10151c" stroke="#e8edf5" stroke-width="${on ? 3 : 2}"/><text x="${cx}" y="${cy + 5.5}" text-anchor="middle" font-size="${on ? 16 : 14}" font-weight="800" fill="#e8edf5">α-C</text>`;
+  }
   if (opts.prio) {
     const hatom = atoms.find(a => a.el === 'H' && a.kind === 'bb' && Math.abs(a.x - r.A.x) < .01 && Math.abs(a.y - r.A.y) <= 1.01), tgt = { N: r.N, C: r.C, R: r.sc[0], H: hatom };
     Object.keys(opts.prio).forEach(k => {
