@@ -645,7 +645,14 @@ function renderBoard() {
   row.appendChild(btn('🧩 Wer bin ich?', 'sec', function () { openQuiz('who'); }));
   row.appendChild(btn('🧪 Frei bauen', 'sec', function () { G.z = null; G.mode = 'free'; G.tab = 'flat'; G.tips = 0; G.fb = ''; G.win = false; G.flash = ''; clearAtom(); showView('work'); renderWork(); }));
   row.appendChild(btn('❓ Tutorial mit Hugo', 'sec', function () { tutStart(); }));
+  var del = btn('🗑 Daten löschen', 'sec', function () {
+    if (!del.armed) { del.armed = true; del.textContent = 'Wirklich löschen? Nochmal tippen'; clearTimeout(del.t); del.t = setTimeout(function () { del.armed = false; del.textContent = '🗑 Daten löschen'; }, 4000); return; }
+    clearTimeout(del.t); try { localStorage.removeItem(TKEY); } catch (e) { }
+    G.built = {}; renderBoard(); var b2 = document.getElementById('bHero').querySelector('.delmsg'); if (b2) b2.hidden = false;
+  });
+  del.className += ' del'; row.appendChild(del);
   hero.appendChild(row);
+  var dm = mk('p', 'hint delmsg', '✔ Daten gelöscht: Fortschritt zurückgesetzt, Hugo startet beim nächsten Öffnen wieder.'); dm.hidden = true; dm.style.marginTop = '6px'; hero.appendChild(dm);
   Array.prototype.forEach.call(document.querySelectorAll('#tafel .bt[data-z]'), function (b) { var z = +b.getAttribute('data-z'); b.className = b.className.replace(' zoom', '').replace(' built', '') + (G.built[z] ? ' built' : ''); });
 }
 
