@@ -120,7 +120,7 @@
     #ui-panel { max-height: calc(100vh - 112px); }
     @media (max-width: 760px) { #ui-panel { max-height: 44vh; } .zur-uebersicht { bottom: calc(96px + env(safe-area-inset-bottom,0px)) !important; left: 6px !important; } }
   </style>
-  <script src="three.min.js"></script>
+  <script src="../../../../vendor/three.min.js"></script>
   <script>
     if (typeof THREE === 'undefined') {
       window.addEventListener('DOMContentLoaded', function () { document.body.insertAdjacentHTML('afterbegin', '<p style="padding:20px;color:#fff;font-family:sans-serif">Die lokale Datei <b>three.min.js</b> wurde nicht gefunden. Bitte stelle sicher, dass sie im selben Ordner wie diese Seite liegt.</p>'); });

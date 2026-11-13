@@ -259,7 +259,7 @@ table.res th { color: #90caf9; font-weight: 700; }
 
 </main>
 <div id="toast"></div>
-<script src="three.min.js"></script>
+<script src="../../../../vendor/three.min.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 function flash(t) { const e = $('toast'); e.textContent = t; e.classList.add('on'); clearTimeout(flash.t); flash.t = setTimeout(() => e.classList.remove('on'), 2200); }

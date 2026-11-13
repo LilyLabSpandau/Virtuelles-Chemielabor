@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Teilchenbuilder</title>
   <!-- 1. Versucht zuerst lokal ./three.min.js zu laden (Offline-Modus per Doppelklick) -->
-  <script src="./three.min.js"></script>
+  <script src="../../vendor/three.min.js"></script>
   <style>
     :root {
       --bg-dark: #0f172a; --panel-bg: #1e293b; --panel-card: #0f172a;
@@ -299,8 +299,8 @@
         callback();
         return;
       }
-      // three.min.js liegt im selben Ordner; es wird nichts aus dem Internet nachgeladen.
-      alert("Three.js konnte nicht geladen werden. Bitte lege 'three.min.js' in denselben Ordner wie diese Seite.");
+      // three.min.js liegt zentral im Ordner vendor; es wird nichts aus dem Internet nachgeladen.
+      alert("Three.js konnte nicht geladen werden. Die Datei vendor/three.min.js fehlt.");
     }
 
     ensureThreeLoaded(initMolekuelbuilder);
