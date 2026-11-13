@@ -3855,5 +3855,27 @@
   </script>
 <a href="/Virtuelles-Chemielabor/impressum.html" style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-family: sans-serif; font-size: 12px; z-index: 9999;">Impressum & Datenschutz</a>
 <a class="zur-uebersicht" href="../index.html" style="position:fixed;bottom:calc(10px + env(safe-area-inset-bottom,0px));left:10px;background:rgba(0,0,0,.6);color:#fff;padding:5px 10px;text-decoration:none;border-radius:5px;font-family:sans-serif;font-size:12px;line-height:1.4;z-index:9999;">← Zur Übersicht</a>
+<script src="../../kolbi/kolbi.js"></script>
+<script>
+  // Kolbi: Hilfe-Maskottchen (nur Denkanstöße, keine Lösungen)
+  (function () {
+    if (document.body.dataset.editor === '1') return;
+    var T = {
+      draw: { text: 'Anscheinend möchtest du eine Lewis-Formel zeichnen.', tip: 'Wähle oben ein Element, dann tippe auf das Blatt oder auf eine markierte Zone an einem Atom. Zähle zuerst, wie viele Valenzelektronen jedes Atom hat – und ob am Ende jedes Atom sein Oktett erreicht.' },
+      '3d': { text: 'Anscheinend möchtest du dein Teilchen in 3D ansehen.', tip: 'Ziehe mit dem Finger oder der Maus, um das Teilchen zu drehen. Oben wechselst du zwischen Kugel-Stab und Kalotten. Achte darauf, wie die Bindungen im Raum angeordnet sind.' },
+      name: { text: 'Anscheinend möchtest du den Namen des Teilchens bestimmen.', tip: 'Im Lern-Modus siehst du die Regeln Schritt für Schritt. Im Selbst-Test gibst du den Namen selbst ein – der Tipp-Knopf zeigt dir dann den Weg, nicht das Ergebnis.' }
+    };
+    function tab() { return document.body.dataset.tab || 'draw'; }
+    Kolbi.init({
+      id: 'teilchenbuilder', color: '#38bdf8', offsetBottom: 64,
+      tapHelp: function () { return T[tab()]; }
+    });
+    setTimeout(function () { Kolbi.ask({ id: 'tb-' + tab(), text: T[tab()].text, tip: T[tab()].tip }); }, 3500);
+    new MutationObserver(function () {
+      var t = tab();
+      setTimeout(function () { Kolbi.ask({ id: 'tb-' + t, text: T[t].text, tip: T[t].tip }); }, 1200);
+    }).observe(document.body, { attributes: true, attributeFilter: ['data-tab'] });
+  })();
+</script>
 </body>
 </html>
