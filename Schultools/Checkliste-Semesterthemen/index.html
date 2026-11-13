@@ -174,7 +174,10 @@ const LINKS = {
   om:  ['Orbitale und Orbitalmodell', Q3 + '4-Atombau-und-Orbitalmodell/Orbitalmodell/index.html'],
   kl:  ['Klausurtraining Säure-Base & Redox', Q3 + '5-Arbeitentraining-und-Wiederholung/Klausurtraining/index.html'],
   lv:  ['Lewis-Werkstatt: Vorzeichner', '../../Lewis-Werkstatt/Vorzeichner/index.html'],
-  lt:  ['Lewis-Werkstatt: Teilchenbuilder', '../../Lewis-Werkstatt/Teilchenbuilder/index.html']
+  lt:  ['Lewis-Werkstatt: Teilchenbuilder', '../../Lewis-Werkstatt/Teilchenbuilder/index.html'],
+  ep:  ['EPA-Modell an der Peptidbindung', Q1 + '1-Proteine/Peptidbindung-EPA/index.html'],
+  ch:  ['Chromatografie und Rf-Werte', Q3 + '2-Indikatorfarbstoffe/Chromatografie-Rf-Werte/index.html'],
+  dp:  ['Disproportionierung und Synproportionierung', Q3 + '3-Redoxreaktionen/Disproportionierung/index.html']
 };
 
 const FIELDS = [
@@ -193,7 +196,7 @@ const FIELDS = [
     ['p9','gk','Integrierte Wiederholung am Beispiel der Aminosäuren','Funktionelle Gruppen (Doppelbindung, Hydroxy-, Carbonyl-, Carboxy-, Estergruppe), Elektronenpaarbindung, EPA-Modell und intermolekulare Wechselwirkungen sicher anwenden und Eigenschaften damit begründen.',['lt','lv']],
     ['p10','lk','Chiralität bei Aminosäuren','Asymmetrisch substituiertes C-Atom (vier verschiedene Substituenten) → Enantiomere verhalten sich wie Bild und Spiegelbild und lassen sich nicht zur Deckung bringen. Du prüfst Aminosäuren auf Chiralität und erkennst die Ausnahme unter den proteinogenen Aminosäuren.',['as']],
     ['p11','lk','α-L- und α-D-Aminosäuren in der Fischer-Projektion','Fischer-Projektion korrekt zeichnen und lesen (Kohlenstoffkette senkrecht, Carboxy-Gruppe oben) und die Konfiguration als L oder D zuordnen. Du arbeitest heraus, warum in Proteinen praktisch nur α-L-Aminosäuren vorkommen.',['as']],
-    ['p12','lk','EPA-Modell an der Peptidbindung','Peptidbindung planar (Teilchen in einer Ebene), am Cα-Atom tetraedrische Anordnung. Du leitest mit dem EPA-Modell die Geometrie ab und erklärst, was das für die Faltung der Kette bedeutet.',['ps','lt']]
+    ['p12','lk','EPA-Modell an der Peptidbindung','Peptidbindung planar (Teilchen in einer Ebene), am Cα-Atom tetraedrische Anordnung. Du leitest mit dem EPA-Modell die Geometrie ab und erklärst, was das für die Faltung der Kette bedeutet.',['ep','ps','lt']]
   ],
   terms: { gk: ['Amino-Gruppe','Zwitterion','Primär-, Sekundär-, Tertiär-, Quartärstruktur','Kondensation','Hydrolyse','Peptidbindung','essenzielle Aminosäuren'],
            lk: ['Chiralität','FISCHER-Projektion','asymmetrisch substituiertes C-Atom','Enantiomer','α-L-/α-D-Aminosäure','EPA-Modell'] },
@@ -316,7 +319,7 @@ const FIELDS = [
     ['i5','lk','Chromophore und auxochrome/antiauxochrome Gruppen','Mesomere Effekte; bathochromer und hypsochromer Effekt. Du sagst Farbänderungen aus Strukturänderungen voraus.',[]],
     ['i6','lk','Triphenylmethan- und Azofarbstoffe','Struktur ausgewählter Farbstoffmoleküle, Bedeutung und Verwendung sowie Sicherheitsaspekte von Azofarbstoffen im Alltag.',[]],
     ['i7','lk','Indikatoren nach BRÖNSTED','Indikatorsäure und -base: Protonenabgabe verändert das delokalisierte Elektronensystem und damit die Farbe. Du erklärst die Funktion der Indikatoren und beschreibst die Reaktionen mit dem Donator-Akzeptor-Prinzip.',['ig','br']],
-    ['i8','lk','Chromatografie und Rf-Werte','Qualitative Analyse von Farbstoffgemischen (z. B. Unitest); Rf-Werte bestimmen und interpretieren.',[]]
+    ['i8','lk','Chromatografie und Rf-Werte','Qualitative Analyse von Farbstoffgemischen (z. B. Unitest); Rf-Werte bestimmen und interpretieren.',['ch']]
   ],
   terms: { gk: [],
            lk: ['elektromagnetisches Spektrum','Absorption, Reflexion','Absorptionsspektrum, Absorptionsmaximum','Anregungsenergie','konjugiertes Doppelbindungssystem','Chromophor, auxochrome und antiauxochrome Gruppen','mesomere Effekte','delokalisierte π-Elektronen','bathochromer und hypsochromer Effekt','Indikatorsäure und -base'] },
@@ -333,7 +336,7 @@ const FIELDS = [
     ['o5','gk','Oxidationsreihe vom Alkanol zur Alkansäure','Primäres Alkanol → Alkanal → Alkansäure; Oxidationszahlen des funktionellen Kohlenstoff-Atoms; Nachweis der reduzierenden Wirkung der Aldehyd-Gruppe (FEHLING- oder TOLLENS-Probe).',['lv']],
     ['o6','gk','Redoxgleichungen mit Teilgleichungen','Du stellst Oxidations- und Reduktionsteilgleichungen auf, gleichst Elektronen und Ladungen aus und fasst zur Gesamtgleichung zusammen.',['su','kl']],
     ['o7','lk','BOHR-SOMMERFELD-Atommodell, Elektronenkonfiguration und Oxidationsstufen','Elektronenkonfiguration der Haupt- und Nebengruppenelemente; Ableiten der möglichen Oxidationsstufen und Diskussion der Grenzen des Modells.',['ec','om']],
-    ['o8','lk','Disproportionierung und Synproportionierung','Besondere Beispiele für das Donator-Akzeptor-Prinzip: ein Element wird gleichzeitig oxidiert und reduziert (Disproportionierung) bzw. entsteht aus zwei Oxidationsstufen (Synproportionierung).',['kl']],
+    ['o8','lk','Disproportionierung und Synproportionierung','Besondere Beispiele für das Donator-Akzeptor-Prinzip: ein Element wird gleichzeitig oxidiert und reduziert (Disproportionierung) bzw. entsteht aus zwei Oxidationsstufen (Synproportionierung).',['dp','kl']],
     ['o9','lk','Redoxtitration und Oxidation von Alkanolen (Experimente)','Redoxtitration quantitativ durchführen und auswerten; Oxidation von Alkanolen experimentell untersuchen.',['su']]
   ],
   terms: { gk: ['Elektronengas, Valenzelektronen','Oxidation, Reduktion','korrespondierende Redoxpaare','Oxidationsmittel, Reduktionsmittel','Elektronen-Donator, Elektronen-Akzeptor','Oxidationszahl'],

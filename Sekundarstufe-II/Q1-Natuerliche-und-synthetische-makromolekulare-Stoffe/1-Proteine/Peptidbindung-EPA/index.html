@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>EPA-Modell an der Peptidbindung</title>
+<link rel="icon" type="image/png" href="../../../../icons/icon-192.png">
+<link rel="apple-touch-icon" href="../../../../icons/apple-touch-icon.png">
+<style>
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; height: 100%; }
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #12161d; color: #e8edf5; display: flex; flex-direction: column; overflow: hidden; }
+header { flex: none; display: flex; align-items: center; gap: 12px; padding: 8px 14px; background: #0d1117; border-bottom: 1px solid #263041; flex-wrap: wrap; }
+header h1 { font-size: 17px; margin: 0; color: #64b5f6; white-space: nowrap; }
+header a.back { color: #90a4be; font-size: 12.5px; text-decoration: none; margin-left: auto; }
+nav { display: flex; gap: 6px; flex-wrap: wrap; }
+nav button { border: 1px solid #2f3b50; background: #1a212c; color: #c5d0e0; padding: 7px 12px; border-radius: 9px; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+nav button.on { background: #2f5fd0; border-color: #4d7df0; color: #fff; }
+nav button small { opacity: .7; font-weight: 500; }
+main { flex: 1; min-height: 0; position: relative; }
+.tab { display: none; position: absolute; inset: 0; grid-template-columns: minmax(0, 1fr) 420px; }
+.tab.on { display: grid; }
+.view { position: relative; min-width: 0; min-height: 0; overflow: hidden; background: radial-gradient(ellipse at 50% 40%, #1d2735, #10141b 75%); }
+.view canvas.gl { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; display: block; }
+.view .stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 56px 10px 10px; overflow: auto; }
+.cap { position: absolute; left: 12px; top: 10px; z-index: 3; display: flex; gap: 8px; flex-wrap: wrap; max-width: calc(100% - 24px); }
+.hud { background: rgba(13,17,23,.86); border: 1px solid #2a3547; border-radius: 10px; padding: 6px 10px; font-size: 12.5px; }
+.hud b { color: #fff; }
+.vbar { position: absolute; left: 0; right: 0; bottom: 0; z-index: 4; background: rgba(13,17,23,.94); border-top: 1px solid #263041; padding: 8px 14px; }
+.vbar .t1 { font-size: 18px; font-weight: 800; }
+.vbar .t2 { font-size: 13px; color: #b6c3d6; margin-top: 2px; }
+.lbl { position: absolute; z-index: 2; pointer-events: none; transform: translate(-50%, -50%); font-size: 12.5px; font-weight: 800; padding: 1px 6px; border-radius: 6px; background: rgba(13,17,23,.82); border: 1px solid #3a4961; white-space: nowrap; }
+.side { overflow-y: auto; padding: 12px 14px 60px; background: #161b24; border-left: 1px solid #263041; font-size: 13.5px; line-height: 1.5; }
+.side h2 { font-size: 15px; margin: 4px 0 8px; color: #ffd54f; }
+.side h3 { font-size: 13px; margin: 14px 0 6px; color: #90caf9; text-transform: uppercase; letter-spacing: .04em; }
+.muted { color: #8d9bb0; }
+.expl { background: #1c2430; border: 1px solid #2a3547; border-radius: 10px; padding: 8px 12px; margin: 8px 0; }
+.expl summary { cursor: pointer; font-weight: 700; color: #ffd54f; }
+.expl p { margin: 7px 0; }
+.expl ul, .expl ol { margin: 6px 0; padding-left: 20px; }
+.expl li { margin: 3px 0; }
+.task { background: #1d2a22; border: 1px solid #355a45; }
+.task summary { color: #8fe0b0; }
+.gloss dt { font-weight: 700; color: #90caf9; margin-top: 7px; }
+.gloss dd { margin: 2px 0 0 0; }
+.box { background: #1c2430; border: 1px solid #2a3547; border-radius: 10px; padding: 8px 12px; margin: 8px 0; }
+.box.hi { border-color: #64b5f6; }
+.box.warn { border-color: #b8860b; background: #2a2416; }
+.box:empty { display: none; }
+.btns { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.btns button, button.mini { border: 1px solid #38465e; background: #232d3c; color: #dbe4f2; border-radius: 8px; padding: 7px 11px; font-size: 12.5px; cursor: pointer; font-family: inherit; }
+.btns button:active, button.mini:active { background: #2f3c52; }
+.btns button.on { background: #2f5fd0; border-color: #4d7df0; color: #fff; }
+.btns button.go { background: #2a6a3f; border-color: #3f9a5b; color: #fff; }
+.btns button.del { border-color: #7a3a3a; color: #ffb4ab; }
+.btns button:disabled { opacity: .4; cursor: default; }
+select, input[type=range], input[type=text], input[type=number] { font: inherit; }
+select, input[type=text], input[type=number] { background: #232d3c; color: #e8edf5; border: 1px solid #38465e; border-radius: 8px; padding: 6px 8px; font-size: 13px; }
+input[type=range] { accent-color: #7b3fe4; width: 100%; height: 26px; }
+label.chk { display: inline-flex; align-items: center; gap: 6px; margin: 3px 12px 3px 0; font-size: 12.5px; cursor: pointer; }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 999px; color: #10151c; font-weight: 700; font-size: 12px; }
+table.res { border-collapse: collapse; width: 100%; font-size: 12.5px; margin: 6px 0; }
+table.res th, table.res td { border-bottom: 1px solid #2a3547; padding: 4px 6px; text-align: left; }
+table.res th { color: #90caf9; font-weight: 700; }
+#toast { position: fixed; left: 50%; bottom: 70px; transform: translateX(-50%); background: #2f3c52; color: #fff; padding: 8px 14px; border-radius: 10px; font-size: 13px; opacity: 0; transition: opacity .25s; pointer-events: none; z-index: 50; }
+#toast.on { opacity: 1; }
+/* Quiz */
+.qz { background: #1c2430; border: 1px solid #2a3547; border-radius: 12px; padding: 12px 14px; margin: 8px 0; }
+.qz .qh { display: flex; justify-content: space-between; font-size: 12px; color: #8d9bb0; margin-bottom: 6px; }
+.qz .qq { font-size: 14.5px; font-weight: 700; margin: 4px 0 10px; line-height: 1.45; }
+.qz .qo { display: block; width: 100%; text-align: left; margin: 6px 0; padding: 9px 12px; border-radius: 10px; border: 1px solid #38465e; background: #232d3c; color: #e8edf5; font: inherit; font-size: 13.5px; cursor: pointer; line-height: 1.4; }
+.qz .qo:active { background: #2f3c52; }
+.qz .qo.ok { background: #1f5a37; border-color: #3fbf6f; }
+.qz .qo.no { background: #5a2323; border-color: #d96a6a; opacity: .75; }
+.qz .qo:disabled { cursor: default; }
+.qz .qf { margin-top: 8px; font-size: 13px; line-height: 1.5; }
+.qz .qf.ok { color: #9be7b4; } .qz .qf.no { color: #ffb4ab; }
+.qz .qn { margin-top: 10px; }
+.shake { animation: shake .35s; }
+@keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+@media (max-width: 900px) {
+  .tab, .tab.on { grid-template-columns: 1fr; }
+  .tab.on { grid-template-rows: 56% 44%; }
+  .side { border-left: 0; border-top: 1px solid #263041; }
+  header h1 { font-size: 15px; }
+  nav button { padding: 6px 9px; font-size: 12.5px; }
+  .hud { font-size: 11.5px; }
+}
+
+.gchips { display: flex; flex-wrap: wrap; gap: 6px; }
+.gchips button { border: 1px solid #4d7df0; color: #9cc0ff; background: rgba(13,17,23,.88); border-radius: 999px; padding: 5px 12px; font-size: 12.5px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.gchips button.on { background: #2f5fd0; color: #fff; }
+.gpane { position: absolute; inset: 0; z-index: 2; padding: 58px 16px 16px; overflow: auto; display: none; background: radial-gradient(ellipse at 50% 30%, #1d2735, #10141b 75%); }
+.gpane.on { display: block; }
+.cards { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+.card { border: 2px solid #3a4961; background: #232d3c; color: #e8edf5; border-radius: 12px; padding: 9px 12px; font-size: 13.5px; font-weight: 700; cursor: pointer; font-family: inherit; max-width: 230px; text-align: left; }
+.card.sel { border-color: #ffd54f; background: #3a3420; transform: scale(1.04); }
+.card.done { border-color: #3fbf6f; background: #1f3a2a; cursor: default; }
+.bins { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 12px; }
+.bin { border: 2px dashed #4a5a75; border-radius: 14px; padding: 10px; min-height: 110px; background: rgba(35,45,60,.55); cursor: pointer; }
+.bin h4 { margin: 0 0 6px; font-size: 13px; color: #90caf9; }
+.bin .card { font-size: 12px; padding: 5px 8px; margin: 3px 0; display: block; max-width: none; }
+.bin.hot { border-color: #ffd54f; background: rgba(60,52,20,.5); }
+.slotrow { display: flex; align-items: center; gap: 12px; margin: 10px 0; flex-wrap: wrap; }
+.slot { min-width: 200px; border: 2px dashed #4a5a75; border-radius: 12px; padding: 10px 14px; font-size: 16px; font-weight: 800; cursor: pointer; background: rgba(35,45,60,.55); }
+.slot.ok { border: 2px solid #3fbf6f; background: #1f3a2a; }
+.slot small { display: block; font-weight: 500; color: #9fb0c8; font-size: 12px; }
+.tile { border: 2px solid #3a4961; background: #232d3c; color: #ffd54f; border-radius: 10px; padding: 9px 16px; font-size: 17px; font-weight: 800; cursor: pointer; font-family: inherit; }
+.tile.sel { border-color: #ffd54f; background: #3a3420; }
+.tile.used { opacity: .35; cursor: default; }
+.mol { font-family: 'Segoe UI', system-ui, sans-serif; letter-spacing: .01em; }
+.mes { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 15px; font-weight: 700; margin: 8px 0; }
+.mes .st { background: #232d3c; border: 1px solid #3a4961; border-radius: 10px; padding: 6px 10px; }
+.mes .st.on { border-color: #ffd54f; background: #3a3420; }
+canvas.ecv { width: 100%; height: 130px; background: #10151c; border: 1px solid #2a3547; border-radius: 10px; display: block; }
+.sl { margin: 8px 0 2px; font-size: 13px; display: flex; justify-content: space-between; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🧬 EPA-Modell an der Peptidbindung</h1>
+  <nav id="tabs">
+    <button data-t="1" class="on">1 EPA-Labor<small> · 3D</small></button>
+    <button data-t="2">2 Peptidbindung<small> · 3D</small></button>
+    <button data-t="3">3 Drehbarkeit<small> · 3D</small></button>
+    <button data-t="4">4 Spiele<small> · 3D</small></button>
+  </nav>
+  <a class="back" href="../index.html">← Zurück zu Proteine</a>
+</header>
+<main>
+
+<!-- ============ 1 EPA-LABOR ============ -->
+<section class="tab on" id="t1">
+  <div class="view" id="v1">
+    <div class="cap"><div class="hud" id="h1">Zentralatom ohne Elektronenwolken</div></div>
+    <div class="vbar"><div class="t1" id="b1t1"></div><div class="t2" id="b1t2"></div></div>
+  </div>
+  <div class="side">
+    <h2>Das EPA-Labor</h2>
+    <details class="expl" open>
+      <summary>Worum geht es?</summary>
+      <p>Das <b>Elektronenpaarabstoßungsmodell (EPA-Modell)</b> sagt die räumliche Gestalt von Molekülen voraus. Grundidee: Die Elektronenpaare in der Valenzschale eines Atoms stoßen sich gegenseitig ab und ordnen sich so an, dass sie <b>möglichst weit voneinander entfernt</b> sind.</p>
+      <ul>
+        <li>Jede <b>Elektronenwolke</b> zählt einmal: ein bindendes Paar, ein freies (nichtbindendes) Paar oder eine <b>Mehrfachbindung</b> (Doppel- und Dreifachbindung zählen jeweils als <b>eine</b> Wolke).</li>
+        <li>Freie Elektronenpaare sind nur an <i>einem</i> Atomkern gebunden und brauchen deshalb <b>mehr Platz</b>: Sie drücken die bindenden Paare zusammen.</li>
+        <li>Die <b>Molekülgestalt</b> beschreibt nur die Lage der <b>Atome</b>, nicht die der freien Paare.</li>
+      </ul>
+    </details>
+    <h3>Probiere es aus</h3>
+    <div class="btns" id="presets"></div>
+    <div class="btns">
+      <button id="add-b">＋ Bindung</button><button id="add-d">＋ Doppelbindung</button><button id="add-l">＋ freies Paar</button><button id="rm" class="del">− letzte entfernen</button><button id="clr" class="del">Leeren</button>
+    </div>
+    <div class="box" id="i1"></div>
+    <details class="expl task" open>
+      <summary>Aufgaben</summary>
+      <ol>
+        <li>Baue zuerst <b>CH₄</b> auf und lies die Gestalt ab. Ersetze dann nacheinander eine Bindung durch ein freies Paar (→ NH₃, → H₂O). Wie verändert sich der Winkel, und warum?</li>
+        <li>Sage vorher, welche Gestalt <b>Methanal (CH₂O)</b> hat, bevor du es baust. Wie viele Elektronenwolken sind es?</li>
+        <li>Warum zählt die Doppelbindung im EPA-Modell nur als <b>eine</b> Wolke?</li>
+      </ol>
+    </details>
+    <details class="expl">
+      <summary>Wichtige Begriffe</summary>
+      <dl class="gloss">
+        <dt>Elektronenwolke</dt><dd>Aufenthaltsbereich eines Elektronenpaares (oder der gemeinsamen Elektronen einer Mehrfachbindung).</dd>
+        <dt>Bindendes / freies Elektronenpaar</dt><dd>Bindendes Paar: zwischen zwei Atomen. Freies Paar: gehört nur einem Atom.</dd>
+        <dt>Trigonal-planar / tetraedrisch</dt><dd>Drei Wolken in einer Ebene (120°) / vier Wolken zu den Ecken eines Tetraeders (109,5°).</dd>
+      </dl>
+    </details>
+  </div>
+</section>
+
+<!-- ============ 2 PEPTIDBINDUNG ============ -->
+<section class="tab" id="t2">
+  <div class="view" id="v2">
+    <div class="cap"><div class="gchips" id="c2"></div></div>
+    <div class="vbar"><div class="t1" id="b2t1">Dipeptid Gly–Gly</div><div class="t2" id="b2t2">Wische zum Drehen, tippe auf ein Atom oder wähle oben eine Atomsorte.</div></div>
+  </div>
+  <div class="side">
+    <h2>Die Peptidbindung im Raum</h2>
+    <div class="btns" id="o2">
+      <button id="o-plane">Ebene zeigen</button><button id="o-len">Bindungslängen</button><button id="o-h">H-Atome</button>
+    </div>
+    <h3>Mesomerie der Peptidgruppe</h3>
+    <div class="btns" id="mes-btns"><button data-s="0">Grenzstruktur I</button><button data-s="1" class="on">Mesomeriehybrid</button><button data-s="2">Grenzstruktur II</button></div>
+    <div class="mes" id="mes-eq"></div>
+    <div class="box" id="i2"></div>
+    <details class="expl" open>
+      <summary>Was ist an der Peptidbindung besonders?</summary>
+      <p>Verknüpft man zwei Aminosäuren, entsteht die Peptidgruppe <b>–CO–NH–</b>. Nach den einfachen Lewis-Formeln wäre das Stickstoff-Atom <b>pyramidal</b> (3 Bindungspartner + 1 freies Paar, wie im NH₃) und die C–N-Bindung frei drehbar. Der Befund ist ein anderer:</p>
+      <ul>
+        <li>Die sechs Atome <b>Cα, C, O, N, H, Cα</b> liegen in <b>einer Ebene</b>.</li>
+        <li>Die C–N-Bindung (133 pm) ist <b>kürzer</b> als eine C–N-Einfachbindung (147 pm) und länger als C=N (127 pm).</li>
+        <li>Die Substituenten stehen fast immer <b>trans</b>.</li>
+      </ul>
+      <p>Erklärung: das freie Elektronenpaar am N wird in das Doppelbindungssystem der C=O-Gruppe einbezogen (<b>Mesomerie</b>, Delokalisierung). Die C–N-Bindung hat dadurch <b>Partialdoppelbindungs-Charakter</b>.</p>
+    </details>
+    <details class="expl lk">
+      <summary>EPA-Modell und seine Grenze</summary>
+      <p>Das EPA-Modell zählt Elektronenwolken am Atom. Es kennt <b>keine Delokalisierung</b>. Am N der Peptidgruppe erwartet es 4 Wolken (pyramidal). Tatsächlich verhält sich das freie Paar wie Teil einer Bindung, der Stickstoff hat effektiv <b>drei</b> Wolken und ist <b>trigonal-planar</b> (Winkelsumme 360°). Das EPA-Modell liefert also nur dann das richtige Ergebnis, wenn man vorher die <b>mesomere Struktur</b> berücksichtigt.</p>
+      <p>Am Cα (4 verschiedene Partner, keine freien Paare) und am Carbonyl-C (3 Wolken) trifft das EPA-Modell dagegen direkt zu.</p>
+    </details>
+    <details class="expl task" open>
+      <summary>Aufgaben</summary>
+      <ol>
+        <li>Wähle nacheinander <b>Cα</b>, <b>C</b> und <b>N</b> und leite mit dem EPA-Modell jeweils die erwartete Geometrie ab. Vergleiche mit dem gemessenen Winkel im Modell.</li>
+        <li>Bei welchem Atom weicht der Befund vom EPA-Modell ab? Begründe mit der Mesomerie.</li>
+        <li>Schalte die Bindungslängen ein und ordne sie den Bindungen C=O, C–N und N–Cα zu.</li>
+      </ol>
+    </details>
+  </div>
+</section>
+
+<!-- ============ 3 DREHBARKEIT ============ -->
+<section class="tab" id="t3">
+  <div class="view" id="v3">
+    <div class="cap"><div class="hud" id="h3"></div></div>
+    <div class="vbar"><div class="t1" id="b3t1"></div><div class="t2" id="b3t2"></div></div>
+  </div>
+  <div class="side">
+    <h2>Kann man die Peptidbindung drehen?</h2>
+    <div class="sl"><b>Drehung um die C–N-Bindung (Peptidbindung)</b><span id="w-v"></span></div>
+    <input type="range" id="w" min="-180" max="180" step="1" value="0">
+    <canvas class="ecv" id="e-w" width="720" height="260"></canvas>
+    <div class="btns"><button id="w-trans">Trans herstellen</button><button id="w-cis">Cis erzwingen</button><label class="chk"><input type="checkbox" id="w-spring" checked> loslassen = Rückfederung</label></div>
+    <div class="sl"><b>Drehung um die N–Cα-Bindung (Winkel φ)</b><span id="f-v"></span></div>
+    <input type="range" id="f" min="-180" max="180" step="1" value="0">
+    <canvas class="ecv" id="e-f" width="720" height="260"></canvas>
+    <div class="box" id="i3"></div>
+    <details class="expl" open>
+      <summary>Was du beobachtest</summary>
+      <p>Dreht man die Hälfte des Moleküls um die <b>C–N-Bindung</b>, verlässt die Peptidgruppe die Ebene. Dabei geht die Überlappung der p-Orbitale verloren, die für die Delokalisierung nötig ist, und die Energie steigt stark an. Die Modellkurve zeigt eine Barriere von etwa <b>80 kJ/mol</b>. Bei Raumtemperatur beträgt die mittlere Wärmeenergie nur etwa 2,5 kJ/mol, die Bindung dreht deshalb praktisch nicht.</p>
+      <p>Um die <b>N–Cα-Bindung</b> (φ) und die Cα–C-Bindung (ψ) kann dagegen fast frei gedreht werden: Die Barriere ist klein. Genau an diesen beiden Stellen kann die Kette ihre Gestalt ändern.</p>
+    </details>
+    <details class="expl lk">
+      <summary>Cis oder trans?</summary>
+      <p>Die Ebene hat zwei flache Energieminima: <b>trans</b> (ω = 180°) und <b>cis</b> (ω = 0°). Im cis-Zustand kommen sich die beiden Cα-Atome und ihre Reste sehr nahe (Abstand etwa 2,9 Å statt 3,8 Å bei trans), es entsteht <b>sterische Abstoßung</b>. Deshalb liegen über 99 % der Peptidbindungen trans vor. Bei <b>Prolin</b> ist der Unterschied kleiner, weil der Ring beide Zustände einschränkt, cis-Prolin ist daher häufiger.</p>
+      <p><i>Hinweis:</i> Die Energiekurven sind Modellkurven (Größenordnung), keine exakten Messwerte.</p>
+    </details>
+    <details class="expl task" open>
+      <summary>Aufgaben</summary>
+      <ol>
+        <li>Drehe um die C–N-Bindung um 90° und lies die Energie ab. Erkläre den Anstieg mit der Mesomerie.</li>
+        <li>Lass den Regler los (Rückfederung ein). In welche Lage springt das Molekül, wenn du bei 60° bzw. bei 120° loslässt?</li>
+        <li>Vergleiche die Cα–Cα-Abstände von trans und cis. Was folgt für die räumliche Struktur der Kette?</li>
+      </ol>
+    </details>
+  </div>
+</section>
+
+<!-- ============ 4 SPIELE ============ -->
+<section class="tab" id="t4">
+  <div class="view" id="v4">
+    <div class="cap"><div class="gchips" id="g-nav">
+      <button data-g="1" class="on">🔍 Atom-Detektiv</button><button data-g="2">📐 Winkel-Quiz</button><button data-g="3">🗂 Sortieren</button><button data-g="4">📏 Bindungslängen</button><button data-g="5">🧠 Denkaufgaben</button>
+    </div></div>
+    <div class="gpane" id="gp3"></div>
+    <div class="gpane" id="gp4"></div>
+    <div class="vbar" id="b4"><div class="t1" id="b4t1"></div><div class="t2" id="b4t2"></div></div>
+  </div>
+  <div class="side" id="g-side"></div>
+</section>
+
+</main>
+<div id="toast"></div>
+<script src="three.min.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+function flash(t) { const e = $('toast'); e.textContent = t; e.classList.add('on'); clearTimeout(flash.t); flash.t = setTimeout(() => e.classList.remove('on'), 2200); }
+const tabHooks = {};
+document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.id === 't' + b.dataset.t));
+  if (tabHooks[b.dataset.t]) tabHooks[b.dataset.t]();
+  window.dispatchEvent(new Event('resize'));
+});
+// Quiz-Baustein: items = [{q, o:[...], a:Index, why:'…'}]; Punkte nur für die Schülerin / den Schüler (nichts wird gespeichert)
+function quiz(el, items, title) {
+  let i = 0, pts = 0, tries = 0;
+  const done = () => { el.innerHTML = `<div class="qz"><div class="qq">${title || 'Quiz'} geschafft! 🎉</div><p>Im ersten Versuch richtig: <b>${pts} von ${items.length}</b>.</p><div class="btns"><button class="go" id="qz-again">Nochmal von vorn</button></div></div>`; el.querySelector('#qz-again').onclick = () => { i = 0; pts = 0; show(); }; };
+  const show = () => {
+    if (i >= items.length) return done();
+    const it = items[i]; tries = 0;
+    el.innerHTML = `<div class="qz"><div class="qh"><span>${title || 'Quiz'} · Frage ${i + 1} von ${items.length}</span><span>★ ${pts}</span></div><div class="qq">${it.q}</div>${it.o.map((o, k) => `<button class="qo" data-k="${k}">${o}</button>`).join('')}<div class="qf"></div><div class="qn"></div></div>`;
+    el.querySelectorAll('.qo').forEach(b => b.onclick = () => {
+      const k = +b.dataset.k, f = el.querySelector('.qf');
+      if (k === it.a) {
+        b.classList.add('ok'); if (tries === 0) pts++;
+        f.className = 'qf ok'; f.innerHTML = '✔ Richtig. ' + (it.why || '');
+        el.querySelectorAll('.qo').forEach(x => x.disabled = true);
+        el.querySelector('.qn').innerHTML = `<div class="btns"><button class="go" id="qz-next">${i + 1 < items.length ? 'Weiter' : 'Fertig'}</button></div>`;
+        el.querySelector('#qz-next').onclick = () => { i++; show(); };
+        if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([el]);
+      } else {
+        tries++; b.classList.add('no'); b.disabled = true; b.classList.add('shake');
+        f.className = 'qf no'; f.textContent = 'Noch nicht. Überlege nochmal und probiere eine andere Antwort.';
+      }
+    });
+  };
+  show();
+}
+
+// ===== 3D-Ansicht (three.js): Drehen per Wisch, Zoom per Pinch/Mausrad, Tippen = Auswahl =====
+const views = [];
+class View {
+  constructor(el, opts = {}) {
+    this.el = el; this.opts = opts;
+    this.canvas = document.createElement('canvas'); this.canvas.className = 'gl'; el.prepend(this.canvas);
+    this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
+    this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+    this.scene = new THREE.Scene();
+    this.camera = new THREE.PerspectiveCamera(38, 1, 0.1, 200);
+    this.dist = opts.dist || 11; this.camera.position.set(0, 0, this.dist);
+    this.root = new THREE.Group(); this.scene.add(this.root);
+    this.scene.add(new THREE.AmbientLight(0xffffff, 0.62));
+    const d1 = new THREE.DirectionalLight(0xffffff, 0.85); d1.position.set(4, 6, 8); this.scene.add(d1);
+    const d2 = new THREE.DirectionalLight(0x88aaff, 0.35); d2.position.set(-6, -3, -4); this.scene.add(d2);
+    this.q = new THREE.Quaternion().setFromEuler(new THREE.Euler(opts.rx || 0.35, opts.ry || -0.5, 0));
+    this.root.quaternion.copy(this.q);
+    this.pickables = []; this.onPick = null; this.labels = []; this.onFrame = null; this.auto = opts.auto || 0;
+    const ptr = new Map(); let lastD = 0, moved = 0, downAt = null;
+    const c = this.canvas;
+    c.addEventListener('pointerdown', e => { c.setPointerCapture(e.pointerId); ptr.set(e.pointerId, { x: e.clientX, y: e.clientY }); if (ptr.size === 1) { moved = 0; downAt = { x: e.clientX, y: e.clientY }; } if (ptr.size === 2) { const [a, b] = [...ptr.values()]; lastD = Math.hypot(a.x - b.x, a.y - b.y); } });
+    c.addEventListener('pointermove', e => {
+      const p = ptr.get(e.pointerId); if (!p) return;
+      if (ptr.size === 1) { const dx = e.clientX - p.x, dy = e.clientY - p.y; moved += Math.abs(dx) + Math.abs(dy); this.q.premultiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(dy * 0.008, dx * 0.008, 0))); this.root.quaternion.copy(this.q); this.auto = 0; }
+      else if (ptr.size === 2) { ptr.set(e.pointerId, { x: e.clientX, y: e.clientY }); const [a, b] = [...ptr.values()], d = Math.hypot(a.x - b.x, a.y - b.y); if (lastD) this.zoom(lastD / d); lastD = d; moved = 99; return; }
+      ptr.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    });
+    const up = e => { const had = ptr.has(e.pointerId); ptr.delete(e.pointerId); if (ptr.size < 2) lastD = 0; if (had && ptr.size === 0 && moved < 8 && downAt) this.pick(e.clientX, e.clientY); };
+    c.addEventListener('pointerup', up); c.addEventListener('pointercancel', e => { ptr.delete(e.pointerId); });
+    c.addEventListener('wheel', e => { e.preventDefault(); this.zoom(1 + Math.sign(e.deltaY) * 0.1); }, { passive: false });
+    new ResizeObserver(() => this.resize()).observe(el);
+    views.push(this); this.resize();
+  }
+  zoom(f) { this.dist = Math.min(30, Math.max(4, this.dist * f)); this.camera.position.z = this.dist; }
+  resize() { const w = this.el.clientWidth, h = this.el.clientHeight; if (!w || !h) return; this.renderer.setSize(w, h, false); this.camera.aspect = w / h; this.camera.updateProjectionMatrix(); }
+  pick(cx, cy) {
+    if (!this.onPick || !this.pickables.length) return;
+    const r = this.canvas.getBoundingClientRect(), v = new THREE.Vector2(((cx - r.left) / r.width) * 2 - 1, -((cy - r.top) / r.height) * 2 + 1);
+    const rc = new THREE.Raycaster(); rc.setFromCamera(v, this.camera);
+    const hit = rc.intersectObjects(this.pickables, false)[0]; this.onPick(hit ? hit.object : null);
+  }
+  project(v3) { const p = v3.clone().applyMatrix4(this.root.matrixWorld).project(this.camera); return { x: (p.x * 0.5 + 0.5) * this.el.clientWidth, y: (-p.y * 0.5 + 0.5) * this.el.clientHeight, z: p.z }; }
+  render(t) {
+    if (this.auto) { this.q.premultiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0, this.auto, 0))); this.root.quaternion.copy(this.q); }
+    if (this.onFrame) this.onFrame(t);
+    this.root.updateMatrixWorld(true);
+    this.labels.forEach(l => { if (!l.on) { l.el.style.display = 'none'; return; } const p = this.project(l.pos()); l.el.style.display = ''; l.el.style.left = p.x + 'px'; l.el.style.top = (p.y + (l.dy || 0)) + 'px'; });
+    this.renderer.render(this.scene, this.camera);
+  }
+  addLabel(posFn, html, color) { const el = document.createElement('div'); el.className = 'lbl'; el.innerHTML = html; if (color) { el.style.color = color; el.style.borderColor = color; } this.el.appendChild(el); const l = { el, pos: posFn, on: false }; this.labels.push(l); return l; }
+}
+(function loop(t) { requestAnimationFrame(loop); views.forEach(v => { if (v.el.offsetParent) v.render(t); }); })();
+// Kugel-Stab-Bausteine
+const ELE = { C: { c: 0x9aa4b3, r: 0.40 }, N: { c: 0x4a7dff, r: 0.38 }, O: { c: 0xff4d4d, r: 0.36 }, H: { c: 0xf2f2f2, r: 0.24 } };
+function ball(col, r, seg = 28) { return new THREE.Mesh(new THREE.SphereGeometry(r, seg, seg), new THREE.MeshPhongMaterial({ color: col, shininess: 70 })); }
+function stick(a, b, r = 0.075, col = 0xdfe6f0, op = 1) {
+  const d = b.clone().sub(a), L = d.length(), m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, L, 12, 1), new THREE.MeshPhongMaterial({ color: col, transparent: op < 1, opacity: op }));
+  m.position.copy(a.clone().add(b).multiplyScalar(0.5)); m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.clone().normalize()); return m;
+}
+const angleDeg = (a, c, b) => { const u = a.clone().sub(c).normalize(), v = b.clone().sub(c).normalize(); return Math.acos(Math.max(-1, Math.min(1, u.dot(v)))) * 180 / Math.PI; };
+
+
+// ===================== Molekülmodell (Gly–Gly) =====================
+const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
+function nerf(A, B, C, len, ang, tor) {
+  const bc = C.clone().sub(B).normalize(), ab = B.clone().sub(A), n = ab.clone().cross(bc).normalize(), m = n.clone().cross(bc);
+  const a = ang * Math.PI / 180, t = tor * Math.PI / 180;
+  return C.clone().add(bc.multiplyScalar(-len * Math.cos(a))).add(m.multiplyScalar(len * Math.sin(a) * Math.cos(t))).add(n.multiplyScalar(len * Math.sin(a) * Math.sin(t)));
+}
+function tetra(P, Q1, Q2, len) {
+  const u1 = Q1.clone().sub(P).normalize(), u2 = Q2.clone().sub(P).normalize(), m = u1.clone().add(u2).normalize().negate(), p = u1.clone().cross(u2).normalize(), th = 54.75 * Math.PI / 180;
+  return [P.clone().add(m.clone().multiplyScalar(Math.cos(th) * len)).add(p.clone().multiplyScalar(Math.sin(th) * len)), P.clone().add(m.clone().multiplyScalar(Math.cos(th) * len)).sub(p.clone().multiplyScalar(Math.sin(th) * len))];
+}
+function peptide() {
+  const psi = 130, phi = -120, P = {};
+  const A = {}; // Atome: [Element, Position, Ebene(0,1,2)]
+  const N1 = V3(0, 0, 0), Ca1 = V3(1.46, 0, 0);
+  const C1 = Ca1.clone().add(V3(-Math.cos(110.5 * Math.PI / 180) * 1.52, Math.sin(110.5 * Math.PI / 180) * 1.52, 0));
+  const N2 = nerf(N1, Ca1, C1, 1.33, 116, psi), Ca2 = nerf(Ca1, C1, N2, 1.46, 122, 180), C2 = nerf(C1, N2, Ca2, 1.52, 110.5, phi);
+  const O1 = nerf(N1, Ca1, C1, 1.23, 121, psi + 180), Hn = nerf(Ca1, C1, N2, 1.01, 119, 0);
+  const O2 = nerf(N2, Ca2, C2, 1.23, 123, 40 + 180), Oh = nerf(N2, Ca2, C2, 1.35, 112, 40), Hoh = nerf(Ca2, C2, Oh, 0.97, 107, 180);
+  const Hn1a = nerf(C1, Ca1, N1, 1.01, 108, 60), Hn1b = nerf(C1, Ca1, N1, 1.01, 108, -60);
+  const [Ha1a, Ha1b] = tetra(Ca1, N1, C1, 1.09), [Ha2a, Ha2b] = tetra(Ca2, N2, C2, 1.09);
+  const at = { N1: ['N', N1, 0], Hn1a: ['H', Hn1a, 0], Hn1b: ['H', Hn1b, 0], Ca1: ['C', Ca1, 0], Ha1a: ['H', Ha1a, 0], Ha1b: ['H', Ha1b, 0], C1: ['C', C1, 0], O1: ['O', O1, 0],
+    N2: ['N', N2, 1], Hn: ['H', Hn, 1], Ca2: ['C', Ca2, 2], Ha2a: ['H', Ha2a, 2], Ha2b: ['H', Ha2b, 2], C2: ['C', C2, 2], O2: ['O', O2, 2], Oh: ['O', Oh, 2], Hoh: ['H', Hoh, 2] };
+  const bonds = [['N1', 'Hn1a', 1], ['N1', 'Hn1b', 1], ['N1', 'Ca1', 1], ['Ca1', 'Ha1a', 1], ['Ca1', 'Ha1b', 1], ['Ca1', 'C1', 1], ['C1', 'O1', 2], ['C1', 'N2', 2],
+    ['N2', 'Hn', 1], ['N2', 'Ca2', 1], ['Ca2', 'Ha2a', 1], ['Ca2', 'Ha2b', 1], ['Ca2', 'C2', 1], ['C2', 'O2', 2], ['C2', 'Oh', 1], ['Oh', 'Hoh', 1]];
+  return { at, bonds };
+}
+const MOL = peptide();
+const PL = ['Ca1', 'C1', 'O1', 'N2', 'Hn', 'Ca2'];
+const planeN = (() => { const a = MOL.at; return a.N2[1].clone().sub(a.C1[1]).cross(a.O1[1].clone().sub(a.C1[1])).normalize(); })();
+const planeC = (() => { const c = V3(0, 0, 0); PL.forEach(k => c.add(MOL.at[k][1])); return c.multiplyScalar(1 / PL.length); })();
+const NAMES = { N1: 'N-Terminus (–NH₂)', Ca1: 'Cα (1. Rest)', C1: 'C der Peptidgruppe', O1: 'O der C=O-Gruppe', N2: 'N der Peptidgruppe', Hn: 'H am Peptid-N', Ca2: 'Cα (2. Rest)', C2: 'C-Terminus (–COOH)', Oh: 'O der OH-Gruppe' };
+// Baut das Molekül in eine Gruppe; lev: Ebene → Gruppe (für Drehungen); gibt Meshes zurück
+function buildMol(root, opt = {}) {
+  const lvl = opt.levels || [root, root, root], piv = opt.pivots || [V3(0, 0, 0), V3(0, 0, 0), V3(0, 0, 0)], out = { atoms: {}, bonds: {}, groups: lvl };
+  const loc = (k) => MOL.at[k][1].clone().sub(piv[MOL.at[k][2]]);
+  for (const k in MOL.at) { const [el, p, l] = MOL.at[k], m = ball(ELE[el].c, ELE[el].r); m.position.copy(p).sub(piv[l]); m.userData.key = k; lvl[l].add(m); out.atoms[k] = m; }
+  MOL.bonds.forEach(([a, b, o]) => {
+    const la = MOL.at[a][2], lb = MOL.at[b][2], l = Math.min(la, lb), pa = MOL.at[a][1].clone().sub(piv[l]), pb = MOL.at[b][1].clone().sub(piv[l]);
+    const d = pb.clone().sub(pa).normalize(), off = planeN.clone().cross(d).normalize().multiplyScalar(0.085), mid = pa.clone().add(pb).multiplyScalar(0.5);
+    const s1 = stick(pa, pb, 0.07), s2 = o === 2 ? stick(pa, pb, 0.07) : null;
+    const rec = { s1, s2, off, mid, o, a, b };
+    if (o === 1) lvl[l].add(s1); else { lvl[l].add(s1); lvl[l].add(s2); }
+    out.bonds[a + '-' + b] = rec; setBond(rec, o === 2 ? 'double' : 'single');
+  });
+  return out;
+}
+function setBond(r, st) {
+  if (!r.s2) return;
+  const sh = (m, v) => { m.position.copy(v); };
+  const base = r.mid;
+  if (st === 'single') { sh(r.s1, base); r.s2.visible = false; r.s1.material.opacity = 1; r.s1.material.transparent = false; }
+  else { sh(r.s1, base.clone().add(r.off)); sh(r.s2, base.clone().sub(r.off)); r.s2.visible = true; r.s1.material.transparent = r.s2.material.transparent = true; r.s1.material.opacity = 1; r.s2.material.opacity = st === 'partial' ? 0.4 : 1; }
+}
+function ring(color = 0xb6ff5a) { const m = new THREE.Mesh(new THREE.TorusGeometry(0.62, 0.05, 10, 40), new THREE.MeshBasicMaterial({ color })); return m; }
+function planeMesh() { const m = new THREE.Mesh(new THREE.CircleGeometry(3.3, 48), new THREE.MeshBasicMaterial({ color: 0x4dd0e1, transparent: true, opacity: 0.17, side: THREE.DoubleSide, depthWrite: false })); m.position.copy(planeC); m.quaternion.setFromUnitVectors(V3(0, 0, 1), planeN); return m; }
+function faceView(v, tilt, yaw) {
+  const q = new THREE.Quaternion().setFromUnitVectors(planeN, V3(0, 0, 1));
+  const d = MOL.at.Ca2[1].clone().sub(MOL.at.Ca1[1]).applyQuaternion(q), a = Math.atan2(d.y, d.x);
+  q.premultiply(new THREE.Quaternion().setFromAxisAngle(V3(0, 0, 1), -a));
+  q.premultiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(tilt, yaw, 0))); v.q.copy(q); v.root.quaternion.copy(q);
+}
+const centerAll = (root) => { root.position.copy(planeC).multiplyScalar(-1); };
+function atomNeighbors(k) { const r = []; MOL.bonds.forEach(([a, b]) => { if (a === k) r.push(b); else if (b === k) r.push(a); }); return r; }
+function angleReport(k) {
+  const nb = atomNeighbors(k), P = MOL.at[k][1], list = []; let sum = 0;
+  for (let i = 0; i < nb.length; i++) for (let j = i + 1; j < nb.length; j++) list.push(angleDeg(MOL.at[nb[i]][1], P, MOL.at[nb[j]][1]));
+  if (nb.length === 3) sum = list.reduce((a, b) => a + b, 0);
+  return { n: nb.length, list, sum, mean: list.length ? list.reduce((a, b) => a + b, 0) / list.length : 0 };
+}
+const f0 = x => x.toFixed(0), f1 = x => x.toFixed(1).replace('.', ',');
+
+// ===================== TAB 1 EPA-Labor =====================
+const v1 = new View($('v1'), { dist: 8.5, auto: 0.004 });
+const cMesh = ball(0x9aa4b3, 0.55); v1.root.add(cMesh);
+const doms = []; let epaCol = 0x9aa4b3;
+const GEO = {
+  2: { 0: ['linear', 'linear', 180] },
+  3: { 0: ['trigonal-planar', 'trigonal-planar', 120], 1: ['trigonal-planar', 'gewinkelt', 118] },
+  4: { 0: ['tetraedrisch', 'tetraedrisch', 109.5], 1: ['tetraedrisch', 'trigonal-pyramidal', 107], 2: ['tetraedrisch', 'gewinkelt', 104.5], 3: ['tetraedrisch', 'zweiatomig (linear)', null] }
+};
+function mkDom(type, dbl) {
+  const g = new THREE.Group();
+  if (type === 'bond') {
+    const e = dbl ? 0.38 : 0.3;
+    const mk = x => { const s = stick(V3(x, 0, 0), V3(x, 1.9, 0), 0.07); g.add(s); };
+    if (dbl) { mk(-0.09); mk(0.09); } else mk(0);
+    const lig = dbl ? ball(0xff4d4d, 0.38) : ball(0xf2f2f2, 0.3); lig.position.y = 1.95; g.add(lig);
+  } else {
+    const e = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 24), new THREE.MeshPhongMaterial({ color: 0x5ac8fa, transparent: true, opacity: 0.45, shininess: 80 }));
+    e.scale.set(0.5, 0.85, 0.5); e.position.y = 0.95; g.add(e);
+    [-0.11, 0.11].forEach(x => { const d = ball(0xffffff, 0.08, 10); d.position.set(x, 0.95, 0); g.add(d); });
+  }
+  v1.root.add(g); return g;
+}
+function addDom(type, dbl) {
+  if (doms.length >= 4) return flash('Mehr als vier Elektronenwolken behandeln wir hier nicht.');
+  const a = Math.random() * 6.28, z = Math.random() * 2 - 1, s = Math.sqrt(1 - z * z);
+  doms.push({ type, dbl: !!dbl, dir: V3(s * Math.cos(a), z, s * Math.sin(a)), g: mkDom(type, dbl) }); info1();
+}
+function clearDoms() { doms.forEach(d => v1.root.remove(d.g)); doms.length = 0; info1(); }
+function relax() {
+  for (let it = 0; it < 10; it++) {
+    doms.forEach((d, i) => {
+      const f = V3(0, 0, 0);
+      doms.forEach((e, j) => { if (i === j) return; const df = d.dir.clone().sub(e.dir), l = df.length() + 1e-4, w = e.type === 'lone' ? 1.25 : (e.dbl ? 1.2 : 1); f.add(df.multiplyScalar(w / (l * l * l))); });
+      d.nd = d.dir.clone().add(f.multiplyScalar(0.02)).normalize();
+    });
+    doms.forEach(d => d.dir.copy(d.nd));
+  }
+  doms.forEach(d => d.g.quaternion.setFromUnitVectors(V3(0, 1, 0), d.dir));
+}
+v1.onFrame = relax;
+function info1() {
+  const n = doms.length, lone = doms.filter(d => d.type === 'lone').length, bnd = n - lone, dbl = doms.filter(d => d.dbl).length;
+  cMesh.material.color.setHex(epaCol);
+  $('h1').innerHTML = n ? `<b>${n}</b> Elektronenwolke${n > 1 ? 'n' : ''}: ${bnd} bindend${dbl ? ' (davon ' + dbl + ' Doppelbindung)' : ''}, ${lone} frei` : 'Zentralatom ohne Elektronenwolken';
+  let t1 = '', t2 = '', box = '';
+  const g = GEO[n] && GEO[n][lone];
+  if (!n) { t1 = 'Füge Elektronenwolken hinzu'; t2 = 'Sie stoßen sich ab und suchen sich selbst die Plätze mit dem größten Abstand.'; }
+  else if (n === 1) { t1 = 'Eine Wolke'; t2 = 'Mit nur einer Wolke gibt es keinen Winkel. Füge weitere hinzu.'; }
+  else if (g) {
+    t1 = `Wolken: ${g[0]} · Molekül: ${g[1]}`; t2 = g[2] ? `Bindungswinkel ≈ ${f1(g[2]).replace(',0', '')}°` : 'zweiatomiges Teilchen, kein Winkel';
+    box = `<b>Wolkenzahl ${n}</b> → Wolken ordnen sich <b>${g[0]}</b> an.<br>${lone ? `<b>${lone} freie${lone > 1 ? '' : 's'} Paar${lone > 1 ? 'e' : ''}</b> besetzen Platz, sind aber unsichtbar im Molekül → Gestalt: <b>${g[1]}</b>.<br>Freie Paare brauchen mehr Raum, deshalb ist der Winkel <b>kleiner als ${f1(GEO[n][0][2]).replace(',0', '')}°</b>.` : `Alle Wolken sind bindend → Gestalt: <b>${g[1]}</b>.`}${dbl ? '<br>Die Doppelbindung zählt als <b>eine</b> Wolke (braucht aber etwas mehr Raum).' : ''}`;
+  } else { t1 = 'Dafür gibt es hier keine Gestalt.'; }
+  $('b1t1').textContent = t1; $('b1t2').textContent = t2; $('i1').innerHTML = box;
+}
+const PRE = [
+  ['CH₄', 0x9aa4b3, [['bond'], ['bond'], ['bond'], ['bond']]], ['NH₃', 0x4a7dff, [['bond'], ['bond'], ['bond'], ['lone']]], ['H₂O', 0xff4d4d, [['bond'], ['bond'], ['lone'], ['lone']]],
+  ['CH₂O (Methanal)', 0x9aa4b3, [['bond'], ['bond'], ['bond', 1]]], ['CO₂', 0x9aa4b3, [['bond', 1], ['bond', 1]]], ['N der Peptidgruppe*', 0x4a7dff, [['bond'], ['bond'], ['bond'], ['lone']]]
+];
+$('presets').innerHTML = PRE.map((p, i) => `<button data-i="${i}">${p[0]}</button>`).join('');
+$('presets').querySelectorAll('button').forEach(b => b.onclick = () => { const p = PRE[+b.dataset.i]; clearDoms(); epaCol = p[1]; p[2].forEach(d => addDom(d[0], d[1])); if (+b.dataset.i === 5) { $('i1').innerHTML += '<br><b>*Nach dem EPA-Modell</b> wäre der Stickstoff der Peptidgruppe pyramidal (≈107°). Im echten Molekül ist er planar. Warum? → Reiter 2.'; } });
+$('add-b').onclick = () => addDom('bond'); $('add-d').onclick = () => addDom('bond', 1); $('add-l').onclick = () => addDom('lone');
+$('rm').onclick = () => { const d = doms.pop(); if (d) v1.root.remove(d.g); info1(); }; $('clr').onclick = () => { epaCol = 0x9aa4b3; clearDoms(); };
+info1();
+
+// ===================== TAB 2 Peptidbindung =====================
+const v2 = new View($('v2'), { dist: 12, rx: 0.9, ry: 0, auto: 0 });
+faceView(v2, 0.55, 0.3); const m2 = new THREE.Group(); v2.root.add(m2); centerAll(m2);
+const mol2 = buildMol(m2), pl2 = planeMesh(); pl2.visible = false; m2.add(pl2);
+const ringM = ring(); ringM.visible = false; m2.add(ringM);
+v2.pickables = Object.values(mol2.atoms);
+let sel2 = null;
+const KEYS2 = [['Ca1', 'Cα'], ['C1', 'C'], ['O1', 'O'], ['N2', 'N'], ['Ca2', 'Cα']];
+$('c2').innerHTML = KEYS2.map(([k, t]) => `<button data-k="${k}">${t}${k === 'Ca1' ? '(1)' : k === 'Ca2' ? '(2)' : ''}</button>`).join('');
+function select2(k) {
+  sel2 = k; $('c2').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.k === k));
+  if (!k) { ringM.visible = false; return; }
+  ringM.visible = true; ringM.position.copy(MOL.at[k][1]); ringM.lookAt(v2.camera.position.clone());
+  const R = angleReport(k); let t = `<b>${NAMES[k] || k}</b><br>`;
+  const el = MOL.at[k][0];
+  if (k === 'Ca1' || k === 'Ca2') t += `Bindungspartner: <b>4</b> (N, C, H, H), freie Paare: 0 → EPA: <b>tetraedrisch, 109,5°</b>.<br>Im Modell gemessen: mittlerer Winkel <b>${f0(R.mean)}°</b>. ✔ passt zum EPA-Modell.`;
+  else if (k === 'C1') t += `Partner: O (C=O zählt als <b>eine</b> Wolke), N, Cα → <b>3 Wolken</b>, kein freies Paar → EPA: <b>trigonal-planar, 120°</b>.<br>Gemessen: ${R.list.map(f0).join('°, ')}° (Summe <b>${f0(R.sum)}°</b>). ✔ planar.`;
+  else if (k === 'N2') t += `Partner: C, Cα, H + 1 freies Paar = 4 Wolken → <b>EPA-Vorhersage: pyramidal, ≈107°</b> (Winkelsumme ≈ 321°).<br>Gemessen: ${R.list.map(f0).join('°, ')}° (Summe <b>${f0(R.sum)}°</b>). ✘ <b>Der N ist planar!</b> Das freie Paar ist in die Mesomerie einbezogen (Schalte oben zwischen den Grenzstrukturen um.)`;
+  else if (k === 'O1') t += `Ein Partner (Doppelbindung zum C) und zwei freie Paare. Kein Bindungswinkel, aber die C=O-Bindung liegt in der Ebene und trägt in der Grenzstruktur II die negative Ladung.`;
+  else t += `Weitere Atome siehe Reiter 4.`;
+  $('i2').innerHTML = t; $('b2t1').textContent = NAMES[k] || k; $('b2t2').textContent = 'Winkelsumme der drei Bindungen: ' + (R.n === 3 ? f0(R.sum) + '°' : '–');
+}
+$('c2').querySelectorAll('button').forEach(b => b.onclick = () => select2(b.dataset.k === sel2 ? null : b.dataset.k));
+v2.onPick = o => { if (o && o.userData.key) select2(o.userData.key); };
+v2.onFrame = () => { if (sel2) ringM.lookAt(v2.camera.position.clone().applyMatrix4(v2.root.matrixWorld.clone().invert()).add(V3(0, 0, 0))); };
+$('o-plane').onclick = e => { pl2.visible = !pl2.visible; e.target.classList.toggle('on', pl2.visible); };
+$('o-h').classList.add('on'); $('o-h').onclick = e => { const on = !e.target.classList.contains('on'); e.target.classList.toggle('on', on); for (const k in mol2.atoms) if (MOL.at[k][0] === 'H') mol2.atoms[k].visible = on; MOL.bonds.forEach(([a, b]) => { if (MOL.at[a][0] === 'H' || MOL.at[b][0] === 'H') { const r = mol2.bonds[a + '-' + b]; r.s1.visible = on; } }); };
+// Bindungslängen
+const LEN = [['C1-O1', 'C=O'], ['C1-N2', 'C–N'], ['N2-Ca2', 'N–Cα'], ['Ca1-C1', 'Cα–C']];
+const lenL = LEN.map(([k, t]) => { const [a, b] = k.split('-'), pa = MOL.at[a][1], pb = MOL.at[b][1]; return v2.addLabel(() => pa.clone().add(pb).multiplyScalar(0.5).add(V3(0, 0, 0.55)), `${t}: ${f0(pa.distanceTo(pb) * 100)} pm`, '#ffd54f'); });
+$('o-len').onclick = e => { const on = !e.target.classList.contains('on'); e.target.classList.toggle('on', on); lenL.forEach(l => l.on = on); };
+// Mesomerie
+const chgO = v2.addLabel(() => MOL.at.O1[1].clone().add(V3(0.2, 0.6, 0.5)), '', '#ff8a80'), chgN = v2.addLabel(() => MOL.at.N2[1].clone().add(V3(0.2, -0.6, 0.5)), '', '#80d8ff');
+const MES = [
+  { eq: ['R–C(=O)–<b>N̈</b>H–R', 'Grenzstruktur I: C=O-Doppelbindung, C–N-Einfachbindung, freies Paar am N'], co: 'double', cn: 'single', o: '', n: '' },
+  { eq: ['R–C(<sup>δ−</sup>O)···N(<sup>δ+</sup>H)–R', 'Mesomeriehybrid: Die Bindungen C–O und C–N haben beide Doppelbindungsanteile, die Ladung ist verteilt'], co: 'partial', cn: 'partial', o: 'δ⁻', n: 'δ⁺' },
+  { eq: ['R–C(–O<sup>⊖</sup>)=N<sup>⊕</sup>H–R', 'Grenzstruktur II: C–O-Einfachbindung (O⁻), C=N-Doppelbindung (N⁺)'], co: 'single', cn: 'double', o: '⊖', n: '⊕' }
+];
+function mes(s) {
+  const M = MES[s]; setBond(mol2.bonds['C1-O1'], M.co); setBond(mol2.bonds['C1-N2'], M.cn);
+  chgO.el.innerHTML = M.o; chgN.el.innerHTML = M.n; chgO.on = chgN.on = !!M.o;
+  $('mes-btns').querySelectorAll('button').forEach(b => b.classList.toggle('on', +b.dataset.s === s));
+  $('mes-eq').innerHTML = `<span class="st on mol">${M.eq[0]}</span><span class="muted" style="font-size:12.5px;font-weight:500">${M.eq[1]}</span>`;
+}
+$('mes-btns').querySelectorAll('button').forEach(b => b.onclick = () => mes(+b.dataset.s)); mes(1);
+select2('N2');
+
+// ===================== TAB 3 Drehbarkeit =====================
+const v3 = new View($('v3'), { dist: 12, rx: 0.5, ry: -0.7 });
+faceView(v3, 0.55, 0.45); const m3 = new THREE.Group(); v3.root.add(m3);
+const C1p = MOL.at.C1[1], N2p = MOL.at.N2[1], Ca2p = MOL.at.Ca2[1];
+const gA = new THREE.Group(), gB = new THREE.Group(), gC = new THREE.Group();
+gB.position.copy(C1p); gC.position.copy(N2p).sub(C1p);
+m3.add(gA); gA.add(gB); gB.add(gC);
+const mol3 = buildMol(null, { levels: [gA, gB, gC], pivots: [V3(0, 0, 0), C1p, N2p] });
+m3.position.copy(planeC).multiplyScalar(-1); gA.position.set(0, 0, 0);
+mol3.groups[0].position.set(0, 0, 0);
+// Bindungen bleiben mesomer-neutral: C=O doppelt, C–N als Partialdoppelbindung
+setBond(mol3.bonds['C1-N2'], 'partial');
+const axW = N2p.clone().sub(C1p).normalize(), axF = Ca2p.clone().sub(N2p).normalize();
+const st3 = { w: 0, f: 0, tw: null };
+const Ew = d => { const r = d * Math.PI / 180; return 40 * (1 - Math.cos(2 * r)) + 5 * (1 - Math.cos(r)); };
+const Ef = d => { const r = d * Math.PI / 180; return 4 * (1 - Math.cos(3 * r)) + 1.5 * (1 - Math.cos(r)); };
+function worldCa2() { const p = Ca2p.clone().sub(N2p), q = new THREE.Quaternion().setFromAxisAngle(axW, st3.w * Math.PI / 180); const r = p.clone().applyQuaternion(q).add(N2p.clone().sub(C1p).applyQuaternion(q)).add(C1p); return r; }
+function apply3() {
+  gB.quaternion.setFromAxisAngle(axW, st3.w * Math.PI / 180); gC.quaternion.setFromAxisAngle(axF, st3.f * Math.PI / 180);
+  const Ca1p = MOL.at.Ca1[1], dist = Ca1p.distanceTo(worldCa2()), w = ((180 + st3.w) % 360 + 360) % 360, E = Ew(st3.w);
+  $('w-v').textContent = `ω = ${f0(w)}°`; $('f-v').textContent = `φ = ${f0(st3.f)}°`;
+  $('h3').innerHTML = `<b>E ≈ ${f0(E)} kJ/mol</b> · Abstand Cα–Cα: <b>${f1(dist)} Å</b>`;
+  let t1, t2;
+  if (E < 4) { t1 = Math.abs(st3.w) < 5 ? 'Trans-Peptidbindung: planar, stabil' : 'Cis-Peptidbindung: planar, aber gespannt'; t2 = Math.abs(st3.w) < 5 ? 'Die Ebene der Peptidgruppe bleibt erhalten.' : 'Die Cα-Atome kommen sich nahe (sterische Abstoßung).'; if (Math.abs(st3.w) > 175) { t1 = 'Cis-Peptidbindung: planar, aber gespannt'; } }
+  else if (E < 40) { t1 = 'Die Ebene verdrillt'; t2 = 'Die Mesomerie wird gestört, die Energie steigt.'; }
+  else { t1 = 'Fast senkrecht: Energiegipfel'; t2 = 'Hier ist die Delokalisierung am stärksten gestört, die Barriere liegt bei etwa 80 kJ/mol.'; }
+  $('b3t1').textContent = t1; $('b3t2').textContent = t2;
+  $('i3').innerHTML = `Drehung um C–N: <b>${f0(Ew(st3.w))} kJ/mol</b> · um N–Cα: <b>${f1(Ef(st3.f))} kJ/mol</b> (Modellwerte)`;
+  draw3();
+}
+function curve(cv, fn, x, ymax, col, lab) {
+  lab = lab || ['−180°', '0°', '+180°'];
+  const c = cv.getContext('2d'), W = cv.width, H = cv.height; c.clearRect(0, 0, W, H);
+  c.strokeStyle = '#2a3547'; c.lineWidth = 1; c.font = '20px sans-serif'; c.fillStyle = '#8d9bb0';
+  for (let k = 0; k <= 4; k++) { const y = H - 30 - (H - 50) * k / 4; c.beginPath(); c.moveTo(50, y); c.lineTo(W - 10, y); c.stroke(); c.fillText(f0(ymax * k / 4), 8, y + 6); }
+  c.fillText('kJ/mol', W - 90, 22); c.fillText(lab[0], 50, H - 6); c.fillText(lab[1], W / 2 - 20, H - 6); c.fillText(lab[2], W - 70, H - 6);
+  c.strokeStyle = col; c.lineWidth = 3; c.beginPath();
+  for (let d = -180; d <= 180; d += 2) { const X = 50 + (W - 60) * (d + 180) / 360, Y = H - 30 - (H - 50) * fn(d) / ymax; d === -180 ? c.moveTo(X, Y) : c.lineTo(X, Y); } c.stroke();
+  const X = 50 + (W - 60) * (x + 180) / 360, Y = H - 30 - (H - 50) * fn(x) / ymax;
+  c.fillStyle = '#ffd54f'; c.beginPath(); c.arc(X, Y, 9, 0, 7); c.fill();
+}
+function draw3() { curve($('e-w'), Ew, st3.w, 100, '#ff8a65', ['ω = 0° (cis)', '180° (trans)', '360° (cis)']); curve($('e-f'), Ef, st3.f, 100, '#80cbc4', ['φ = −180°', '0°', '+180°']); }
+$('w').oninput = e => { st3.w = +e.target.value; st3.tw = null; apply3(); };
+$('w').onchange = e => { if ($('w-spring').checked) { const a = Math.abs(st3.w); st3.tw = a < 90 ? 0 : (st3.w > 0 ? 180 : -180); } };
+$('f').oninput = e => { st3.f = +e.target.value; apply3(); };
+$('w-trans').onclick = () => { st3.tw = 0; }; $('w-cis').onclick = () => { st3.tw = 180; };
+v3.onFrame = () => { if (st3.tw !== null) { const d = st3.tw - st3.w; if (Math.abs(d) < 0.6) { st3.w = st3.tw; st3.tw = null; $('w').value = st3.w; apply3(); } else { st3.w += Math.sign(d) * Math.max(1.2, Math.abs(d) * 0.06); $('w').value = st3.w; apply3(); } } };
+apply3();
+
+// ===================== TAB 4 Spiele =====================
+const v4 = new View($('v4'), { dist: 12, rx: 0.9, ry: 0 });
+faceView(v4, 0.55, 0.3); const m4 = new THREE.Group(); v4.root.add(m4); centerAll(m4);
+const mol4 = buildMol(m4), pl4 = planeMesh(); pl4.visible = false; m4.add(pl4);
+const ring4 = ring(0xffd54f); ring4.visible = false; m4.add(ring4);
+v4.pickables = Object.values(mol4.atoms);
+v4.onFrame = () => { if (ring4.visible) ring4.lookAt(v4.camera.position.clone().applyMatrix4(v4.root.matrixWorld.clone().invert())); };
+const G = { cur: 1 };
+const gs = $('g-side');
+function showGame(n) {
+  G.cur = n; document.querySelectorAll('#g-nav button').forEach(b => b.classList.toggle('on', +b.dataset.g === n));
+  const gl = n <= 2; v4.canvas.style.display = gl ? '' : 'none'; v4.labels.forEach(l => l.el.style.display = 'none');
+  $('gp3').classList.toggle('on', n === 3); $('gp4').classList.toggle('on', n === 4); $('b4').style.display = gl ? '' : 'none';
+  v4.onPick = null; ring4.visible = false; pl4.visible = false; for (const k in mol4.atoms) mol4.atoms[k].material.emissive.setHex(0);
+  [null, g1, g2, g3, g4, g5][n]();
+}
+document.querySelectorAll('#g-nav button').forEach(b => b.onclick = () => showGame(+b.dataset.g));
+// --- Spiel 1: Atom-Detektiv ---
+function g1() {
+  const sel = new Set(); let fails = 0;
+  gs.innerHTML = `<h2>🔍 Atom-Detektiv</h2><div class="box hi"><b>Auftrag:</b> Tippe im Modell alle Atome an, die <b>gemeinsam in einer Ebene</b> mit der Peptidgruppe (Atome der C–N-Bindung) liegen.</div><div class="btns"><button class="go" id="g1-chk">Prüfen</button><button id="g1-rs">Auswahl löschen</button></div><div class="box" id="g1-fb"></div>
+  <details class="expl"><summary>Tipp</summary><p>Überlege mit dem EPA-Modell: Welche Atome haben drei Wolken und damit 120°-Winkel? Welche Atome sind dadurch festgelegt?</p></details>`;
+  $('b4t1').textContent = 'Wähle die Atome der Peptidebene'; $('b4t2').textContent = 'Tippe Atome an (grün = ausgewählt). Wische zum Drehen und prüfe aus mehreren Richtungen.';
+  v4.onPick = o => { if (!o || !o.userData.key) return; const k = o.userData.key; if (sel.has(k)) { sel.delete(k); o.material.emissive.setHex(0); } else { sel.add(k); o.material.emissive.setHex(0x1f8a4a); } $('b4t2').textContent = sel.size + ' Atome ausgewählt'; };
+  $('g1-rs').onclick = () => { sel.forEach(k => mol4.atoms[k].material.emissive.setHex(0)); sel.clear(); $('g1-fb').innerHTML = ''; };
+  $('g1-chk').onclick = () => {
+    const ok = PL.filter(k => sel.has(k)).length, extra = [...sel].filter(k => !PL.includes(k)).length, fb = $('g1-fb');
+    if (ok === 6 && !extra) { pl4.visible = true; fb.innerHTML = '🎉 <b>Richtig!</b> Cα, C, O, N, H und Cα liegen in einer Ebene. C und N haben je drei Wolken (120°), die Doppelbindungsanteile der C–N-Bindung verhindern die Drehung. Die übrigen Atome (H an Cα, N-Terminus …) stehen außerhalb.'; }
+    else { fails++; fb.innerHTML = `${ok} von 6 gesuchten Atomen gewählt${extra ? `, ${extra} Atom${extra > 1 ? 'e' : ''} zu viel` : ''}. ${fails >= 3 ? 'Denke an die sechs Atome rund um die C–N-Bindung.' : 'Versuche es nochmal.'}`; }
+  };
+}
+// --- Spiel 2: Winkel-Quiz ---
+function g2() {
+  const R = ['Ca1', 'N1', 'C1', 'N2', 'Ca2'].sort(() => Math.random() - 0.5), OPT = [['104,5°', 104.5], ['107°', 107], ['109,5°', 109.5], ['120°', 120], ['180°', 180]];
+  const exp = { Ca1: [109.5, 'Vier Partner (N, C, H, H), keine freien Paare: <b>tetraedrisch</b>.'], Ca2: [109.5, 'Vier Partner, keine freien Paare: <b>tetraedrisch</b>.'], C1: [120, 'Drei Wolken (C=O zählt einfach): <b>trigonal-planar</b>.'], N1: [107, '3 Partner + 1 freies Paar: <b>pyramidal</b> (wie NH₃), das freie Paar drückt die Bindungen zusammen.'], N2: [120, 'Das EPA-Modell würde 107° erwarten. Wegen der <b>Mesomerie</b> ist das freie Paar delokalisiert, der N ist <b>planar</b> mit 120°.'] };
+  let i = 0, pts = 0, tries = 0;
+  const q = () => {
+    if (i >= R.length) { ring4.visible = false; gs.innerHTML = `<h2>📐 Winkel-Quiz</h2><div class="qz"><div class="qq">Geschafft! 🎉</div><p>Im ersten Versuch richtig: <b>${pts} von ${R.length}</b>.</p><div class="btns"><button class="go" onclick="g2()">Nochmal</button></div></div>`; $('b4t1').textContent = 'Alle Atome erledigt'; $('b4t2').textContent = ''; return; }
+    const k = R[i]; tries = 0; ring4.visible = true; ring4.position.copy(MOL.at[k][1]);
+    $('b4t1').textContent = 'Welcher Winkel gilt um das markierte Atom?'; $('b4t2').textContent = 'Gelber Ring = Zentralatom (Atom ' + (i + 1) + ' von ' + R.length + '). Zähle seine Partner und freie Paare.';
+    gs.innerHTML = `<h2>📐 Winkel-Quiz</h2><div class="qz"><div class="qh"><span>Atom ${i + 1} von ${R.length}</span><span>★ ${pts}</span></div><div class="qq">Welcher Bindungswinkel gilt (nach EPA-Modell oder im Molekül) um das gelb markierte Atom?</div>${OPT.map((o, j) => `<button class="qo" data-j="${j}">${o[0]}</button>`).join('')}<div class="qf"></div><div class="qn"></div></div>`;
+    gs.querySelectorAll('.qo').forEach(b => b.onclick = () => {
+      const o = OPT[+b.dataset.j], f = gs.querySelector('.qf');
+      if (o[1] === exp[k][0]) { b.classList.add('ok'); if (!tries) pts++; const rp = angleReport(k); f.className = 'qf ok'; f.innerHTML = '✔ Richtig. ' + exp[k][1] + `<br>Im Modell gemessen: Ø ${f0(rp.mean)}°.`; gs.querySelectorAll('.qo').forEach(x => x.disabled = true); gs.querySelector('.qn').innerHTML = '<div class="btns"><button class="go" id="g2n">Weiter</button></div>'; $('g2n').onclick = () => { i++; q(); }; }
+      else { tries++; b.classList.add('no'); b.disabled = true; f.className = 'qf no'; f.textContent = 'Noch nicht. Zähle die Wolken am Atom und überlege, ob freie Paare dabei sind.'; }
+    });
+  }; q();
+}
+// --- Spiel 3: Sortieren ---
+function g3() {
+  const BINS = [['lin', 'linear (180°)'], ['plan', 'trigonal-planar (120°)'], ['tet', 'tetraedrisch (109,5°)'], ['pyr', 'trigonal-pyramidal (≈107°)'], ['geb', 'gewinkelt (≈104,5°)']];
+  const CARDS = [['N im NH₃', 'pyr', '3 Partner + 1 freies Paar: 4 Wolken, Gestalt pyramidal.'], ['C im CH₄', 'tet', '4 bindende Paare, keine freien: Tetraeder.'], ['O im H₂O', 'geb', '2 Partner + 2 freie Paare: Gestalt gewinkelt.'], ['C im CO₂', 'lin', 'Zwei Doppelbindungen = 2 Wolken: linear.'], ['C der C=O-Gruppe (Peptidgruppe)', 'plan', '3 Wolken (C=O zählt einfach): trigonal-planar.'], ['Cα einer Aminosäure', 'tet', 'Vier verschiedene Partner (N, C, H, R): tetraedrisch.'], ['N der Aminogruppe (R–NH₂)', 'pyr', 'Wie im NH₃: pyramidal.'], ['N in der Peptidgruppe', 'plan', 'Das EPA-Modell sagt pyramidal voraus, real planar wegen der Mesomerie (Delokalisierung des freien Paares).'], ['jedes C im Ethen (C₂H₄)', 'plan', '3 Wolken (C=C zählt einfach): trigonal-planar.']].sort(() => Math.random() - 0.5);
+  let sel = null, pts = 0, done = 0; const tried = new Set();
+  const gp = $('gp3');
+  gp.innerHTML = `<div class="box hi">Tippe eine Karte an und dann das Feld, in das sie gehört. Gesucht ist die <b>tatsächliche</b> Gestalt am angegebenen Atom.</div><div class="cards" id="g3-cards"></div><div class="bins" id="g3-bins"></div>`;
+  const cd = $('g3-cards'), bn = $('g3-bins');
+  BINS.forEach(([k, t]) => { const d = document.createElement('div'); d.className = 'bin'; d.dataset.k = k; d.innerHTML = `<h4>${t}</h4>`; bn.appendChild(d); });
+  CARDS.forEach((c, i) => { const b = document.createElement('button'); b.className = 'card'; b.textContent = c[0]; b.dataset.i = i; cd.appendChild(b); b.onclick = () => { if (b.classList.contains('done')) return; cd.querySelectorAll('.card').forEach(x => x.classList.remove('sel')); sel = i; b.classList.add('sel'); }; });
+  bn.querySelectorAll('.bin').forEach(bin => bin.onclick = () => {
+    if (sel === null) return flash('Wähle zuerst eine Karte.');
+    const c = CARDS[sel], b = cd.querySelector(`.card[data-i="${sel}"]`);
+    if (bin.dataset.k === c[1]) { if (!tried.has(sel)) pts++; b.classList.remove('sel'); b.classList.add('done'); bin.appendChild(b); done++; gs.innerHTML = side3(`✔ <b>${c[0]}</b>: ${c[2]}`); sel = null; }
+    else { tried.add(sel); bin.classList.add('shake'); setTimeout(() => bin.classList.remove('shake'), 400); gs.innerHTML = side3('✘ Das passt noch nicht. Zähle Wolken und freie Paare.'); }
+  });
+  const side3 = msg => `<h2>🗂 Sortieren</h2><div class="box">${msg || 'Ordne alle Karten zu.'}</div><p class="muted">Zugeordnet: ${done} von ${CARDS.length} · im ersten Versuch richtig: ${pts}</p>${done === CARDS.length ? '<div class="box hi">🎉 Alles zugeordnet! Merke dir: Das EPA-Modell sagt die Gestalt voraus, bei Mesomerie (Peptid-N) muss man vorher die Delokalisierung beachten.</div>' : ''}`;
+  gs.innerHTML = side3();
+}
+// --- Spiel 4: Bindungslängen ---
+function g4() {
+  const T = [['123 pm', 'C1-O1'], ['133 pm', 'C1-N2'], ['146 pm', 'N2-Ca2']], SL = [['C1-O1', 'C=O', 'Carbonyl-Bindung'], ['C1-N2', 'C–N', 'Peptidbindung'], ['N2-Ca2', 'N–Cα', 'Einfachbindung']].sort(() => Math.random() - 0.5);
+  let sel = null, done = 0, pts = 0; const wrong = new Set();
+  const gp = $('gp4');
+  gp.innerHTML = `<div class="box hi">Ordne jeder Bindung ihre <b>Bindungslänge</b> zu: Tippe erst eine Länge, dann die Bindung. Zum Vergleich: <b>C–N-Einfachbindung 147 pm</b>, <b>C=N-Doppelbindung 127 pm</b>.</div><div class="cards" id="g4-t">${T.map((t, i) => `<button class="tile" data-i="${i}">${t[0]}</button>`).join('')}</div><div id="g4-s">${SL.map(s => `<div class="slotrow"><div class="slot" data-k="${s[0]}">${s[1]}<small>${s[2]}</small></div></div>`).join('')}</div>`;
+  gp.querySelectorAll('.tile').forEach(b => b.onclick = () => { if (b.classList.contains('used')) return; gp.querySelectorAll('.tile').forEach(x => x.classList.remove('sel')); b.classList.add('sel'); sel = +b.dataset.i; });
+  gp.querySelectorAll('.slot').forEach(s => s.onclick = () => {
+    if (sel === null || s.classList.contains('ok')) return flash('Wähle zuerst eine Länge.');
+    if (T[sel][1] === s.dataset.k) { if (!wrong.has(sel)) pts++; s.classList.add('ok'); s.firstChild.textContent += '  =  ' + T[sel][0]; const t = gp.querySelector(`.tile[data-i="${sel}"]`); t.classList.add('used'); t.classList.remove('sel'); sel = null; done++; side(); }
+    else { wrong.add(sel); s.classList.add('shake'); setTimeout(() => s.classList.remove('shake'), 400); gs.innerHTML = `<h2>📏 Bindungslängen</h2><div class="box">✘ Das passt noch nicht. Je mehr Bindungsanteile, desto kürzer die Bindung.</div>`; }
+  });
+  const side = () => { gs.innerHTML = `<h2>📏 Bindungslängen</h2><div class="box">${done < 3 ? 'Noch ' + (3 - done) + ' zuzuordnen.' : '🎉 <b>Geschafft!</b> Die Peptidbindung (133 pm) liegt zwischen C–N-Einfach (147 pm) und C=N-Doppelbindung (127 pm), sie ist viel näher an der Doppelbindung. Das ist der Beleg für die <b>Mesomerie</b> und den Partialdoppelbindungs-Charakter.'}</div>`; if (done === 3) gs.innerHTML += '<div id="g4q"></div>'; if (done === 3) quiz($('g4q'), [{ q: 'Welche Folge hat der Doppelbindungs-Charakter der C–N-Bindung?', o: ['Die C–N-Bindung ist nicht frei drehbar.', 'Das Molekül wird ionisch.', 'Die Bindung bricht leichter.', 'Der Stickstoff wird pyramidal.'], a: 0, why: 'Eine Drehung würde die Überlappung der p-Orbitale und damit die Delokalisierung aufheben.' }], 'Nachgefragt'); };
+  side();
+}
+// --- Spiel 5: Denkaufgaben ---
+function g5() {
+  gs.innerHTML = '<h2>🧠 Denkaufgaben</h2><div id="g5q"></div>';
+  $('gp3').classList.remove('on'); $('gp4').classList.remove('on'); v4.canvas.style.display = 'none'; $('b4').style.display = 'none';
+  $('gp3').classList.add('on'); $('gp3').innerHTML = '<div class="box hi" style="max-width:560px"><b>Denkaufgaben</b><br>Beantworte die Fragen rechts. Jede Antwort wird erklärt, sobald du sie richtig hast. Falsche Antworten kannst du in Ruhe korrigieren.</div><div class="mol" style="font-size:26px;margin:24px 0;text-align:center">R–Cα–C(=O)–N(H)–Cα–R</div>';
+  quiz($('g5q'), [
+    { q: 'Warum ist die C–N-Bindung der Peptidgruppe nicht frei drehbar?', o: ['Sie hat durch Mesomerie Partialdoppelbindungs-Charakter.', 'Das N-Atom ist größer als das C-Atom.', 'Wasserstoffbrücken blockieren die Drehung.', 'Sie ist eine echte Dreifachbindung.'], a: 0, why: 'Das freie Elektronenpaar am N ist in das π-System der C=O-Gruppe einbezogen. Eine Drehung würde das aufheben.' },
+    { q: 'Das EPA-Modell erwartet am N (3 Partner + 1 freies Paar) eine pyramidale Gestalt. In der Peptidgruppe ist der N aber planar. Warum?', o: ['Das freie Paar ist delokalisiert und wirkt wie Teil einer Bindung, der N hat effektiv nur drei Wolken.', 'Das EPA-Modell gilt nur für Kohlenstoff.', 'Der Stickstoff hat in Peptiden vier Bindungen.', 'Die Messung ist ungenau.'], a: 0, why: 'Delokalisierte Elektronen kennt das EPA-Modell nicht. Man muss die Mesomerie vorher berücksichtigen.' },
+    { q: 'Wie viele Atome liegen in der Ebene einer (trans-)Peptidgruppe?', o: ['4', '6', '8', '10'], a: 1, why: 'Cα, C, O, N, H und das zweite Cα.' },
+    { q: 'Was bedeutet die starre, planare Peptidgruppe für die Kette?', o: ['Nur an den Cα-Atomen (Winkel φ und ψ) kann die Kette ihre Gestalt ändern.', 'Die Kette ist völlig starr.', 'Die Kette kann überall frei gedreht werden.', 'Die Kette ist immer linear.'], a: 0, why: 'Dadurch sind nur bestimmte Faltungen möglich, zum Beispiel α-Helix und β-Faltblatt (siehe Strukturebenen der Proteine).' },
+    { q: 'Warum liegen die Peptidbindungen in Proteinen fast immer trans vor?', o: ['Im cis-Zustand stoßen die Reste an den Cα-Atomen sterisch zusammen.', 'Cis-Bindungen sind ionisch.', 'Nur trans besitzt eine Ebene.', 'Wegen der Wasserstoffbrücken zwischen den Cα-Atomen.'], a: 0, why: 'Cis: Cα–Cα etwa 2,9 Å, trans: etwa 3,8 Å. Nur bei Prolin ist cis etwas häufiger.' },
+    { q: 'Welche Aussage über das Cα-Atom einer Aminosäure (ohne Glycin) stimmt?', o: ['Vier verschiedene Partner, tetraedrisch, Stereozentrum.', 'Drei Partner, planar.', 'Zwei Partner, linear.', 'Ein freies Paar, pyramidal.'], a: 0, why: 'Das ist die Grundlage der Chiralität der Aminosäuren (Reiter 6 bei den Aminosäuren).' }
+  ], 'Denkaufgaben');
+}
+tabHooks[4] = () => { if (!tabHooks.once) { tabHooks.once = 1; showGame(1); } };
+</script>
+<a href="/Virtuelles-Chemielabor/impressum.html" style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-family: sans-serif; font-size: 12px; z-index: 9999;">Impressum &amp; Datenschutz</a>
+</body>
+</html>

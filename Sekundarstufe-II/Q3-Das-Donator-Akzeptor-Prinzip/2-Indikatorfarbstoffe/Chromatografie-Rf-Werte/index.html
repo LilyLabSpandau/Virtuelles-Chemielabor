@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Chromatografie und Rf-Werte</title>
+<link rel="icon" type="image/png" href="../../../../icons/icon-192.png">
+<link rel="apple-touch-icon" href="../../../../icons/apple-touch-icon.png">
+<style>
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; height: 100%; }
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #12161d; color: #e8edf5; display: flex; flex-direction: column; overflow: hidden; }
+header { flex: none; display: flex; align-items: center; gap: 12px; padding: 8px 14px; background: #0d1117; border-bottom: 1px solid #263041; flex-wrap: wrap; }
+header h1 { font-size: 17px; margin: 0; color: #64b5f6; white-space: nowrap; }
+header a.back { color: #90a4be; font-size: 12.5px; text-decoration: none; margin-left: auto; }
+nav { display: flex; gap: 6px; flex-wrap: wrap; }
+nav button { border: 1px solid #2f3b50; background: #1a212c; color: #c5d0e0; padding: 7px 12px; border-radius: 9px; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+nav button.on { background: #2f5fd0; border-color: #4d7df0; color: #fff; }
+nav button small { opacity: .7; font-weight: 500; }
+main { flex: 1; min-height: 0; position: relative; }
+.tab { display: none; position: absolute; inset: 0; grid-template-columns: minmax(0, 1fr) 420px; }
+.tab.on { display: grid; }
+.view { position: relative; min-width: 0; min-height: 0; overflow: hidden; background: radial-gradient(ellipse at 50% 40%, #1d2735, #10141b 75%); }
+.view canvas.gl { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; display: block; }
+.view .stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 56px 10px 10px; overflow: auto; }
+.cap { position: absolute; left: 12px; top: 10px; z-index: 3; display: flex; gap: 8px; flex-wrap: wrap; max-width: calc(100% - 24px); }
+.hud { background: rgba(13,17,23,.86); border: 1px solid #2a3547; border-radius: 10px; padding: 6px 10px; font-size: 12.5px; }
+.hud b { color: #fff; }
+.vbar { position: absolute; left: 0; right: 0; bottom: 0; z-index: 4; background: rgba(13,17,23,.94); border-top: 1px solid #263041; padding: 8px 14px; }
+.vbar .t1 { font-size: 18px; font-weight: 800; }
+.vbar .t2 { font-size: 13px; color: #b6c3d6; margin-top: 2px; }
+.lbl { position: absolute; z-index: 2; pointer-events: none; transform: translate(-50%, -50%); font-size: 12.5px; font-weight: 800; padding: 1px 6px; border-radius: 6px; background: rgba(13,17,23,.82); border: 1px solid #3a4961; white-space: nowrap; }
+.side { overflow-y: auto; padding: 12px 14px 60px; background: #161b24; border-left: 1px solid #263041; font-size: 13.5px; line-height: 1.5; }
+.side h2 { font-size: 15px; margin: 4px 0 8px; color: #ffd54f; }
+.side h3 { font-size: 13px; margin: 14px 0 6px; color: #90caf9; text-transform: uppercase; letter-spacing: .04em; }
+.muted { color: #8d9bb0; }
+.expl { background: #1c2430; border: 1px solid #2a3547; border-radius: 10px; padding: 8px 12px; margin: 8px 0; }
+.expl summary { cursor: pointer; font-weight: 700; color: #ffd54f; }
+.expl p { margin: 7px 0; }
+.expl ul, .expl ol { margin: 6px 0; padding-left: 20px; }
+.expl li { margin: 3px 0; }
+.task { background: #1d2a22; border: 1px solid #355a45; }
+.task summary { color: #8fe0b0; }
+.gloss dt { font-weight: 700; color: #90caf9; margin-top: 7px; }
+.gloss dd { margin: 2px 0 0 0; }
+.box { background: #1c2430; border: 1px solid #2a3547; border-radius: 10px; padding: 8px 12px; margin: 8px 0; }
+.box.hi { border-color: #64b5f6; }
+.box.warn { border-color: #b8860b; background: #2a2416; }
+.box:empty { display: none; }
+.btns { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.btns button, button.mini { border: 1px solid #38465e; background: #232d3c; color: #dbe4f2; border-radius: 8px; padding: 7px 11px; font-size: 12.5px; cursor: pointer; font-family: inherit; }
+.btns button:active, button.mini:active { background: #2f3c52; }
+.btns button.on { background: #2f5fd0; border-color: #4d7df0; color: #fff; }
+.btns button.go { background: #2a6a3f; border-color: #3f9a5b; color: #fff; }
+.btns button.del { border-color: #7a3a3a; color: #ffb4ab; }
+.btns button:disabled { opacity: .4; cursor: default; }
+select, input[type=range], input[type=text], input[type=number] { font: inherit; }
+select, input[type=text], input[type=number] { background: #232d3c; color: #e8edf5; border: 1px solid #38465e; border-radius: 8px; padding: 6px 8px; font-size: 13px; }
+input[type=range] { accent-color: #7b3fe4; width: 100%; height: 26px; }
+label.chk { display: inline-flex; align-items: center; gap: 6px; margin: 3px 12px 3px 0; font-size: 12.5px; cursor: pointer; }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 999px; color: #10151c; font-weight: 700; font-size: 12px; }
+table.res { border-collapse: collapse; width: 100%; font-size: 12.5px; margin: 6px 0; }
+table.res th, table.res td { border-bottom: 1px solid #2a3547; padding: 4px 6px; text-align: left; }
+table.res th { color: #90caf9; font-weight: 700; }
+#toast { position: fixed; left: 50%; bottom: 70px; transform: translateX(-50%); background: #2f3c52; color: #fff; padding: 8px 14px; border-radius: 10px; font-size: 13px; opacity: 0; transition: opacity .25s; pointer-events: none; z-index: 50; }
+#toast.on { opacity: 1; }
+/* Quiz */
+.qz { background: #1c2430; border: 1px solid #2a3547; border-radius: 12px; padding: 12px 14px; margin: 8px 0; }
+.qz .qh { display: flex; justify-content: space-between; font-size: 12px; color: #8d9bb0; margin-bottom: 6px; }
+.qz .qq { font-size: 14.5px; font-weight: 700; margin: 4px 0 10px; line-height: 1.45; }
+.qz .qo { display: block; width: 100%; text-align: left; margin: 6px 0; padding: 9px 12px; border-radius: 10px; border: 1px solid #38465e; background: #232d3c; color: #e8edf5; font: inherit; font-size: 13.5px; cursor: pointer; line-height: 1.4; }
+.qz .qo:active { background: #2f3c52; }
+.qz .qo.ok { background: #1f5a37; border-color: #3fbf6f; }
+.qz .qo.no { background: #5a2323; border-color: #d96a6a; opacity: .75; }
+.qz .qo:disabled { cursor: default; }
+.qz .qf { margin-top: 8px; font-size: 13px; line-height: 1.5; }
+.qz .qf.ok { color: #9be7b4; } .qz .qf.no { color: #ffb4ab; }
+.qz .qn { margin-top: 10px; }
+.shake { animation: shake .35s; }
+@keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+@media (max-width: 900px) {
+  .tab, .tab.on { grid-template-columns: 1fr; }
+  .tab.on { grid-template-rows: 56% 44%; }
+  .side { border-left: 0; border-top: 1px solid #263041; }
+  header h1 { font-size: 15px; }
+  nav button { padding: 6px 9px; font-size: 12.5px; }
+  .hud { font-size: 11.5px; }
+}
+
+.stage canvas { max-width: 100%; max-height: 100%; touch-action: none; border-radius: 10px; box-shadow: 0 6px 24px rgba(0,0,0,.5); }
+.wide { display: flex; gap: 18px; align-items: center; justify-content: center; flex-wrap: wrap; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.fld { margin: 8px 0; font-size: 13px; }
+.fld label { display: block; color: #90caf9; font-weight: 700; margin-bottom: 3px; }
+.fld input[type=text], .fld input[type=number], .fld select { width: 100%; }
+.big { font-size: 22px; font-weight: 800; }
+.lanebtn.on { background: #2f5fd0; border-color: #4d7df0; color: #fff; }
+.polbar { height: 12px; border-radius: 6px; background: linear-gradient(90deg, #e8d28a, #9ec6e8, #5a9bff); margin: 2px 0 2px; }
+.polcap { display: flex; justify-content: space-between; font-size: 11.5px; color: #8d9bb0; }
+.stars { font-size: 26px; letter-spacing: 4px; color: #ffd54f; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🎨 Chromatografie und Rf-Werte</h1>
+  <nav id="tabs">
+    <button data-t="1" class="on">1 DC-Labor<small> · 3D</small></button>
+    <button data-t="2">2 Rf messen</button>
+    <button data-t="3">3 Spurensuche</button>
+    <button data-t="4">4 Trennwettbewerb</button>
+    <button data-t="5">5 Quiz</button>
+  </nav>
+  <a class="back" href="../index.html">← Zurück zu Indikatorfarbstoffe</a>
+</header>
+<main>
+
+<!-- ============ 1 DC-LABOR ============ -->
+<section class="tab on" id="t1">
+  <div class="view" id="v1">
+    <div class="cap"><div class="hud" id="h1">Platte vorbereitet</div></div>
+    <div class="vbar"><div class="t1" id="b1t1"></div><div class="t2" id="b1t2"></div></div>
+  </div>
+  <div class="side">
+    <h2>Das Dünnschicht-Labor</h2>
+    <details class="expl" open>
+      <summary>Prinzip der Dünnschichtchromatografie (DC)</summary>
+      <p>Ein Stoffgemisch wird <b>aufgetrennt</b>, weil die Bestandteile unterschiedlich stark mit zwei Phasen wechselwirken:</p>
+      <ul>
+        <li><b>Stationäre Phase</b>: die Beschichtung der Platte (hier Kieselgel, polar, mit Si–OH-Gruppen).</li>
+        <li><b>Mobile Phase</b>: das Fließmittel, das durch Kapillarkräfte in der Schicht aufsteigt und die Stoffe mitnimmt.</li>
+      </ul>
+      <p>Stoffe, die stark an der stationären Phase haften (<b>Adsorption</b>), wandern kaum. Stoffe, die sich gut im Fließmittel lösen, wandern weit. Ergebnis: Jeder Stoff bildet einen eigenen <b>Fleck</b>.</p>
+    </details>
+    <details class="expl" open>
+      <summary>Der Rf-Wert</summary>
+      <p><b>Rf = a / b</b> mit a = Strecke von der Startlinie bis zum Fleck(-mittelpunkt) und b = Strecke von der Startlinie bis zur <b>Laufmittelfront</b>. Der Rf-Wert liegt immer zwischen 0 und 1. Er ist bei <b>gleichen Bedingungen</b> (Platte, Fließmittel, Temperatur, Kammer) eine Stoffeigenschaft und dient zur Identifizierung.</p>
+    </details>
+    <h3>Dein Experiment</h3>
+    <div class="fld"><label>Probe</label><select id="sample"></select></div>
+    <div class="fld"><label>Fließmittel (Polarität)</label>
+      <div class="btns" id="solv"></div>
+      <input type="range" id="pf" min="0" max="100" value="50"><div class="polbar"></div><div class="polcap"><span>unpolar</span><span id="pfn"></span><span>polar</span></div></div>
+    <div class="fld"><label>Stationäre Phase</label><div class="btns" id="phase"><button data-p="si" class="on">Kieselgel (polar)</button><button data-p="rp">RP-18 (unpolar)</button></div></div>
+    <div class="btns"><button class="go" id="go">▶ Platte einsetzen und starten</button><button id="take" disabled>Platte entnehmen</button><button id="reset">Neu vorbereiten</button></div>
+    <div class="box" id="res"></div>
+    <details class="expl task" open>
+      <summary>Aufgaben</summary>
+      <ol>
+        <li>Starte die Chromatografie mit Kieselgel und einem unpolaren Fließmittel. Beschreibe, wo sich die Flecken befinden, und begründe die Reihenfolge mit den Wechselwirkungen.</li>
+        <li>Wiederhole den Versuch mit einem polaren Fließmittel. Wie verändern sich alle Rf-Werte? Was bedeutet das für die Trennung?</li>
+        <li>Wechsle auf die unpolare RP-18-Phase. Wie dreht sich die Reihenfolge um?</li>
+      </ol>
+    </details>
+    <details class="expl">
+      <summary>Durchführung im Labor</summary>
+      <ol>
+        <li>Startlinie <b>mit Bleistift</b> ziehen (Tinte würde sich lösen) und die Probe mit einer Kapillare als kleinen Punkt auftragen.</li>
+        <li>Fließmittel etwa 0,5 cm hoch einfüllen, es muss <b>unter der Startlinie</b> bleiben.</li>
+        <li>Platte einstellen und die Kammer <b>verschließen</b> (die Dampfatmosphäre sättigt sich, das Fließmittel verdunstet nicht von der Platte).</li>
+        <li>Vor dem Erreichen des oberen Randes herausnehmen und die <b>Laufmittelfront sofort mit Bleistift markieren</b>.</li>
+        <li>Trocknen lassen, Rf-Werte bestimmen.</li>
+      </ol>
+    </details>
+    <details class="expl lk">
+      <summary>Warum wandert ein Stoff weit oder kurz?</summary>
+      <p>Auf Kieselgel (Si–OH) bilden <b>polare</b> Stoffe mit OH-, NH₂- oder COOH-Gruppen Wasserstoffbrücken und werden festgehalten, ihr Rf-Wert ist klein. <b>Unpolare</b> Stoffe (z. B. Carotin, Alkylreste) wechselwirken nur schwach (Van-der-Waals-Kräfte) und wandern mit dem Fließmittel weit.</p>
+      <p>Ein <b>polareres Fließmittel</b> konkurriert besser um die Bindungsplätze, löst polare Stoffe besser und trägt sie weiter: Alle Rf-Werte steigen, die Trennung wird oft schlechter. Bei der <b>Umkehrphase (RP-18)</b> ist die stationäre Phase unpolar, daher kehrt sich die Reihenfolge um.</p>
+      <p><i>Die Simulation ist ein vereinfachtes Modell. Die Rf-Werte sind Modellwerte.</i></p>
+    </details>
+  </div>
+</section>
+
+<!-- ============ 2 RF MESSEN ============ -->
+<section class="tab" id="t2">
+  <div class="view" id="v2">
+    <div class="cap"><div class="hud" id="h2">Ziehe die Messlinie auf Höhe des Flecks.</div></div>
+    <div class="stage"><canvas id="cv2" width="320" height="560"></canvas></div>
+  </div>
+  <div class="side">
+    <h2>Rf-Werte messen</h2>
+    <div class="box hi">Das Lineal hat seinen <b>Nullpunkt an der Startlinie</b>. Ziehe die <b>Messlinie</b> (oder tippe an die gewünschte Stelle) und lies die Höhe ab. Tippe dann einen Fleck an, den du auswerten willst.</div>
+    <div id="m-sel" class="box"></div>
+    <div class="row2">
+      <div class="fld"><label>a (mm)</label><input type="number" id="m-a" inputmode="decimal" placeholder="Fleck"></div>
+      <div class="fld"><label>b (mm)</label><input type="number" id="m-b" inputmode="decimal" placeholder="Front"></div>
+    </div>
+    <div class="fld"><label>Rf = a / b</label><input type="number" id="m-rf" inputmode="decimal" step="0.01" placeholder="z. B. 0,45"></div>
+    <div class="btns"><button class="go" id="m-chk">Prüfen</button><button id="m-new">Neue Platte</button></div>
+    <div class="box" id="m-fb"></div>
+    <div id="m-q"></div>
+    <details class="expl task" open>
+      <summary>Aufgaben</summary>
+      <ol>
+        <li>Bestimme für jeden Fleck die Strecken a und b und berechne den Rf-Wert (zwei Nachkommastellen).</li>
+        <li>Welcher Fleck gehört zum Stoff mit der stärksten Bindung an die stationäre Phase?</li>
+      </ol>
+    </details>
+  </div>
+</section>
+
+<!-- ============ 3 SPURENSUCHE ============ -->
+<section class="tab" id="t3">
+  <div class="view" id="v3">
+    <div class="cap"><div class="hud" id="h3">Spur X wurde mit einem dieser Stifte geschrieben.</div></div>
+    <div class="stage"><canvas id="cv3" width="420" height="560"></canvas></div>
+  </div>
+  <div class="side">
+    <h2>🕵️ Spurensuche</h2>
+    <div class="box hi" id="s-story"></div>
+    <div class="fld"><label>Dein Verdacht (mehrere möglich, falls verlangt)</label><div class="btns" id="s-btns"></div></div>
+    <div class="btns"><button class="go" id="s-chk">Beschuldigen</button><button id="s-new">Neuer Fall</button></div>
+    <div class="box" id="s-fb"></div>
+    <details class="expl task" open>
+      <summary>So gehst du vor</summary>
+      <ol>
+        <li>Verschiebe die Vergleichslinie über die Platte. Auf <b>gleicher Höhe</b> und mit <b>gleicher Farbe</b> liegt derselbe Stoff.</li>
+        <li>Ein Stift ist nur dann der Verursacher, wenn <b>alle</b> seine Flecken in der Spur X vorkommen und umgekehrt.</li>
+      </ol>
+    </details>
+    <details class="expl">
+      <summary>Warum laufen Vergleichsproben auf derselben Platte?</summary>
+      <p>Der Rf-Wert hängt von Fließmittel, Platte, Temperatur und Kammersättigung ab. Nur wenn Probe und Vergleichssubstanzen <b>zusammen auf einer Platte</b> laufen, sind die Bedingungen identisch. Ein Rf-Wert aus einer Tabelle ist deshalb nur ein Hinweis.</p>
+    </details>
+  </div>
+</section>
+
+<!-- ============ 4 TRENNWETTBEWERB ============ -->
+<section class="tab" id="t4">
+  <div class="view" id="v4">
+    <div class="cap"><div class="hud" id="h4"></div></div>
+    <div class="stage"><canvas id="cv4" width="320" height="560"></canvas></div>
+  </div>
+  <div class="side">
+    <h2>🏆 Trennwettbewerb</h2>
+    <div class="box hi">Finde die Bedingungen, bei denen die Farbstoffe <b>am besten getrennt</b> werden: Alle Flecken sollen deutlich auseinander liegen und weder am Start (Rf ≈ 0) noch an der Front (Rf ≈ 1) kleben.</div>
+    <div class="fld"><label>Probe</label><select id="c-sample"></select></div>
+    <div class="fld"><label>Fließmittel: unpolar ⟷ polar</label><input type="range" id="c-pf" min="0" max="100" value="50"><div class="polbar"></div><div class="polcap"><span>Hexan</span><span id="c-pfn"></span><span>Wasser</span></div></div>
+    <div class="fld"><label>Stationäre Phase</label><div class="btns" id="c-phase"><button data-p="si" class="on">Kieselgel (polar)</button><button data-p="rp">RP-18 (unpolar)</button></div></div>
+    <div class="box"><div class="stars" id="c-stars"></div><div id="c-txt"></div></div>
+    <table class="res" id="c-tab"></table>
+    <details class="expl task" open>
+      <summary>Aufgaben</summary>
+      <ol>
+        <li>Erreiche drei Sterne für die Probe „Blattfarbstoffe“. Beschreibe, wie du vorgegangen bist.</li>
+        <li>Wie ändert sich die beste Fließmittelpolarität, wenn du von Kieselgel auf RP-18 wechselst? Begründe.</li>
+        <li>Bei der Probe „Zwei fast gleiche Farbstoffe“: Was ist das Problem, und gibt es eine Lösung?</li>
+      </ol>
+    </details>
+  </div>
+</section>
+
+<!-- ============ 5 QUIZ ============ -->
+<section class="tab" id="t5">
+  <div class="view" id="v5">
+    <div class="stage"><div class="box" style="max-width:520px;font-size:15px;line-height:1.6"><b>Quiz zur Chromatografie</b><br>Zehn Fragen zu Rf-Wert, Durchführung und Wechselwirkungen. Jede Antwort wird erklärt, sobald sie richtig ist. Ein falscher Versuch ist nicht schlimm, du kannst es nochmal probieren.</div></div>
+  </div>
+  <div class="side"><h2>🧠 Quiz</h2><div id="q5"></div></div>
+</section>
+
+</main>
+<div id="toast"></div>
+<script src="three.min.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+function flash(t) { const e = $('toast'); e.textContent = t; e.classList.add('on'); clearTimeout(flash.t); flash.t = setTimeout(() => e.classList.remove('on'), 2200); }
+const tabHooks = {};
+document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.id === 't' + b.dataset.t));
+  if (tabHooks[b.dataset.t]) tabHooks[b.dataset.t]();
+  window.dispatchEvent(new Event('resize'));
+});
+// Quiz-Baustein: items = [{q, o:[...], a:Index, why:'…'}]; Punkte nur für die Schülerin / den Schüler (nichts wird gespeichert)
+function quiz(el, items, title) {
+  let i = 0, pts = 0, tries = 0;
+  const done = () => { el.innerHTML = `<div class="qz"><div class="qq">${title || 'Quiz'} geschafft! 🎉</div><p>Im ersten Versuch richtig: <b>${pts} von ${items.length}</b>.</p><div class="btns"><button class="go" id="qz-again">Nochmal von vorn</button></div></div>`; el.querySelector('#qz-again').onclick = () => { i = 0; pts = 0; show(); }; };
+  const show = () => {
+    if (i >= items.length) return done();
+    const it = items[i]; tries = 0;
+    el.innerHTML = `<div class="qz"><div class="qh"><span>${title || 'Quiz'} · Frage ${i + 1} von ${items.length}</span><span>★ ${pts}</span></div><div class="qq">${it.q}</div>${it.o.map((o, k) => `<button class="qo" data-k="${k}">${o}</button>`).join('')}<div class="qf"></div><div class="qn"></div></div>`;
+    el.querySelectorAll('.qo').forEach(b => b.onclick = () => {
+      const k = +b.dataset.k, f = el.querySelector('.qf');
+      if (k === it.a) {
+        b.classList.add('ok'); if (tries === 0) pts++;
+        f.className = 'qf ok'; f.innerHTML = '✔ Richtig. ' + (it.why || '');
+        el.querySelectorAll('.qo').forEach(x => x.disabled = true);
+        el.querySelector('.qn').innerHTML = `<div class="btns"><button class="go" id="qz-next">${i + 1 < items.length ? 'Weiter' : 'Fertig'}</button></div>`;
+        el.querySelector('#qz-next').onclick = () => { i++; show(); };
+        if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([el]);
+      } else {
+        tries++; b.classList.add('no'); b.disabled = true; b.classList.add('shake');
+        f.className = 'qf no'; f.textContent = 'Noch nicht. Überlege nochmal und probiere eine andere Antwort.';
+      }
+    });
+  };
+  show();
+}
+
+// ===== 3D-Ansicht (three.js): Drehen per Wisch, Zoom per Pinch/Mausrad, Tippen = Auswahl =====
+const views = [];
+class View {
+  constructor(el, opts = {}) {
+    this.el = el; this.opts = opts;
+    this.canvas = document.createElement('canvas'); this.canvas.className = 'gl'; el.prepend(this.canvas);
+    this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
+    this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+    this.scene = new THREE.Scene();
+    this.camera = new THREE.PerspectiveCamera(38, 1, 0.1, 200);
+    this.dist = opts.dist || 11; this.camera.position.set(0, 0, this.dist);
+    this.root = new THREE.Group(); this.scene.add(this.root);
+    this.scene.add(new THREE.AmbientLight(0xffffff, 0.62));
+    const d1 = new THREE.DirectionalLight(0xffffff, 0.85); d1.position.set(4, 6, 8); this.scene.add(d1);
+    const d2 = new THREE.DirectionalLight(0x88aaff, 0.35); d2.position.set(-6, -3, -4); this.scene.add(d2);
+    this.q = new THREE.Quaternion().setFromEuler(new THREE.Euler(opts.rx || 0.35, opts.ry || -0.5, 0));
+    this.root.quaternion.copy(this.q);
+    this.pickables = []; this.onPick = null; this.labels = []; this.onFrame = null; this.auto = opts.auto || 0;
+    const ptr = new Map(); let lastD = 0, moved = 0, downAt = null;
+    const c = this.canvas;
+    c.addEventListener('pointerdown', e => { c.setPointerCapture(e.pointerId); ptr.set(e.pointerId, { x: e.clientX, y: e.clientY }); if (ptr.size === 1) { moved = 0; downAt = { x: e.clientX, y: e.clientY }; } if (ptr.size === 2) { const [a, b] = [...ptr.values()]; lastD = Math.hypot(a.x - b.x, a.y - b.y); } });
+    c.addEventListener('pointermove', e => {
+      const p = ptr.get(e.pointerId); if (!p) return;
+      if (ptr.size === 1) { const dx = e.clientX - p.x, dy = e.clientY - p.y; moved += Math.abs(dx) + Math.abs(dy); this.q.premultiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(dy * 0.008, dx * 0.008, 0))); this.root.quaternion.copy(this.q); this.auto = 0; }
+      else if (ptr.size === 2) { ptr.set(e.pointerId, { x: e.clientX, y: e.clientY }); const [a, b] = [...ptr.values()], d = Math.hypot(a.x - b.x, a.y - b.y); if (lastD) this.zoom(lastD / d); lastD = d; moved = 99; return; }
+      ptr.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    });
+    const up = e => { const had = ptr.has(e.pointerId); ptr.delete(e.pointerId); if (ptr.size < 2) lastD = 0; if (had && ptr.size === 0 && moved < 8 && downAt) this.pick(e.clientX, e.clientY); };
+    c.addEventListener('pointerup', up); c.addEventListener('pointercancel', e => { ptr.delete(e.pointerId); });
+    c.addEventListener('wheel', e => { e.preventDefault(); this.zoom(1 + Math.sign(e.deltaY) * 0.1); }, { passive: false });
+    new ResizeObserver(() => this.resize()).observe(el);
+    views.push(this); this.resize();
+  }
+  zoom(f) { this.dist = Math.min(30, Math.max(4, this.dist * f)); this.camera.position.z = this.dist; }
+  resize() { const w = this.el.clientWidth, h = this.el.clientHeight; if (!w || !h) return; this.renderer.setSize(w, h, false); this.camera.aspect = w / h; this.camera.updateProjectionMatrix(); }
+  pick(cx, cy) {
+    if (!this.onPick || !this.pickables.length) return;
+    const r = this.canvas.getBoundingClientRect(), v = new THREE.Vector2(((cx - r.left) / r.width) * 2 - 1, -((cy - r.top) / r.height) * 2 + 1);
+    const rc = new THREE.Raycaster(); rc.setFromCamera(v, this.camera);
+    const hit = rc.intersectObjects(this.pickables, false)[0]; this.onPick(hit ? hit.object : null);
+  }
+  project(v3) { const p = v3.clone().applyMatrix4(this.root.matrixWorld).project(this.camera); return { x: (p.x * 0.5 + 0.5) * this.el.clientWidth, y: (-p.y * 0.5 + 0.5) * this.el.clientHeight, z: p.z }; }
+  render(t) {
+    if (this.auto) { this.q.premultiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0, this.auto, 0))); this.root.quaternion.copy(this.q); }
+    if (this.onFrame) this.onFrame(t);
+    this.root.updateMatrixWorld(true);
+    this.labels.forEach(l => { if (!l.on) { l.el.style.display = 'none'; return; } const p = this.project(l.pos()); l.el.style.display = ''; l.el.style.left = p.x + 'px'; l.el.style.top = (p.y + (l.dy || 0)) + 'px'; });
+    this.renderer.render(this.scene, this.camera);
+  }
+  addLabel(posFn, html, color) { const el = document.createElement('div'); el.className = 'lbl'; el.innerHTML = html; if (color) { el.style.color = color; el.style.borderColor = color; } this.el.appendChild(el); const l = { el, pos: posFn, on: false }; this.labels.push(l); return l; }
+}
+(function loop(t) { requestAnimationFrame(loop); views.forEach(v => { if (v.el.offsetParent) v.render(t); }); })();
+// Kugel-Stab-Bausteine
+const ELE = { C: { c: 0x9aa4b3, r: 0.40 }, N: { c: 0x4a7dff, r: 0.38 }, O: { c: 0xff4d4d, r: 0.36 }, H: { c: 0xf2f2f2, r: 0.24 } };
+function ball(col, r, seg = 28) { return new THREE.Mesh(new THREE.SphereGeometry(r, seg, seg), new THREE.MeshPhongMaterial({ color: col, shininess: 70 })); }
+function stick(a, b, r = 0.075, col = 0xdfe6f0, op = 1) {
+  const d = b.clone().sub(a), L = d.length(), m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, L, 12, 1), new THREE.MeshPhongMaterial({ color: col, transparent: op < 1, opacity: op }));
+  m.position.copy(a.clone().add(b).multiplyScalar(0.5)); m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.clone().normalize()); return m;
+}
+const angleDeg = (a, c, b) => { const u = a.clone().sub(c).normalize(), v = b.clone().sub(c).normalize(); return Math.acos(Math.max(-1, Math.min(1, u.dot(v)))) * 180 / Math.PI; };
+
+
+const f2 = x => x.toFixed(2).replace('.', ',');
+// ===================== Modell =====================
+// Vereinfachtes Modell: Rf = 1 / (1 + K); K hängt von Polarität des Stoffes (ps) und des Fließmittels (pf) ab
+function RFm(ps, pf, ph) { pf = Math.min(1, Math.max(0, pf)); const x = ph === 'si' ? ps * Math.pow(1 - pf, 0.9) : (1 - ps) * Math.pow(pf, 0.9); return 1 / (1 + Math.exp(-2.2 + 5 * x)); }
+const SAMPLES = {
+  blatt: { n: 'Blattfarbstoffe (Spinat)', s: [['β-Carotin (orange)', '#ff9f1a', 0.05], ['Chlorophyll a (blaugrün)', '#16a085', 0.45], ['Chlorophyll b (gelbgrün)', '#9acd32', 0.58], ['Xanthophylle (gelb)', '#e8d321', 0.78]] },
+  filz: { n: 'Filzstift (schwarz)', s: [['Gelb', '#ffd400', 0.25], ['Magenta', '#e0218a', 0.5], ['Cyan', '#12a4d9', 0.68], ['Violett', '#6a3fbf', 0.88]] },
+  uni: { n: 'Indikatorgemisch (z. B. Unitest, vereinfacht)', s: [['Rot', '#e53935', 0.3], ['Gelb', '#fbc02d', 0.52], ['Grün', '#43a047', 0.66], ['Blau', '#1e63d6', 0.8]] },
+  fast: { n: 'Zwei fast gleiche Farbstoffe', s: [['Orange', '#ff8a00', 0.2], ['Rot', '#e53935', 0.55], ['Rotviolett', '#c2185b', 0.6]] }
+};
+// ===================== Platten-Zeichnung =====================
+const PW = 6, PH = 10, PXC = 52, START = 1.0;
+const YC = y => (PH - y) * PXC;
+function spotAt(cx, cy, rx, ry, col, a = 0.92) {
+  return { cx, cy, rx, ry, col, a };
+}
+function drawPlate(cv, o) {
+  const c = cv.getContext('2d'), W = cv.width, H = cv.height, sx = W / (PW * PXC), sy = H / (PH * PXC); c.save(); c.scale(sx, sy);
+  const w = PW * PXC, h = PH * PXC;
+  const g = c.createLinearGradient(0, 0, w, h); g.addColorStop(0, '#f6f2e6'); g.addColorStop(1, '#ebe5d3'); c.fillStyle = g; c.fillRect(0, 0, w, h);
+  c.fillStyle = 'rgba(0,0,0,.025)'; for (let i = 0; i < 200; i++) c.fillRect((i * 97) % w, (i * 57) % h, 1.2, 1.2);
+  const fr = o.front || 0;
+  if (fr > 0) { const top = YC(START + fr); c.fillStyle = 'rgba(150,130,80,.17)'; c.fillRect(0, top, w, h - top); c.fillStyle = 'rgba(110,95,60,.5)'; c.fillRect(0, top - 1, w, 2); }
+  if (o.mark !== undefined) { c.strokeStyle = '#555'; c.lineWidth = 1.6; c.beginPath(); c.moveTo(0, YC(START + o.mark)); c.lineTo(w, YC(START + o.mark)); c.stroke(); c.fillStyle = '#555'; c.font = '13px sans-serif'; c.fillText('Front', 40, YC(START + o.mark) - 5); }
+  c.strokeStyle = '#7a7a7a'; c.lineWidth = 1.4; c.setLineDash([5, 3]); c.beginPath(); c.moveTo(0, YC(START)); c.lineTo(w, YC(START)); c.stroke(); c.setLineDash([]);
+  c.fillStyle = '#777'; c.font = '12px sans-serif'; c.fillText('Start', 40, YC(START) - 5);
+  (o.lanes || []).forEach((ln, li) => {
+    const x = ln.x * PXC;
+    if (ln.label) { c.fillStyle = '#333'; c.font = 'bold 15px sans-serif'; c.textAlign = 'center'; c.fillText(ln.label, x, 20); c.textAlign = 'left'; }
+    (ln.spots || []).forEach((sp, si) => {
+      const run = fr > 0 ? sp.rf * fr : 0, y = START + run, cy = YC(y);
+      const ry = (fr > 0 ? 0.2 + 0.2 * Math.min(1, run / 6) : 0.14) * PXC, rx = (fr > 0 ? 0.36 : 0.15) * PXC;
+      const gr = c.createRadialGradient(x, cy, 1, x, cy, Math.max(rx, ry)); gr.addColorStop(0, sp.col); gr.addColorStop(0.65, sp.col + 'cc'); gr.addColorStop(1, sp.col + '00');
+      c.save(); c.translate(x, cy); c.scale(rx / Math.max(rx, ry), ry / Math.max(rx, ry)); c.translate(-x, -cy); c.fillStyle = gr; c.beginPath(); c.arc(x, cy, Math.max(rx, ry), 0, 7); c.fill(); c.restore();
+      if (o.hi && o.hi[0] === li && o.hi[1] === si) { c.strokeStyle = '#ff5722'; c.lineWidth = 2.4; c.beginPath(); c.ellipse(x, cy, rx + 7, ry + 7, 0, 0, 7); c.stroke(); }
+    });
+  });
+  if (o.dim && fr > 0) { // Maßpfeile a und b
+    const ln = o.lanes[o.dim[0]], sp = ln.spots[o.dim[1]], x = (ln.x + 0.9) * PXC, y0 = YC(START), ya = YC(START + sp.rf * fr), yb = YC(START + fr);
+    const arrow = (xx, ya_, yb_, t, col) => { c.strokeStyle = col; c.fillStyle = col; c.lineWidth = 2; c.beginPath(); c.moveTo(xx, ya_); c.lineTo(xx, yb_); c.stroke(); [[ya_, 1], [yb_, -1]].forEach(([yy, d]) => { c.beginPath(); c.moveTo(xx, yy); c.lineTo(xx - 4, yy - d * 8); c.lineTo(xx + 4, yy - d * 8); c.fill(); }); c.font = 'bold 18px sans-serif'; c.fillText(t, xx + 6, (ya_ + yb_) / 2 + 6); };
+    arrow(x, y0, ya, 'a', '#d81b60'); arrow(x + 34, y0, yb, 'b', '#1565c0');
+  }
+  if (o.ruler) { // Lineal links, Nullpunkt an der Startlinie, 1 mm-Teilung
+    const x0 = 0; c.fillStyle = 'rgba(255,235,150,.82)'; c.fillRect(0, 0, 30, h); c.strokeStyle = '#444'; c.fillStyle = '#333'; c.lineWidth = 1; c.font = '10px sans-serif';
+    for (let mm = -10; mm <= 90; mm++) { const y = YC(START + mm / 10); if (y < 0 || y > h) continue; const L = mm % 10 === 0 ? 16 : mm % 5 === 0 ? 11 : 6; c.beginPath(); c.moveTo(0, y); c.lineTo(L, y); c.stroke(); if (mm % 10 === 0 && mm >= 0) c.fillText(String(mm), 17, y + 3); }
+    c.fillText('mm', 6, 12);
+  }
+  if (o.line !== undefined) { const y = YC(START + o.line / 10); c.strokeStyle = '#00acc1'; c.lineWidth = 2; c.setLineDash([8, 4]); c.beginPath(); c.moveTo(0, y); c.lineTo(w, y); c.stroke(); c.setLineDash([]); c.fillStyle = '#00acc1'; c.beginPath(); c.moveTo(w, y); c.lineTo(w - 16, y - 9); c.lineTo(w - 16, y + 9); c.fill(); c.font = 'bold 14px sans-serif'; c.fillText(o.lineTxt || '', w - 100, y - 6); }
+  c.restore();
+}
+
+// ===================== TAB 1: 3D-Kammer =====================
+const v1 = new View($('v1'), { dist: 17.5, rx: 0.12, ry: -0.5 });
+const plateCv = document.createElement('canvas'); plateCv.width = 312; plateCv.height = 520;
+const plateTex = new THREE.CanvasTexture(plateCv); plateTex.anisotropy = 4;
+const jar = new THREE.Group(); v1.root.add(jar); jar.position.y = -1.4;
+const glass = new THREE.Mesh(new THREE.CylinderGeometry(2.35, 2.35, 6.6, 48, 1, true), new THREE.MeshPhongMaterial({ color: 0xbfe3ff, transparent: true, opacity: 0.16, side: THREE.DoubleSide, shininess: 120, depthWrite: false })); jar.add(glass);
+const base = new THREE.Mesh(new THREE.CylinderGeometry(2.35, 2.35, 0.14, 48), new THREE.MeshPhongMaterial({ color: 0xbfe3ff, transparent: true, opacity: 0.3 })); base.position.y = -3.3; jar.add(base);
+[3.3, -3.3].forEach(y => { const r = new THREE.Mesh(new THREE.TorusGeometry(2.35, 0.05, 8, 48), new THREE.MeshPhongMaterial({ color: 0xdff1ff })); r.rotation.x = Math.PI / 2; r.position.y = y; jar.add(r); });
+const liquid = new THREE.Mesh(new THREE.CylinderGeometry(2.3, 2.3, 0.3, 40), new THREE.MeshPhongMaterial({ color: 0x9ec6e8, transparent: true, opacity: 0.55 })); liquid.position.y = -3.3 + 0.07 + 0.15; jar.add(liquid);
+const lid = new THREE.Mesh(new THREE.CylinderGeometry(2.45, 2.45, 0.22, 48), new THREE.MeshPhongMaterial({ color: 0xcfd8dc, transparent: true, opacity: 0.8 })); lid.position.y = 3.5 + 6; jar.add(lid);
+const plG = new THREE.Group(); jar.add(plG);
+const plate = new THREE.Mesh(new THREE.BoxGeometry(3, 5, 0.07), [0, 1, 2, 3, 4, 5].map(i => i === 4 ? new THREE.MeshBasicMaterial({ map: plateTex }) : new THREE.MeshPhongMaterial({ color: 0xcdd3d8 })));
+plate.position.y = 2.5; plG.add(plate); plG.rotation.x = -0.1;
+const PL_BASE = -3.3 + 0.07 + 0.0; // Unterkante der Platte auf Kammerboden
+const T1 = { phase: 0, t: 0, front: 0, sample: 'blatt', pf: 0.5, ph: 'si', dimI: 0, mark: undefined, lift: 0, lidY: 9.5 };
+function t1Spots() { const s = SAMPLES[T1.sample]; return s.s.map(x => ({ n: x[0], col: x[1], rf: RFm(x[2], T1.pf, T1.ph) })); }
+function t1Draw() { const o = { front: T1.front, mark: T1.mark, lanes: [{ x: 3, spots: t1Spots() }] }; if (T1.phase >= 5) o.dim = [0, T1.dimI]; drawPlate(plateCv, o); plateTex.needsUpdate = true; }
+function setPlateY() { // Platte unten abgestellt (lift=0) bis oben herausgehoben (lift=1) bzw. oberhalb (lift=2: noch nicht eingesetzt)
+  const bot = PL_BASE + (T1.lift > 0 ? T1.lift * 4.2 : 0); plG.position.y = bot; plG.position.z = -1.55 + (T1.lift > 0 ? 0.6 * T1.lift : 0); }
+const SOLV = [['Hexan', 0.05], ['Ethylacetat', 0.4], ['Ethanol', 0.7], ['Wasser', 0.98]];
+function solvName(p) { let best = SOLV[0]; SOLV.forEach(s => { if (Math.abs(s[1] - p) < Math.abs(best[1] - p)) best = s; }); return best[0]; }
+function setPf(p) { T1.pf = p; $('pf').value = Math.round(p * 100); $('pfn').textContent = 'ähnlich ' + solvName(p); liquid.material.color.setRGB(0.91 - 0.56 * p, 0.82 - 0.2 * p + 0.08, 0.54 + 0.4 * p); t1Draw(); }
+$('solv').innerHTML = SOLV.map(s => `<button data-p="${s[1]}">${s[0]}</button>`).join('');
+$('solv').querySelectorAll('button').forEach(b => b.onclick = () => { if (T1.phase) return flash('Zuerst „Neu vorbereiten“ drücken.'); setPf(+b.dataset.p); });
+$('pf').oninput = e => { if (T1.phase) { e.target.value = Math.round(T1.pf * 100); return flash('Zuerst „Neu vorbereiten“ drücken.'); } setPf(+e.target.value / 100); };
+$('sample').innerHTML = Object.entries(SAMPLES).filter(([k]) => k !== 'fast').map(([k, v]) => `<option value="${k}">${v.n}</option>`).join('');
+$('sample').onchange = e => { if (T1.phase) { e.target.value = T1.sample; return flash('Zuerst „Neu vorbereiten“ drücken.'); } T1.sample = e.target.value; t1Draw(); };
+$('phase').querySelectorAll('button').forEach(b => b.onclick = () => { if (T1.phase) return flash('Zuerst „Neu vorbereiten“ drücken.'); T1.ph = b.dataset.p; $('phase').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); t1Draw(); });
+function msg1(a, b) { $('b1t1').textContent = a; $('b1t2').textContent = b || ''; }
+function resetT1() { T1.phase = 0; T1.t = 0; T1.front = 0; T1.mark = undefined; T1.lift = 1.2; T1.lidY = 9.5; setPlateY(); lid.position.y = T1.lidY; $('go').disabled = false; $('take').disabled = true; $('res').innerHTML = ''; $('h1').textContent = 'Platte vorbereitet (Probe als Punkt auf der Startlinie)'; msg1('Bereit', 'Wähle Probe, Fließmittel und Phase, dann starte.'); t1Draw(); }
+$('reset').onclick = resetT1;
+$('go').onclick = () => { if (T1.phase) return; T1.phase = 1; T1.t = 0; $('go').disabled = true; msg1('Die Platte wird eingesetzt', 'Das Fließmittel steht unter der Startlinie.'); };
+$('take').onclick = () => { if (T1.phase === 4) { T1.phase = 5; T1.t = 0; $('take').disabled = true; msg1('Platte entnehmen', 'Die Laufmittelfront wird sofort mit Bleistift markiert.'); } };
+v1.onFrame = () => {
+  const P = T1.phase; if (!P) return;
+  if (P === 1) { T1.t += 0.012; const s = Math.min(1, T1.t); T1.lift = 1.2 * (1 - s) * (1 - s); setPlateY(); if (T1.t >= 1) { T1.lift = 0; setPlateY(); T1.phase = 2; T1.t = 0; } }
+  else if (P === 2) { T1.t += 0.03; T1.lidY = 9.5 - 6 * Math.min(1, T1.t); lid.position.y = T1.lidY; if (T1.t >= 1) { T1.phase = 3; T1.t = 0; msg1('Die Chromatografie läuft', 'Das Fließmittel steigt durch Kapillarkräfte auf und nimmt die Stoffe unterschiedlich weit mit.'); } }
+  else if (P === 3) { T1.t += 0.0016; T1.front = 8 * Math.sqrt(Math.min(1, T1.t)); t1Draw(); $('h1').innerHTML = `Laufzeit ${Math.round(T1.t * 20)} min · Front: <b>${f2(T1.front)}</b> cm`; if (T1.t >= 1) { T1.phase = 4; $('take').disabled = false; msg1('Fließmittelfront erreicht die Marke', 'Jetzt die Platte entnehmen.'); } }
+  else if (P === 5) { T1.t += 0.02; T1.lift = 1.2 * Math.min(1, T1.t); T1.lidY = 3.5 + 6 * Math.min(1, T1.t); lid.position.y = T1.lidY; setPlateY(); if (T1.t >= 1) { T1.mark = T1.front; T1.phase = 6; t1Draw(); showRes(); } }
+};
+function showRes() {
+  T1.phase = 6; const sp = t1Spots(); T1.dimI = 0; t1Draw();
+  $('res').innerHTML = `<b>Ergebnis:</b> Front b = 8,0 cm<table class="res"><tr><th>Fleck</th><th>a (cm)</th><th>Rf = a/b</th></tr>${sp.map(s => `<tr><td>${s.n}</td><td>${f2(s.rf * 8)}</td><td><b>${f2(s.rf)}</b></td></tr>`).join('')}</table><div class="btns"><button id="dimn">Maßpfeile: nächster Fleck</button></div>`;
+  $('dimn').onclick = () => { T1.dimI = (T1.dimI + 1) % sp.length; T1.phase = 6; drawPlate(plateCv, { front: T1.front, mark: T1.mark, dim: [0, T1.dimI], lanes: [{ x: 3, spots: sp }] }); plateTex.needsUpdate = true; };
+  T1.phase = 5.5; drawPlate(plateCv, { front: T1.front, mark: T1.mark, dim: [0, 0], lanes: [{ x: 3, spots: sp }] }); plateTex.needsUpdate = true; T1.phase = 6;
+  msg1('Chromatogramm ausgewertet', 'a = Strecke Startlinie → Fleck, b = Strecke Startlinie → Front. Drehe die Platte, um sie von vorn zu sehen.');
+}
+tabHooks[1] = () => {};
+setPf(0.5); resetT1();
+
+// ===================== TAB 2: Rf messen =====================
+const cv2 = $('cv2');
+let M = null;
+function newPlate2() {
+  const nSp = 3 + (Math.random() < 0.5 ? 1 : 0), front = 7.2 + Math.random() * 1.6, cols = ['#ffd400', '#e0218a', '#12a4d9', '#7e3fbf', '#43a047', '#ff8a00'].sort(() => Math.random() - 0.5);
+  const rfs = []; while (rfs.length < nSp) { const r = 0.1 + Math.random() * 0.82; if (rfs.every(x => Math.abs(x - r) > 0.14)) rfs.push(Math.round(r * 100) / 100); }
+  rfs.sort((a, b) => b - a);
+  M = { front, spots: rfs.map((r, i) => ({ rf: r, col: cols[i], n: 'ABCD'[i] })), line: 30, sel: 0, solved: 0, done: new Set() };
+  ['m-a', 'm-b', 'm-rf'].forEach(i => $(i).value = ''); $('m-fb').innerHTML = ''; $('m-q').innerHTML = ''; draw2(); sel2txt();
+}
+function draw2() { drawPlate(cv2, { front: M.front, mark: M.front, ruler: true, line: M.line, lineTxt: f2(M.line / 1) .replace(',00', '') + ' mm', hi: [0, M.sel], lanes: [{ x: 3.2, label: '', spots: M.spots }] }); }
+function sel2txt() { const s = M.spots[M.sel]; $('m-sel').innerHTML = `Ausgewählt: <b style="color:${s.col}">Fleck ${s.n}</b> (${M.done.size} von ${M.spots.length} ausgewertet)`; $('h2').textContent = 'Messlinie: ' + Math.round(M.line) + ' mm über der Startlinie'; }
+function pos2(e) { const r = cv2.getBoundingClientRect(), y = (e.clientY - r.top) / r.height * PH, x = (e.clientX - r.left) / r.width * PW; return { x, mm: Math.max(0, Math.min(90, (PH - y - START) * 10)), y }; }
+let drag2 = false;
+cv2.addEventListener('pointerdown', e => { cv2.setPointerCapture(e.pointerId); const p = pos2(e); // Tippen auf Fleck = auswählen, sonst Linie ziehen
+  let best = -1, bd = 0.55; M.spots.forEach((s, i) => { const d = Math.hypot(p.x - 3.2, PH - p.y - (START + s.rf * M.front)); if (d < bd) { bd = d; best = i; } });
+  if (best >= 0 && Math.abs(p.mm - M.line) > 4) { M.sel = best; draw2(); sel2txt(); } else { drag2 = true; M.line = Math.round(p.mm * 2) / 2; draw2(); sel2txt(); } });
+cv2.addEventListener('pointermove', e => { if (!drag2) return; M.line = Math.round(pos2(e).mm * 2) / 2; draw2(); sel2txt(); });
+cv2.addEventListener('pointerup', () => { drag2 = false; });
+$('m-chk').onclick = () => {
+  const s = M.spots[M.sel], a = parseFloat($('m-a').value), b = parseFloat($('m-b').value), rf = parseFloat($('m-rf').value), ta = s.rf * M.front * 10, tb = M.front * 10, fb = $('m-fb');
+  if (isNaN(a) || isNaN(b) || isNaN(rf)) return fb.innerHTML = 'Bitte a, b und Rf eintragen.';
+  const okA = Math.abs(a - ta) <= 2.5, okB = Math.abs(b - tb) <= 2.5, okR = Math.abs(rf - a / b) <= 0.02 || (okA && okB && Math.abs(rf - s.rf) <= 0.03);
+  if (okA && okB && okR) { M.done.add(M.sel); fb.innerHTML = `✔ <b>Richtig.</b> Rf = a/b ≈ ${f2(s.rf)}. ${M.done.size < M.spots.length ? 'Wähle den nächsten Fleck.' : ''}`; ['m-a', 'm-b', 'm-rf'].forEach(i => $(i).value = ''); sel2txt(); if (M.done.size === M.spots.length) follow2(); }
+  else fb.innerHTML = `Noch nicht ganz: ${okA ? '' : 'a stimmt nicht (Messlinie genau auf den Mittelpunkt des Flecks legen). '}${okB ? '' : 'b stimmt nicht (bis zur Laufmittelfront messen, vom Nullpunkt an der Startlinie). '}${okR ? '' : 'Rf = a geteilt durch b.'}`;
+};
+function follow2() {
+  const order = M.spots.slice().sort((x, y) => x.rf - y.rf);
+  quiz($('m-q'), [{ q: 'Die Platte besteht aus Kieselgel (polar). Welcher Fleck gehört zum <b>polarsten</b> Stoff?', o: M.spots.map(s => 'Fleck ' + s.n), a: M.spots.indexOf(order[0]), why: 'Der polarste Stoff wird am stärksten an das polare Kieselgel gebunden und wandert deshalb am kürzesten (kleinster Rf-Wert).' }], 'Nachgefragt');
+}
+$('m-new').onclick = newPlate2; newPlate2();
+
+// ===================== TAB 3: Spurensuche =====================
+const cv3 = $('cv3');
+const DY = { Y: ['#ffd400', 0.85, 'gelb'], O: ['#ff8a00', 0.72, 'orange'], R: ['#e53935', 0.6, 'rot'], M: ['#d81b8a', 0.48, 'magenta'], B: ['#1e63d6', 0.36, 'blau'], C: ['#16b3b3', 0.25, 'türkis'], V: ['#7e3fbf', 0.14, 'violett'] };
+let S = null; const FR3 = 8;
+const subsets = (arr, k) => { const out = []; const rec = (i, cur) => { if (cur.length === k) return out.push(cur.slice()); for (let j = i; j < arr.length; j++) { cur.push(arr[j]); rec(j + 1, cur); cur.pop(); } }; rec(0, []); return out; };
+function newCase(round) {
+  const keys = Object.keys(DY), all = [...subsets(keys, 2), ...subsets(keys, 3)];
+  for (let tries = 0; tries < 500; tries++) {
+    const pens = []; while (pens.length < 4) { const p = all[Math.floor(Math.random() * all.length)]; if (!pens.some(q => q.join() === p.join())) pens.push(p); }
+    const two = round >= 2;
+    if (!two) { const w = Math.floor(Math.random() * 4), X = pens[w].slice(); // genau ein Stift passt; ein anderer teilt mindestens einen Farbstoff
+      if (pens.some((p, i) => i !== w && p.some(d => X.includes(d))) && pens.every((p, i) => i === w || !p.every(d => X.includes(d)))) return { pens, X, ans: [w], two: false };
+    } else { const a = Math.floor(Math.random() * 4); let b; do { b = Math.floor(Math.random() * 4); } while (b === a); const X = [...new Set([...pens[a], ...pens[b]])]; if (X.length <= 5 && pens.every((p, i) => i === a || i === b || !p.every(d => X.includes(d)))) return { pens, X, ans: [a, b].sort(), two: true }; }
+  }
+  return newCase(1);
+}
+function sTxt() { $('s-story').innerHTML = S.two ? '🔎 <b>Fall 2:</b> Der Zettel wurde mit <b>zwei</b> verschiedenen Stiften geschrieben (Spur X enthält die Farbstoffe beider). Welche zwei Stifte waren es?' : '🔎 <b>Fall 1:</b> Auf dem Zettel „Den Kuchen hat wirklich niemand gegessen“ steht eine Tintenspur X. Vier Stifte waren in der Nähe. Welcher Stift hat sie geschrieben?'; }
+function draw3() { drawPlate(cv3, { front: FR3, mark: FR3, line: S.line, lineTxt: '', lanes: [{ x: 0.75, label: 'X', spots: spots3(S.X) }, ...S.pens.map((p, i) => ({ x: 1.7 + i * 1.1, label: 'ABCD'[i], spots: spots3(p) }))] }); }
+function spots3(list) { return list.map(d => ({ rf: DY[d][1], col: DY[d][0] })); }
+let sRound = 1, drag3 = false;
+function newS() { S = newCase(sRound); S.line = 40; S.sel = new Set(); $('s-fb').innerHTML = ''; sTxt(); $('s-btns').innerHTML = 'ABCD'.split('').map((l, i) => `<button class="lanebtn" data-i="${i}">Stift ${l}</button>`).join(''); $('s-btns').querySelectorAll('button').forEach(b => b.onclick = () => { const i = +b.dataset.i; if (!S.two) S.sel.clear(); if (S.sel.has(i)) S.sel.delete(i); else S.sel.add(i); $('s-btns').querySelectorAll('button').forEach(x => x.classList.toggle('on', S.sel.has(+x.dataset.i))); }); draw3(); }
+cv3.addEventListener('pointerdown', e => { cv3.setPointerCapture(e.pointerId); drag3 = true; m3(e); }); cv3.addEventListener('pointermove', e => { if (drag3) m3(e); }); cv3.addEventListener('pointerup', () => drag3 = false);
+function m3(e) { const r = cv3.getBoundingClientRect(), y = (e.clientY - r.top) / r.height * PH; S.line = Math.max(0, Math.min(90, (PH - y - START) * 10)); draw3(); }
+$('s-chk').onclick = () => {
+  const sel = [...S.sel].sort(), ok = sel.join() === S.ans.join(), fb = $('s-fb');
+  if (!sel.length) return fb.innerHTML = 'Wähle zuerst einen Verdacht.';
+  if (ok) { fb.innerHTML = `🎉 <b>Überführt!</b> Alle Flecken ${S.two ? 'der beiden Stifte' : 'des Stifts'} liegen in Spur X auf gleicher Höhe und haben gleiche Farbe (gleicher Rf-Wert). ${S.two ? '' : 'Ein einzelner passender Fleck bei einem anderen Stift hätte nicht gereicht: <b>alle</b> Flecken müssen übereinstimmen.'}`; sRound = Math.min(2, sRound + 1); }
+  else fb.innerHTML = 'Das passt noch nicht. Prüfe Fleck für Fleck mit der Vergleichslinie: Gleiche Höhe <b>und</b> gleiche Farbe. Kommt in der Spur X auch kein Fleck vor, der beim Stift fehlt?';
+};
+$('s-new').onclick = newS; newS();
+
+// ===================== TAB 4: Trennwettbewerb =====================
+const cv4 = $('cv4'); let C = { s: 'blatt', pf: 0.5, ph: 'si' };
+$('c-sample').innerHTML = Object.entries(SAMPLES).map(([k, v]) => `<option value="${k}">${v.n}</option>`).join('');
+function qual(sk, pf, ph) { const rs = SAMPLES[sk].s.map(x => RFm(x[2], pf, ph)).sort((a, b) => a - b); if (rs[0] < 0.06 || rs[rs.length - 1] > 0.94) return 0; let g = 9; for (let i = 1; i < rs.length; i++) g = Math.min(g, rs[i] - rs[i - 1]); return g; }
+const OPT = {}; Object.keys(SAMPLES).forEach(k => { let m = 0; ['si', 'rp'].forEach(ph => { for (let p = 0; p <= 1.0001; p += 0.01) m = Math.max(m, qual(k, p, ph)); }); OPT[k] = m; });
+function upd4() {
+  const sp = SAMPLES[C.s].s.map(x => ({ n: x[0], col: x[1], rf: RFm(x[2], C.pf, C.ph) }));
+  drawPlate(cv4, { front: 7, mark: 7, lanes: [{ x: 3, spots: sp }] }); $('c-pfn').textContent = 'ähnlich ' + solvName(C.pf);
+  const q = qual(C.s, C.pf, C.ph), r = q / OPT[C.s], st = q === 0 ? 0 : r >= 0.9 ? 3 : r >= 0.72 ? 2 : r >= 0.45 ? 1 : 0;
+  $('c-stars').textContent = '★'.repeat(st) + '☆'.repeat(3 - st);
+  $('c-txt').innerHTML = q === 0 ? 'Mindestens ein Fleck klebt am Start oder an der Front.' : st === 3 ? 'Sehr gute Trennung! Alle Flecken liegen deutlich auseinander.' : st === 2 ? 'Gute Trennung, aber es geht noch besser.' : st === 1 ? 'Die Flecken liegen noch zu eng beisammen.' : 'Die Flecken sind kaum getrennt.';
+  $('h4').innerHTML = `Kleinster Abstand zweier Flecken: <b>${f2(q)}</b> (Rf)`;
+  $('c-tab').innerHTML = `<tr><th>Fleck</th><th>Rf</th></tr>` + sp.map(s => `<tr><td><span class="dot" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${s.col};margin-right:6px"></span>${s.n}</td><td>${f2(s.rf)}</td></tr>`).join('');
+}
+$('c-sample').onchange = e => { C.s = e.target.value; upd4(); }; $('c-pf').oninput = e => { C.pf = e.target.value / 100; upd4(); };
+$('c-phase').querySelectorAll('button').forEach(b => b.onclick = () => { C.ph = b.dataset.p; $('c-phase').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); upd4(); });
+tabHooks[4] = upd4; upd4();
+
+// ===================== TAB 5: Quiz =====================
+quiz($('q5'), [
+  { q: 'Wie berechnet man den Rf-Wert?', o: ['Strecke Startlinie → Fleck geteilt durch Strecke Startlinie → Laufmittelfront', 'Strecke Startlinie → Front geteilt durch Strecke Startlinie → Fleck', 'Strecke Plattenunterkante → Fleck geteilt durch Plattenhöhe', 'Laufzeit geteilt durch Strecke'], a: 0, why: 'Rf = a/b, beide Strecken beginnen an der Startlinie.' },
+  { q: 'Ein Schüler berechnet einen Rf-Wert von 1,3. Was ist passiert?', o: ['Er hat sich verrechnet oder falsch gemessen: Ein Stoff kann nicht weiter wandern als die Front.', 'Der Stoff ist besonders polar.', 'Das Fließmittel war zu unpolar.', 'Der Wert ist völlig normal.'], a: 0, why: 'Der Rf-Wert liegt immer zwischen 0 und 1.' },
+  { q: 'Warum zieht man die Startlinie mit Bleistift und nicht mit Kugelschreiber?', o: ['Die Tinte würde sich im Fließmittel lösen und mitlaufen.', 'Der Bleistift ist sichtbarer.', 'Der Kugelschreiber würde die Platte zerstören.', 'Bleistift verändert die Polarität des Kieselgels.'], a: 0, why: 'Der Farbstoff der Tinte würde selbst chromatografiert und die Auswertung stören.' },
+  { q: 'Warum muss das Fließmittel in der Kammer unter der Startlinie stehen?', o: ['Sonst würden die Proben direkt ins Fließmittel gelöst und ausgewaschen.', 'Damit die Platte schneller trocknet.', 'Damit es nicht verdunstet.', 'Das ist nicht wichtig.'], a: 0, why: 'Die Probe soll erst durch das aufsteigende Fließmittel mitgenommen werden.' },
+  { q: 'Warum verschließt man die Kammer?', o: ['Damit sich die Dampfatmosphäre sättigt und das Fließmittel nicht von der Platte verdunstet, so werden Rf-Werte reproduzierbar.', 'Damit kein Licht an die Probe kommt.', 'Damit das Fließmittel schneller steigt, weil es gekühlt wird.', 'Aus Sicherheitsgründen, die mit der Chromatografie selbst nichts zu tun haben.'], a: 0, why: 'Bei offener Kammer verdunstet Fließmittel an der Platte, die Front verläuft schief und die Rf-Werte schwanken.' },
+  { q: 'Kieselgel-Platte (polar), unpolares Fließmittel. Welcher Stoff wandert am kürzesten?', o: ['Der polarste Stoff, er bindet am stärksten an das Kieselgel (H-Brücken).', 'Der unpolarste Stoff.', 'Der kleinste Stoff.', 'Alle gleich weit.'], a: 0, why: 'Starke Wechselwirkung mit der stationären Phase bedeutet kleines a und damit einen kleinen Rf-Wert.' },
+  { q: 'Du wechselst zu einem polareren Fließmittel (Kieselgel). Was passiert in der Regel mit den Rf-Werten?', o: ['Sie steigen, und die Flecken rücken oft näher zusammen.', 'Sie sinken.', 'Sie bleiben gleich.', 'Sie werden negativ.'], a: 0, why: 'Das polare Fließmittel verdrängt die Stoffe von der polaren Oberfläche und löst sie besser.' },
+  { q: 'Zwei Stoffe haben im selben System den gleichen Rf-Wert. Was folgt daraus?', o: ['Sie könnten identisch sein, bewiesen ist es nicht. Ein zweites System oder weitere Analytik ist nötig.', 'Sie sind sicher identisch.', 'Sie haben sicher dieselbe Masse.', 'Einer der beiden ist ein Fehler.'], a: 0, why: 'Verschiedene Stoffe können zufällig denselben Rf-Wert haben. Gleiche Rf-Werte sind ein Hinweis, kein Beweis.' },
+  { q: 'Warum trägt man Vergleichssubstanzen auf dieselbe Platte auf wie die Probe?', o: ['Dann sind alle Bedingungen identisch, und die Rf-Werte sind direkt vergleichbar.', 'Damit die Platte voll aussieht.', 'Damit das Fließmittel schneller steigt.', 'Damit die Probe nicht verdunstet.'], a: 0, why: 'Der Rf-Wert hängt von Platte, Fließmittel, Temperatur und Kammer ab.' },
+  { q: 'Reversed-Phase-Platte (RP-18, unpolar) mit polarem Fließmittel: Welcher Stoff hat dort den größten Rf-Wert?', o: ['Der polarste Stoff, denn er wird kaum an der unpolaren Phase gehalten.', 'Der unpolarste Stoff.', 'Der mit der größten Molekülmasse.', 'Da gibt es keinen Unterschied.'], a: 0, why: 'Die Reihenfolge dreht sich im Vergleich zum Kieselgel um.' }
+], 'Chromatografie-Quiz');
+</script>
+<a href="/Virtuelles-Chemielabor/impressum.html" style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-family: sans-serif; font-size: 12px; z-index: 9999;">Impressum &amp; Datenschutz</a>
+</body>
+</html>

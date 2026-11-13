@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Disproportionierung und Synproportionierung</title>
+<link rel="icon" type="image/png" href="../../../../icons/icon-192.png">
+<link rel="apple-touch-icon" href="../../../../icons/apple-touch-icon.png">
+<style>
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; height: 100%; }
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #12161d; color: #e8edf5; display: flex; flex-direction: column; overflow: hidden; }
+header { flex: none; display: flex; align-items: center; gap: 12px; padding: 8px 14px; background: #0d1117; border-bottom: 1px solid #263041; flex-wrap: wrap; }
+header h1 { font-size: 17px; margin: 0; color: #64b5f6; white-space: nowrap; }
+header a.back { color: #90a4be; font-size: 12.5px; text-decoration: none; margin-left: auto; }
+nav { display: flex; gap: 6px; flex-wrap: wrap; }
+nav button { border: 1px solid #2f3b50; background: #1a212c; color: #c5d0e0; padding: 7px 12px; border-radius: 9px; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+nav button.on { background: #2f5fd0; border-color: #4d7df0; color: #fff; }
+nav button small { opacity: .7; font-weight: 500; }
+main { flex: 1; min-height: 0; position: relative; }
+.tab { display: none; position: absolute; inset: 0; grid-template-columns: minmax(0, 1fr) 420px; }
+.tab.on { display: grid; }
+.view { position: relative; min-width: 0; min-height: 0; overflow: hidden; background: radial-gradient(ellipse at 50% 40%, #1d2735, #10141b 75%); }
+.view canvas.gl { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; display: block; }
+.view .stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 56px 10px 10px; overflow: auto; }
+.cap { position: absolute; left: 12px; top: 10px; z-index: 3; display: flex; gap: 8px; flex-wrap: wrap; max-width: calc(100% - 24px); }
+.hud { background: rgba(13,17,23,.86); border: 1px solid #2a3547; border-radius: 10px; padding: 6px 10px; font-size: 12.5px; }
+.hud b { color: #fff; }
+.vbar { position: absolute; left: 0; right: 0; bottom: 0; z-index: 4; background: rgba(13,17,23,.94); border-top: 1px solid #263041; padding: 8px 14px; }
+.vbar .t1 { font-size: 18px; font-weight: 800; }
+.vbar .t2 { font-size: 13px; color: #b6c3d6; margin-top: 2px; }
+.lbl { position: absolute; z-index: 2; pointer-events: none; transform: translate(-50%, -50%); font-size: 12.5px; font-weight: 800; padding: 1px 6px; border-radius: 6px; background: rgba(13,17,23,.82); border: 1px solid #3a4961; white-space: nowrap; }
+.side { overflow-y: auto; padding: 12px 14px 60px; background: #161b24; border-left: 1px solid #263041; font-size: 13.5px; line-height: 1.5; }
+.side h2 { font-size: 15px; margin: 4px 0 8px; color: #ffd54f; }
+.side h3 { font-size: 13px; margin: 14px 0 6px; color: #90caf9; text-transform: uppercase; letter-spacing: .04em; }
+.muted { color: #8d9bb0; }
+.expl { background: #1c2430; border: 1px solid #2a3547; border-radius: 10px; padding: 8px 12px; margin: 8px 0; }
+.expl summary { cursor: pointer; font-weight: 700; color: #ffd54f; }
+.expl p { margin: 7px 0; }
+.expl ul, .expl ol { margin: 6px 0; padding-left: 20px; }
+.expl li { margin: 3px 0; }
+.task { background: #1d2a22; border: 1px solid #355a45; }
+.task summary { color: #8fe0b0; }
+.gloss dt { font-weight: 700; color: #90caf9; margin-top: 7px; }
+.gloss dd { margin: 2px 0 0 0; }
+.box { background: #1c2430; border: 1px solid #2a3547; border-radius: 10px; padding: 8px 12px; margin: 8px 0; }
+.box.hi { border-color: #64b5f6; }
+.box.warn { border-color: #b8860b; background: #2a2416; }
+.box:empty { display: none; }
+.btns { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.btns button, button.mini { border: 1px solid #38465e; background: #232d3c; color: #dbe4f2; border-radius: 8px; padding: 7px 11px; font-size: 12.5px; cursor: pointer; font-family: inherit; }
+.btns button:active, button.mini:active { background: #2f3c52; }
+.btns button.on { background: #2f5fd0; border-color: #4d7df0; color: #fff; }
+.btns button.go { background: #2a6a3f; border-color: #3f9a5b; color: #fff; }
+.btns button.del { border-color: #7a3a3a; color: #ffb4ab; }
+.btns button:disabled { opacity: .4; cursor: default; }
+select, input[type=range], input[type=text], input[type=number] { font: inherit; }
+select, input[type=text], input[type=number] { background: #232d3c; color: #e8edf5; border: 1px solid #38465e; border-radius: 8px; padding: 6px 8px; font-size: 13px; }
+input[type=range] { accent-color: #7b3fe4; width: 100%; height: 26px; }
+label.chk { display: inline-flex; align-items: center; gap: 6px; margin: 3px 12px 3px 0; font-size: 12.5px; cursor: pointer; }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 999px; color: #10151c; font-weight: 700; font-size: 12px; }
+table.res { border-collapse: collapse; width: 100%; font-size: 12.5px; margin: 6px 0; }
+table.res th, table.res td { border-bottom: 1px solid #2a3547; padding: 4px 6px; text-align: left; }
+table.res th { color: #90caf9; font-weight: 700; }
+#toast { position: fixed; left: 50%; bottom: 70px; transform: translateX(-50%); background: #2f3c52; color: #fff; padding: 8px 14px; border-radius: 10px; font-size: 13px; opacity: 0; transition: opacity .25s; pointer-events: none; z-index: 50; }
+#toast.on { opacity: 1; }
+/* Quiz */
+.qz { background: #1c2430; border: 1px solid #2a3547; border-radius: 12px; padding: 12px 14px; margin: 8px 0; }
+.qz .qh { display: flex; justify-content: space-between; font-size: 12px; color: #8d9bb0; margin-bottom: 6px; }
+.qz .qq { font-size: 14.5px; font-weight: 700; margin: 4px 0 10px; line-height: 1.45; }
+.qz .qo { display: block; width: 100%; text-align: left; margin: 6px 0; padding: 9px 12px; border-radius: 10px; border: 1px solid #38465e; background: #232d3c; color: #e8edf5; font: inherit; font-size: 13.5px; cursor: pointer; line-height: 1.4; }
+.qz .qo:active { background: #2f3c52; }
+.qz .qo.ok { background: #1f5a37; border-color: #3fbf6f; }
+.qz .qo.no { background: #5a2323; border-color: #d96a6a; opacity: .75; }
+.qz .qo:disabled { cursor: default; }
+.qz .qf { margin-top: 8px; font-size: 13px; line-height: 1.5; }
+.qz .qf.ok { color: #9be7b4; } .qz .qf.no { color: #ffb4ab; }
+.qz .qn { margin-top: 10px; }
+.shake { animation: shake .35s; }
+@keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+@media (max-width: 900px) {
+  .tab, .tab.on { grid-template-columns: 1fr; }
+  .tab.on { grid-template-rows: 56% 44%; }
+  .side { border-left: 0; border-top: 1px solid #263041; }
+  header h1 { font-size: 15px; }
+  nav button { padding: 6px 9px; font-size: 12.5px; }
+  .hud { font-size: 11.5px; }
+}
+
+.d { color: #ff9b7a; } .s { color: #6fe8b4; }
+.badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-weight: 800; font-size: 12.5px; color: #10151c; }
+.badge.d { background: #ff9b7a; color: #10151c; } .badge.s { background: #6fe8b4; color: #10151c; } .badge.n { background: #9fb0c8; color: #10151c; }
+.ox { display: inline-block; position: relative; margin-top: 14px; }
+.ox::before { content: attr(data-ox); position: absolute; top: -15px; left: 50%; transform: translateX(-50%); font-size: 11.5px; font-weight: 800; color: #ffd54f; }
+.eq { font-size: 19px; font-weight: 700; line-height: 2; }
+.gchips { display: flex; flex-wrap: wrap; gap: 6px; }
+.gchips button { border: 1px solid #4d7df0; color: #9cc0ff; background: rgba(13,17,23,.88); border-radius: 999px; padding: 5px 12px; font-size: 12.5px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.gchips button.on { background: #2f5fd0; color: #fff; }
+.ladder svg { width: min(100%, 720px); height: auto; }
+#st1 { padding-bottom: 110px; }
+.stage.top { align-items: flex-start; }
+.bench { width: min(100%, 720px); }
+.step { background: #1c2430; border: 1px solid #2a3547; border-radius: 12px; padding: 10px 14px; margin: 10px 0; }
+.step.ok { border-color: #3fbf6f; background: #1d2a22; }
+.step h4 { margin: 0 0 6px; font-size: 13.5px; color: #90caf9; }
+.srow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 6px; font-size: 15px; font-weight: 700; margin: 6px 0; }
+.srow .arr { color: #8d9bb0; font-size: 20px; margin: 0 6px; }
+.stp { display: inline-flex; align-items: center; gap: 0; background: #232d3c; border: 1px solid #38465e; border-radius: 10px; overflow: hidden; margin-right: 2px; }
+.stp button { width: 30px; height: 34px; background: #2a3547; color: #fff; border: 0; font-size: 18px; cursor: pointer; }
+.stp button:active { background: #3a4961; }
+.stp b { min-width: 26px; text-align: center; color: #ffd54f; }
+.stp span { padding: 0 8px 0 4px; font-weight: 700; }
+.stp.z b { color: #6a7890; } .stp.z span { color: #8d9bb0; }
+.plus { color: #8d9bb0; }
+.bal { font-size: 12px; color: #8d9bb0; margin-top: 4px; }
+.bal i { font-style: normal; font-weight: 800; } .bal .g { color: #6fe8b4; } .bal .r { color: #ff9b7a; }
+.shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin: 10px 0; }
+.rg { border: 2px solid #3a4961; background: #232d3c; border-radius: 14px; padding: 10px; text-align: center; cursor: pointer; font-family: inherit; color: #e8edf5; font-size: 12.5px; }
+.rg .em { font-size: 30px; display: block; }
+.rg b { display: block; margin: 2px 0; font-size: 13px; }
+.rg small { color: #9fb0c8; }
+.rg.sel { border-color: #ffd54f; background: #3a3420; }
+.mixbox { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 10px 0; font-size: 34px; }
+.mixbox .slot { min-width: 90px; min-height: 70px; border: 2px dashed #4a5a75; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; padding: 6px; text-align: center; }
+.beak { position: relative; height: 130px; margin: 6px auto; width: 200px; }
+.beak .glass { position: absolute; inset: 0; border: 3px solid #bcd9f0; border-top: 0; border-radius: 0 0 26px 26px; background: rgba(150,190,230,.1); overflow: hidden; }
+.beak .liq { position: absolute; left: 0; right: 0; bottom: 0; height: 55%; background: rgba(160,200,240,.35); transition: background 1.5s; }
+.bub { position: absolute; bottom: 5px; width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.7); animation: rise 2s infinite; }
+@keyframes rise { 0% { transform: translateY(0); opacity: .9; } 100% { transform: translateY(-110px); opacity: 0; } }
+.gas { position: absolute; left: 50%; top: -60px; width: 160px; height: 120px; transform: translateX(-50%); border-radius: 50%; background: radial-gradient(circle, rgba(160,255,80,.6), rgba(160,255,80,0) 70%); animation: puff 3s infinite; }
+@keyframes puff { 0%,100% { transform: translateX(-50%) scale(.8); opacity: .5; } 50% { transform: translateX(-50%) scale(1.2); opacity: .9; } }
+@media (max-width: 900px) {
+  .eq { font-size: 16px; }
+  #v1 { display: flex; flex-direction: column; }
+  #v1 .cap { position: static; padding: 8px 10px 0; max-width: none; }
+  #v1 .stage { position: static; flex: 1; min-height: 0; padding: 4px 6px 6px; }
+  #v1 .vbar { position: static; }
+  #st1 { padding-bottom: 6px; }
+  .tab.on { grid-template-rows: 62% 38%; }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>⚖️ Disproportionierung und Synproportionierung</h1>
+  <nav id="tabs">
+    <button data-t="1" class="on">1 Oxidationszahlen-Leiter</button>
+    <button data-t="2">2 Erkennen</button>
+    <button data-t="3">3 Gleichungen bauen</button>
+    <button data-t="4">4 Mischlabor</button>
+    <button data-t="5">5 Quiz</button>
+  </nav>
+  <a class="back" href="../index.html">← Zurück zu Redoxreaktionen</a>
+</header>
+<main>
+
+<!-- ============ 1 LEITER ============ -->
+<section class="tab on" id="t1">
+  <div class="view" id="v1">
+    <div class="cap"><div class="gchips" id="el1"></div></div>
+    <div class="stage top ladder" id="st1"></div>
+    <div class="vbar"><div class="eq" id="b1eq"></div><div class="t2" id="b1t2"></div></div>
+  </div>
+  <div class="side">
+    <h2>Die Oxidationszahlen-Leiter</h2>
+    <details class="expl" open>
+      <summary>Zwei besondere Redoxreaktionen</summary>
+      <p>Bei den meisten Redoxreaktionen reagiert ein <b>Oxidationsmittel</b> mit einem <b>Reduktionsmittel</b>, das sind zwei verschiedene Stoffe. Es gibt aber Reaktionen, bei denen dasselbe Element beides ist:</p>
+      <ul>
+        <li><b class="d">Disproportionierung</b>: Ein Element in <i>einer</i> mittleren Oxidationsstufe wird gleichzeitig <b>oxidiert und reduziert</b>. Es entstehen <b>zwei</b> neue Oxidationsstufen, eine höhere und eine niedrigere.</li>
+        <li><b class="s">Synproportionierung</b> (auch Komproportionierung): Ein Element in einer <b>höheren</b> und in einer <b>niedrigeren</b> Oxidationsstufe reagiert zu <i>einer</i> mittleren Stufe. Sie ist die Umkehrung der Disproportionierung.</li>
+      </ul>
+      <p>Auf der Leiter erkennst du es sofort: Bei der Disproportionierung <b>laufen die Pfeile auseinander</b>, bei der Synproportionierung <b>laufen sie zusammen</b>.</p>
+    </details>
+    <div class="btns" id="rx1"></div>
+    <div class="btns"><button id="mode-v" class="on">👁 Reaktion ansehen</button><button id="mode-p">🎯 Selbst vorhersagen</button></div>
+    <div class="box" id="i1"></div>
+    <details class="expl lk" open>
+      <summary>Wann ist das möglich?</summary>
+      <p>Eine Disproportionierung kann nur ein Teilchen eingehen, dessen Element in einer <b>mittleren</b> Oxidationsstufe vorliegt, denn es muss sowohl noch weiter oxidiert als auch noch weiter reduziert werden können. Ein Chlorid-Ion (−I, niedrigste Stufe) kann nur oxidiert werden, ein Perchlorat-Ion (+VII, höchste Stufe) nur reduziert werden.</p>
+      <p>Die <b>Elektronenbilanz</b> muss aufgehen: Es werden genau so viele Elektronen abgegeben wie aufgenommen. Beim Chlor in heißer Lauge entstehen 5 Cl⁻ (je 1 e⁻ aufgenommen) und 1 ClO₃⁻ (5 e⁻ abgegeben).</p>
+    </details>
+    <details class="expl task" open>
+      <summary>Aufgaben</summary>
+      <ol>
+        <li>Wähle „Selbst vorhersagen“ und tippe die Stufen an, in die das Teilchen übergeht. Prüfe dann.</li>
+        <li>Vergleiche beim Chlor die Reaktion in kalter und in heißer Lauge. Welche Oxidationsstufen entstehen jeweils?</li>
+        <li>Warum kann Cl⁻ nicht disproportionieren?</li>
+      </ol>
+    </details>
+    <details class="expl">
+      <summary>Wichtige Begriffe</summary>
+      <dl class="gloss">
+        <dt>Oxidationszahl</dt><dd>Formale Ladung eines Atoms, wenn man alle Bindungselektronen dem elektronegativeren Partner zuordnet. Aufnahme von e⁻ senkt sie (Reduktion), Abgabe erhöht sie (Oxidation).</dd>
+        <dt>Disproportionierung</dt><dd>Gleichzeitige Oxidation und Reduktion desselben Elements aus einer Oxidationsstufe.</dd>
+        <dt>Synproportionierung</dt><dd>Zwei Oxidationsstufen eines Elements reagieren zu einer dazwischen.</dd>
+      </dl>
+    </details>
+  </div>
+</section>
+
+<!-- ============ 2 ERKENNEN ============ -->
+<section class="tab" id="t2">
+  <div class="view" id="v2">
+    <div class="cap"><div class="hud" id="h2"></div></div>
+    <div class="stage top"><div class="bench" id="d-main"></div></div>
+  </div>
+  <div class="side">
+    <h2>🕵️ Reaktions-Detektiv</h2>
+    <div class="box hi">Bestimme zuerst die <b>Oxidationszahlen</b> der gefragten Atome, dann den <b>Reaktionstyp</b>. Erst wenn beide Teile stimmen, geht es zur nächsten Reaktion.</div>
+    <div class="box" id="d-fb"></div>
+    <details class="expl" open>
+      <summary>Regeln für Oxidationszahlen</summary>
+      <ul>
+        <li>Elemente (z. B. Cl₂, Cu, S): <b>0</b>.</li>
+        <li>Einatomige Ionen: Oxidationszahl = Ladung (Cu²⁺: +II).</li>
+        <li>Wasserstoff meist <b>+I</b>, Sauerstoff meist <b>−II</b> (Ausnahme Peroxide: <b>−I</b>).</li>
+        <li>Die Summe aller Oxidationszahlen ergibt die Gesamtladung des Teilchens.</li>
+      </ul>
+    </details>
+    <details class="expl">
+      <summary>Entscheidungshilfe zum Reaktionstyp</summary>
+      <ul>
+        <li>Ändert sich <b>keine</b> Oxidationszahl? → keine Redoxreaktion.</li>
+        <li>Ein Element wird auf <b>zwei verschiedene</b> Stufen verteilt, vorher nur eine? → Disproportionierung.</li>
+        <li>Ein Element aus <b>zwei</b> Stufen wird zu <b>einer</b>? → Synproportionierung.</li>
+        <li>Sonst: gewöhnliche Redoxreaktion zwischen zwei Elementen.</li>
+      </ul>
+    </details>
+  </div>
+</section>
+
+<!-- ============ 3 GLEICHUNGEN BAUEN ============ -->
+<section class="tab" id="t3">
+  <div class="view" id="v3">
+    <div class="cap"><div class="gchips" id="b3-nav"></div></div>
+    <div class="stage top"><div class="bench" id="bench"></div></div>
+  </div>
+  <div class="side">
+    <h2>🔧 Die Redox-Werkbank</h2>
+    <div class="box hi">Baue die Gesamtgleichung Schritt für Schritt: zwei <b>Teilgleichungen</b>, dann <b>Elektronen angleichen</b>, addieren und kürzen. Mit den Reglern stellst du die Koeffizienten ein. Die Bilanz unter jeder Zeile hilft dir beim Prüfen.</div>
+    <div class="box" id="b3-fb"></div>
+    <details class="expl" open>
+      <summary>Vorgehen</summary>
+      <ol>
+        <li><b>Reduktion</b> und <b>Oxidation</b> getrennt formulieren (Atome und Ladung bilanzieren).</li>
+        <li>Im <b>sauren</b> Medium mit H⁺ und H₂O ausgleichen, im <b>basischen</b> mit OH⁻ und H₂O.</li>
+        <li>Teilgleichungen so multiplizieren, dass die Elektronenzahl <b>gleich</b> ist.</li>
+        <li>Addieren, e⁻ und gleiche Teilchen auf beiden Seiten <b>kürzen</b>, auf kleinste ganze Zahlen bringen.</li>
+      </ol>
+    </details>
+    <details class="expl lk">
+      <summary>Tipp zum Ausgleichen der Ladung</summary>
+      <p>Zuerst die Atome des Redoxpartners, dann die Ladung mit Elektronen, dann im sauren Medium O mit H₂O und H mit H⁺ (im Basischen H⁺ mit OH⁻ „neutralisieren“). Am Ende immer Atome <b>und</b> Ladung prüfen.</p>
+    </details>
+  </div>
+</section>
+
+<!-- ============ 4 MISCHLABOR ============ -->
+<section class="tab" id="t4">
+  <div class="view" id="v4">
+    <div class="stage top"><div class="bench" id="mix-main"></div></div>
+  </div>
+  <div class="side">
+    <h2>🧪 Mischlabor und Alltag</h2>
+    <div class="box hi">Wähle zwei Stoffe aus dem Regal. <b>Sage zuerst vorher</b>, was passiert. Danach wird gemischt und erklärt. Das ist alles virtuell: <b>Nicht nachmachen!</b></div>
+    <div id="mix-info"></div>
+    <details class="expl task" open>
+      <summary>Aufgaben</summary>
+      <ol>
+        <li>Finde alle Kombinationen, bei denen eine Disproportionierung oder Synproportionierung abläuft (es gibt 6).</li>
+        <li>Erkläre, warum man Chlorreiniger und WC-Reiniger niemals mischen darf. Formuliere die Gleichung mit Oxidationszahlen.</li>
+        <li>Warum entsteht bei „Salzsäure + Natronlauge“ keine Redoxreaktion?</li>
+      </ol>
+    </details>
+  </div>
+</section>
+
+<!-- ============ 5 QUIZ ============ -->
+<section class="tab" id="t5">
+  <div class="view" id="v5">
+    <div class="stage"><div class="box" style="max-width:520px;font-size:15px;line-height:1.6"><b>Quiz</b><br>Elf Fragen zu Disproportionierung und Synproportionierung. Jede Antwort wird erklärt, sobald sie richtig ist. Falsche Versuche sind nicht schlimm.</div></div>
+  </div>
+  <div class="side"><h2>🧠 Quiz</h2><div id="q5"></div></div>
+</section>
+
+</main>
+<div id="toast"></div>
+<script>
+const $ = id => document.getElementById(id);
+function flash(t) { const e = $('toast'); e.textContent = t; e.classList.add('on'); clearTimeout(flash.t); flash.t = setTimeout(() => e.classList.remove('on'), 2200); }
+const tabHooks = {};
+document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.id === 't' + b.dataset.t));
+  if (tabHooks[b.dataset.t]) tabHooks[b.dataset.t]();
+  window.dispatchEvent(new Event('resize'));
+});
+// Quiz-Baustein: items = [{q, o:[...], a:Index, why:'…'}]; Punkte nur für die Schülerin / den Schüler (nichts wird gespeichert)
+function quiz(el, items, title) {
+  let i = 0, pts = 0, tries = 0;
+  const done = () => { el.innerHTML = `<div class="qz"><div class="qq">${title || 'Quiz'} geschafft! 🎉</div><p>Im ersten Versuch richtig: <b>${pts} von ${items.length}</b>.</p><div class="btns"><button class="go" id="qz-again">Nochmal von vorn</button></div></div>`; el.querySelector('#qz-again').onclick = () => { i = 0; pts = 0; show(); }; };
+  const show = () => {
+    if (i >= items.length) return done();
+    const it = items[i]; tries = 0;
+    el.innerHTML = `<div class="qz"><div class="qh"><span>${title || 'Quiz'} · Frage ${i + 1} von ${items.length}</span><span>★ ${pts}</span></div><div class="qq">${it.q}</div>${it.o.map((o, k) => `<button class="qo" data-k="${k}">${o}</button>`).join('')}<div class="qf"></div><div class="qn"></div></div>`;
+    el.querySelectorAll('.qo').forEach(b => b.onclick = () => {
+      const k = +b.dataset.k, f = el.querySelector('.qf');
+      if (k === it.a) {
+        b.classList.add('ok'); if (tries === 0) pts++;
+        f.className = 'qf ok'; f.innerHTML = '✔ Richtig. ' + (it.why || '');
+        el.querySelectorAll('.qo').forEach(x => x.disabled = true);
+        el.querySelector('.qn').innerHTML = `<div class="btns"><button class="go" id="qz-next">${i + 1 < items.length ? 'Weiter' : 'Fertig'}</button></div>`;
+        el.querySelector('#qz-next').onclick = () => { i++; show(); };
+        if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([el]);
+      } else {
+        tries++; b.classList.add('no'); b.disabled = true; b.classList.add('shake');
+        f.className = 'qf no'; f.textContent = 'Noch nicht. Überlege nochmal und probiere eine andere Antwort.';
+      }
+    });
+  };
+  show();
+}
+
+const ROM = ['', '+I', '+II', '+III', '+IV', '+V', '+VI', '+VII'];
+const oxs = n => n === 0 ? '0' : n > 0 ? '+' + (ROM[n] ? ROM[n].slice(1) : n) : '−' + (ROM[-n] ? ROM[-n].slice(1) : -n);
+const OXL = n => n === 0 ? '0' : (n > 0 ? '+' : '−') + ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'][Math.abs(n)];
+// Reaktionen: L/R = [Koeffizient, Formel, Oxidationszahl des betrachteten Elements oder null]
+const RX = [
+  { id: 'cl1', el: 'Cl', t: 'd', name: 'Chlor in kalter Natronlauge', L: [[1, 'Cl₂', 0], [2, 'OH⁻', null]], R: [[1, 'Cl⁻', -1], [1, 'ClO⁻', 1], [1, 'H₂O', null]], from: [0], to: [-1, 1], info: 'Dabei entsteht die Bleichlauge (Javelwasser): Chlorid- und Hypochlorit-Ionen.' },
+  { id: 'cl2', el: 'Cl', t: 'd', name: 'Chlor in heißer Natronlauge', L: [[3, 'Cl₂', 0], [6, 'OH⁻', null]], R: [[5, 'Cl⁻', -1], [1, 'ClO₃⁻', 5], [3, 'H₂O', null]], from: [0], to: [-1, 5], info: 'Bei höherer Temperatur geht die Oxidation weiter bis zum Chlorat (+V). Es werden 5 Elektronen übertragen.' },
+  { id: 'cl3', el: 'Cl', t: 's', name: 'Chlorid + Hypochlorit in Säure', L: [[1, 'Cl⁻', -1], [1, 'ClO⁻', 1], [2, 'H⁺', null]], R: [[1, 'Cl₂', 0], [1, 'H₂O', null]], from: [-1, 1], to: [0], info: 'Genau das passiert, wenn Chlorreiniger und saurer WC-Reiniger gemischt werden: Giftiges Chlorgas entsteht.' },
+  { id: 'cl4', el: 'Cl', t: 's', name: 'Chlorid + Chlorat in Säure', L: [[5, 'Cl⁻', -1], [1, 'ClO₃⁻', 5], [6, 'H⁺', null]], R: [[3, 'Cl₂', 0], [3, 'H₂O', null]], from: [-1, 5], to: [0], info: 'Die Umkehrung der Reaktion in heißer Lauge: zwei Stufen (−I und +V) laufen zur mittleren Stufe 0 zusammen.' },
+  { id: 'o1', el: 'O', t: 'd', name: 'Wasserstoffperoxid zerfällt', L: [[2, 'H₂O₂', -1]], R: [[2, 'H₂O', -2], [1, 'O₂', 0]], from: [-1], to: [-2, 0], info: 'In H₂O₂ hat Sauerstoff die Oxidationszahl −I. Er wird teils zu O₂ (0) oxidiert, teils zu H₂O (−II) reduziert. Katalysatoren wie Braunstein beschleunigen den Zerfall.' },
+  { id: 'mn1', el: 'Mn', t: 'd', name: 'Manganat(VI) in Säure', L: [[3, 'MnO₄²⁻', 6], [4, 'H⁺', null]], R: [[2, 'MnO₄⁻', 7], [1, 'MnO₂', 4], [2, 'H₂O', null]], from: [6], to: [7, 4], info: 'Das grüne Manganat(VI) zerfällt in violettes Permanganat (+VII) und braunen Braunstein (+IV).' },
+  { id: 'mn2', el: 'Mn', t: 's', name: 'Permanganat + Mangan(II)', L: [[2, 'MnO₄⁻', 7], [3, 'Mn²⁺', 2], [2, 'H₂O', null]], R: [[5, 'MnO₂', 4], [4, 'H⁺', null]], from: [7, 2], to: [4], info: 'Diese Synproportionierung ist die Grundlage der Mangan-Bestimmung nach Volhard: Es entsteht Braunstein.' },
+  { id: 'cu1', el: 'Cu', t: 'd', name: 'Kupfer(I) in Wasser', L: [[2, 'Cu⁺', 1]], R: [[1, 'Cu', 0], [1, 'Cu²⁺', 2]], from: [1], to: [0, 2], info: 'Cu⁺-Ionen sind in Wasser instabil und disproportionieren zu metallischem Kupfer und Cu²⁺.' },
+  { id: 'cu2', el: 'Cu', t: 's', name: 'Kupfer + Kupfer(II) mit Chlorid', L: [[1, 'Cu', 0], [1, 'Cu²⁺', 2], [2, 'Cl⁻', null]], R: [[2, 'CuCl', 1]], from: [0, 2], to: [1], info: 'Mit Chlorid-Ionen bildet sich schwerlösliches Kupfer(I)-chlorid. Das verschiebt das Gleichgewicht auf die Seite der Synproportionierung.' },
+  { id: 's1', el: 'S', t: 's', name: 'Schwefeldioxid + Schwefelwasserstoff', L: [[1, 'SO₂', 4], [2, 'H₂S', -2]], R: [[3, 'S', 0], [2, 'H₂O', null]], from: [4, -2], to: [0], info: 'Der Claus-Prozess gewinnt so Schwefel aus Abgasen der Erdgas- und Erdölreinigung.' },
+  { id: 's2', el: 'S', t: 'd', name: 'Schwefel in heißer Lauge', L: [[3, 'S', 0], [6, 'OH⁻', null]], R: [[2, 'S²⁻', -2], [1, 'SO₃²⁻', 4], [3, 'H₂O', null]], from: [0], to: [-2, 4], info: 'Schwefel disproportioniert zu Sulfid (−II) und Sulfit (+IV).' },
+  { id: 'i1', el: 'I', t: 's', name: 'Iodat + Iodid in Säure', L: [[1, 'IO₃⁻', 5], [5, 'I⁻', -1], [6, 'H⁺', null]], R: [[3, 'I₂', 0], [3, 'H₂O', null]], from: [5, -1], to: [0], info: 'Der Nachweis in der Iodometrie: Die Lösung färbt sich durch das entstehende Iod braun.' },
+  { id: 'i2', el: 'I', t: 'd', name: 'Iod in Natronlauge', L: [[3, 'I₂', 0], [6, 'OH⁻', null]], R: [[5, 'I⁻', -1], [1, 'IO₃⁻', 5], [3, 'H₂O', null]], from: [0], to: [-1, 5], info: 'Iod disproportioniert in alkalischer Lösung zu Iodid und Iodat.' }
+];
+const ELS = {
+  Cl: { n: 'Chlor', l: [[-1, 'Cl⁻'], [0, 'Cl₂'], [1, 'ClO⁻'], [3, 'ClO₂⁻'], [5, 'ClO₃⁻'], [7, 'ClO₄⁻']] },
+  O: { n: 'Sauerstoff', l: [[-2, 'H₂O'], [-1, 'H₂O₂'], [0, 'O₂']] },
+  Mn: { n: 'Mangan', l: [[2, 'Mn²⁺'], [4, 'MnO₂'], [6, 'MnO₄²⁻'], [7, 'MnO₄⁻']] },
+  Cu: { n: 'Kupfer', l: [[0, 'Cu'], [1, 'Cu⁺ / CuCl'], [2, 'Cu²⁺']] },
+  S: { n: 'Schwefel', l: [[-2, 'H₂S / S²⁻'], [0, 'S'], [4, 'SO₂ / SO₃²⁻'], [6, 'SO₄²⁻']] },
+  I: { n: 'Iod', l: [[-1, 'I⁻'], [0, 'I₂'], [5, 'IO₃⁻']] }
+};
+const sideS = (L) => L.map(([c, f, o]) => `${c > 1 ? c + ' ' : ''}${o !== null ? `<span class="ox" data-ox="${OXL(o)}">${f}</span>` : f}`).join(' + ');
+const eqHTML = r => sideS(r.L) + ' <span class="plus">→</span> ' + sideS(r.R);
+const badge = t => t === 'd' ? '<span class="badge d">Disproportionierung</span>' : t === 's' ? '<span class="badge s">Synproportionierung</span>' : t === 'r' ? '<span class="badge n">gewöhnliche Redoxreaktion</span>' : '<span class="badge n">keine Redoxreaktion</span>';
+
+// ===================== TAB 1: Leiter =====================
+const T1 = { el: 'Cl', rx: null, pred: false, sel: new Set(), solved: true };
+function ladderSVG(elk, rx) {
+  const NR = window.innerWidth < 900, E = ELS[elk], vals = (NR && rx ? rx.from.concat(rx.to) : E.l.map(x => x[0])), mn = Math.min(...vals) - 1, mx = Math.max(...vals) + 1, step = NR ? 38 : 46, top = 36, W = NR ? 480 : 720, H = top + (mx - mn) * step + 36, Y = o => top + (mx - o) * step, cx = NR ? 190 : 270, nw = NR ? 120 : 150, nh = 34;
+  const hasAr = rx && T1.solved, from = rx ? rx.from : [], to = rx ? rx.to : [];
+  let s = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ad" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#ff9b7a"/></marker><marker id="as" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#6fe8b4"/></marker></defs>`;
+  s += `<line x1="70" y1="${Y(mx) - 10}" x2="70" y2="${Y(mn) + 10}" stroke="#4a5a75" stroke-width="2"/><polygon points="70,${Y(mx) - 18} 64,${Y(mx) - 6} 76,${Y(mx) - 6}" fill="#4a5a75"/><text x="14" y="${Y(mx) - 20}" fill="#8d9bb0" font-size="13">Oxidationszahl</text>`;
+  for (let o = mn; o <= mx; o++) { s += `<line x1="62" y1="${Y(o)}" x2="78" y2="${Y(o)}" stroke="#4a5a75" stroke-width="2"/><text x="52" y="${Y(o) + 5}" text-anchor="end" fill="#ffd54f" font-weight="800" font-size="16">${OXL(o)}</text><line x1="80" y1="${Y(o)}" x2="${W - 10}" y2="${Y(o)}" stroke="#263041" stroke-dasharray="3 5"/>`; }
+  E.l.forEach(([o, f]) => {
+    if (o < mn || o > mx) return;
+    const inF = from.includes(o), inT = to.includes(o), sel = T1.sel.has(o); let fill = '#232d3c', st = '#4a5a75';
+    if (hasAr && inF) { fill = rx.t === 'd' ? '#4a2f26' : '#1f3a2f'; st = rx.t === 'd' ? '#ff9b7a' : '#6fe8b4'; }
+    if (hasAr && inT) { fill = rx.t === 'd' ? '#1f3a2f' : '#4a2f26'; st = rx.t === 'd' ? '#6fe8b4' : '#ff9b7a'; if (rx.t === 's') { fill = '#1f3a2f'; st = '#6fe8b4'; } }
+    if (!hasAr && rx && inF) { fill = '#2f3c52'; st = '#ffd54f'; }
+    if (sel) { fill = '#3a3420'; st = '#ffd54f'; }
+    s += `<g class="nd" data-o="${o}" style="cursor:${rx && !T1.solved ? 'pointer' : 'default'}"><rect x="${cx - nw / 2}" y="${Y(o) - nh / 2}" width="${nw}" height="${nh}" rx="12" fill="${fill}" stroke="${st}" stroke-width="2.5"/><text x="${cx}" y="${Y(o) + 6}" text-anchor="middle" fill="#e8edf5" font-weight="800" font-size="17">${f}</text></g>`;
+  });
+  if (hasAr) {
+    const col = rx.t === 'd' ? '#ff9b7a' : '#6fe8b4', mk = rx.t === 'd' ? 'ad' : 'as', pairs = rx.t === 'd' ? to.map(t => [from[0], t]) : from.map(f => [f, to[0]]);
+    pairs.forEach(([a, b], k) => {
+      const dir = b > a ? 1 : -1, x0 = cx + nw / 2, off = (NR ? 30 : 62) + k * 4, y0 = Y(a) + (dir === 1 ? -6 : 6), y1 = Y(b) + (dir === 1 ? 20 : -20) * 0 + (dir === 1 ? 0 : 0);
+      s += `<path d="M ${x0} ${Y(a) + (dir > 0 ? -8 : 8)} C ${x0 + off + 40} ${Y(a)}, ${x0 + off + 40} ${Y(b)}, ${x0 + 3} ${Y(b)}" fill="none" stroke="${col}" stroke-width="3.2" stroke-dasharray="9 6" marker-end="url(#${mk})" style="animation:dash 1.1s linear infinite"/>`;
+      const d = b - a, lab = NR ? (d > 0 ? `Oxidation, ${d} e⁻ ab` : `Reduktion, ${-d} e⁻ auf`) : (d > 0 ? `Oxidation: ${d} e⁻ abgegeben` : `Reduktion: ${-d} e⁻ aufgenommen`);
+      s += `<text x="${x0 + off + 46}" y="${(Y(a) + Y(b)) / 2 + 5}" fill="${col}" font-size="${NR ? 12 : 13}" font-weight="700">${lab}</text>`;
+    });
+    s += `<style>@keyframes dash{to{stroke-dashoffset:-30}}</style>`;
+  }
+  return s + '</svg>';
+}
+function render1() {
+  const E = ELS[T1.el], rxs = RX.filter(r => r.el === T1.el);
+  if (!T1.rx || T1.rx.el !== T1.el) { T1.rx = rxs[0]; T1.solved = !T1.pred; T1.sel = new Set(); }
+  $('el1').innerHTML = Object.keys(ELS).map(k => `<button data-k="${k}" class="${k === T1.el ? 'on' : ''}">${ELS[k].n}</button>`).join('');
+  $('el1').querySelectorAll('button').forEach(b => b.onclick = () => { T1.el = b.dataset.k; T1.rx = null; render1(); });
+  $('rx1').innerHTML = rxs.map(r => `<button data-i="${r.id}" class="${r === T1.rx ? 'on' : ''}"><span class="${r.t}">●</span> ${r.name}</button>`).join('');
+  $('rx1').querySelectorAll('button').forEach(b => b.onclick = () => { T1.rx = RX.find(r => r.id === b.dataset.i); T1.solved = !T1.pred; T1.sel = new Set(); render1(); });
+  $('st1').innerHTML = ladderSVG(T1.el, T1.rx);
+  const r = T1.rx;
+  $('st1').querySelectorAll('.nd').forEach(g => g.onclick = () => { if (!T1.pred || T1.solved) return; const o = +g.dataset.o; if (r.from.includes(o)) return; if (T1.sel.has(o)) T1.sel.delete(o); else T1.sel.add(o); render1(); });
+  if (T1.pred && !T1.solved) {
+    const need = r.t === 'd' ? r.to : [r.to[0]];
+    $('b1eq').innerHTML = r.t === 'd' ? 'Ein Teilchen mit Oxidationszahl <span class="ox" data-ox="' + OXL(r.from[0]) + '">' + E.l.find(x => x[0] === r.from[0])[1] + '</span> reagiert …' : 'Zwei Teilchen reagieren zu einer <b>mittleren</b> Stufe …';
+    $('b1t2').textContent = r.t === 'd' ? 'Tippe die ' + need.length + ' Stufen an, in die es sich umwandelt, dann „Prüfen“.' : 'Tippe die Stufe an, zu der beide Teilchen zusammenlaufen, dann „Prüfen“.';
+    $('i1').innerHTML = `<div class="btns"><button class="go" id="pchk">Prüfen</button></div><div id="pfb"></div>`;
+    $('pchk').onclick = () => {
+      const ok = need.length === T1.sel.size && need.every(n => T1.sel.has(n));
+      if (ok) { T1.solved = true; render1(); flash('Richtig!'); } else $('pfb').innerHTML = r.t === 'd' ? 'Noch nicht. Eine Disproportionierung führt zu <b>einer höheren</b> und <b>einer niedrigeren</b> Stufe als der Ausgangsstufe. Welche Stufen gibt es im Reaktionsmedium?' : 'Noch nicht. Das Produkt liegt <b>zwischen</b> den beiden Ausgangsstufen.';
+    };
+    return;
+  }
+  const E1 = r;
+  $('b1eq').innerHTML = eqHTML(r);
+  $('b1t2').innerHTML = badge(r.t) + ' &nbsp;' + (r.t === 'd' ? `${E.n}: ${OXL(r.from[0])} → ${r.to.map(OXL).join(' und ')}` : `${E.n}: ${r.from.map(OXL).join(' und ')} → ${OXL(r.to[0])}`);
+  $('i1').innerHTML = `<b>${r.name}</b><br>${r.info}<br><span class="muted">Die gelben Zahlen über den Formeln sind die Oxidationszahlen von ${E.n}.</span>`;
+}
+$('mode-v').onclick = () => { T1.pred = false; T1.solved = true; $('mode-v').classList.add('on'); $('mode-p').classList.remove('on'); T1.sel = new Set(); render1(); };
+$('mode-p').onclick = () => { T1.pred = true; T1.solved = false; $('mode-p').classList.add('on'); $('mode-v').classList.remove('on'); T1.sel = new Set(); render1(); };
+render1();
+
+// ===================== TAB 2: Erkennen =====================
+const DET = [
+  { eq: 'Cl₂ + 2 OH⁻ → Cl⁻ + ClO⁻ + H₂O', ask: [['Cl in Cl₂', 0], ['Cl in Cl⁻', -1], ['Cl in ClO⁻', 1]], type: 'd', why: 'Chlor (0) wird zu −I reduziert <b>und</b> zu +I oxidiert: Disproportionierung.' },
+  { eq: 'Zn + Cu²⁺ → Zn²⁺ + Cu', ask: [['Zn', 0], ['Zn in Zn²⁺', 2], ['Cu in Cu²⁺', 2], ['Cu', 0]], type: 'r', why: 'Zink wird oxidiert, Kupfer reduziert: zwei <b>verschiedene</b> Elemente, also eine gewöhnliche Redoxreaktion.' },
+  { eq: '5 Cl⁻ + ClO₃⁻ + 6 H⁺ → 3 Cl₂ + 3 H₂O', ask: [['Cl in Cl⁻', -1], ['Cl in ClO₃⁻', 5], ['Cl in Cl₂', 0]], type: 's', why: 'Chlor aus −I und +V ergibt Chlor mit Oxidationszahl 0: Synproportionierung.' },
+  { eq: 'HCl + NaOH → NaCl + H₂O', ask: [['Cl in HCl', -1], ['H in HCl', 1], ['Na in NaOH', 1]], type: 'n', why: 'Keine Oxidationszahl ändert sich: Das ist eine Säure-Base-Reaktion (Neutralisation).' },
+  { eq: '2 H₂O₂ → 2 H₂O + O₂', ask: [['O in H₂O₂', -1], ['O in H₂O', -2], ['O in O₂', 0]], type: 'd', why: 'Sauerstoff geht von −I zu −II und zu 0: Disproportionierung.' },
+  { eq: 'SO₂ + 2 H₂S → 3 S + 2 H₂O', ask: [['S in SO₂', 4], ['S in H₂S', -2], ['S', 0]], type: 's', why: 'Schwefel aus +IV und −II wird zu 0: Synproportionierung.' },
+  { eq: '2 Fe³⁺ + 2 I⁻ → 2 Fe²⁺ + I₂', ask: [['Fe in Fe³⁺', 3], ['Fe in Fe²⁺', 2], ['I in I⁻', -1], ['I in I₂', 0]], type: 'r', why: 'Eisen wird reduziert, Iod oxidiert: zwei verschiedene Elemente.' },
+  { eq: '3 MnO₄²⁻ + 4 H⁺ → 2 MnO₄⁻ + MnO₂ + 2 H₂O', ask: [['Mn in MnO₄²⁻', 6], ['Mn in MnO₄⁻', 7], ['Mn in MnO₂', 4]], type: 'd', why: 'Mangan (+VI) geht zu +VII und +IV: Disproportionierung.' },
+  { eq: 'IO₃⁻ + 5 I⁻ + 6 H⁺ → 3 I₂ + 3 H₂O', ask: [['I in IO₃⁻', 5], ['I in I⁻', -1], ['I in I₂', 0]], type: 's', why: 'Iod aus +V und −I wird zu 0: Synproportionierung.' },
+  { eq: '2 NO₂ + H₂O → HNO₃ + HNO₂', ask: [['N in NO₂', 4], ['N in HNO₃', 5], ['N in HNO₂', 3]], type: 'd', why: 'Stickstoff (+IV) geht zu +V und +III: Disproportionierung.' }
+].sort(() => Math.random() - 0.5);
+let D = { i: 0, pts: 0, ans: {}, oxok: false };
+const TYPES = [['d', 'Disproportionierung'], ['s', 'Synproportionierung'], ['r', 'gewöhnliche Redoxreaktion'], ['n', 'keine Redoxreaktion']];
+const oxOpts = '<option value="">?</option>' + [-3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7].map(n => `<option value="${n}">${OXL(n)}</option>`).join('');
+function renderD() {
+  if (D.i >= DET.length) { $('d-main').innerHTML = `<div class="step ok"><h4>Geschafft! 🎉</h4>Alle ${DET.length} Reaktionen erkannt. Im ersten Versuch richtig: <b>${D.pts}</b>.<div class="btns"><button class="go" id="d-again">Nochmal (neue Reihenfolge)</button></div></div>`; $('d-again').onclick = () => { DET.sort(() => Math.random() - 0.5); D = { i: 0, pts: 0, ans: {}, oxok: false }; renderD(); }; $('h2').textContent = ''; return; }
+  const r = DET[D.i]; D.tries = 0; D.oxok = false; D.first = true;
+  $('h2').textContent = `Reaktion ${D.i + 1} von ${DET.length} · ★ ${D.pts}`;
+  $('d-main').innerHTML = `<div class="step"><h4>Reaktionsgleichung</h4><div class="eq">${r.eq}</div></div>
+  <div class="step"><h4>1 · Bestimme die Oxidationszahlen</h4>${r.ask.map((a, k) => `<div class="srow"><span style="min-width:150px">${a[0]}</span><select data-k="${k}">${oxOpts}</select><span class="mk"></span></div>`).join('')}<div class="btns"><button id="d-c1" class="go">Oxidationszahlen prüfen</button></div></div>
+  <div class="step" id="d-s2" style="opacity:.45"><h4>2 · Welcher Reaktionstyp liegt vor?</h4><div class="btns" id="d-t">${TYPES.map(t => `<button data-t="${t[0]}" disabled>${t[1]}</button>`).join('')}</div></div>`;
+  $('d-fb').innerHTML = '';
+  $('d-c1').onclick = () => {
+    let ok = true; $('d-main').querySelectorAll('select').forEach(s => { const k = +s.dataset.k, m = s.parentNode.querySelector('.mk'), good = s.value !== '' && +s.value === r.ask[k][1]; m.textContent = good ? '✔' : (s.value === '' ? '' : '✘'); m.style.color = good ? '#6fe8b4' : '#ff9b7a'; if (!good) ok = false; });
+    if (ok) { D.oxok = true; $('d-s2').style.opacity = 1; $('d-t').querySelectorAll('button').forEach(b => b.disabled = false); $('d-fb').innerHTML = 'Oxidationszahlen stimmen. Welcher Reaktionstyp ist es?'; if (D.first) D.first = D.first; } else { D.first = false; $('d-fb').innerHTML = 'Noch nicht alle richtig. Denke an die Regeln: H = +I, O = −II (Peroxid −I), Summe = Ladung.'; }
+  };
+  $('d-t').querySelectorAll('button').forEach(b => b.onclick = () => {
+    if (b.dataset.t === r.type) { if (D.first && !D.wrongT) D.pts++; D.wrongT = false; $('d-fb').innerHTML = `✔ <b>Richtig.</b> ${r.why}<div class="btns"><button class="go" id="d-n">Nächste Reaktion</button></div>`; $('d-t').querySelectorAll('button').forEach(x => x.disabled = true); b.classList.add('on'); $('d-n').onclick = () => { D.i++; D.wrongT = false; renderD(); }; }
+    else { D.wrongT = true; b.disabled = true; $('d-fb').innerHTML = 'Das passt noch nicht. Ändert sich überhaupt eine Oxidationszahl? Und: Wie viele <b>verschiedene</b> Stufen des Elements stehen auf der Eduktseite, wie viele auf der Produktseite?'; }
+  });
+}
+renderD();
+
+// ===================== TAB 3: Gleichungen bauen =====================
+const SP = { 'Cl₂': [{ Cl: 2 }, 0], 'Cl⁻': [{ Cl: 1 }, -1], 'ClO⁻': [{ Cl: 1, O: 1 }, -1], 'OH⁻': [{ O: 1, H: 1 }, -1], 'H₂O': [{ H: 2, O: 1 }, 0], 'H⁺': [{ H: 1 }, 1], 'e⁻': [{}, -1], 'IO₃⁻': [{ I: 1, O: 3 }, -1], 'I⁻': [{ I: 1 }, -1], 'I₂': [{ I: 2 }, 0], 'H₂O₂': [{ H: 2, O: 2 }, 0], 'O₂': [{ O: 2 }, 0], 'MnO₄⁻': [{ Mn: 1, O: 4 }, -1], 'Mn²⁺': [{ Mn: 1 }, 2], 'MnO₂': [{ Mn: 1, O: 2 }, 0] };
+const BLD = [
+  { n: 'Cl₂ in kalter Lauge', t: 'd', red: { L: ['Cl₂', 'e⁻'], R: ['Cl⁻'], t: { 'Cl₂': 1, 'e⁻': 2, 'Cl⁻': 2 }, nm: 'Reduktion (0 → −I)' }, ox: { L: ['Cl₂', 'OH⁻'], R: ['ClO⁻', 'H₂O', 'e⁻'], t: { 'Cl₂': 1, 'OH⁻': 4, 'ClO⁻': 2, 'H₂O': 2, 'e⁻': 2 }, nm: 'Oxidation (0 → +I)' }, mul: [1, 1], fin: { L: ['Cl₂', 'OH⁻'], R: ['Cl⁻', 'ClO⁻', 'H₂O'], t: { 'Cl₂': 1, 'OH⁻': 2, 'Cl⁻': 1, 'ClO⁻': 1, 'H₂O': 1 } } },
+  { n: 'Iodat + Iodid (sauer)', t: 's', red: { L: ['IO₃⁻', 'H⁺', 'e⁻'], R: ['I₂', 'H₂O'], t: { 'IO₃⁻': 2, 'H⁺': 12, 'e⁻': 10, 'I₂': 1, 'H₂O': 6 }, nm: 'Reduktion (+V → 0)' }, ox: { L: ['I⁻'], R: ['I₂', 'e⁻'], t: { 'I⁻': 2, 'I₂': 1, 'e⁻': 2 }, nm: 'Oxidation (−I → 0)' }, mul: [1, 5], fin: { L: ['IO₃⁻', 'I⁻', 'H⁺'], R: ['I₂', 'H₂O'], t: { 'IO₃⁻': 1, 'I⁻': 5, 'H⁺': 6, 'I₂': 3, 'H₂O': 3 } } },
+  { n: 'H₂O₂-Zerfall (sauer)', t: 'd', red: { L: ['H₂O₂', 'H⁺', 'e⁻'], R: ['H₂O'], t: { 'H₂O₂': 1, 'H⁺': 2, 'e⁻': 2, 'H₂O': 2 }, nm: 'Reduktion (−I → −II)' }, ox: { L: ['H₂O₂'], R: ['O₂', 'H⁺', 'e⁻'], t: { 'H₂O₂': 1, 'O₂': 1, 'H⁺': 2, 'e⁻': 2 }, nm: 'Oxidation (−I → 0)' }, mul: [1, 1], fin: { L: ['H₂O₂'], R: ['H₂O', 'O₂'], t: { 'H₂O₂': 2, 'H₂O': 2, 'O₂': 1 } } },
+  { n: 'Permanganat + Mn²⁺', t: 's', red: { L: ['MnO₄⁻', 'H⁺', 'e⁻'], R: ['MnO₂', 'H₂O'], t: { 'MnO₄⁻': 1, 'H⁺': 4, 'e⁻': 3, 'MnO₂': 1, 'H₂O': 2 }, nm: 'Reduktion (+VII → +IV)' }, ox: { L: ['Mn²⁺', 'H₂O'], R: ['MnO₂', 'H⁺', 'e⁻'], t: { 'Mn²⁺': 1, 'H₂O': 2, 'MnO₂': 1, 'H⁺': 4, 'e⁻': 2 }, nm: 'Oxidation (+II → +IV)' }, mul: [2, 3], fin: { L: ['MnO₄⁻', 'Mn²⁺', 'H₂O'], R: ['MnO₂', 'H⁺'], t: { 'MnO₄⁻': 2, 'Mn²⁺': 3, 'H₂O': 2, 'MnO₂': 5, 'H⁺': 4 } } }
+];
+const B = { i: 0, st: {} };
+const fm = f => f.replace('⁻', '<sup>−</sup>').replace('⁺', '<sup>+</sup>');
+function balStr(L, R, co) {
+  const at = {}; let q = 0; const add = (f, c, sg) => { const [a, ch] = SP[f]; for (const k in a) at[k] = (at[k] || 0) + sg * a[k] * c; q += sg * ch * c; };
+  L.forEach(f => add(f, co[f] || 0, 1)); R.forEach(f => add(f, co[f] || 0, -1));
+  const bad = Object.keys(at).filter(k => at[k] !== 0); const any = [...L, ...R].some(f => co[f]);
+  return { any, ok: !bad.length && q === 0, atoms: !bad.length, charge: q === 0 };
+}
+function rowHTML(key, row, title) {
+  const co = B.st[key];
+  const side = L => L.map(f => `<span class="stp ${co[f] ? '' : 'z'}" data-k="${key}" data-f="${f}"><button data-d="-1">−</button><b>${co[f] || 0}</b><button data-d="1">+</button><span>${fm(f)}</span></span>`).join('<span class="plus">+</span>');
+  const bl = balStr(row.L, row.R, co), match = [...row.L, ...row.R].every(f => (co[f] || 0) === (row.t[f] || 0));
+  return `<div class="srow">${side(row.L)}<span class="arr">→</span>${side(row.R)}</div><div class="bal">${bl.any ? `Atome <i class="${bl.atoms ? 'g' : 'r'}">${bl.atoms ? '✔' : '✘'}</i> · Ladung <i class="${bl.charge ? 'g' : 'r'}">${bl.charge ? '✔' : '✘'}</i>` : 'Alle Koeffizienten stehen noch auf 0.'}</div>`;
+}
+function matches(row, co) { return [...row.L, ...row.R].every(f => (co[f] || 0) === (row.t[f] || 0)); }
+function renderB() {
+  const R = BLD[B.i], ss = B.st;
+  $('b3-nav').innerHTML = BLD.map((b, i) => `<button data-i="${i}" class="${i === B.i ? 'on' : ''}">${b.n}</button>`).join('');
+  $('b3-nav').querySelectorAll('button').forEach(b => b.onclick = () => { B.i = +b.dataset.i; initB(); });
+  const redOK = matches(R.red, ss.red), oxOK = matches(R.ox, ss.ox), mulOK = ss.mul[0] === R.mul[0] && ss.mul[1] === R.mul[1], finOK = matches(R.fin, ss.fin);
+  let h = `<div class="step ${redOK ? 'ok' : ''}"><h4>1 · Teilgleichung ${R.red.nm}</h4>${rowHTML('red', R.red)}${redOK ? '<div class="bal"><i class="g">✔ richtig</i></div>' : ''}</div>`;
+  h += `<div class="step ${oxOK ? 'ok' : ''}"><h4>2 · Teilgleichung ${R.ox.nm}</h4>${rowHTML('ox', R.ox)}${oxOK ? '<div class="bal"><i class="g">✔ richtig</i></div>' : ''}</div>`;
+  if (redOK && oxOK) {
+    const e1 = R.red.t['e⁻'], e2 = R.ox.t['e⁻'];
+    h += `<div class="step ${mulOK ? 'ok' : ''}"><h4>3 · Elektronen angleichen</h4><div class="srow">Reduktion × <span class="stp" data-m="0"><button data-d="-1">−</button><b>${ss.mul[0]}</b><button data-d="1">+</button></span> &nbsp; Oxidation × <span class="stp" data-m="1"><button data-d="-1">−</button><b>${ss.mul[1]}</b><button data-d="1">+</button></span></div><div class="bal">Aufgenommene e⁻: <b>${e1 * ss.mul[0]}</b> · abgegebene e⁻: <b>${e2 * ss.mul[1]}</b> ${e1 * ss.mul[0] === e2 * ss.mul[1] ? '<i class="g">✔ gleich</i>' : '<i class="r">✘ nicht gleich</i>'}</div></div>`;
+    if (mulOK) {
+      const net = {}; [R.red, R.ox].forEach((r, k) => { for (const f of r.L) net[f] = (net[f] || 0) - (r.t[f] || 0) * R.mul[k]; for (const f of r.R) net[f] = (net[f] || 0) + (r.t[f] || 0) * R.mul[k]; });
+      const lhs = Object.keys(net).filter(f => net[f] < 0 && f !== 'e⁻').map(f => `${-net[f] > 1 ? -net[f] + ' ' : ''}${fm(f)}`).join(' + '), rhs = Object.keys(net).filter(f => net[f] > 0 && f !== 'e⁻').map(f => `${net[f] > 1 ? net[f] + ' ' : ''}${fm(f)}`).join(' + ');
+      h += `<div class="step ${finOK ? 'ok' : ''}"><h4>4 · Addieren, kürzen, kleinste ganze Zahlen</h4><div class="bal" style="font-size:13.5px;margin-bottom:6px">Summe nach dem Kürzen von e⁻ und gleichen Teilchen: <b>${lhs} → ${rhs}</b></div>${rowHTML('fin', R.fin)}${finOK ? `<div class="bal"><i class="g">✔ Geschafft!</i> ${badge(R.t)}</div>` : '<div class="bal">Kleinste ganze Zahlen einstellen.</div>'}</div>`;
+      if (finOK) h += `<div class="step ok"><h4>Gesamtgleichung</h4><div class="eq">${R.fin.L.map(f => (R.fin.t[f] > 1 ? R.fin.t[f] + ' ' : '') + fm(f)).join(' + ')} → ${R.fin.R.map(f => (R.fin.t[f] > 1 ? R.fin.t[f] + ' ' : '') + fm(f)).join(' + ')}</div></div>`;
+    }
+  }
+  $('bench').innerHTML = h;
+  $('bench').querySelectorAll('.stp[data-k] button').forEach(b => b.onclick = () => { const sp = b.parentNode, k = sp.dataset.k, f = sp.dataset.f; ss[k][f] = Math.max(0, Math.min(14, (ss[k][f] || 0) + +b.dataset.d)); renderB(); });
+  $('bench').querySelectorAll('.stp[data-m] button').forEach(b => b.onclick = () => { const m = +b.parentNode.dataset.m; ss.mul[m] = Math.max(1, Math.min(8, ss.mul[m] + +b.dataset.d)); renderB(); });
+  $('b3-fb').innerHTML = `Reaktion: <b>${R.n}</b> ${badge(R.t)}`;
+}
+function initB() { B.st = { red: {}, ox: {}, fin: {}, mul: [1, 1] }; renderB(); }
+initB();
+
+// ===================== TAB 4: Mischlabor =====================
+const RG = [
+  { k: 'chlor', em: '🧴', n: 'Chlorreiniger', s: 'enthält ClO⁻ und Cl⁻' }, { k: 'wc', em: '🚽', n: 'WC-Reiniger', s: 'Salzsäure, sauer' },
+  { k: 'cw', em: '💧', n: 'Chlorwasser', s: 'Cl₂ in Wasser' }, { k: 'naohk', em: '🧊', n: 'Natronlauge, kalt', s: 'NaOH, 5 °C' },
+  { k: 'naohh', em: '🔥', n: 'Natronlauge, heiß', s: 'NaOH, 70 °C' }, { k: 'h2o2', em: '🫧', n: 'Wasserstoffperoxid', s: '3 %-ige Lösung' },
+  { k: 'mno2', em: '⚫', n: 'Braunstein', s: 'MnO₂, fest' }, { k: 'iod', em: '🧂', n: 'Iodat + Iodid', s: 'KIO₃ und KI, gelöst' }, { k: 'h2so4', em: '⚗️', n: 'Verd. Schwefelsäure', s: 'H₂SO₄, sauer' }
+];
+const rg = k => RG.find(x => x.k === k), pk = (a, b) => [a, b].sort().join('+');
+const MIX = {
+  [pk('chlor', 'wc')]: { id: 'cl3', col: 'gas', obs: 'Es bilden sich gelbgrüne, stechend riechende Dämpfe: <b>Chlorgas</b> (giftig!).', warn: 'Chlorreiniger und saure WC-Reiniger dürfen <b>niemals gemischt</b> werden. Chlorgas schädigt die Atemwege.' },
+  [pk('chlor', 'h2so4')]: { id: 'cl3', col: 'gas', obs: 'Gelbgrüner Dampf, stechender Geruch: Chlorgas entsteht.', warn: 'Auch mit anderen Säuren entsteht aus Hypochlorit-Reinigern Chlorgas.' },
+  [pk('cw', 'naohk')]: { id: 'cl1', col: 'clear', obs: 'Die gelbgrüne Farbe verschwindet. Es entsteht eine farblose Lösung mit bleichender Wirkung (Bleichlauge).' },
+  [pk('cw', 'naohh')]: { id: 'cl2', col: 'clear', obs: 'Die gelbgrüne Farbe verschwindet. Es entstehen Chlorid- und Chlorat-Ionen (kein bleichendes Hypochlorit mehr).' },
+  [pk('h2o2', 'mno2')]: { id: 'o1', col: 'bubbles', obs: 'Die Lösung schäumt: <b>Sauerstoff</b> entsteht (Glimmspanprobe positiv). Der Braunstein wirkt als Katalysator und wird nicht verbraucht.' },
+  [pk('iod', 'h2so4')]: { id: 'i1', col: 'brown', obs: 'Die Lösung färbt sich <b>braun</b>: Iod entsteht (Nachweis mit Stärke: blauschwarz).' },
+  [pk('naohk', 'wc')]: { id: null, col: 'clear', t: 'n', obs: 'Keine auffällige Veränderung (die Lösung erwärmt sich leicht).', expl: 'Salzsäure und Natronlauge reagieren in einer <b>Neutralisation</b>: H⁺ + OH⁻ → H₂O. Keine Oxidationszahl ändert sich, es ist <b>keine Redoxreaktion</b>.' }
+};
+const MX = { a: null, b: null, stage: 0 };
+function renderMix() {
+  const sel = k => MX.a === k || MX.b === k;
+  let h = `<div class="mixbox"><div class="slot">${MX.a ? `<span style="font-size:30px">${rg(MX.a).em}</span>${rg(MX.a).n}` : 'Stoff 1'}</div><span>＋</span><div class="slot">${MX.b ? `<span style="font-size:30px">${rg(MX.b).em}</span>${rg(MX.b).n}` : 'Stoff 2'}</div></div>`;
+  h += `<div class="shelf">${RG.map(r => `<button class="rg ${sel(r.k) ? 'sel' : ''}" data-k="${r.k}"><span class="em">${r.em}</span><b>${r.n}</b><small>${r.s}</small></button>`).join('')}</div><div class="btns"><button class="go" id="mx-go" ${MX.a && MX.b ? '' : 'disabled'}>Vorhersage abgeben und mischen</button><button id="mx-clr">Zurücksetzen</button></div><div id="mx-res"></div>`;
+  $('mix-main').innerHTML = h;
+  $('mix-main').querySelectorAll('.rg').forEach(b => b.onclick = () => { const k = b.dataset.k; if (MX.a === k) MX.a = null; else if (MX.b === k) MX.b = null; else if (!MX.a) MX.a = k; else if (!MX.b) MX.b = k; else { MX.a = MX.b; MX.b = k; } renderMix(); });
+  $('mx-clr').onclick = () => { MX.a = MX.b = null; renderMix(); $('mix-info').innerHTML = ''; };
+  $('mx-go').onclick = predict;
+}
+function predict() {
+  const m = MIX[pk(MX.a, MX.b)];
+  $('mx-res').innerHTML = `<div class="step"><h4>Deine Vorhersage</h4><div class="btns" id="pr"><button data-t="d">Disproportionierung</button><button data-t="s">Synproportionierung</button><button data-t="n">keine Redoxreaktion / nichts Besonderes</button></div></div>`;
+  $('pr').querySelectorAll('button').forEach(b => b.onclick = () => reveal(b.dataset.t));
+}
+function reveal(guess) {
+  const m = MIX[pk(MX.a, MX.b)], rx = m && m.id ? RX.find(r => r.id === m.id) : null, real = rx ? rx.t : 'n', ok = guess === real;
+  const beaker = `<div class="beak"><div class="glass"><div class="liq" style="background:${m && m.col === 'brown' ? 'rgba(150,90,30,.7)' : m && m.col === 'gas' ? 'rgba(200,230,120,.4)' : 'rgba(160,200,240,.35)'}"></div>${m && m.col === 'bubbles' ? Array.from({ length: 9 }, (_, i) => `<span class="bub" style="left:${12 + i * 10}%;animation-delay:${i * .25}s"></span>`).join('') : ''}</div>${m && m.col === 'gas' ? '<div class="gas"></div>' : ''}</div>`;
+  let txt = '';
+  if (!m) txt = `<div class="step"><h4>Ergebnis</h4>${beaker}Zwischen <b>${rg(MX.a).n}</b> und <b>${rg(MX.b).n}</b> läuft keine auffällige Reaktion ab. Probiere andere Kombinationen.</div>`;
+  else if (rx) txt = `<div class="step ${ok ? 'ok' : ''}"><h4>Ergebnis ${ok ? '· Vorhersage stimmt ✔' : '· Vorhersage stimmt nicht ✘'}</h4>${beaker}${m.obs}<div class="eq" style="margin-top:6px">${eqHTML(rx)}</div>${badge(rx.t)}<p style="margin:8px 0 0">${rx.info}</p>${m.warn ? `<div class="box warn">⚠️ ${m.warn}</div>` : ''}</div>`;
+  else txt = `<div class="step ${ok ? 'ok' : ''}"><h4>Ergebnis ${ok ? '· Vorhersage stimmt ✔' : '· Vorhersage stimmt nicht ✘'}</h4>${beaker}${m.obs}<p>${m.expl}</p>${badge('n')}</div>`;
+  $('mx-res').innerHTML = txt; $('mx-res').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+renderMix();
+
+// ===================== TAB 5: Quiz =====================
+quiz($('q5'), [
+  { q: 'Was versteht man unter einer Disproportionierung?', o: ['Dasselbe Element wird gleichzeitig oxidiert und reduziert, es entstehen zwei neue Oxidationsstufen.', 'Zwei verschiedene Elemente tauschen Elektronen aus.', 'Ein Stoff zerfällt ohne Elektronenübertragung.', 'Ein Element wird nur oxidiert.'], a: 0, why: 'Aus einer Oxidationsstufe werden eine höhere und eine niedrigere.' },
+  { q: 'Was ist eine Synproportionierung?', o: ['Zwei Oxidationsstufen desselben Elements reagieren zu einer mittleren Stufe.', 'Ein Teilchen zerfällt in zwei Oxidationsstufen.', 'Eine Säure-Base-Reaktion.', 'Das Zusammenlagern zweier Moleküle ohne Reaktion.'], a: 0, why: 'Sie ist die Umkehrung der Disproportionierung, z. B. 5 Cl⁻ + ClO₃⁻ + 6 H⁺ → 3 Cl₂ + 3 H₂O.' },
+  { q: 'Cu⁺-Ionen disproportionieren in Wasser. In welche Oxidationsstufen?', o: ['0 und +II', '+I und +II', '−I und +III', '0 und +I'], a: 0, why: '2 Cu⁺ → Cu + Cu²⁺: Cu(+I) wird zu Cu (0) reduziert und zu Cu²⁺ (+II) oxidiert.' },
+  { q: 'Welches Chlor-Teilchen kann disproportionieren?', o: ['Cl₂ (Oxidationszahl 0)', 'Cl⁻ (−I)', 'ClO₄⁻ (+VII)', 'Na⁺'], a: 0, why: 'Nur Teilchen in einer mittleren Oxidationsstufe können sowohl oxidiert als auch reduziert werden. Cl⁻ ist die niedrigste, ClO₄⁻ die höchste Stufe.' },
+  { q: 'Welche Reaktion ist eine Disproportionierung?', o: ['2 H₂O₂ → 2 H₂O + O₂', 'Zn + Cu²⁺ → Zn²⁺ + Cu', 'HCl + NaOH → NaCl + H₂O', 'SO₂ + 2 H₂S → 3 S + 2 H₂O'], a: 0, why: 'Sauerstoff geht von −I (H₂O₂) zu −II (H₂O) und 0 (O₂). Die letzte Reaktion ist eine Synproportionierung.' },
+  { q: 'Warum entsteht Chlorgas, wenn man Chlorreiniger und WC-Reiniger mischt?', o: ['Cl⁻ und ClO⁻ synproportionieren in saurer Lösung zu Cl₂.', 'ClO⁻ disproportioniert zu Cl₂ und O₂.', 'Salzsäure verdampft.', 'Der Reiniger verbrennt.'], a: 0, why: 'Cl⁻ + ClO⁻ + 2 H⁺ → Cl₂ + H₂O. Chlor (−I und +I) wird zu 0.' },
+  { q: '3 Cl₂ + 6 OH⁻ → 5 Cl⁻ + ClO₃⁻ + 3 H₂O: Wie viele Elektronen werden dabei insgesamt übertragen?', o: ['5', '1', '6', '10'], a: 0, why: '5 Cl-Atome nehmen je 1 e⁻ auf (0 → −I), 1 Cl-Atom gibt 5 e⁻ ab (0 → +V).' },
+  { q: 'Mn aus MnO₄⁻ (+VII) und Mn²⁺ (+II) wird zu MnO₂ (+IV). Welcher Reaktionstyp?', o: ['Synproportionierung', 'Disproportionierung', 'Neutralisation', 'Keine Redoxreaktion'], a: 0, why: 'Zwei Oxidationsstufen (+VII und +II) laufen zu einer mittleren Stufe (+IV) zusammen.' },
+  { q: 'Wie viele <b>verschiedene</b> Oxidationszahlen des betroffenen Elements treten bei einer Disproportionierung mindestens auf?', o: ['Drei: eine vorher, zwei nachher', 'Zwei', 'Eine', 'Vier'], a: 0, why: 'Beispiel Cl: 0 vor der Reaktion, −I und +I danach.' },
+  { q: 'Welche Aussage zur Synproportionierung stimmt?', o: ['Die Oxidationszahl im Produkt liegt zwischen den beiden Edukt-Oxidationszahlen.', 'Das Produkt hat die höchste Oxidationszahl.', 'Es entstehen zwei Produkte.', 'Das Element wird nur oxidiert.'], a: 0, why: 'Der eine Partner wird oxidiert, der andere reduziert, beide treffen sich auf einer Stufe dazwischen.' },
+  { q: 'Warum ist HCl + NaOH → NaCl + H₂O keine Redoxreaktion?', o: ['Keine Oxidationszahl ändert sich: Es ist eine Protonenübertragung (Säure-Base).', 'Weil Wasser entsteht.', 'Weil Salz entsteht.', 'Weil es zu schnell abläuft.'], a: 0, why: 'Bei Redoxreaktionen werden Elektronen übertragen, hier werden H⁺-Ionen übertragen.' }
+], 'Disproportionierung-Quiz');
+</script>
+<a href="/Virtuelles-Chemielabor/impressum.html" style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-family: sans-serif; font-size: 12px; z-index: 9999;">Impressum &amp; Datenschutz</a>
+</body>
+</html>
