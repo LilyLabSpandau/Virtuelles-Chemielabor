@@ -20,7 +20,7 @@
 
     // rows: [{ name, kind, res, note, flag }]
     async function build(rows) {
-        if (!window.PDFLib) await loadScript('lib/pdf-lib.min.js');
+        if (!window.PDFLib) await loadScript('../../vendor/pdf-lib.min.js');
         if (!window.fontkit) await loadScript('lib/fontkit.umd.min.js');
         const PDFLib = window.PDFLib;
         const rgb = PDFLib.rgb;
