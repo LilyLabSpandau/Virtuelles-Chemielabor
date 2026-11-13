@@ -1018,6 +1018,8 @@ function scBuild() {
       const tube = [P0, ...cp, P3].filter(Boolean); if (tube.length > 1) coilG.add(ribbonMesh({ type: 'C', pts: tube, c1: COL.coil, r: 0.3 }));
       cp.forEach((p, k) => { const aa = seq[run.a + k], gi = run.a + k, sel = gi === sc.sel; coilG.add(sphere(p, 0.55, new THREE.MeshStandardMaterial({ color: clsCol(aa), roughness: 0.4, emissive: sel ? 0xffffff : 0, emissiveIntensity: sel ? .35 : 0 }))); const l = makeLabel(aa.c, '#ffffff', 0.9); l.position.copy(p).add(V3(0, 1.4, 0)); coilG.add(l); });
     }
+    // Direkt aneinander grenzende Elemente (Helix↔Strang ohne Schleife dazwischen): Rückgrat verbinden, sonst entsteht eine Lücke
+    for (let i = 0; i + 1 < placed.length; i++) { const A = placed[i], B = placed[i + 1]; if (B.a === A.b + 1) coilG.add(ribbonMesh({ type: 'C', pts: [A.endP, B.startP], c1: COL.coil, r: 0.3 })); }
     placed.forEach(e => e.pts.forEach(p => pts.push(p))); coilG.children.forEach(o => { if (o.isMesh && o.geometry.type === 'SphereGeometry') pts.push(o.position.clone()); });
   }
   sc.grp = G; sc.view.scene.add(G); scApplyVis();
