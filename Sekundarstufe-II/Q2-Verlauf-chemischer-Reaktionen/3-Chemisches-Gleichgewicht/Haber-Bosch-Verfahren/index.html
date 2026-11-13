@@ -176,7 +176,20 @@
         .dashboard > * { min-width: 0; }
         .panel { padding: 14px; }
     }
-    </style>
+    
+        /* Design-Aufwertung */
+        html { background: #e8eef7; }
+        body { background: linear-gradient(160deg,#eaf2fb 0%,#f3eefb 55%,#fdf1e6 100%) fixed; min-height: 100vh; box-sizing: border-box; }
+        h1 { margin: 0 0 10px; padding: 26px 20px; border-radius: 16px; color: #fff; font-size: clamp(1.3rem, 3.4vw, 1.9rem);
+             background: linear-gradient(120deg,#1f4e79 0%,#2e86c1 50%,#7d3c98 100%); box-shadow: 0 8px 22px rgba(31,78,121,.28); letter-spacing: .01em; }
+        .panel { border-radius: 16px; border: 1px solid rgba(44,62,80,.08); border-top: 5px solid var(--thermo);
+                 box-shadow: 0 8px 22px rgba(44,62,80,.10); }
+        .dashboard > .panel:nth-of-type(2), .dashboard > div:nth-of-type(2) > .panel:first-child { border-top-color: var(--kinetics); }
+        .gauge { border-radius: 14px; box-shadow: 0 6px 14px rgba(0,0,0,.18); }
+        .bg-thermo { background: linear-gradient(135deg,#2980b9,#5dade2); }
+        .bg-kinetics { background: linear-gradient(135deg,#d35400,#f0a04b); }
+        .switch-container { background: #eef3f8; border: 1px solid #d9e3ee; }
+</style>
 <link rel="icon" type="image/png" href="../../../../icons/icon-192.png">
 <link rel="apple-touch-icon" href="../../../../icons/apple-touch-icon.png">
 </head>
