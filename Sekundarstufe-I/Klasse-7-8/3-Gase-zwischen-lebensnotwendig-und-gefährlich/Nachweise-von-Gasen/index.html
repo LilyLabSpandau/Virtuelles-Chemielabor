@@ -591,6 +591,7 @@ FX.plopp.position.set(TUBE_X, TUBE_TOP + 1.7, TUBE_Z); scene.add(FX.plopp);
 FX.flash.position.set(TUBE_X, TUBE_TOP + 0.2, TUBE_Z); scene.add(FX.flash);
 FX.ball.position.set(TUBE_X, TUBE_TOP + 0.1, TUBE_Z); scene.add(FX.ball);
 const hoseGas = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshStandardMaterial({ color: 0xc62f2a, roughness: 0.45 })); hoseGas.visible = false; scene.add(hoseGas);
+const hoseClamp = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.075, 0.12, 14), new THREE.MeshStandardMaterial({ color: 0x9aa3ab, metalness: 0.7, roughness: 0.3 })); hoseClamp.rotation.z = Math.PI / 2; hoseClamp.visible = false; scene.add(hoseClamp);
 const flowPts = []; for (let i = 0; i < 10; i++) { const m = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 6), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.8 })); m.visible = false; scene.add(m); flowPts.push(m); }
 const markSel = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.42, 14), new THREE.MeshBasicMaterial({ color: 0xffd54f })); markSel.rotation.x = Math.PI; markSel.visible = false; markSel.renderOrder = 40; scene.add(markSel);
 // Brenner-Hitbox-Namen
@@ -602,10 +603,13 @@ burner.traverse(o => { if (o.userData && o.userData.type === 'burnerTop') o.user
 // ============================================================================
 const state = { mode: 'learn', busy: false, tool: null, ignited: false, airClosed: false, splint: 'unlit', tubeGas: null, tubeLime: false, unknown: null, stopper: false, openT: 0 };
 const tweens = [];
+let dim = 0, dimT = 0;
+const BG0 = new THREE.Color(0x222832), BG1 = new THREE.Color(0x06080c), EXP0 = renderer.toneMappingExposure;
+const spot = new THREE.PointLight(0xe8f1ff, 0, 7, 1.5); spot.position.set(TUBE_X + 0.2, TUBE_BASE + 1.6, TUBE_Z + 1.8); scene.add(spot);
 const easeIO = p => p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
 function tween(dur, fn, ease = true) { return new Promise(res => tweens.push({ t: 0, dur: Math.max(dur, 0.0001), fn, res, ease })); }
 const sleep = s => tween(s, () => {}, false);
-function say(html, kind) { const b = $('instruction-text'); b.innerHTML = html; b.className = 'step-box' + (kind ? ' ' + kind : ''); }
+function say(html, kind) { dimT = 0; const b = $('instruction-text'); b.innerHTML = html; b.className = 'step-box' + (kind ? ' ' + kind : ''); }
 function log(html, cls) { const d = document.createElement('div'); if (cls) d.className = cls; d.innerHTML = html; $('log').appendChild(d); $('log').scrollTop = 1e6; }
 function setBusy(b) { state.busy = b; document.body.style.cursor = b ? 'progress' : 'default'; refreshUI(); }
 const normalize = s => (s || '').toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').replace(/₂/g, '2').replace(/\s+/g, ' ').trim();
@@ -627,7 +631,7 @@ function refreshUI() {
 function CYL_ORDER_VISIBILITY() { GAS_ORDER.forEach(id => CYL[id].g.visible = state.mode === 'learn'); }
 function updateTubeLabel() {
   if (!state.tubeGas) { setSpriteText(tube.label, 'Reagenzglas: leer'); return; }
-  setSpriteText(tube.label, (state.mode === 'expert' ? 'unbekanntes Gas' : gasTxt(state.tubeGas)) + (state.stopper ? ' – verschlossen' : ''));
+  setSpriteText(tube.label, (state.mode === 'expert' ? 'unbekanntes Gas' : gasTxt(state.tubeGas)) + (state.stopper ? ' – verschlossen' : '') + (state.limeResult ? ' · Kalkwasser: ' + state.limeResult : ''));
 }
 function selectTool(k) { state.tool = k; refreshUI(); }
 
@@ -785,13 +789,14 @@ async function stopperOff() {
 async function fillTube(g) {
   setBusy(true);
   resetTubeSilent();
-  const c = CYL[g], v = c.g.localToWorld(c.valveLocal.clone());
-  const pts = [v.clone().add(new THREE.Vector3(0.15, 0, 0)), v.clone().add(new THREE.Vector3(0.45, 0.55, 0.5)), new THREE.Vector3(TUBE_X - 1.0, TUBE_TOP + 1.1, TUBE_Z + 0.6), new THREE.Vector3(TUBE_X - 0.3, TUBE_TOP + 0.9, TUBE_Z), new THREE.Vector3(TUBE_X, TUBE_TOP - 0.2, TUBE_Z), new THREE.Vector3(TUBE_X, TUBE_BASE + 0.45, TUBE_Z)];
+  const c = CYL[g]; c.g.updateMatrixWorld(true); const v = c.g.localToWorld(c.valveLocal.clone());
+  const pts = [v.clone().add(new THREE.Vector3(-0.03, 0, 0)), v.clone().add(new THREE.Vector3(0.45, 0.55, 0.5)), new THREE.Vector3(TUBE_X - 1.0, TUBE_TOP + 1.1, TUBE_Z + 0.6), new THREE.Vector3(TUBE_X - 0.3, TUBE_TOP + 0.9, TUBE_Z), new THREE.Vector3(TUBE_X, TUBE_TOP - 0.2, TUBE_Z), new THREE.Vector3(TUBE_X, TUBE_BASE + 0.45, TUBE_Z)];
   const curve = new THREE.CatmullRomCurve3(pts);
   hoseGas.geometry.dispose(); hoseGas.geometry = new THREE.TubeGeometry(curve, 50, 0.05, 8, false); hoseGas.visible = true;
+  hoseClamp.position.copy(pts[0]).add(new THREE.Vector3(-0.02, 0, 0)); hoseClamp.visible = true;
   flowPts.forEach(m => m.visible = true);
   await tween(1.7, e => { flowPts.forEach((m, i) => { const u = (e * 3 + i * 0.1) % 1; m.position.copy(curve.getPoint(u)); }); }, false);
-  hoseGas.visible = false; flowPts.forEach(m => m.visible = false);
+  hoseGas.visible = false; hoseClamp.visible = false; flowPts.forEach(m => m.visible = false);
   setTubeGas(g);
   if (g === 'H2') await stopperOn();
   setBusy(false);
@@ -805,34 +810,50 @@ function applyLime() {
   tube.liq.visible = true; tube.liq.scale.y = 1;
   const milky = state.tubeGas === 'CO2'; tube.milk = milky ? 1 : 0; applyMilk();
 }
-function applyMilk() { tube.liqMat.color.setHex(0xd6eaff).lerp(new THREE.Color(0xf7f7ef), tube.milk); tube.liqMat.opacity = 0.4 + 0.55 * tube.milk; }
-function resetTubeSilent() { state.stopper = false; state.openT = 0; stopper.visible = false; state.tubeGas = null; state.tubeLime = false; tube.fx.visible = false; tube.liq.visible = false; tube.liq.scale.y = 0.001; tube.milk = 0; applyMilk(); FX.plopp.visible = false; updateTubeLabel(); }
+function applyMilk() { tube.liqMat.color.setHex(0xd6eaff).lerp(new THREE.Color(0xf7f7ef), tube.milk); tube.liqMat.opacity = 0.4 + 0.55 * tube.milk; tube.liqMat.emissive.setHex(0xe6eef8); tube.liqMat.emissiveIntensity = 0.7 * tube.milk * dim; }
+function resetTubeSilent() { state.limeResult = null; dimT = 0; state.stopper = false; state.openT = 0; stopper.visible = false; state.tubeGas = null; state.tubeLime = false; tube.fx.visible = false; tube.liq.visible = false; tube.liq.scale.y = 0.001; tube.milk = 0; applyMilk(); FX.plopp.visible = false; updateTubeLabel(); }
 function resetTube() { resetTubeSilent(); if (state.mode === 'expert' && state.unknown) { /* Probe bleibt im Expertenmodus bestehen */ } say('Reagenzglas geleert.'); }
+const LIME_RIM = new THREE.Vector3(-0.44, 0.95, 0), RIM_T = new THREE.Vector3(TUBE_X - 0.08, TUBE_TOP + 0.35, TUBE_Z);
+function limePose(th, k) {   // Becherrand liegt über der Reagenzglasmündung; k = Abstand nach rechts oben
+  const c = Math.cos(th), s = Math.sin(th);
+  return new THREE.Vector3(RIM_T.x - (LIME_RIM.x * c - LIME_RIM.y * s) + k, RIM_T.y - (LIME_RIM.x * s + LIME_RIM.y * c) + k * 0.8, RIM_T.z);
+}
+function limeLevel(f) { lime.liq.scale.y = Math.max(0.001, f); lime.liq.position.y = 0.02 + 0.31 * f; }
 async function pourLime() {
   if (state.tubeLime) { say('In diesem Reagenzglas ist schon Kalkwasser. Leere es, um neu zu beginnen.', 'warn'); return; }
   setBusy(true); limeAnim = true;
   if (state.stopper) await stopperOff();
-  const p0 = lime.pivot.position.clone(), r0 = lime.pivot.rotation.z;
-  const pp = new THREE.Vector3(TUBE_X + 0.65, TUBE_TOP + 0.5, TUBE_Z), pz = 1.2;
-  await tween(0.8, e => { lime.pivot.position.lerpVectors(p0, pp, e); lime.pivot.rotation.z = lerp(r0, pz, e); });
-  // Strahl vom Becherrand zum Reagenzglas
-  lime.stream.visible = true;
-  const rim = () => lime.pivot.localToWorld(new THREE.Vector3(-0.44, 0.95, 0));
-  const a = rim(), b = new THREE.Vector3(TUBE_X, TUBE_BASE + 0.9, TUBE_Z); const len = a.distanceTo(b);
-  lime.stream.position.copy(a).lerp(b, 0.5); lime.stream.scale.set(1, len, 1); lime.stream.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.clone().sub(a).normalize());
-  tube.liq.visible = true; state.tubeLime = true;
-  await tween(1.2, e => { tube.liq.scale.y = Math.max(0.001, e); lime.liq.scale.y = 1 - 0.12 * e; lime.liq.position.y = 0.33 - 0.04 * e; }, false);
+  const p0 = lime.pivot.position.clone(), r0 = lime.pivot.rotation.z, pA = limePose(0, 1.2);
+  // 1) anheben und neben das Reagenzglas führen
+  await tween(0.8, e => { lime.pivot.position.lerpVectors(p0, pA, e); lime.pivot.rotation.z = lerp(r0, 0, e); });
+  // 2) langsam kippen, bis der Rand über der Öffnung liegt
+  await tween(1.0, e => { const th = 1.25 * e; lime.pivot.position.copy(limePose(th, 1.2 * (1 - e))); lime.pivot.rotation.z = th; });
+  // 3) eingießen: dünner Strahl fällt senkrecht ins Reagenzglas
+  lime.stream.visible = true; lime.stream.quaternion.identity(); tube.liq.visible = true; state.tubeLime = true; tube.liq.scale.y = 0.001;
+  await tween(2.0, e => {
+    const th = 1.25 + 0.3 * e; lime.pivot.position.copy(limePose(th, 0)); lime.pivot.rotation.z = th; lime.pivot.updateMatrixWorld(true);
+    tube.liq.scale.y = Math.max(0.001, e); limeLevel(1 - 0.5 * e);
+    const rim = lime.pivot.localToWorld(LIME_RIM.clone()), surf = TUBE_BASE + 1.1 * Math.max(0.02, e) + 0.02, len = Math.max(0.05, rim.y - surf);
+    lime.stream.position.set(rim.x, surf + len / 2, rim.z); lime.stream.scale.set(0.8 + 0.3 * Math.sin(e * 60), len, 0.8 + 0.3 * Math.sin(e * 60));
+  }, false);
   lime.stream.visible = false;
-  await tween(0.7, e => { lime.pivot.position.lerpVectors(pp, p0, e); lime.pivot.rotation.z = lerp(pz, 0, e); });
+  await sleep(0.2);
+  // 4) zurückkippen und abstellen
+  await tween(0.9, e => { const th = 1.55 * (1 - e); lime.pivot.position.copy(limePose(th, 1.2 * e)); lime.pivot.rotation.z = th; });
+  await tween(0.8, e => { lime.pivot.position.lerpVectors(pA, p0, e); });
   limeAnim = false;
   // Schütteln
   const g = state.tubeGas;
-  if (g) { for (let i = 0; i < 6; i++) { await tween(0.1, e => { tube.group.rotation.z = Math.sin(e * 6.28) * 0.08 * (i % 2 ? 1 : -1); }, false); } tube.group.rotation.z = 0; }
+  if (g) { for (let i = 0; i < 6; i++) { await tween(0.1, e => { tube.group.rotation.z = Math.sin(e * 6.28) * 0.06 * (i % 2 ? 1 : -1); }, false); } tube.group.rotation.z = 0; }
   if (g === 'CO2') { await tween(1.6, e => { tube.milk = e; applyMilk(); }, false); }
   setBusy(false);
   if (!g) { say('Kalkwasser im Reagenzglas. Es ist noch kein Gas darin.'); log('Kalkwasser in das leere Reagenzglas gegeben.', 'muted'); }
-  else if (g === 'CO2') { say('Das Kalkwasser wird <b>milchig-trüb</b>.' + (state.mode === 'learn' ? '<br><span style="color:#cfd8dc">Kalkwasserprobe: CO₂ reagiert mit Calciumhydroxid zu schwer löslichem Calciumcarbonat (Kalk). So weist man Kohlenstoffdioxid nach.</span>' : ''), 'ok'); log('Kalkwasser-Probe: <b>trüb</b>.', 'ok'); }
-  else { say('Das Kalkwasser <b>bleibt klar</b>.' + (state.mode === 'learn' ? '<br><span style="color:#cfd8dc">Kein Kohlenstoffdioxid im Reagenzglas.</span>' : ''), 'ok'); log('Kalkwasser-Probe: <b>bleibt klar</b>.', 'ok'); }
+  else {
+    state.limeResult = g === 'CO2' ? 'trüb' : 'klar'; updateTubeLabel();
+    if (g === 'CO2') { say('Das Kalkwasser wird <b>milchig-trüb</b>.' + (state.mode === 'learn' ? '<br><span style="color:#cfd8dc">Kalkwasserprobe: CO₂ reagiert mit Calciumhydroxid zu schwer löslichem Calciumcarbonat (Kalk). So weist man Kohlenstoffdioxid nach.</span>' : ''), 'ok'); log('Kalkwasser-Probe: <b>trüb</b>.', 'ok'); }
+    else { say('Das Kalkwasser <b>bleibt klar</b>.' + (state.mode === 'learn' ? '<br><span style="color:#cfd8dc">Kein Kohlenstoffdioxid im Reagenzglas.</span>' : ''), 'ok'); log('Kalkwasser-Probe: <b>bleibt klar</b>.', 'ok'); }
+    dimT = 1;   // Hintergrund abdunkeln: Trübung gut erkennbar
+  }
   state.tool = null; refreshUI();
 }
 function clickTube() {
@@ -889,7 +910,7 @@ $('inp-guess').addEventListener('keydown', e => { if (e.key === 'Enter') $('btn-
 function resetAll() {
   if (state.busy) return;
   tweens.length = 0; state.tool = null; state.ignited = false; setSplint('unlit'); splint.position.copy(SPL_REST); splint.rotation.set(0, 0, 0.1);
-  lime.pivot.position.set(LIME_X, TABLE_Y, LIME_Z); lime.pivot.rotation.z = 0; lime.liq.scale.y = 1; lime.liq.position.y = 0.33;
+  lime.pivot.position.set(LIME_X, TABLE_Y, LIME_Z); lime.pivot.rotation.z = 0; limeLevel(1);
   resetTubeSilent(); $('log').innerHTML = '';
   if (state.mode === 'expert') newUnknown();
   say(state.mode === 'learn' ? '<b>Start:</b> Wähle eine Gasflasche (anklicken) und klicke dann das Reagenzglas an. Zum Testen: <b>Brenner</b> anschalten → <b>Holzspan</b> anzünden → <b>Ausblasen</b> (Glimmspan) → Reagenzglas anklicken. Kalkwasser weist CO₂ nach.' : '<b>Expertenmodus:</b> Bestimme das unbekannte Gas im Reagenzglas.');
@@ -922,6 +943,7 @@ function animate(now) {
   // Gasteilchen im Reagenzglas
   if (tube.fx.visible) tube.gasFx.forEach(m => { const v = m.userData.v; v.add(new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(dt * 4)).clampLength(0.2, 0.9); m.position.addScaledVector(v, dt);
     if (Math.hypot(m.position.x, m.position.z) > 0.19) { m.position.x *= 0.92; m.position.z *= 0.92; v.x *= -1; v.z *= -1; } if (m.position.y < 0.25 || m.position.y > TUBE_H - 0.15) v.y *= -1; m.position.y = clamp(m.position.y, 0.25, TUBE_H - 0.15); });
+  dim = lerp(dim, dimT, Math.min(1, dt * 2.5)); renderer.toneMappingExposure = lerp(EXP0, 0.4, dim); scene.background.copy(BG0).lerp(BG1, dim); if (scene.fog) scene.fog.color.copy(scene.background); spot.intensity = 1.7 * dim; if (tube.liq.visible) applyMilk();
   updateFlameVisual(dt, t);
   // Marker über dem ausgewählten Gegenstand
   const sel = state.tool; let tobj = null;
@@ -934,7 +956,7 @@ window.addEventListener('resize', onResize);
 (function init() { const c = CAMP.view(); cam.theta = c.theta; cam.phi = c.phi; cam.radius = c.radius; cam.target.set(c.tx, c.ty, c.tz); updateCamera(); })();
 if (isNarrow()) { $('ui-panel').classList.add('collapsed'); $('btn-collapse').textContent = '▸'; }
 resetAll(); onResize(); requestAnimationFrame(animate);
-if (location.hash === '#debug') window.__sim = { state, tube, splint, lime, CYL, cam, tweens, scene, camera, THREE, FX, setMode, fillTube, igniteSplint, splintTest, pourLime, selectTool, clickBurner, clickSplint, blowOut, screen: obj => { const v = (obj.isVector3 ? obj : new THREE.Box3().setFromObject(obj).getCenter(new THREE.Vector3())).clone().project(camera); return { x: (v.x + 1) / 2 * window.innerWidth, y: (1 - v.y) / 2 * window.innerHeight }; } };
+if (location.hash === '#debug') window.__sim = { hoseGas, hoseClamp, state, tube, splint, lime, CYL, cam, tweens, scene, camera, THREE, FX, setMode, fillTube, igniteSplint, splintTest, pourLime, selectTool, clickBurner, clickSplint, blowOut, screen: obj => { const v = (obj.isVector3 ? obj : new THREE.Box3().setFromObject(obj).getCenter(new THREE.Vector3())).clone().project(camera); return { x: (v.x + 1) / 2 * window.innerWidth, y: (1 - v.y) / 2 * window.innerHeight }; } };
 
 </script>
 <a class="zur-uebersicht" href="../index.html" style="position:fixed;bottom:calc(10px + env(safe-area-inset-bottom,0px));left:10px;background:rgba(0,0,0,.6);color:#fff;padding:5px 10px;text-decoration:none;border-radius:5px;font-family:sans-serif;font-size:12px;line-height:1.4;z-index:9999;">← Übersicht</a>
