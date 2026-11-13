@@ -955,7 +955,7 @@ function newScene() {
   return s;
 }
 // Renderer (einer für die große Ansicht, einer für die Detailansicht)
-function makeRenderer() { const r = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true }); r.setPixelRatio(Math.min(2, window.devicePixelRatio || 1)); r.setClearColor(0x000000, 0); return r; }
+function makeRenderer() { const r = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true }); r.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5)); r.setClearColor(0x000000, 0); return r; }
 const mainR = makeRenderer(), detR = makeRenderer();
 const stage = { main: null, detail: null };      // aktuelle Ansichten: {scene, camera, orbit, el}
 function fit(r, el, cam) { const w = Math.max(10, el.clientWidth), h = Math.max(10, el.clientHeight); r.setSize(w, h, false); r.domElement.style.width = w + 'px'; r.domElement.style.height = h + 'px'; cam.aspect = w / h; cam.updateProjectionMatrix(); }

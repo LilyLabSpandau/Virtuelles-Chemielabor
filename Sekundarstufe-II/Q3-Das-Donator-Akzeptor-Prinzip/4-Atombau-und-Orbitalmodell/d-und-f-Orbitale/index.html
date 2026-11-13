@@ -248,7 +248,7 @@ function dotTex() { var c = document.createElement('canvas'); c.width = c.height
 function init3D() {
   try { R3 = new THREE.WebGLRenderer({ antialias: true }); } catch (e) { return false; }
   if (!R3 || !R3.domElement) return false;
-  hostEl = $('three'); hostEl.appendChild(R3.domElement); R3.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); R3.setClearColor(0x080a18, 1);
+  hostEl = $('three'); hostEl.appendChild(R3.domElement); R3.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5)); R3.setClearColor(0x080a18, 1);
   scene = new THREE.Scene(); cam3 = new THREE.PerspectiveCamera(42, WW / HH, 0.5, 200);
   var ax = function (dx, dy, dz, lab) { var g = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-dx, -dy, -dz), new THREE.Vector3(dx, dy, dz)]); scene.add(new THREE.Line(g, new THREE.LineBasicMaterial({ color: 0x8f9bff, transparent: true, opacity: 0.6 }))); var s = labelSprite(lab, 0.8, '#cfd6ff'); s.position.set(dx * 1.07, dy * 1.07, dz * 1.07); scene.add(s); };
   ax(9, 0, 0, 'x'); ax(0, 9, 0, 'y'); ax(0, 0, 9, 'z');

@@ -110,7 +110,7 @@ const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerH
 const renderer = new THREE.WebGLRenderer({ antialias: (window.devicePixelRatio || 1) < 1.5 });
 
 // Automatische Qualitätsanpassung: Die Auflösung sinkt, wenn das Gerät nicht mitkommt
-const MAX_RATIO = Math.min(window.devicePixelRatio || 1, 2);
+const MAX_RATIO = Math.min(window.devicePixelRatio || 1, 1.5);
 const RATIO_STEPS = [MAX_RATIO].concat([1.5, 1.25, 1, 0.85, 0.7].filter(r => r < MAX_RATIO - 0.01));
 let ratioIdx = RATIO_STEPS.length > 1 && RATIO_STEPS[1] <= 1.5 && MAX_RATIO > 1.5 ? 1 : 0; // Start mit 1,5 statt 2
 let bestIdx = 0;          // höchste erlaubte Auflösung (wird gesperrt, sobald es einmal zu langsam war)

@@ -2482,7 +2482,7 @@
       const scene = new THREE.Scene(); scene.background = new THREE.Color(0x090e17);
       const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100); camera.position.set(0, 2.5, 9.8);
       const renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
       threeContainer.appendChild(renderer.domElement);
 
       const controls = new SimpleOrbitControls(camera, renderer.domElement);

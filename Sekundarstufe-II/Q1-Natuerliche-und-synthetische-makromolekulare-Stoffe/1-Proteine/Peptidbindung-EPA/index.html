@@ -308,7 +308,7 @@ class View {
     this.el = el; this.opts = opts;
     this.canvas = document.createElement('canvas'); this.canvas.className = 'gl'; el.prepend(this.canvas);
     this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
-    this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(38, 1, 0.1, 200);
     this.dist = opts.dist || 11; this.camera.position.set(0, 0, this.dist);

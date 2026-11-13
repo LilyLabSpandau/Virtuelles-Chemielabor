@@ -223,7 +223,7 @@ function init3D() {
   try { R3 = new THREE.WebGLRenderer({ antialias: true }); } catch (e) { return false; }
   if (!R3 || !R3.domElement) return false;
   hostEl = $('three'); hostEl.appendChild(R3.domElement);
-  R3.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); R3.setClearColor(0x080a18, 1);
+  R3.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5)); R3.setClearColor(0x080a18, 1);
   scene = new THREE.Scene(); scene.fog = new THREE.Fog(0x080a18, 55, 110);
   cam3 = new THREE.PerspectiveCamera(42, WW / HH, 0.5, 300);
   scene.add(new THREE.AmbientLight(0x8a93c8, 0.9));
