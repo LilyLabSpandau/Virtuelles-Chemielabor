@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>Strukturebenen der Proteine</title>
+<title>Struktur und Funktion der Proteine</title>
 <style>
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; height: 100%; }
@@ -86,6 +86,13 @@ label.chk { display: inline-flex; align-items: center; gap: 6px; margin: 3px 12p
 .seqline { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13.5px; color: #ffd54f; margin: 4px 0; word-break: break-word; }
 #toast { position: fixed; left: 50%; bottom: 70px; transform: translateX(-50%); background: #2f3c52; color: #fff; padding: 8px 14px; border-radius: 10px; font-size: 13px; opacity: 0; transition: opacity .25s; pointer-events: none; z-index: 50; }
 #toast.on { opacity: 1; }
+.mt { width: 100%; border-collapse: collapse; font-size: 12.5px; margin: 6px 0; }
+.mt th { text-align: left; color: #90caf9; font-size: 11.5px; padding: 3px; }
+.mt td { padding: 4px 3px; border-bottom: 1px solid #263041; vertical-align: middle; }
+.mt select { width: 100%; background: #232d3c; color: #dbe4f2; border: 1px solid #38465e; border-radius: 7px; padding: 6px 4px; font-size: 12.5px; }
+.mt td.ok select { border-color: #4cd964; background: #1f3a2b; } .mt td.no select { border-color: #ff6b6b; background: #3d2326; }
+button.qo { display: block; width: 100%; text-align: left; margin: 5px 0; border: 1px solid #38465e; background: #232d3c; color: #dbe4f2; border-radius: 9px; padding: 8px 11px; font-size: 13px; cursor: pointer; line-height: 1.4; }
+button.qo.good { background: #1f4d33; border-color: #4cd964; } button.qo.bad { background: #4a2327; border-color: #ff6b6b; }
 @media (max-width: 900px) {
   .tab, .tab.on { grid-template-columns: 1fr; }
   .tab.on { grid-template-rows: 54% 46%; }
@@ -103,12 +110,14 @@ label.chk { display: inline-flex; align-items: center; gap: 6px; margin: 3px 12p
 </head>
 <body>
 <header>
-  <h1>🧬 Strukturebenen der Proteine</h1>
+  <h1>🧬 Struktur und Funktion der Proteine</h1>
   <nav id="tabs">
     <button data-t="1" class="on">1 Primär<small> · Lewis</small></button>
     <button data-t="2">2 Sekundär<small> · 3D</small></button>
     <button data-t="3">3 Tertiär<small> · 3D</small></button>
     <button data-t="4">4 Quartär<small> · 3D</small></button>
+    <button data-t="5">5 Funktion<small> · 3D</small></button>
+    <button data-t="6">6 Im Wasser<small> · 3D</small></button>
   </nav>
   <div id="mode" title="Schwierigkeitsgrad"><button data-m="gk">Grundkurs</button><button data-m="lk">Leistungskurs</button></div>
   <a class="back" href="../index.html">← Zurück zu Proteine</a>
@@ -419,6 +428,112 @@ label.chk { display: inline-flex; align-items: center; gap: 6px; margin: 3px 12p
     <div class="box hi" id="qu-info">Tippe im Modell auf eine Untereinheit oder die Häm-Gruppe oder wähle sie hier aus.</div>
     <div class="box" id="qu-dinfo"></div>
     <div class="legend" id="qu-leg"></div>
+  </div>
+</section>
+
+<!-- ============ 5 FUNKTION: SKLERO- UND SPHÄROPROTEINE ============ -->
+<section class="tab" id="t5">
+  <div class="view" id="fu-view">
+    <div class="ov tip">Ziehen = drehen · Mausrad / Zwei-Finger = zoomen · Protein antippen</div>
+    <div class="detail" id="fu-detail"><div class="dl" id="fu-dl"></div></div>
+  </div>
+  <div class="side">
+    <h2>Funktion: Form bestimmt Aufgabe</h2>
+    <details class="expl gk" open>
+      <summary>Wozu brauchen wir Proteine?</summary>
+      <p>Proteine erfüllen ganz verschiedene Aufgaben:</p>
+      <ul>
+        <li><b>Strukturproteine</b> geben Festigkeit: Kollagen (Haut, Sehnen), Keratin (Haare, Nägel).</li>
+        <li><b>Transportproteine</b> bringen Stoffe an ihren Ort: Hämoglobin (Sauerstoff).</li>
+        <li><b>Schutzproteine</b> wehren Erreger ab: Antikörper.</li>
+        <li><b>Enzymproteine</b> beschleunigen Reaktionen: z. B. Amylase im Speichel.</li>
+      </ul>
+    </details>
+    <details class="expl gk" open>
+      <summary>Faserförmig oder kugelförmig?</summary>
+      <p><b>Skleroproteine</b> sind lange, <b>faserförmige</b> Moleküle. Sie sind <b>wasserunlöslich</b> und sehr fest – ideal für Strukturproteine.</p>
+      <p><b>Sphäroproteine</b> sind zu <b>Kugeln</b> gefaltet und lösen sich <b>meist in Wasser</b>. Außen sitzen wasserfreundliche, innen wasserabweisende Reste. Enzyme, Transport- und Schutzproteine sind fast alle Sphäroproteine.</p>
+      <p><b>Merke:</b> Die Form passt zur Aufgabe.</p>
+    </details>
+    <details class="expl lk" open>
+      <summary>Bedeutung und Funktion der Proteine</summary>
+      <ul>
+        <li><b>Strukturproteine</b> (Kollagen, Keratin, Fibroin) – mechanische Stabilität von Geweben und Hüllen.</li>
+        <li><b>Transportproteine</b> (Hämoglobin, Albumin, Transferrin, Kanal- und Carrier-Proteine) – binden Stoffe spezifisch und geben sie wieder ab.</li>
+        <li><b>Schutzproteine</b> (Antikörper) – erkennen Antigene spezifisch.</li>
+        <li><b>Enzymproteine</b> – Biokatalysatoren: senken die Aktivierungsenergie, werden nicht verbraucht, sind substratspezifisch und wirkspezifisch.</li>
+      </ul>
+    </details>
+    <details class="expl lk" open>
+      <summary>Skleroproteine und Sphäroproteine</summary>
+      <p><b>Skleroproteine</b> (Faserproteine) sind lang gestreckt oder fadenförmig, <b>wasserunlöslich</b> und mechanisch belastbar; die Ketten sind durch zahlreiche Wasserstoffbrücken (bei Keratin zusätzlich Disulfidbrücken, bei Kollagen Quervernetzungen) zu Fasern gebündelt. Die Sekundärstruktur dominiert (α-Helix, Tripelhelix, β-Faltblatt).</p>
+      <p><b>Sphäroproteine</b> (Kugelproteine) haben eine <b>kompakte Tertiärstruktur</b>: hydrophobe Reste im Kern, polare und geladene Reste außen. Die Hydrathülle macht sie meist <b>wasserlöslich</b>. Ihre Funktion beruht auf einer präzisen Raumstruktur (Bindungstasche, aktives Zentrum, Antigenbindungsstelle).</p>
+      <p><b>Form–Funktion:</b> Stabilität verlangt Fasern, Spezifität verlangt eine passgenaue Tasche.</p>
+    </details>
+    <details class="expl lk">
+      <summary>Begriffe erklärt</summary>
+      <dl class="gloss">
+        <dt>Skleroprotein</dt><dd>Faserprotein; lang gestreckt, wasserunlöslich, meist Strukturprotein (Kollagen, Keratin, Fibroin).</dd>
+        <dt>Sphäroprotein</dt><dd>Kugelprotein; kompakt gefaltet, meist wasserlöslich (Enzyme, Hämoglobin, Antikörper).</dd>
+        <dt>Hydrathülle</dt><dd>Wassermoleküle, die sich an polare und geladene Reste der Proteinoberfläche anlagern.</dd>
+        <dt>Aktives Zentrum</dt><dd>Bindungs- und Reaktionstasche eines Enzyms; entsteht durch die Tertiärstruktur.</dd>
+        <dt>Substratspezifität</dt><dd>Ein Enzym setzt nur Substrate mit passender Struktur um.</dd>
+        <dt>Antigen</dt><dd>Körperfremde Struktur, an die ein Antikörper spezifisch bindet.</dd>
+        <dt>Denaturierung</dt><dd>Verlust der Raumstruktur (z. B. durch Hitze, Säure); die Primärstruktur bleibt erhalten.</dd>
+      </dl>
+    </details>
+    <h3>Proteine anklicken</h3>
+    <div class="eltn" id="fu-list"></div>
+    <div class="box hi" id="fu-info"></div>
+    <div class="box" id="fu-dinfo"></div>
+    <div class="legend" id="fu-leg"></div>
+    <h3>Aufgabe 1: Ordne zu</h3>
+    <p class="muted">Faserförmig (Skleroprotein) oder kugelförmig (Sphäroprotein)? Und welche Funktion?</p>
+    <div id="fu-match"></div>
+    <div class="btns"><button id="fu-check">Prüfen</button><button id="fu-reset">Zurücksetzen</button></div>
+    <div class="box" id="fu-mfb"></div>
+    <h3>Aufgabe 2: Form und Funktion</h3>
+    <div id="fu-q"></div>
+  </div>
+</section>
+
+<!-- ============ 6 IM WASSER: SPHÄRO- UND SKLEROPROTEIN ============ -->
+<section class="tab" id="t6">
+  <div class="view" id="ws-view">
+    <div class="ov tip">Erst „Ins Wasser geben“, dann ein Becherglas antippen · Ziehen = drehen · Zoomen: Mausrad / Zwei-Finger</div>
+    <div class="detail" id="ws-detail"><div class="dl" id="ws-dl"></div></div>
+  </div>
+  <div class="side">
+    <h2>Proteine im Wasser</h2>
+    <details class="expl gk" open>
+      <summary>Was passiert im Wasser?</summary>
+      <p>Wasser-Moleküle haben eine <b>leicht negative</b> Seite (Sauerstoff) und eine <b>leicht positive</b> Seite (Wasserstoff). Deshalb lagern sie sich an Teilchen mit <b>Ladung</b> oder mit <b>–OH</b> an.</p>
+      <p>Ein <b>Kugelprotein</b> hat außen viele solche wasserfreundlichen Reste. Wasser umgibt es wie eine Hülle (<b>Hydrathülle</b>) – das Protein löst sich.</p>
+      <p>Ein <b>Faserprotein</b> hat außen viele wasserabweisende Reste und hält fest mit den Nachbarketten zusammen. Wasser findet keinen Halt – es löst sich nicht.</p>
+    </details>
+    <details class="expl lk" open>
+      <summary>Wechselwirkungen Protein – Wasser</summary>
+      <p>Wasser ist ein <b>Dipol</b>. An geladene Reste (–COO⁻, –NH₃⁺, Guanidinium) lagern sich Wassermoleküle über <b>Ion-Dipol-Wechselwirkungen</b> an (O zu Kationen, H zu Anionen); ungeladene polare Reste (–OH, –CONH₂) bilden <b>Wasserstoffbrücken</b>. Die <b>Hydrathülle</b> schirmt die Moleküle voneinander ab und hält Sphäroproteine in kolloidaler Lösung.</p>
+      <p>Unpolare Reste können mit Wasser nur schwache Van-der-Waals-Kräfte ausbilden; Wasser ordnet sich um sie herum und bevorzugt Kontakte zu sich selbst (<b>hydrophober Effekt</b>). In Sphäroproteinen liegen sie deshalb im Kern, in Skleroproteinen an der Faseroberfläche – dort lagern sich zusätzlich die Ketten durch Wasserstoffbrücken, Disulfidbrücken und hydrophobe Kontakte zusammen. Kette–Kette ist stärker als Kette–Wasser: <b>wasserunlöslich</b>.</p>
+      <p>Die Löslichkeit eines Sphäroproteins ist am <b>isoelektrischen Punkt</b> minimal (Nettoladung 0, keine Abstoßung).</p>
+    </details>
+    <div class="btns"><button id="ws-go">⬇ Proteine ins Wasser geben</button><button id="ws-reset">↺ Zurück</button></div>
+    <h3>Ausschnitt anzeigen</h3>
+    <div class="eltn" id="ws-list"></div>
+    <div class="box hi" id="ws-info"></div>
+    <div>
+      <label class="chk"><input type="checkbox" id="ws-o-w" checked> Wassermoleküle</label>
+      <label class="chk"><input type="checkbox" id="ws-o-h" checked> Wechselwirkungen (gelb)</label>
+      <label class="chk"><input type="checkbox" id="ws-o-l" checked> Beschriftungen</label>
+    </div>
+    <div class="box" id="ws-dinfo"></div>
+    <div class="legend" id="ws-leg"></div>
+    <h3>Aufgabe 1: Welcher Rest bindet Wasser?</h3>
+    <p class="muted">Schau dir die Seitenkette an: Kann sie mit Wasser wechselwirken (Ladung, –OH) oder nicht?</p>
+    <div id="ws-sort"></div>
+    <div class="box" id="ws-sfb"></div>
+    <h3>Aufgabe 2: Fragen</h3>
+    <div id="ws-q"></div>
   </div>
 </section>
 
@@ -1266,9 +1381,9 @@ function makeExplorer(cfg) {
     // Detailansicht
     if (it && it.build) {
       const d = it.build(), sc = newScene(), c = new THREE.PerspectiveCamera(40, 1, 0.5, 400); sc.add(d.g);
-      const v = { scene: sc, camera: c, el: cfg.detailEl, orbit: new Orbit(c, V3(0, 0, 0), d.r * 1.9, 0.6, 1.2), tick: dt => { if (!v.touched) { v.orbit.az += dt * 0.35; v.orbit.update(); } } };
+      const v = { scene: sc, camera: c, el: cfg.detailEl, orbit: new Orbit(c, V3(0, 0, 0), d.r * (d.zoom || 1.9), d.az == null ? 0.6 : d.az, d.pol == null ? 1.2 : d.pol), tick: dt => { if (d.tick) d.tick(dt); if (!v.touched && !d.still) { v.orbit.az += dt * 0.35; v.orbit.update(); } } };
       v.orbit.min = d.r * 0.8; v.orbit.max = d.r * 6; ex.detail = v; cfg.detailEl.style.display = 'block';
-      cfg.detailLabel.textContent = ex.txt(it, 'name') + ' – Detailansicht (Aminosäuren)'; showDetail(v);
+      cfg.detailLabel.textContent = ex.txt(it, 'name') + (cfg.detailSfx || ' – Detailansicht (Aminosäuren)'); showDetail(v);
       const gi = isGK() && it.gk && it.gk.dinfo, di = gi ? (typeof gi === 'function' ? gi(d) : gi) : (d.info || '');
       cfg.detailInfo.innerHTML = di + (it.seq ? `<div class="seqline">${it.seq}</div>` : '');
     } else { cfg.detailInfo.innerHTML = ''; cfg.detailEl.style.display = 'none'; if (ex.detail) { showDetail(null); stage.detail = null; ex.detail = null; cfg.detailEl.querySelectorAll('canvas').forEach(c => c.remove()); } }
@@ -1427,6 +1542,362 @@ function quBuild() {
 let qu = null;
 tabHooks[4] = () => { if (!qu) qu = quBuild(); showMain(qu.view); if (qu.detail) showDetail(qu.detail); else { showDetail(null); stage.detail = null; } };
 
+// ===== 8b. FUNKTION DER PROTEINE: Sklero- und Sphäroproteine ===================
+const tubeAlong = (pts, r, mat, seg) => new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), seg || pts.length * 2, r, 8, false), mat);
+const ell = (rx, ry, rz, p, color, o = {}) => { const m = new THREE.Mesh(geoSph, stdMat(color, o)); m.scale.set(rx, ry, rz); m.position.copy(p); return m; };
+const lblAt = (g, t, p, size = 1.7, color = '#ffffff') => { const l = makeLabel(t, color, size); l.position.copy(p); g.add(l); return l; };
+const ease = t => t * t * (3 - 2 * t);
+const lerp = (a, b, t) => a + (b - a) * t;
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+// --- Skleroprotein 1: Kollagen-Tripelhelix ---
+function bKol(det) {
+  const g = new THREE.Group(), L = 30, N = 90, R = 1.7, P = 11, cols = [0x4fc3f7, 0xffb74d, 0xba68c8];
+  const at = (s, x, k) => { const th = 2 * Math.PI * (x + L / 2) / P + s * 2 * Math.PI / 3; return V3(x, R * k * Math.cos(th), R * k * Math.sin(th)); };
+  for (let s = 0; s < 3; s++) {
+    const pts = []; for (let i = 0; i <= N; i++) pts.push(at(s, -L / 2 + L * i / N, 1)); g.add(tubeAlong(pts, 0.55, stdMat(cols[s]), N));
+    for (let k = 0; k < 10; k++) { const x = -L / 2 + 1.5 + k * 3.1 + s * 1.03; if (x > L / 2 - 1) continue; g.add(sphere(at(s, x, 0.38), 0.55, stdMat(0xffffff))); if (det || k % 2 === 0) g.add(sphere(at(s, x + 1.03, 1.32), 0.5, stdMat(0xffa000))); }
+  }
+  if (det) { for (let k = 0; k < 6; k++) { const x = -L / 2 + 3 + k * 4.6; g.add(dashes(at(0, x, 0.85), at(1, x + .15, 0.85), 0.07, 0xffee58, 4)); }
+    lblAt(g, 'Gly (jede 3. Aminosäure, innen)', V3(-4, 6.2, 0), 1.7); lblAt(g, 'Pro / Hyp (außen)', V3(8, -6.2, 0), 1.7, '#ffcc80'); lblAt(g, 'Wasserstoffbrücken', V3(-9, -4.3, 2.8), 1.5, '#fff59d'); }
+  g.rotation.z = 0.25;
+  return { g, r: 27, info: det ? 'Drei Ketten sind wie ein Seil zur <b>Tripelhelix</b> umeinander gedreht. Jede dritte Aminosäure ist <b>Glycin</b> (weiße Kugeln): Nur dieser kleinste Rest passt in das enge Innere. Außen sitzen oft Prolin und Hydroxyprolin (orange). Gelbe Linien: Wasserstoffbrücken zwischen den Ketten.' : '' };
+}
+// --- Skleroprotein 2: Keratin (Superhelix + Disulfidbrücken) ---
+function bKer(det) {
+  const g = new THREE.Group(), L = 30, N = 260, cols = [0x4dd0e1, 0x81c784];
+  const at = (s, x) => { const sc = 2 * Math.PI * x / 24 + s * Math.PI, th = 2 * Math.PI * x / 5.4 + s * 0.9; return V3(x, 1.35 * Math.cos(sc) + 0.9 * Math.cos(th), 1.35 * Math.sin(sc) + 0.9 * Math.sin(th)); };
+  for (let s = 0; s < 2; s++) { const pts = []; for (let i = 0; i <= N; i++) pts.push(at(s, -L / 2 + L * i / N)); g.add(tubeAlong(pts, 0.42, stdMat(cols[s]), N)); }
+  const ys = stdMat(0xffd600, { emissive: 0x554400 });
+  [-9, 0, 9].forEach(x => { let best = null; for (let d = -3; d <= 3; d += 0.1) { const a = at(0, x + d), b = at(1, x + d), dd = a.distanceTo(b); if (!best || dd < best.d) best = { a, b, d: dd }; } g.add(sphere(best.a, 0.55, ys), sphere(best.b, 0.55, ys), cyl(best.a, best.b, 0.2, ys)); if (det) lblAt(g, 'S–S', best.a.clone().add(V3(0, 2.6, 0)), 1.6, '#ffee58'); });
+  if (det) lblAt(g, 'zwei α-Helices zur Superhelix verdrillt', V3(0, -5, 0), 1.7, '#b2ebf2');
+  g.rotation.z = -0.2;
+  return { g, r: 27, info: det ? 'Zwei <b>α-Helices</b> (Keratin) sind zu einer <b>Superhelix</b> umeinander gedreht. Zwischen den Ketten liegen <b>Disulfidbrücken</b> (gelb, S–S) aus je zwei Cystein-Resten. Sie geben Haaren, Wolle und Nägeln Festigkeit und Elastizität.' : '' };
+}
+// --- Skleroprotein 3: Seidenfibroin (β-Faltblatt) ---
+function bSei(det) {
+  const g = new THREE.Group(), n = 16, dx = 1.9, col = [0xff8a65, 0xffab91];
+  for (let j = 0; j < 4; j++) {
+    const pts = [], z = (j - 1.5) * 4.8; for (let i = 0; i <= n; i++) pts.push(V3((i - n / 2) * dx, i % 2 ? 0.75 : -0.75, z));
+    g.add(tubeAlong(pts, 0.36, stdMat(col[j % 2]), n * 3));
+    const dir = j % 2 ? -1 : 1, tip = pts[j % 2 ? 0 : n], cone = new THREE.Mesh(new THREE.ConeGeometry(0.85, 1.7, 14), stdMat(col[j % 2])); cone.position.copy(tip).add(V3(dir * 0.7, 0, 0)); cone.rotation.z = -dir * Math.PI / 2; g.add(cone);
+    for (let i = 1; i < n; i++) { const up = i % 2 > 0, p = pts[i].clone().add(V3(0, up ? 1.3 : -1.3, 0)), gly = (i + j) % 4 < 2; g.add(sphere(p, 0.42, stdMat(gly ? 0xffffff : 0xffd54f))); }
+    if (j < 3) for (let i = 2; i < n - 1; i += 3) g.add(dashes(V3((i - n / 2) * dx, i % 2 ? 0.75 : -0.75, z), V3((i - n / 2) * dx, i % 2 ? 0.75 : -0.75, z + 4.8), 0.07, 0xffee58, 4));
+  }
+  if (det) { lblAt(g, 'β-Faltblatt, antiparallel', V3(0, 5.6, 0), 1.8, '#ffccbc'); lblAt(g, 'Gly (weiß) / Ala (gelb)', V3(0, -5, 8.5), 1.6, '#ffe082'); }
+  g.rotation.set(0.5, 0.1, 0.1);
+  return { g, r: 27, info: det ? 'Viele Stränge liegen als <b>β-Faltblatt</b> nebeneinander; Wasserstoffbrücken (gelb) halten sie zusammen. Die kleinen Reste (Glycin, Alanin) ragen abwechselnd nach oben und unten, so können sich die Schichten dicht stapeln. Folge: sehr zugfest, aber kaum dehnbar.' : '' };
+}
+// --- Sphäroprotein: Aufbau (Kern innen, Hülle außen) ---
+function bGlo(det) {
+  const g = new THREE.Group(), n = 120, R = 8; const gold = Math.PI * (3 - Math.sqrt(5));
+  for (let i = 0; i < n; i++) { const y = 1 - 2 * (i + .5) / n, rr = Math.sqrt(1 - y * y), th = i * gold, p = V3(Math.cos(th) * rr, y, Math.sin(th) * rr);
+    if (det && p.z > 0.15 && p.y > -0.2) continue;
+    const ch = i % 9 === 0 ? (i % 18 === 0 ? 0xef5350 : 0x5c8dff) : 0x4dd0e1;
+    g.add(sphere(p.clone().multiplyScalar(R), 0.95, stdMat(ch))); }
+  for (let i = 0; i < 46; i++) { const y = 1 - 2 * (i + .5) / 46, rr = Math.sqrt(1 - y * y), th = i * gold * 1.7, p = V3(Math.cos(th) * rr, y, Math.sin(th) * rr).multiplyScalar(R * (0.18 + 0.4 * ((i * 7) % 5) / 4)); g.add(sphere(p, 0.95, stdMat(0xe0b84c))); }
+  if (det) { for (let i = 0; i < 40; i++) { const th = i * gold * 2.3, ph = Math.acos(1 - 2 * ((i * 0.618) % 1)); const p = V3(Math.sin(ph) * Math.cos(th), Math.cos(ph), Math.sin(ph) * Math.sin(th)).multiplyScalar(R + 3.2); g.add(sphere(p, 0.4, stdMat(0x90caf9, { transparent: true, opacity: .75 }))); }
+    lblAt(g, 'unpolarer Kern (hydrophob)', V3(-1, 0, 5), 1.7, '#ffe082'); lblAt(g, 'polare / geladene Reste außen', V3(0, R + 3.5, 0), 1.7, '#80deea'); lblAt(g, 'Hydrathülle (Wasser)', V3(R + 6, -3, 0), 1.6, '#90caf9'); }
+  return { g, r: 24, info: det ? 'Aufgeschnittenes Kugelprotein: Die <b>unpolaren (hydrophoben) Reste</b> (gelb) liegen im Inneren, die <b>polaren und geladenen Reste</b> (türkis, rot, blau) außen. Sie bilden mit Wasser Wasserstoffbrücken und Ionen-Dipol-Kontakte (Hydrathülle, blau) – deshalb sind die meisten Sphäroproteine wasserlöslich.' : '' };
+}
+// --- Enzym: aktives Zentrum, Substrat, Produkte ---
+function bEnz(det) {
+  const g = new THREE.Group(), body = subunitGroup(globinSpec(41, 8), 0x9ccc65, 0x558b2f, null, null, false); body.scale.setScalar(0.9); g.add(body);
+  const pk = new THREE.Mesh(new THREE.TorusGeometry(2.6, 0.38, 10, 28), stdMat(0xffd54f, { emissive: 0x665500 })); pk.position.set(10.2, 0, 0); pk.rotation.y = Math.PI / 2; g.add(pk);
+  const mA = stdMat(0xff7043), mB = stdMat(0xffca28), A = sphere(V3(0, 0, 0), 1.25, mA), B = sphere(V3(0, 0, 0), 1.0, mB), bond = cyl(V3(0, 0, 0), V3(1, 0, 0), 0.22, stdMat(0xffffff)); g.add(A, B, bond);
+  let t = 0; const P = 10;
+  const place = () => { const u = t % P; let a, b, show = true;
+    if (u < 3) { const e = ease(u / 3), x = lerp(27, 11.4, e); a = V3(x, 0.8, 0); b = V3(x, -0.9, 0); }
+    else if (u < 5) { a = V3(11.4, 0.8 + 0.15 * Math.sin((u - 3) * 6), 0); b = V3(11.4, -0.9, 0); }
+    else if (u < 8.5) { const e = ease((u - 5) / 3.5); a = V3(lerp(11.4, 27, e), lerp(0.8, 8, e), 0); b = V3(lerp(11.4, 27, e), lerp(-0.9, -8, e), 0); }
+    else { show = false; a = V3(40, 0, 0); b = a; }
+    A.position.copy(a); B.position.copy(b); A.visible = B.visible = show; const split = u >= 5; bond.visible = show && !split;
+    if (!split) { bond.position.copy(a).add(b).multiplyScalar(0.5); bond.scale.set(0.22, a.distanceTo(b), 0.22); bond.quaternion.setFromUnitVectors(V3(0, 1, 0), a.clone().sub(b).normalize()); }
+    pk.material.emissive.setHex(u >= 3 && u < 5 ? 0xaa8800 : 0x665500); };
+  place();
+  if (det) { lblAt(g, 'aktives Zentrum', V3(12.5, 5, 0), 1.7, '#ffe082'); lblAt(g, 'Substrat', V3(24, 4, 0), 1.7, '#ffab91'); lblAt(g, 'Produkte', V3(25, -11, 0), 1.7, '#fff59d'); lblAt(g, 'Enzym (unverändert)', V3(-4, 12.5, 0), 1.7, '#c5e1a5'); }
+  return { g, r: 30, tick: dt => { t += dt; place(); }, info: det ? 'Das Substrat passt wie ein Schlüssel zum <b>aktiven Zentrum</b> (gelber Ring), einer Tasche aus wenigen Aminosäure-Resten. Dort wird es umgesetzt (hier gespalten); die <b>Produkte</b> lösen sich, das Enzym bleibt unverändert und kann weiterarbeiten. Die Tasche entsteht erst durch die Faltung der Kette – geht die Tertiärstruktur verloren (z. B. durch Hitze), geht die Wirkung verloren.' : '' };
+}
+// --- Transportprotein: Häm bindet O₂ ---
+function bTra(det) {
+  const g = new THREE.Group(), body = subunitGroup(globinSpec(11, 7), 0x4fc3f7, 0x1e88e5, null, null, false); body.scale.setScalar(0.9); g.add(body);
+  const h = hemeMini(null, null); h.scale.setScalar(0.8); h.rotation.set(0.3, 0.7, 0.2); g.add(h);
+  const mO = stdMat(0xff5252), O1 = sphere(V3(0, 0, 0), 0.9, mO), O2 = sphere(V3(0, 0, 0), 0.9, mO), bd = cyl(V3(0, 0, 0), V3(0, 1, 0), 0.16, stdMat(0xffffff)); g.add(O1, O2, bd);
+  let t = 0; const P = 9;
+  const place = () => { const u = t % P, hp = V3(1.3, 0.2, 3.6); let c;
+    if (u < 3) c = V3().copy(hp).lerp(V3(1.3, 0.2, 24), 1 - ease(u / 3)); else if (u < 6) c = hp.clone(); else c = hp.clone().lerp(V3(1.3, 0.2, 24), ease((u - 6) / 3));
+    O1.position.copy(c).add(V3(0.5, 0, 0)); O2.position.copy(c).add(V3(-0.5, 0, 0)); bd.position.copy(c); bd.scale.set(.16, 1.0, .16); bd.quaternion.setFromUnitVectors(V3(0, 1, 0), V3(1, 0, 0)); };
+  place();
+  if (det) { lblAt(g, 'Häm mit Fe²⁺', V3(-9, 3, 7), 1.7, '#ff8a80'); lblAt(g, 'O₂', V3(1.3, 0.2, 18), 2.0, '#ff8a80'); lblAt(g, 'Globin (Peptidkette)', V3(0, 13.5, 0), 1.7, '#81d4fa'); }
+  return { g, r: 28, tick: dt => { t += dt; place(); }, info: det ? 'Das <b>Globin</b> (Peptidkette) bildet eine Tasche für das <b>Häm</b> (roter Ring mit Fe²⁺). Dort wird ein O₂-Molekül gebunden, transportiert und wieder abgegeben (Animation). Die Außenseite trägt polare Reste – deshalb ist das Protein im Blut gelöst.' : '' };
+}
+// --- Schutzprotein: Antikörper ---
+function bAk(det) {
+  const g = new THREE.Group(), hv = 0x5c6bc0, lt = 0xffb74d, ys = stdMat(0xffd600, { emissive: 0x554400 });
+  [-1, 1].forEach(s => {
+    g.add(ell(1.7, 2.8, 1.6, V3(s * 1.9, -9.5, 0), hv), ell(1.7, 2.8, 1.6, V3(s * 1.9, -4.4, 0), hv));
+    g.add(ell(1.7, 2.8, 1.6, V3(s * 4.2, 3.3, 0), hv, {}), ell(1.7, 2.8, 1.6, V3(s * 7.4, 8, 0), hv));
+    g.add(ell(1.5, 2.5, 1.5, V3(s * 8.6, 3.5, 0), lt), ell(1.5, 2.5, 1.5, V3(s * 11.6, 8.7, 0), lt));
+    g.add(cyl(V3(s * 1.9, -2, 0), V3(s * 4.0, 1.2, 0), 0.5, stdMat(hv)));
+    g.add(sphere(V3(s * 9.2, 11.4, 0), 0.9, stdMat(0x00e5ff, { emissive: 0x004455 })));
+    g.rotation.z = 0;
+  });
+  g.add(cyl(V3(-1.9, -1.2, 0), V3(1.9, -1.2, 0), 0.3, ys), sphere(V3(-1.9, -1.2, 0), 0.45, ys), sphere(V3(1.9, -1.2, 0), 0.45, ys));
+  const mAg = stdMat(0xff1744, { emissive: 0x440000 }), ag = [0, 1].map(() => new THREE.Mesh(new THREE.OctahedronGeometry(1.5), mAg)); g.add(ag[0], ag[1]);
+  let t = 0; const P = 9;
+  const place = () => { const u = t % P; [-1, 1].forEach((s, k) => { const tip = V3(s * 9.2, 13, 0), far = V3(s * 21, 24, 0); let p; if (u < 3.5) p = far.clone().lerp(tip, ease(u / 3.5)); else if (u < 7) p = tip.clone(); else p = tip.clone().lerp(far, ease((u - 7) / 2)); ag[k].position.copy(p); ag[k].rotation.set(u, u * .7, 0); }); };
+  place();
+  if (det) { lblAt(g, 'Antigen', V3(-19, 24, 0), 1.7, '#ff8a80'); lblAt(g, 'Bindungsstelle', V3(-17, 9.5, 0), 1.6, '#80deea'); lblAt(g, 'schwere Ketten', V3(10.5, -8, 0), 1.6, '#9fa8da'); lblAt(g, 'leichte Ketten', V3(18, 3.5, 0), 1.6, '#ffcc80'); lblAt(g, 'S–S', V3(0, 0.6, 0), 1.4, '#ffee58'); }
+  g.position.y = -1;
+  return { g, r: 32, tick: dt => { t += dt; place(); }, info: det ? 'Der <b>Antikörper</b> (Immunglobulin G) hat Y-Form: vier Peptidketten (2 schwere, 2 leichte), durch <b>Disulfidbrücken</b> (gelb) verbunden. Die beiden Enden (türkis) sind so geformt, dass sie genau ein bestimmtes <b>Antigen</b> (rot) binden – das macht den Erreger unschädlich oder markiert ihn für die Abwehr.' : '' };
+}
+const FU_B = { kol: bKol, ker: bKer, sei: bSei, glo: bGlo, enz: bEnz, tra: bTra, ak: bAk };
+function fuBuild() {
+  const ex = makeExplorer({ viewEl: document.getElementById('fu-view'), listEl: document.getElementById('fu-list'), infoEl: document.getElementById('fu-info'), detailEl: document.getElementById('fu-detail'), detailLabel: document.getElementById('fu-dl'), detailInfo: document.getElementById('fu-dinfo'), detailSfx: ' – Detailansicht', dist: 172, idleGK: 'Tippe auf ein Protein im Modell oder wähle es aus der Liste. Oben die faserförmigen, unten die kugelförmigen Proteine.', idle: 'Tippe auf ein Protein im Modell oder wähle es aus der Liste. Oben: Skleroproteine (faserförmig), unten: Sphäroproteine (kugelförmig).', items: {} });
+  const root = new THREE.Group(); ex.scene.add(root);
+  const POS = { kol: [-40, 19, .8], ker: [0, 19, .8], sei: [40, 19, .72], glo: [-57, -21, .78], enz: [-19, -21, .8], tra: [19, -21, .8], ak: [57, -21, .72] };
+  const ticks = [];
+  const NM = { kol: 'Kollagen', ker: 'Keratin', sei: 'Seidenfibroin', glo: 'Kugelprotein: Aufbau', enz: 'Enzym', tra: 'Hämoglobin', ak: 'Antikörper' };
+  Object.keys(POS).forEach(id => { const [x, y, s] = POS[id], b = FU_B[id](false), w = new THREE.Group(); w.add(b.g); w.scale.setScalar(s); w.position.set(x, y, 0); root.add(w); w.traverse(m => { if (m.isMesh) ex.register(m, id); }); if (b.tick) ticks.push(b.tick);
+    const l = makeLabel(NM[id], '#ffffff', 3.0); l.position.set(x, y - 12, 0); root.add(l); });
+  const hd = (t, col, y) => { const l = makeLabel(t, col, 3.6, 'rgba(10,14,20,.0)'); l.position.set(0, y, 0); root.add(l); };
+  hd('SKLEROPROTEINE · faserförmig · wasserunlöslich', '#ffcc80', 36); hd('SPHÄROPROTEINE · kugelförmig · meist wasserlöslich', '#80deea', -1);
+  ex.view.tick = dt => ticks.forEach(f => f(dt));
+  const it = (id, name, col, fun, html, gk) => ({ name, col, seq: '', build: () => FU_B[id](true), html: html, gk: { html: gk } , fun });
+  ex.items = {
+    kol: it('kol', 'Kollagen', '#ffb74d', 'Strukturprotein', '<b>Skleroprotein · Strukturprotein.</b> Häufigstes Protein der Wirbeltiere (Haut, Sehnen, Knochen, Knorpel). Drei linksgängige Peptidketten winden sich zu einer rechtsgängigen <b>Tripelhelix</b>. Jede dritte Aminosäure ist <b>Glycin</b> (kleinster Rest, nur H) – nur er passt ins Innere. Häufig sind Prolin und Hydroxyprolin. Wasserstoffbrücken zwischen den Ketten und Quervernetzungen zwischen den Tripelhelices machen die Fasern extrem zugfest und wasserunlöslich.', '<b>Skleroprotein · Strukturprotein.</b> Drei Ketten sind wie ein Seil umeinander gedreht (<b>Tripelhelix</b>). Jede dritte Aminosäure ist <b>Glycin</b>, der kleinste Rest – nur er passt ins enge Innere. Viele solcher Seile bilden Fasern: sehr reißfest und wasserunlöslich. Vorkommen: Haut, Sehnen, Knochen.'),
+    ker: it('ker', 'Keratin', '#4dd0e1', 'Strukturprotein', '<b>Skleroprotein · Strukturprotein.</b> Keratin (Haare, Wolle, Nägel, Federn, Hörner) besteht aus <b>α-Helices</b>, die zu Superhelices verdrillt sind. Der hohe Anteil an <b>Cystein</b> ermöglicht <b>Disulfidbrücken</b> (–S–S–) zwischen den Ketten: Je mehr davon, desto härter das Material (Haar &lt; Nagel &lt; Horn). Wasserunlöslich. Beim Dauerwellen werden die Disulfidbrücken reduktiv gespalten und in neuer Form oxidativ wieder geschlossen.', '<b>Skleroprotein · Strukturprotein.</b> Keratin bildet Haare, Wolle, Nägel und Federn. Spiralen (α-Helices) sind zu dickeren Strängen verdrillt und durch <b>S–S-Brücken</b> verbunden. Je mehr Brücken, desto härter das Material. Es löst sich nicht in Wasser.'),
+    sei: it('sei', 'Seidenfibroin', '#ff8a65', 'Strukturprotein', '<b>Skleroprotein · Strukturprotein.</b> Das Fibroin der Seide besteht überwiegend aus <b>β-Faltblättern</b> (antiparallele Stränge) mit viel Glycin und Alanin. Die Wasserstoffbrücken zwischen den Strängen machen die Faser reißfest, aber kaum dehnbar; die kleinen Reste lassen die Faltblätter dicht stapeln. Wasserunlöslich.', '<b>Skleroprotein · Strukturprotein.</b> Seide besteht aus Strängen, die wie Wellpappe nebeneinander liegen (<b>β-Faltblatt</b>) und durch Wasserstoffbrücken zusammenhalten. Dadurch ist sie sehr reißfest, aber kaum dehnbar. Sie löst sich nicht in Wasser.'),
+    glo: it('glo', 'Kugelprotein: Aufbau', '#e0b84c', 'Form und Löslichkeit', '<b>Sphäroprotein (Aufbau).</b> Die Kette faltet sich (Tertiärstruktur) zu einem kompakten, kugeligen Knäuel: <b>hydrophobe Reste im Inneren</b>, <b>polare und geladene Reste außen</b>. Außen entsteht durch Wasserstoffbrücken und Ionen-Dipol-Kontakte eine Hydrathülle – die meisten Sphäroproteine sind daher wasserlöslich. Beispiele: Enzyme, Transportproteine, Antikörper, Albumin.', '<b>Sphäroprotein (Aufbau).</b> Die Kette ist zu einer Kugel gefaltet: <b>wasserabweisende Reste innen</b>, <b>wasserfreundliche Reste außen</b>. Außen lagert sich Wasser an – darum lösen sich die meisten Kugelproteine gut in Wasser. Beispiele: Enzyme, Hämoglobin, Antikörper.'),
+    enz: it('enz', 'Enzym', '#9ccc65', 'Enzymprotein', '<b>Sphäroprotein · Enzymprotein.</b> Enzyme sind Biokatalysatoren: Sie senken die Aktivierungsenergie einer Reaktion, ohne verbraucht zu werden. Das <b>aktive Zentrum</b> ist eine Tasche aus wenigen Aminosäure-Resten, die durch die Tertiärstruktur entsteht. Nur das passende Substrat wird gebunden (<b>Substratspezifität</b>). Wird die Raumstruktur zerstört (Denaturierung), geht die Aktivität verloren.', '<b>Sphäroprotein · Enzymprotein.</b> Enzyme beschleunigen Reaktionen im Körper (Biokatalysatoren) und werden dabei nicht verbraucht. Das <b>aktive Zentrum</b> ist eine Tasche, in die nur ein passender Stoff (Substrat) hineinpasst. Zerstört man die Form (z. B. durch Hitze), wirkt das Enzym nicht mehr.'),
+    tra: it('tra', 'Hämoglobin', '#4fc3f7', 'Transportprotein', '<b>Sphäroprotein · Transportprotein.</b> Hämoglobin transportiert O₂ im Blut. Die <b>Häm-Gruppe</b> (Fe²⁺) sitzt in einer hydrophoben Tasche des Globins und bindet reversibel ein O₂-Molekül. Wasserlöslich, weil die Oberfläche polar ist. Weitere Transportproteine: Albumin (Fettsäuren, Hormone), Transferrin (Eisen), Membrantransporter.', '<b>Sphäroprotein · Transportprotein.</b> Hämoglobin bringt Sauerstoff durch das Blut. Im Häm (roter Ring mit Eisen) wird O₂ gebunden und später wieder abgegeben. Das Protein ist wasserlöslich. Weitere Transportproteine: Albumin, Transferrin.'),
+    ak: it('ak', 'Antikörper', '#9fa8da', 'Schutzprotein', '<b>Sphäroprotein · Schutzprotein.</b> Antikörper (Immunglobuline) bestehen aus vier Ketten (2 schwere, 2 leichte), durch Disulfidbrücken verbunden (Y-Form). Die variablen Enden bilden eine Bindungsstelle, die <b>spezifisch</b> zu einem Antigen passt. Sie neutralisieren Erreger oder markieren sie für Abwehrzellen; im Blut gelöst.', '<b>Sphäroprotein · Schutzprotein.</b> Antikörper schützen den Körper. Sie haben Y-Form; die Enden passen genau zu einem bestimmten Fremdstoff (Antigen). Sie binden daran, machen den Erreger unschädlich oder markieren ihn für die Abwehr.')
+  };
+  ex.cfg.items = ex.items; ex.relist();
+  document.getElementById('fu-leg').innerHTML = '<span><i style="background:#ffa000"></i>Pro/Hyp</span><span><i style="background:#fff"></i>Gly</span><span><i style="background:#ffd600"></i>Disulfidbrücke</span><span><i style="background:#e0b84c"></i>unpolar</span><span><i style="background:#4dd0e1"></i>polar</span><span><i style="background:#ff7043"></i>Substrat</span>';
+  ex.view.orbit.r = 172; ex.view.orbit.min = 40; ex.view.orbit.max = 340; ex.view.orbit.t.set(0, 6, 0); ex.view.orbit.az = 0; ex.view.orbit.pol = 1.45; ex.view.orbit.update();
+  return ex;
+}
+let fu = null;
+tabHooks[5] = () => { if (!fu) fu = fuBuild(); showMain(fu.view); if (fu.detail) showDetail(fu.detail); else { showDetail(null); stage.detail = null; } fuRender(); };
+
+// --- Aufgaben ---
+const FU_P = [
+  { n: 'Kollagen', t: 'S', f: 'St' }, { n: 'Keratin', t: 'S', f: 'St' }, { n: 'Seidenfibroin', t: 'S', f: 'St' },
+  { n: 'Hämoglobin', t: 'K', f: 'Tr' }, { n: 'Albumin (Blutplasma)', t: 'K', f: 'Tr' }, { n: 'Amylase (Speichel)', t: 'K', f: 'En' },
+  { n: 'Katalase', t: 'K', f: 'En' }, { n: 'Immunglobulin G', t: 'K', f: 'Sc' }
+];
+const FU = { rows: [], ans: {}, checked: false, qIdx: 0, qOK: 0, qFirst: true, qDone: false, qList: null };
+const FU_Q = [
+  { q: 'Warum sind Skleroproteine wie Kollagen in Wasser unlöslich?', o: ['Die Ketten liegen als Fasern dicht gebündelt und sind fest miteinander verbunden.', 'Sie bestehen nur aus unpolaren Atomen, die sich nicht mit Wasser mischen.', 'Sie sind Salze, die als Feststoff ausfallen.', 'Ihre Peptidbindungen reagieren sofort mit Wasser zu Aminosäuren.'], a: 0, w: 'Viele Wasserstoffbrücken (bei Keratin auch Disulfidbrücken) halten die Ketten fest zusammen; Wasser kann sie nicht auseinanderziehen.' },
+  { q: 'Warum lösen sich die meisten Sphäroproteine gut in Wasser?', o: ['Außen sitzen polare und geladene Reste, die mit Wasser wechselwirken.', 'Sie sind immer sehr kleine Moleküle.', 'Sie enthalten selbst viel eingeschlossenes Wasser.', 'Ihre Peptidbindungen sind besonders gut hydratisierbar.'], a: 0, w: 'Die Hydrathülle um die polaren Reste hält das Protein in Lösung; die unpolaren Reste liegen im Kern.' },
+  { q: 'Warum ist eine kugelige Form für Enzyme wichtig?', o: ['Beim Falten entsteht eine Tasche, in die nur das passende Substrat passt.', 'Eine Kugel ist besonders reißfest und stabil.', 'Nur kugelförmige Moleküle können Peptidbindungen spalten.', 'Kugeln haben die kleinste Oberfläche und reagieren deshalb nicht.'], a: 0, w: 'Form und Funktion hängen zusammen: Die Tasche (aktives Zentrum) entsteht durch die Tertiärstruktur und macht das Enzym spezifisch.' },
+  { q: 'Sehnen müssen starken Zugkräften standhalten. Welche Eigenschaft des Kollagens ist dafür entscheidend?', o: ['Die Fasern übertragen Zugkräfte und sind sehr reißfest.', 'Kollagen ist besonders gut wasserlöslich und gleitet.', 'Kollagen bindet Sauerstoff und versorgt die Sehne.', 'Kollagen katalysiert den Abbau von Zugspannung.'], a: 0, w: 'Faserform plus viele Bindungen zwischen den Ketten ergeben hohe Zugfestigkeit.' },
+  { q: 'Wie erkennt ein Antikörper „seinen“ Erreger?', o: ['Die Enden des Y passen genau zum Antigen.', 'Er bindet jeden Fremdstoff gleich gut.', 'Er löst den Erreger in Wasser auf.', 'Er enthält ein Häm mit Eisen, das den Erreger erkennt.'], a: 0, w: 'Auch hier gilt: Die Raumstruktur bestimmt die Spezifität.' },
+  { q: 'Welche Funktion hat Hämoglobin?', o: ['Transport von Sauerstoff', 'Schutz vor Erregern', 'Katalyse der Verdauung', 'Aufbau von Sehnen'], a: 0, w: 'Hämoglobin ist ein Transportprotein.' },
+  { q: 'Bei einer Dauerwelle wird Haar zuerst chemisch gelockert und dann in neuer Form fixiert. Was geschieht mit dem Keratin?', o: ['Disulfidbrücken werden reduktiv gespalten und in neuer Lage oxidativ geschlossen.', 'Peptidbindungen werden hydrolysiert und anders neu geknüpft.', 'Einzelne Aminosäuren werden ausgetauscht.', 'Keratin wird in Kollagen umgewandelt.'], a: 0, w: 'Reduktion der –S–S–Brücken zu –SH, Neuknüpfen durch Oxidation – die Peptidketten selbst bleiben unverändert.', lk: true },
+  { q: 'Warum steht in Kollagen etwa jede dritte Aminosäure Glycin?', o: ['Im engen Inneren der Tripelhelix hat nur der kleinste Rest (H) Platz.', 'Glycin ist die einzige Aminosäure mit Schwefel.', 'Glycin bildet als einzige Disulfidbrücken.', 'Glycin ist besonders stark geladen.'], a: 0, w: 'An dieser Stelle der Tripelhelix liegen drei Ketten sehr dicht zusammen.', lk: true },
+  { q: 'Seidenfibroin ist sehr reißfest, aber kaum dehnbar. Wie lässt sich das erklären?', o: ['Die Stränge sind schon gestreckt und über Wasserstoffbrücken verbunden.', 'Es besteht aus α-Helices, die sich leicht dehnen lassen.', 'Zwischen den Faltblättern liegen viele Disulfidbrücken.', 'Seide ist ein Sphäroprotein mit Hohlräumen.'], a: 0, w: 'β-Faltblatt: Die Kettenrichtung ist die Zugrichtung; gestreckte Stränge lassen sich kaum noch längen.', lk: true },
+  { q: 'Ein Enzym verliert bei 90 °C seine Wirkung, obwohl alle Peptidbindungen intakt sind. Warum?', o: ['Die Raumstruktur wird zerstört, das aktive Zentrum verformt sich.', 'Die Peptidbindungen werden hydrolysiert.', 'Das Enzym wandelt sich in Kollagen um.', 'Die Aminosäuren verbrennen.'], a: 0, w: 'Denaturierung: Wasserstoffbrücken, Salzbrücken und hydrophobe Wechselwirkungen halten die Tertiärstruktur; Wärme bricht sie auf, das Substrat passt nicht mehr.', lk: true }
+];
+const FU_FS = { St: 'Strukturprotein', Tr: 'Transportprotein', En: 'Enzymprotein', Sc: 'Schutzprotein' };
+function fuRender() {
+  const m = document.getElementById('fu-match'); if (!m) return;
+  if (!FU.rows.length) FU.rows = shuffle(FU_P.map((p, i) => i));
+  let h = '<table class="mt"><tr><th></th><th>Form</th><th>Funktion</th></tr>';
+  FU.rows.forEach(i => { const p = FU_P[i], a = FU.ans[i] || {}, ct = FU.checked ? (a.t === p.t ? 'ok' : 'no') : '', cf = FU.checked ? (a.f === p.f ? 'ok' : 'no') : '';
+    h += `<tr><td><b>${p.n}</b></td><td class="${ct}"><select data-i="${i}" data-k="t"><option value="">–</option><option value="S"${a.t === 'S' ? ' selected' : ''}>Sklero</option><option value="K"${a.t === 'K' ? ' selected' : ''}>Sphäro</option></select></td><td class="${cf}"><select data-i="${i}" data-k="f"><option value="">–</option>${Object.entries(FU_FS).map(([k, v]) => `<option value="${k}"${a.f === k ? ' selected' : ''}>${v}</option>`).join('')}</select></td></tr>`; });
+  m.innerHTML = h + '</table>';
+  m.querySelectorAll('select').forEach(s => s.onchange = () => { const i = s.dataset.i; FU.ans[i] = FU.ans[i] || {}; FU.ans[i][s.dataset.k] = s.value; FU.checked = false; document.getElementById('fu-mfb').textContent = ''; m.querySelectorAll('td').forEach(td => td.className = ''); });
+  fuRenderQ();
+}
+function fuCheck() {
+  let ok = 0, full = true; FU_P.forEach((p, i) => { const a = FU.ans[i] || {}; if (!a.t || !a.f) full = false; if (a.t === p.t) ok++; if (a.f === p.f) ok++; });
+  const fb = document.getElementById('fu-mfb');
+  if (!full) { fb.innerHTML = 'Fülle zuerst alle Felder aus.'; return; }
+  FU.checked = true; fuRender();
+  const tot = FU_P.length * 2; document.getElementById('fu-mfb').innerHTML = ok === tot ? '<b style="color:#4cd964">✔ Alle ' + tot + ' Zuordnungen stimmen!</b>' : `<b>${ok} von ${tot}</b> Zuordnungen stimmen. Rot markierte Felder noch einmal überdenken: Wie sieht das Protein aus, und was muss es tun?`;
+}
+function fuRenderQ() {
+  const box = document.getElementById('fu-q'); if (!box) return;
+  const list = FU_Q.filter(q => !q.lk || !isGK());
+  if (FU.qIdx >= list.length) { box.innerHTML = `<div class="box hi"><b>${FU.qOK} von ${list.length}</b> Fragen im ersten Versuch richtig.</div><div class="btns"><button id="fu-qr">Nochmal</button></div>`; document.getElementById('fu-qr').onclick = () => { FU.qIdx = 0; FU.qOK = 0; FU.qFirst = true; fuRenderQ(); }; return; }
+  const q = list[FU.qIdx]; box.innerHTML = `<div class="muted">Frage ${FU.qIdx + 1} / ${list.length}</div><p><b>${q.q}</b></p><div id="fu-qo"></div><div id="fu-qf"></div>`;
+  const o = document.getElementById('fu-qo'); let lock = false;
+  q.o.map((t, i) => [t, i]).sort(() => Math.random() - 0.5).forEach(([t, i]) => { const b = document.createElement('button'); b.className = 'qo'; b.textContent = t; b.onclick = () => { if (lock) return; if (i === q.a) { lock = true; b.classList.add('good'); document.getElementById('fu-qf').innerHTML = `<div class="box" style="border-color:#4cd964">✔ ${q.w}</div><div class="btns"><button id="fu-qn">Weiter</button></div>`; if (FU.qFirst) FU.qOK++; document.getElementById('fu-qn').onclick = () => { FU.qIdx++; FU.qFirst = true; fuRenderQ(); }; } else { b.classList.add('bad'); FU.qFirst = false; document.getElementById('fu-qf').innerHTML = '<div class="box" style="border-color:#ff6b6b">Nicht ganz. Denke an den Zusammenhang von Form und Funktion.</div>'; } }; o.appendChild(b); });
+}
+
+// ===== 8c. PROTEINE IM WASSER: Sphäro- und Skleroprotein auf Molekülebene =====
+const rr2 = (a, b) => a + Math.random() * (b - a);
+const rvec = () => V3(rr2(-1, 1), rr2(-1, 1), rr2(-1, 1)).normalize();
+const perp = d => { let u = d.clone().cross(V3(0, 1, 0)); if (u.length() < 0.2) u = d.clone().cross(V3(1, 0, 0)); return u.normalize(); };
+const WSO = { water: true, hb: true, lab: true };
+function waterMol(p, d, u) {   // O bei p, d = Winkelhalbierende (zeigt zu den H), u = Richtung in der Molekülebene
+  const g = new THREE.Group(), L = 1.0, th = 52.25 * D2R, mO = stdMat(0xe53935), mH = stdMat(0xf5f5f5), mb = stdMat(0xcfd8dc);
+  const h1 = d.clone().multiplyScalar(Math.cos(th) * L).addScaledVector(u, Math.sin(th) * L), h2 = d.clone().multiplyScalar(Math.cos(th) * L).addScaledVector(u, -Math.sin(th) * L);
+  g.add(sphere(V3(0, 0, 0), 0.62, mO), sphere(h1, 0.36, mH), sphere(h2, 0.36, mH), cyl(V3(0, 0, 0), h1, 0.1, mb), cyl(V3(0, 0, 0), h2, 0.1, mb));
+  g.position.copy(p); g.userData = { O: p.clone(), H1: p.clone().add(h1), H2: p.clone().add(h2) }; return g;
+}
+const wLabel = (g, t, p, size, col) => { if (WSO.lab) lblAt(g, t, p, size || 1.5, col); };
+const ionHalo = (g, p, col) => { if (!WSO.water) return null; const m = new THREE.Mesh(geoSph, new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.13, depthWrite: false })); m.position.copy(p); m.scale.setScalar(3.9); g.add(m); return m; };
+function bulkWaters(g, n, box, avoid) {
+  const arr = [];
+  for (let i = 0; i < n; i++) {
+    let p, tries = 0; do { p = V3(rr2(box[0], box[1]), rr2(box[2], box[3]), rr2(box[4], box[5])); tries++; } while (avoid && avoid(p) && tries < 30);
+    const d = rvec(), w = waterMol(V3(0, 0, 0), d, perp(d)); w.position.copy(p); w.userData.v = rvec().multiplyScalar(0.5); w.userData.w = rvec().multiplyScalar(rr2(0.4, 1.2)); g.add(w); arr.push(w);
+  }
+  return arr;
+}
+function stepBulk(arr, dt, box, avoid) {
+  arr.forEach(w => { const v = w.userData.v; v.add(rvec().multiplyScalar(dt * 3)).clampLength(0.2, 1.4); w.position.addScaledVector(v, dt * 2.2);
+    if (w.position.x < box[0]) { w.position.x = box[0]; v.x = Math.abs(v.x); } if (w.position.x > box[1]) { w.position.x = box[1]; v.x = -Math.abs(v.x); }
+    if (w.position.y < box[2]) { w.position.y = box[2]; v.y = Math.abs(v.y); } if (w.position.y > box[3]) { w.position.y = box[3]; v.y = -Math.abs(v.y); }
+    if (w.position.z < box[4]) { w.position.z = box[4]; v.z = Math.abs(v.z); } if (w.position.z > box[5]) { w.position.z = box[5]; v.z = -Math.abs(v.z); }
+    if (avoid && avoid(w.position)) { w.position.addScaledVector(v, -dt * 2.2); v.negate(); }
+    w.rotateOnAxis(w.userData.w.clone().normalize(), dt * w.userData.w.length()); });
+}
+// --- Ausschnitt: Sphäroprotein-Oberfläche in Wasser ---
+function bWsSph() {
+  const g = new THREE.Group(), box = [-14, 14, 7.5, 17, -9, 9], ticks = [];
+  const slab = new THREE.Mesh(new THREE.BoxGeometry(30, 7, 20), stdMat(0x2f4a74, { transparent: true, opacity: 0.92 })); slab.position.set(0, -3.5, 0); g.add(slab);
+  const top = new THREE.Mesh(new THREE.BoxGeometry(30.2, 0.25, 20.2), stdMat(0x5c86c4, { transparent: true, opacity: 0.8 })); top.position.set(0, 0.1, 0); g.add(top);
+  [[-9, -2.4, -5], [-3, -3.4, 3], [4, -2.6, -3], [9, -3.6, 4], [0, -2, -7], [-11, -3.2, 5], [12, -2.4, -6]].forEach(p => g.add(sphere(V3(...p), 1.2, stdMat(0xe0b84c))));
+  wLabel(g, 'unpolare Reste (Leu, Val, Phe) im Kern – kein Wasserkontakt', V3(0, -8, 10.5), 1.6, '#ffe082');
+  wLabel(g, 'Oberfläche des Sphäroproteins', V3(-9, 1.5, 11.5), 1.6, '#9fc5ff');
+  const stick = (x, z, col) => g.add(cyl(V3(x, 0, z), V3(x, 2.3, z), 0.24, stdMat(col)));
+  const pairs = [], mHy = [];
+  const dashPair = (a, b) => { if (WSO.water && WSO.hb) g.add(dashes(a, b, 0.075, 0xffee58, 5)); };
+  const addW = (p, d) => { if (!WSO.water) return null; const w = waterMol(p, d, perp(d)); g.add(w); return w; };
+  // Asp⁻ / Glu⁻
+  [[-11, -3, 'Asp–COO⁻'], [8, 3, 'Glu–COO⁻']].forEach(([x, z, nm]) => {
+    stick(x, z, 0xff8a65); const C = V3(x, 2.5, z), O1 = V3(x + 1.0, 3.2, z), O2 = V3(x - 1.0, 3.2, z);
+    g.add(sphere(C, 0.5, stdMat(0xb0bec5)), sphere(O1, 0.62, stdMat(0xff5252)), sphere(O2, 0.62, stdMat(0xff5252)), cyl(C, O1, 0.14, stdMat(0xcfd8dc)), cyl(C, O2, 0.14, stdMat(0xcfd8dc)));
+    wLabel(g, nm, V3(x, 6.2, z - 1.5), 1.6, '#ff8a65');
+    [[O1, V3(0.7, 0.7, 0.3)], [O2, V3(-0.7, 0.7, 0.3)], [O1, V3(0.5, 0.5, -0.8)]].forEach(([O, dir]) => { dir = dir.clone().normalize(); const p = O.clone().addScaledVector(dir, 2.0), w = addW(p, dir.clone().negate()); if (w) dashPair(w.userData.H1, O); });
+    ionHalo(g, V3(x, 3.4, z), 0xff8a65);
+  });
+  // Lys⁺ / Arg⁺
+  [[-4.5, 4, 'Lys–NH₃⁺'], [12.5, -4, 'Arg–Guanidinium⁺']].forEach(([x, z, nm]) => {
+    stick(x, z, 0x7f9cf5); const N = V3(x, 2.7, z); g.add(sphere(N, 0.75, stdMat(0x4a7bf0)));
+    [V3(0.8, 0.6, 0), V3(-0.4, 0.6, 0.7), V3(-0.4, 0.6, -0.7)].forEach(h => g.add(sphere(N.clone().add(h), 0.32, stdMat(0xf5f5f5))));
+    wLabel(g, nm, V3(x, 6.4, z + 1.5), 1.6, '#9fb4ff');
+    [V3(1, 0.7, 0.2), V3(-0.6, 0.7, 0.9), V3(-0.4, 0.5, -1)].forEach(dir => { dir = dir.clone().normalize(); const p = N.clone().addScaledVector(dir, 2.3), w = addW(p, dir.clone()); if (w) dashPair(w.userData.O, N); });
+    ionHalo(g, N, 0x7f9cf5);
+  });
+  // Ser–OH
+  { const x = 1, z = -5; stick(x, z, 0x4dd0e1); const O = V3(x, 2.6, z), H = V3(x + 0.85, 3.1, z); g.add(sphere(O, 0.62, stdMat(0xff5252)), sphere(H, 0.34, stdMat(0xf5f5f5)), cyl(O, H, 0.1, stdMat(0xcfd8dc)));
+    wLabel(g, 'Ser–OH', V3(x, 6, z - 1.5), 1.6, '#80deea');
+    const dir1 = V3(0.8, 0.6, 0.1).normalize(), w1 = addW(H.clone().addScaledVector(dir1, 1.9), dir1.clone()); if (w1) dashPair(w1.userData.O, H);
+    const dir2 = V3(-0.5, 0.7, 0.5).normalize(), w2 = addW(O.clone().addScaledVector(dir2, 2.0), dir2.clone().negate()); if (w2) dashPair(w2.userData.H1, O); }
+  if (WSO.water) { wLabel(g, 'Hydrathülle: Wasser lagert sich an die polaren / geladenen Reste', V3(0, 11.5, 9.5), 1.6, '#90caf9'); }
+  const arr = WSO.water ? bulkWaters(g, 22, box, p => p.y < 8.5 && Math.abs(p.x) < 15 && p.y < 8.5) : [];
+  return { g, r: 27, zoom: 1.75, az: 0.35, pol: 1.28, still: true, tick: dt => stepBulk(arr, dt, box), info: 'Auf der Oberfläche des Sphäroproteins liegen <b>polare und geladene Reste</b>. Wassermoleküle sind Dipole: Der Sauerstoff (rot, δ⁻) richtet sich zu <b>positiven Gruppen</b> (–NH₃⁺) aus, die Wasserstoffe (weiß, δ⁺) zu <b>negativen Gruppen</b> (–COO⁻). An –OH-Gruppen bilden sich <b>Wasserstoffbrücken</b> (gelb gestrichelt). So entsteht eine <b>Hydrathülle</b>, die das Protein umgibt und in Lösung hält. Die unpolaren Reste liegen geschützt im Kern.' };
+}
+// --- Ausschnitt: Skleroprotein-Fasern in Wasser ---
+function bWsSkl() {
+  const g = new THREE.Group(), box = [-17, 17, 8.2, 18, -10, 10], N = 120;
+  const fib = [[0, -2.4, 0x4dd0e1], [0, 2.4, 0x81c784], [3.9, 0, 0x4fc3f7]].map(([y, z, c], k) => { const cy = k === 2 ? 3.9 : 0, cz = k === 2 ? 0 : (k ? 2.4 : -2.4); const pts = []; for (let i = 0; i <= N; i++) { const x = -16 + 32 * i / N, th = 2 * Math.PI * x / 5.4 + k; pts.push(V3(x, cy + 0.5 * Math.cos(th), cz + 0.5 * Math.sin(th))); } g.add(tubeAlong(pts, 0.95, stdMat(c), N)); return { cy, cz }; });
+  // unpolare Reste außen
+  const side = (cy, cz, ang, x, col, r = 0.6) => { const p = V3(x, cy + 1.75 * Math.cos(ang), cz + 1.75 * Math.sin(ang)); g.add(sphere(p, r, stdMat(col))); return p; };
+  fib.forEach((f, k) => { for (let i = 0; i < 11; i++) { const x = -15 + i * 3, ang = (i * 1.7 + k * 2.1) % 6.283; side(f.cy, f.cz, ang, x, i % 5 === 0 ? 0xffffff : 0xe0b84c); } });
+  [[-12, 1, 0x4dd0e1], [12, 2, 0x4dd0e1]].forEach(([x, k, c]) => side(fib[k].cy, fib[k].cz, 1.2, x, c, 0.7));
+  // Bindungen zwischen den Fasern
+  const ys = stdMat(0xffd600, { emissive: 0x554400 });
+  [-12, -4, 4, 12].forEach(x => g.add(dashes(V3(x, 0, -1.2), V3(x, 0, 1.2), 0.08, 0xffee58, 3)));
+  [-8, 8].forEach(x => { g.add(sphere(V3(x, 0, -1.3), 0.5, ys), sphere(V3(x, 0, 1.3), 0.5, ys), cyl(V3(x, 0, -1.3), V3(x, 0, 1.3), 0.17, ys)); });
+  [-10, 0, 10].forEach(x => g.add(dashes(V3(x, 1.5, 1.2), V3(x, 3.0, 0.3), 0.08, 0xffee58, 3)));
+  wLabel(g, 'viele unpolare Reste (Val, Leu, Ala) außen', V3(-1, -5.6, -8), 1.6, '#ffe082');
+  wLabel(g, 'H-Brücken und S–S zwischen den Ketten', V3(0, -4.4, 6.5), 1.6, '#fff59d');
+  // Wasser bleibt außen
+  const avoid = p => Math.abs(p.x) < 19 && p.y < 7.6 && Math.abs(p.z) < 8;
+  const arr = WSO.water ? bulkWaters(g, 22, box, p => false) : [];
+  const row = [];
+  if (WSO.water) { for (let i = 0; i < 7; i++) { const d = V3(i % 2 ? 0.7 : -0.7, 0.6, 0.2).normalize(), w = waterMol(V3(-9.6 + i * 3.2, 7.6, 0), d, perp(d)); g.add(w); row.push(w); }
+    if (WSO.hb) for (let i = 0; i < 6; i++) g.add(dashes(row[i].userData[i % 2 ? 'H2' : 'H1'], row[i + 1].userData.O, 0.07, 0xffee58, 4));
+    wLabel(g, 'Wasser bleibt „unter sich“ (Wasser–Wasser-Brücken)', V3(0, 11, 0), 1.6, '#90caf9'); wLabel(g, 'kaum Anziehung Wasser–Faser: keine Hydrathülle', V3(0, 19.5, 0), 1.6, '#ffab91'); }
+  return { g, r: 31, zoom: 1.65, az: 0.0, pol: 1.5, still: true, tick: dt => stepBulk(arr, dt, box), info: 'Die Faser besteht aus eng gepackten Ketten. An der Oberfläche liegen überwiegend <b>unpolare Reste</b> (gelb), die mit Wasser kaum wechselwirken. Dagegen halten die Ketten <b>untereinander</b> fest zusammen: Wasserstoffbrücken, Disulfidbrücken (S–S) und Anziehung der unpolaren Reste. Wasser bleibt lieber unter sich (Wasser–Wasser-Brücken, gelb) – es entsteht <b>keine Hydrathülle</b>, die Faser löst sich nicht.' };
+}
+let ws = null;
+function wsBuild() {
+  const st = { added: false, t: 0 };
+  const ex = makeExplorer({ viewEl: document.getElementById('ws-view'), listEl: document.getElementById('ws-list'), infoEl: document.getElementById('ws-info'), detailEl: document.getElementById('ws-detail'), detailLabel: document.getElementById('ws-dl'), detailInfo: document.getElementById('ws-dinfo'), detailSfx: ' – Ausschnitt (Molekülebene)', dist: 66, idleGK: 'Gib zuerst beide Proteine ins Wasser. Danach tippst du ein Becherglas an und siehst einen Ausschnitt auf Molekülebene.', idle: 'Gib zuerst beide Proteine ins Wasser. Danach tippst du ein Becherglas an und erhältst einen Ausschnitt auf Molekülebene.', items: {} });
+  ex.st = st; const root = new THREE.Group(); ex.scene.add(root);
+  const XL = -15, XR = 15, BH = 17;
+  const glassM = new THREE.MeshStandardMaterial({ color: 0xcfe8ff, transparent: true, opacity: 0.16, side: THREE.DoubleSide, roughness: 0.1, depthWrite: false });
+  const table = new THREE.Mesh(new THREE.CylinderGeometry(34, 34, 1, 48), stdMat(0x1b2431)); table.position.y = -9.1; root.add(table);
+  [[XL, 'sph'], [XR, 'skl']].forEach(([x, id]) => {
+    const gl = new THREE.Mesh(new THREE.CylinderGeometry(7.2, 7.2, BH, 32, 1, true), glassM.clone()); gl.position.set(x, -0.5, 0); root.add(gl); ex.register(gl, id);
+    const bt = new THREE.Mesh(new THREE.CylinderGeometry(7.2, 7.2, 0.4, 32), glassM.clone()); bt.position.set(x, -9, 0); root.add(bt); ex.register(bt, id);
+    const wt = new THREE.Mesh(new THREE.CylinderGeometry(6.9, 6.9, 12, 32), new THREE.MeshStandardMaterial({ color: 0x4aa3ff, transparent: true, opacity: 0.3, roughness: 0.2, depthWrite: false })); wt.position.set(x, -3, 0); root.add(wt); ex.register(wt, id);
+  });
+  // Portionen über den Bechergläsern
+  const dishL = new THREE.Group(), dishR = new THREE.Group();
+  [dishL, dishR].forEach((d, k) => { const bowl = new THREE.Mesh(new THREE.CylinderGeometry(4, 3, 1, 24), stdMat(0xb0bec5)); bowl.position.y = -0.8; d.add(bowl); d.position.set(k ? XR : XL, 13, 0); root.add(d); });
+  const pile = new THREE.Group(); for (let i = 0; i < 16; i++) { const p = sphere(V3(rr2(-2, 2), rr2(0, 1.4) * (1 - Math.abs(i % 5 - 2) / 3), rr2(-2, 2)), 0.9, stdMat(i % 2 ? 0x5c8dff : 0x7aa8ff)); pile.add(p); } dishL.add(pile);
+  const tangle = new THREE.Group(); for (let i = 0; i < 7; i++) { const pts = []; const a = rr2(0, 6.28), b = rr2(0, 6.28); for (let j = 0; j <= 18; j++) { const u = j / 18; pts.push(V3(Math.cos(a + u * 5) * 2.4 * Math.sin(u * 3.1), Math.sin(b + u * 6) * 1.2 + 0.6, Math.sin(a + u * 4) * 2.4 * Math.cos(u * 2.4))); } tangle.add(tubeAlong(pts, 0.34, stdMat(i % 2 ? 0xe8e0d0 : 0xd7ccb8), 36)); } dishR.add(tangle);
+  // gelöste Sphäroproteine
+  const glob = []; const gm = stdMat(0x5c8dff);
+  for (let i = 0; i < 18; i++) { const g = new THREE.Group(), s = sphere(V3(0, 0, 0), 0.95, gm), h = new THREE.Mesh(geoSph, new THREE.MeshBasicMaterial({ color: 0x80deea, transparent: true, opacity: 0.22, depthWrite: false })); h.scale.setScalar(1.9); g.add(s, h); g.visible = false; g.position.set(XL, 6, 0); g.userData = { t: V3(XL + rr2(-4.8, 4.8), rr2(-7, 3), rr2(-4.8, 4.8)), v: rvec() }; root.add(g); glob.push(g); ex.register(s, 'sph'); }
+  const lab = (t, x, y, col) => { const l = makeLabel(t, col, 2.2); l.position.set(x, y, 0); root.add(l); return l; };
+  lab('Sphäroprotein (Albumin)', XL, 22, '#80deea'); lab('Skleroprotein (Keratin)', XR, 22, '#ffcc80');
+  const rL = lab('löst sich: klare Lösung ✔', XL, -12.5, '#69f0ae'), rR = lab('bleibt ungelöst: setzt sich ab ✘', XR, -12.5, '#ff8a80'); rL.visible = rR.visible = false;
+  tangle.traverse(m => { if (m.isMesh) ex.register(m, 'skl'); }); pile.traverse(m => { if (m.isMesh) ex.register(m, 'sph'); });
+  ex.view.tick = dt => {
+    if (!st.added) return; st.t += dt; const u = Math.min(1, st.t / 1.8), e = ease(u);
+    dishL.position.y = dishR.position.y = lerp(13, 2.5, e);
+    if (u >= 1) { dishL.visible = false; const sk = Math.min(1, (st.t - 1.8) / 3.5); tangle.position.y = 0; dishR.position.y = lerp(2.5, -7.2, ease(sk)); dishR.children[0].visible = false; tangle.rotation.y += 0; dishR.rotation.y = sk * 1.2;
+      glob.forEach(g => { g.visible = true; const d = g.userData; if (st.t - 1.8 < 2.5) { g.position.lerp(d.t, Math.min(1, dt * 1.6)); } else { d.v.add(rvec().multiplyScalar(dt * 2)).clampLength(0.3, 1.2); g.position.addScaledVector(d.v, dt * 1.6); const dx = g.position.x - XL, dz = g.position.z; if (Math.hypot(dx, dz) > 5.2) { g.position.x = XL + dx * 0.95; g.position.z = dz * 0.95; d.v.negate(); } g.position.y = clamp2(g.position.y, -7.4, 3.2); } });
+      rL.visible = rR.visible = st.t > 3.6; }
+  };
+  ex.go = () => { if (st.added) return; st.added = true; st.t = 0; showToast(); };
+  ex.reset = () => { st.added = false; st.t = 0; dishL.visible = true; dishL.position.y = dishR.position.y = 13; dishR.children[0].visible = true; dishR.rotation.y = 0; glob.forEach(g => { g.visible = false; g.position.set(XL, 6, 0); }); rL.visible = rR.visible = false; if (ex.sel) ex.select(ex.sel); };
+  const showToast = () => flash('Die Proteine fallen ins Wasser …');
+  const sel0 = ex.select; ex.select = id => { if (id && !st.added) { flash('Gib zuerst die Proteine ins Wasser.'); return; } sel0(id); };
+  const it = (id, name, col, html, gk, bf) => ({ name, col, seq: '', build: bf, html, gk: { html: gk } });
+  ex.items = {
+    sph: it('sph', 'Sphäroprotein in Wasser', '#80deea', '<b>Sphäroprotein (z. B. Albumin) löst sich.</b> Polare und geladene Reste der Oberfläche (–COO⁻, –NH₃⁺, –OH …) treten über <b>Ion-Dipol-Wechselwirkungen</b> und <b>Wasserstoffbrücken</b> mit Wasser-Dipolen in Kontakt. Die entstehende <b>Hydrathülle</b> schirmt die Proteine gegeneinander ab, sie bleiben fein verteilt (kolloidale Lösung). Unpolare Reste liegen im Kern (hydrophober Effekt).', '<b>Das Kugelprotein löst sich.</b> Außen sitzen wasserfreundliche Reste (geladen oder mit –OH). Wasser lagert sich daran an und bildet eine <b>Hülle</b> um das Protein. So bleibt es im Wasser verteilt. Die wasserabweisenden Reste liegen innen.', bWsSph),
+    skl: it('skl', 'Skleroprotein in Wasser', '#ffcc80', '<b>Skleroprotein (z. B. Keratin) bleibt ungelöst.</b> Die Oberfläche trägt viele <b>unpolare Reste</b>, an denen Wasser kaum wechselwirkt. Die Ketten sind untereinander durch <b>Wasserstoffbrücken</b>, <b>Disulfidbrücken</b> und hydrophobe Kontakte stark verbunden; die Anziehung Kette–Kette übertrifft die Anziehung Kette–Wasser. Es bildet sich <b>keine geschlossene Hydrathülle</b>: Die Fasern bleiben als Feststoff erhalten.', '<b>Die Faser bleibt ungelöst.</b> An ihrer Oberfläche sitzen viele wasserabweisende Reste, mit denen Wasser kaum etwas anfangen kann. Die Ketten halten lieber fest <b>untereinander</b> zusammen (Wasserstoffbrücken, S–S-Brücken). Wasser bleibt draußen, es entsteht keine Hülle – die Faser löst sich nicht.', bWsSkl)
+  };
+  ex.cfg.items = ex.items; ex.relist();
+  document.getElementById('ws-leg').innerHTML = '<span><i style="background:#e53935"></i>Wasser: O (δ⁻)</span><span><i style="background:#f5f5f5"></i>H (δ⁺)</span><span><i style="background:#ff8a65"></i>–COO⁻</span><span><i style="background:#4a7bf0"></i>–NH₃⁺</span><span><i style="background:#e0b84c"></i>unpolar</span><span><i style="background:#ffee58"></i>H-Brücke / Ion-Dipol</span>';
+  ex.view.orbit.r = 66; ex.view.orbit.min = 25; ex.view.orbit.max = 140; ex.view.orbit.t.set(0, 4, 0); ex.view.orbit.az = 0; ex.view.orbit.pol = 1.35; ex.view.orbit.update();
+  return ex;
+}
+const clamp2 = (x, a, b) => x < a ? a : x > b ? b : x;
+tabHooks[6] = () => { if (!ws) ws = wsBuild(); showMain(ws.view); if (ws.detail) showDetail(ws.detail); else { showDetail(null); stage.detail = null; } wsRender(); };
+const WS_R = ['Leu', 'Val', 'Phe', 'Ala', 'Ser', 'Asp', 'Lys', 'Gln'];
+const WSQ = { ans: {}, rows: null, qIdx: 0, qOK: 0, qFirst: true };
+const WS_Q = [
+  { q: 'Welche Reste erwartest du an der Oberfläche eines wasserlöslichen Sphäroproteins?', o: ['Polare und geladene Reste, z. B. Asp, Lys, Ser', 'Nur unpolare Reste, z. B. Leu, Val, Phe', 'Nur Glycin', 'Keine Reste'], a: 0, w: 'Diese Reste können mit Wasser wechselwirken und die Hydrathülle bilden.' },
+  { q: 'Wie lagert sich ein Wassermolekül an eine –NH₃⁺-Gruppe an?', o: ['Mit dem Sauerstoff (δ⁻) zur positiven Gruppe', 'Mit den Wasserstoffatomen (δ⁺) zur positiven Gruppe', 'Gar nicht, Wasser ist unpolar', 'Es bildet eine Disulfidbrücke'], a: 0, w: 'Gegensätzliche Teilladungen ziehen sich an (Ion-Dipol-Wechselwirkung).' },
+  { q: 'Wie lagert sich ein Wassermolekül an eine –COO⁻-Gruppe an?', o: ['Mit den Wasserstoffatomen (δ⁺) zur negativen Gruppe', 'Mit dem Sauerstoff (δ⁻) zur negativen Gruppe', 'Gar nicht', 'Es spaltet die Carboxygruppe'], a: 0, w: 'Die δ⁺-Wasserstoffe zeigen zum negativen Carboxylat.' },
+  { q: 'Warum löst sich ein Skleroprotein wie Keratin nicht in Wasser?', o: ['Viele unpolare Reste außen und starke Bindungen zwischen den Ketten – keine Hydrathülle', 'Es enthält keine Reste', 'Es ist zu klein', 'Es reagiert mit Wasser zu Gas'], a: 0, w: 'Die Kette–Kette-Anziehung ist stärker als die Anziehung Kette–Wasser.' },
+  { q: 'Was bedeutet „Hydrathülle“?', o: ['Wassermoleküle, die sich an polare und geladene Reste anlagern', 'Eine Schicht aus Fett um das Protein', 'Eine Hülle aus Disulfidbrücken', 'Ein Wassertropfen im Kern des Proteins'], a: 0, w: 'Die Hydrathülle hält das Protein in Lösung.' },
+  { q: 'Ein Sphäroprotein enthält auch viele unpolare Reste und löst sich trotzdem. Warum?', o: ['Die unpolaren Reste liegen im Kern, außen stehen polare Reste.', 'Die unpolaren Reste lösen sich in Wasser.', 'Unpolare Reste gibt es dort gar nicht.', 'Wasser dringt in den Kern und löst sie.'], a: 0, w: 'Die Faltung (Tertiärstruktur) bringt die unpolaren Reste ins Innere (hydrophober Effekt).', lk: true },
+  { q: 'Die Löslichkeit eines Sphäroproteins ist am isoelektrischen Punkt (pH = pI) am geringsten. Warum?', o: ['Die Nettoladung ist null; ohne gleichsinnige Abstoßung lagern sich die Moleküle zusammen und fallen aus.', 'Bei pH = pI ist Wasser kein Dipol mehr.', 'Das Protein wird zu Aminosäuren hydrolysiert.', 'Am pI sind alle Reste unpolar.'], a: 0, w: 'Mit weniger Ladung gibt es weniger Hydratation und keine Abstoßung – Aggregation und Ausfällung.', lk: true },
+  { q: 'Warum zählt zur Wechselwirkung Wasser–Protein auch die Wasserstoffbrücke und nicht nur die Ion-Dipol-Kraft?', o: ['Auch ungeladene polare Gruppen (–OH, –CONH₂) binden Wasser über Wasserstoffbrücken.', 'Weil Wasser nur H-Brücken bildet.', 'Weil Ionen kein Wasser binden.', 'Weil Peptidbindungen geladen sind.'], a: 0, w: 'Serin, Threonin, Asparagin und Glutamin bleiben ungeladen, binden aber Wasser über H-Brücken.', lk: true }
+];
+function wsRender() {
+  const box = document.getElementById('ws-sort'); if (!box) return;
+  if (!WSQ.rows) WSQ.rows = shuffle(WS_R);
+  let h = '<table class="mt"><tr><th>Rest</th><th>Seitenkette</th><th></th></tr>';
+  WSQ.rows.forEach(c => { const a = AAby[c], an = WSQ.ans[c], phil = ['po', 'ac', 'ba'].includes(a.cls);
+    h += `<tr><td><b>${a.n}</b></td><td class="seqline" style="font-size:12px">${sub(a.rf)}</td><td style="white-space:nowrap">${[['w', 'bindet Wasser'], ['a', 'meidet Wasser']].map(([k, t]) => `<button class="qo" style="display:inline-block;width:auto;margin:2px;padding:5px 7px;font-size:11.5px${an === k ? (((k === 'w') === phil) ? ';background:#1f4d33;border-color:#4cd964' : ';background:#4a2327;border-color:#ff6b6b') : ''}" data-c="${c}" data-k="${k}">${t}</button>`).join('')}</td></tr>`; });
+  box.innerHTML = h + '</table>';
+  box.querySelectorAll('button').forEach(b => b.onclick = () => { WSQ.ans[b.dataset.c] = b.dataset.k; wsRender(); });
+  const ok = WS_R.filter(c => { const an = WSQ.ans[c], phil = ['po', 'ac', 'ba'].includes(AAby[c].cls); return an && ((an === 'w') === phil); }).length;
+  document.getElementById('ws-sfb').innerHTML = ok === WS_R.length ? '<b style="color:#4cd964">✔ Alle ' + ok + ' Reste richtig eingeordnet!</b>' : `${ok} von ${WS_R.length} richtig`;
+  wsRenderQ();
+}
+function wsRenderQ() {
+  const box = document.getElementById('ws-q'); if (!box) return;
+  const list = WS_Q.filter(q => !q.lk || !isGK());
+  if (WSQ.qIdx >= list.length) { box.innerHTML = `<div class="box hi"><b>${WSQ.qOK} von ${list.length}</b> Fragen im ersten Versuch richtig.</div><div class="btns"><button id="ws-qr">Nochmal</button></div>`; document.getElementById('ws-qr').onclick = () => { WSQ.qIdx = 0; WSQ.qOK = 0; WSQ.qFirst = true; wsRenderQ(); }; return; }
+  const q = list[WSQ.qIdx]; box.innerHTML = `<div class="muted">Frage ${WSQ.qIdx + 1} / ${list.length}</div><p><b>${q.q}</b></p><div id="ws-qo"></div><div id="ws-qf"></div>`;
+  const o = document.getElementById('ws-qo'); let lock = false;
+  shuffle(q.o.map((t, i) => [t, i])).forEach(([t, i]) => { const b = document.createElement('button'); b.className = 'qo'; b.textContent = t; b.onclick = () => { if (lock) return; if (i === q.a) { lock = true; b.classList.add('good'); document.getElementById('ws-qf').innerHTML = `<div class="box" style="border-color:#4cd964">✔ ${q.w}</div><div class="btns"><button id="ws-qn">Weiter</button></div>`; if (WSQ.qFirst) WSQ.qOK++; document.getElementById('ws-qn').onclick = () => { WSQ.qIdx++; WSQ.qFirst = true; wsRenderQ(); }; } else { b.classList.add('bad'); WSQ.qFirst = false; document.getElementById('ws-qf').innerHTML = '<div class="box" style="border-color:#ff6b6b">Nicht ganz. Überlege, welche Reste mit Wasser wechselwirken können.</div>'; } }; o.appendChild(b); });
+}
+
 // ===== 9. HAUPTPROGRAMM: Reiter, Hinweise =====================================
 function flash(t) { const e = document.getElementById('toast'); e.textContent = t; e.classList.add('on'); clearTimeout(flash.t); flash.t = setTimeout(() => e.classList.remove('on'), 2200); }
 const classLegend = () => Object.values(CLS).map(c => `<span><i style="background:${c.col}"></i>${c.n}</span>`).join('');
@@ -1445,10 +1916,17 @@ function setMode(m) {
   if (sc.view) { scPresets(); scUI(); }
   if (te) te.refresh();
   if (qu) qu.refresh();
+  if (fu) { fu.refresh(); fuRenderQ(); }
+  if (ws) { ws.refresh(); wsRenderQ(); }
 }
 document.querySelectorAll('#mode button').forEach(b => b.onclick = () => setMode(b.dataset.m));
 document.querySelectorAll('#mode button').forEach(b => b.classList.toggle('on', b.dataset.m === MODE.m));
 lwInit();
+document.getElementById('ws-go').onclick = () => { if (!ws) ws = wsBuild(); ws.go(); };
+document.getElementById('ws-reset').onclick = () => { if (ws) ws.reset(); };
+[['ws-o-w', 'water'], ['ws-o-h', 'hb'], ['ws-o-l', 'lab']].forEach(([id, k]) => document.getElementById(id).onchange = e => { WSO[k] = e.target.checked; if (ws) ws.refresh(); });
+document.getElementById('fu-check').onclick = fuCheck;
+document.getElementById('fu-reset').onclick = () => { FU.ans = {}; FU.checked = false; FU.rows = []; document.getElementById('fu-mfb').textContent = ''; fuRender(); };
 
 </script>
 <a href="/Virtuelles-Chemielabor/impressum.html" style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-family: sans-serif; font-size: 12px; z-index: 9999;">Impressum & Datenschutz</a>
