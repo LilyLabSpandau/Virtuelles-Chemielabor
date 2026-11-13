@@ -968,7 +968,7 @@
                 ctx.setLineDash([]); ctx.strokeStyle = '#333'; ctx.lineWidth = 1;
             }
         }
-        function drawEth() {
+        function drawEth() { initEthCanvas();
             ctxEth.clearRect(0,0,700,420);
             drawEthanolMolecule(ctxEth);
             watersEth.forEach(w => {
@@ -1057,7 +1057,7 @@
             document.getElementById('timeDisplayNaCl').innerText = Math.floor(progressNaCl) + "%";
             drawNaCl(); updateTextNaCl();
         }
-        function drawNaCl() {
+        function drawNaCl() { initNaClCanvas();
             ctxNaCl.clearRect(0,0,700,420);
             ctxNaCl.globalAlpha = Math.min(1, progressNaCl / 5); 
             watersNaCl.forEach(w => {
@@ -1172,7 +1172,7 @@
             ctx.beginPath(); ctx.moveTo(0, -10); ctx.quadraticCurveTo(10, -25, 0, -40); ctx.quadraticCurveTo(-10, -25, 0, -10); ctx.fillStyle = "rgba(241, 196, 15, 0.9)"; ctx.fill();
             ctx.restore();
         }
-        function drawBa() {
+        function drawBa() { initBaCanvas();
             ctxBa.clearRect(0,0,700,420);
             let wiggle = (burnerOn && progressBa > 100) ? Math.min(2, (progressBa-100)*0.05) : 0;
             if(burnerOn && progressBa > 100) drawFlame(ctxBa, C_X, 390, progressBa);
@@ -1296,7 +1296,7 @@
             isDraggingO2 = false;
         }
 
-        function drawGas() {
+        function drawGas() { initGasCanvas();
             ctxGas.clearRect(0,0, canvasGas.width, canvasGas.height);
 
             let dx = ox - wx;
@@ -1478,7 +1478,7 @@
             ctx.restore();
         }
 
-        function drawCo2() {
+        function drawCo2() { initCo2Canvas();
             ctxCo2.clearRect(0,0,700,460);
             
             // Linkes CO2 (Physikalischer Weg)
