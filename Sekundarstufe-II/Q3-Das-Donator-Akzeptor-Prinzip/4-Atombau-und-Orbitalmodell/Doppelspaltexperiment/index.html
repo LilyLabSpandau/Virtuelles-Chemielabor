@@ -177,9 +177,10 @@ function sinc2(x) { if (Math.abs(x) < 1e-6) return 1; var s = Math.sin(x) / x; r
 function pdf(z) {
   var P = period(), Z1 = DA * P;
   var env = function (c) { return sinc2(Math.PI * (z - c) / Z1); };
-  if (S.slits === 'A') return env(-SLZ);
-  if (S.slits === 'B') return env(SLZ);
-  if (S.det) return 0.5 * (env(-SLZ) + env(SLZ));
+  var ZC = 2 * SLZ; /* Punktquelle in der Mitte zwischen Quelle und Schirm: Das Beugungsbild eines Spalts liegt auf der Geraden Quelle–Spalt, also bei ±2·SLZ (wie beim Kugelmodell) */
+  if (S.slits === 'A') return env(-ZC);
+  if (S.slits === 'B') return env(ZC);
+  if (S.det) return 0.5 * (env(-ZC) + env(ZC));
   var c = Math.cos(Math.PI * z / P); return env(0) * c * c;
 }
 var CDF = null, CKEY = '';
@@ -482,11 +483,12 @@ var TASKS = [
     conflict: '<b>Widerspruch zum Teilchenmodell:</b> Erwartet waren zwei Streifen, beobachtet wird ein Interferenzmuster. Das Elektron trifft zwar als Punkt auf, die Verteilung vieler Treffer zeigt aber Wellenverhalten.' },
   { id: 'e2', title: 'Ein Spalt', need: function () { return S.src === 'e' && H('e|A|-') >= 120 && H('e|B|-') >= 120; }, goal: 'Schließe nacheinander Spalt B („Nur A“) und Spalt A („Nur B“) und sende jeweils mindestens 120 Elektronen.',
     prog: function () { return 'A: ' + H('e|A|-') + ' · B: ' + H('e|B|-') + ' (je 120 nötig)'; },
-    qs: [ ['Was zeigt der Schirm, wenn nur ein Spalt offen ist?', ['Einen breiten, zur Mitte heller werdenden Streifen ohne Interferenzstreifen', 'Dasselbe Streifenmuster wie bei zwei Spalten', 'Gar keine Treffer']],
+    qs: [ ['Was zeigt der Schirm, wenn nur ein Spalt offen ist?', ['Einen breiten, zur Mitte heller werdenden Streifen (Beugung am Einzelspalt) ohne die vielen schmalen Interferenzstreifen', 'Dasselbe Streifenmuster wie bei zwei Spalten', 'Gar keine Treffer']],
           ['Entsteht das Bild mit beiden Spalten, indem sich die Bilder von „Nur A“ und „Nur B“ einfach addieren?', ['Nein, mit beiden Spalten bleiben Stellen dunkel, die mit nur einem offenen Spalt getroffen werden', 'Ja, die beiden Bilder liegen einfach übereinander', 'Ja, nur die Helligkeit ist verdoppelt']] ] },
   { id: 'e3', title: 'Weg-Detektor', need: function () { return S.src === 'e' && S.det && H('e|AB|D') >= 300; }, goal: 'Schalte beide Spalte frei und aktiviere den <b>Weg-Detektor</b>. Er zeigt für jedes Elektron an, durch welchen Spalt es geflogen ist. Sende mindestens 300 Elektronen.',
     prog: function () { return H('e|AB|D') + ' / 300 Elektronen'; },
     qs: [ ['Was geschieht mit dem Streifenmuster, wenn der Weg jedes Elektrons bestimmt wird?', ['Es verschwindet', 'Es wird schärfer', 'Es bleibt unverändert']],
+          ['Wie sieht das Bild mit Weg-Detektor aus?', ['Ein breiter Streifen ähnlich wie beim Einzelspalt, ohne Interferenzstreifen', 'Zwei scharf getrennte Streifen genau hinter den Spalten, wie bei Kugeln', 'Dasselbe Streifenmuster wie ohne Detektor']],
           ['Welche Aussage passt zur Beobachtung?', ['Interferenz tritt nur auf, wenn der Weg durch den Doppelspalt unbestimmt bleibt', 'Der Detektor bremst die Elektronen so stark, dass sie nicht mehr interferieren können', 'Der Detektor macht die Spalte breiter']] ] },
   { id: 'e4', title: 'Beschleunigungsspannung', need: function () { return S.src === 'e' && !S.det && S.slits === 'AB' && SL() >= 2 && H('e|AB|-') >= 300; }, goal: 'Erzeuge das Doppelspalt-Muster mit Elektronen (Detektor aus, beide Spalte, mindestens 300 Treffer) und verschiebe dabei den Regler für die Beschleunigungsspannung mindestens zweimal. Beobachte den Abstand der Streifen bei kleiner und bei großer Spannung.',
     prog: function () { return H('e|AB|-') + ' Treffer · Reglerbewegungen: ' + Math.min(SL(), 2) + ' / 2'; },
@@ -575,7 +577,7 @@ var TXT = [
   { h: 'Elektronen: vom Teilchen zur Welle', body: '<p>Elektronen galten lange als Teilchen. <b>J. J. Thomson</b> wies 1897 in Kathodenstrahlen Teilchen mit fester Masse und fester Ladung nach; sie lassen sich in elektrischen und magnetischen Feldern ablenken. 1924 schlug <b>Louis de Broglie</b> vor, auch Teilchen eine Welle zuzuordnen. Ein Teilchen mit Masse m und Geschwindigkeit v hat dann die <b>de-Broglie-Wellenlänge</b></p>'
     + '<p class="fm">λ = h / (m · v)</p>'
     + '<p>Je schneller das Teilchen, desto kleiner die Wellenlänge. Elektronen, die mit 100 V beschleunigt wurden, haben λ ≈ 0,12 nm, das ist etwa der Abstand benachbarter Atome in einem Kristall. Gegenstände aus dem Alltag haben verschwindend kleine Wellenlängen, deshalb bemerken wir ihre Wellennatur nie.</p>'
-    + '<p>1927 ließen <b>Clinton Davisson und Lester Germer</b> Elektronen an einem Nickelkristall streuen und beobachteten Beugungsmaxima, wie man sie von Röntgenstrahlung kennt. Damit war die Wellennatur der Elektronen nachgewiesen. 1961 führte <b>Claus Jönsson</b> den Doppelspaltversuch mit Elektronen aus und erhielt Interferenzstreifen. 1989 gelang <b>Akira Tonomura</b> mit seinem Team ein Versuch mit einzelnen Elektronen nacheinander: Jedes Elektron erzeugte einen punktförmigen Treffer, doch nach und nach entstand daraus das Interferenzmuster.</p>',
+    + '<p>1927 ließen <b>Clinton Davisson und Lester Germer</b> Elektronen an einem Nickelkristall streuen und beobachteten Beugungsmaxima, wie man sie von Röntgenstrahlung kennt. Damit war die Wellennatur der Elektronen nachgewiesen. 1961 führte <b>Claus Jönsson</b> den Doppelspaltversuch mit Elektronen aus (Beschleunigungsspannung etwa 50 kV, Spalte nur wenige Mikrometer fein) und erhielt Interferenzstreifen. Im Modul sind kleinere Spannungen und gröbere Spalte gewählt, damit die Streifen gut sichtbar bleiben. 1989 gelang <b>Akira Tonomura</b> mit seinem Team ein Versuch mit einzelnen Elektronen nacheinander: Jedes Elektron erzeugte einen punktförmigen Treffer, doch nach und nach entstand daraus das Interferenzmuster.</p>',
     tasks: function (h) {
       h.appendChild(mk('p', '', '<b>Aufgabe B1:</b> Wer wies mit Elektronenbeugung an einem Kristall die Wellennatur der Elektronen nach?'));
       mcq(h, ['Davisson und Germer', 'Thomson', 'Einstein', 'Young'], null);
