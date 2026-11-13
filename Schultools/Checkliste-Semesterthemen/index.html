@@ -154,6 +154,7 @@ const BASE = '../../Sekundarstufe-II/';
 const Q1 = BASE + 'Q1-Natuerliche-und-synthetische-makromolekulare-Stoffe/';
 const Q2 = BASE + 'Q2-Verlauf-chemischer-Reaktionen/';
 const Q3 = BASE + 'Q3-Das-Donator-Akzeptor-Prinzip/';
+const Q4 = BASE + 'Q4-Elektrische-Energie-aus-chemischen-Reaktionen/';
 const LINKS = {
   as:  ['Aminosäuren', Q1 + '1-Proteine/Aminosaeuren/index.html'],
   bi:  ['Biuretprobe', Q1 + '1-Proteine/Biuretprobe/index.html'],
@@ -177,7 +178,9 @@ const LINKS = {
   lt:  ['Lewis-Werkstatt: Teilchenbuilder', '../../Lewis-Werkstatt/Teilchenbuilder/index.html'],
   ep:  ['EPA-Modell an der Peptidbindung', Q1 + '1-Proteine/Peptidbindung-EPA/index.html'],
   ch:  ['Chromatografie und Rf-Werte', Q3 + '2-Indikatorfarbstoffe/Chromatografie-Rf-Werte/index.html'],
-  dp:  ['Disproportionierung und Synproportionierung', Q3 + '3-Redoxreaktionen/Disproportionierung/index.html']
+  dp:  ['Disproportionierung und Synproportionierung', Q3 + '3-Redoxreaktionen/Disproportionierung/index.html'],
+  rr:  ['Redoxreihe der Metalle und Rohstoffgewinnung', Q3 + '3-Redoxreaktionen/Redoxreihe-Metallgewinnung/index.html'],
+  kr:  ['Kupfer-Raffination durch Elektrolyse', Q4 + '2-Elektrolyse/Kupfer-Raffination/index.html']
 };
 
 const FIELDS = [
@@ -330,7 +333,7 @@ const FIELDS = [
   intro: 'Du erweiterst deine Kenntnisse über Redoxreaktionen durch das Modell der Oxidationszahlen, wendest sie auf anorganische und organische Reaktionen an und achtest auf die Fachsprache. Im Leistungskurs verknüpfst du Atombau und Oxidationsstufen.',
   items: [
     ['o1','gk','Metalle: Bau, Eigenschaften, Verwendung','Metallbindung, Metallgitter, Elektronengas und Valenzelektronen: Du erklärst Eigenschaften und Verwendung von Metallen über ihren Bau.',[]],
-    ['o2','gk','Redoxreihe der Metalle und Rohstoffgewinnung','Redoxreaktion zur Gewinnung eines Metalls (z. B. Eisen oder Kupfer); Redoxreihe der Metalle; Abscheidung von Metallen aus Metallsalzlösungen.',[]],
+    ['o2','gk','Redoxreihe der Metalle und Rohstoffgewinnung','Redoxreaktion zur Gewinnung eines Metalls (z. B. Eisen oder Kupfer); Redoxreihe der Metalle; Abscheidung von Metallen aus Metallsalzlösungen.',['rr']],
     ['o3','gk','Redoxreaktionen als Elektronenübergänge','Oxidation, Reduktion, Elektronen-Donator und -Akzeptor, korrespondierende Redoxpaare, Oxidations- und Reduktionsmittel – konsequent zwischen Stoff- und Teilchenebene unterscheiden.',['kl']],
     ['o4','gk','Oxidationszahlen bestimmen','Regeln zur Bestimmung der Oxidationszahlen in anorganischen und organischen Verbindungen; Redoxreaktionen daran erkennen.',['kl']],
     ['o5','gk','Oxidationsreihe vom Alkanol zur Alkansäure','Primäres Alkanol → Alkanal → Alkansäure; Oxidationszahlen des funktionellen Kohlenstoff-Atoms; Nachweis der reduzierenden Wirkung der Aldehyd-Gruppe (FEHLING- oder TOLLENS-Probe).',['lv']],
@@ -351,7 +354,7 @@ const FIELDS = [
     ['e1','gk','Galvanische Zelle am Beispiel des DANIELL-Elements','Aufbau und Arbeitsweise, Donator- und Akzeptor-Halbzelle, Anode und Kathode, elektrochemische Doppelschicht; Reaktionsgleichungen entwickeln und Energieumwandlung beschreiben. Du baust ein galvanisches Element und misst die Zellspannung.',[]],
     ['e2','gk','Standardwasserstoff-Zelle, Spannungsreihe, Zellspannung','Standardelektrodenpotenziale ermitteln; ⟦U = E^0(\\text{Akzeptor}) - E^0(\\text{Donator})⟧ unter Standardbedingungen berechnen.',[]],
     ['e3','gk','Arten elektrochemischer Spannungsquellen','Primärelement, Sekundärelement (Akkumulator) und Brennstoffzelle: Aufbau, Vorgänge beim Entladen und Laden, Umkehrbarkeit.',[]],
-    ['e4','gk','Elektrolyse – theoretische Grundlagen und technische Elektrolyse','Elektrolysezelle, erzwungene Reaktion, Elektronenübergänge; ein technisches Beispiel (z. B. Aluminiumgewinnung).',[]],
+    ['e4','gk','Elektrolyse – theoretische Grundlagen und technische Elektrolyse','Elektrolysezelle, erzwungene Reaktion, Elektronenübergänge; ein technisches Beispiel (z. B. Aluminiumgewinnung).',['kr']],
     ['e5','gk','Elektrochemische Korrosion','Lokalelement, Sauerstoffkorrosion und Säurekorrosion von Metallen; du untersuchst Korrosionsvorgänge experimentell.',[]],
     ['e6','gk','Korrosionsschutz mit Opferanoden','Wie ein unedleres Metall ein edleres schützt; Auswahl geeigneter Opferanoden anhand der Spannungsreihe.',[]],
     ['e7','lk','Konzentrationsabhängigkeit und NERNST-Gleichung','⟦E = E^0 + \\frac{R\\cdot T}{z\\cdot F}\\cdot\\ln\\frac{c(Ox)}{c(Red)}⟧ nur für Redoxpaare Metall-Atom/Metall-Ion; Konzentrationszellen planen (Variablenkontrolle), bauen und auswerten.',[]],

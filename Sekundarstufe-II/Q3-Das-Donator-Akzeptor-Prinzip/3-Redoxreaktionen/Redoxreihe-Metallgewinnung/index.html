@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Redoxreihe und Metallgewinnung</title>
+<style>
+  :root { --ink:#f6eee8; --muted:#c9b9ad; --org:#ff8a3d; --amb:#ffd166; --cy:#7df9ff; --ok:#5ee6a8; --bad:#ff7d7d; --line:rgba(255,176,120,.28); }
+  * { box-sizing:border-box; }
+  html { -webkit-text-size-adjust:100%; }
+  body { margin:0; min-height:100vh; color:var(--ink); font-family:'Segoe UI',system-ui,-apple-system,Roboto,sans-serif; line-height:1.5;
+    background: radial-gradient(ellipse at 12% -8%, #6a2212 0%, rgba(106,34,18,0) 55%), radial-gradient(ellipse at 100% 28%, #12365a 0%, rgba(18,54,90,0) 50%), radial-gradient(ellipse at 40% 115%, #4a1840 0%, rgba(74,24,64,0) 45%), #0b0c14; background-attachment:fixed; }
+  body::before { content:''; position:fixed; inset:0; pointer-events:none; opacity:.65;
+    background-image: radial-gradient(1.6px 1.6px at 9% 82%, #ffb36b, transparent), radial-gradient(1.2px 1.2px at 21% 64%, #ff8a3d, transparent), radial-gradient(1.5px 1.5px at 38% 91%, #ffd166, transparent), radial-gradient(1px 1px at 52% 72%, #ff9e5e, transparent), radial-gradient(1.4px 1.4px at 67% 88%, #ffb36b, transparent), radial-gradient(1px 1px at 81% 69%, #ff8a3d, transparent), radial-gradient(1.5px 1.5px at 93% 84%, #ffd166, transparent), radial-gradient(1px 1px at 14% 22%, #cfe3ff, transparent), radial-gradient(1.2px 1.2px at 47% 12%, #cfe3ff, transparent), radial-gradient(1px 1px at 76% 18%, #cfe3ff, transparent); }
+  .wrap { position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:12px 12px 90px; }
+  .back { display:inline-block; color:#fff; background:rgba(255,255,255,.12); border:1px solid var(--line); text-decoration:none; font-weight:700; font-size:14px; padding:8px 14px; border-radius:999px; }
+  h1 { margin:8px 0 0; font-size:clamp(24px,5.4vw,36px); line-height:1.15; background:linear-gradient(90deg,#ffd166,#ff8a3d 55%,#ff5d73); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .sub { color:var(--muted); margin:4px 0 8px; font-size:15px; }
+  nav.steps { position:sticky; top:0; z-index:40; display:flex; gap:6px; padding:8px 0; overflow-x:auto; background:linear-gradient(#0b0c14 75%, rgba(11,12,20,0)); -webkit-overflow-scrolling:touch; }
+  nav.steps button { flex:1 0 auto; border:1px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-weight:700; font-size:14px; padding:9px 12px; border-radius:12px; cursor:pointer; white-space:nowrap; }
+  nav.steps button.on { background:linear-gradient(135deg,#ff8a3d,#e0334f); border-color:transparent; box-shadow:0 4px 18px rgba(255,100,60,.4); }
+  nav.steps button.done::after { content:' ✔'; color:var(--ok); } nav.steps button.on.done::after { color:#fff; }
+  nav.steps button:disabled { opacity:.4; cursor:not-allowed; }
+  .glass { background:linear-gradient(160deg, rgba(60,40,48,.74), rgba(18,16,30,.82)); border:1px solid var(--line); border-radius:18px; padding:14px; box-shadow:0 10px 34px rgba(0,0,0,.4); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); }
+  h2 { margin:0 0 6px; font-size:19px; } h3 { margin:0 0 4px; font-size:16.5px; }
+  .muted { color:var(--muted); }
+  .main { display:grid; gap:14px; grid-template-columns:1fr; }
+  @media (min-width:900px) { .main { grid-template-columns:minmax(0,520px) minmax(0,1fr); align-items:start; } .stagecol { position:sticky; top:62px; } }
+  .cvwrap { position:relative; padding:8px; }
+  #cv { -webkit-tap-highlight-color:transparent; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; display:block; width:100%; height:auto; border-radius:14px; touch-action:pan-y; cursor:pointer; background:radial-gradient(ellipse at 50% 60%, rgba(120,50,30,.35), rgba(8,8,16,.6)); }
+  .banner { position:absolute; left:14px; right:14px; top:14px; background:rgba(10,10,18,.82); border:1px solid var(--line); border-radius:12px; padding:7px 11px; font-size:14px; pointer-events:none; opacity:0; transition:opacity .25s; }
+  .banner.show { opacity:1; }
+  .cvtools { display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; align-items:center; }
+  .legend { display:flex; flex-wrap:wrap; gap:4px 10px; margin-top:8px; font-size:12.5px; color:var(--muted); }
+  .legend i { display:inline-block; width:11px; height:11px; border-radius:50%; margin-right:4px; vertical-align:-1px; }
+  .btn { border:0; border-radius:11px; padding:11px 16px; font:inherit; font-size:15.5px; font-weight:700; color:#fff; cursor:pointer; background:linear-gradient(135deg,#ff8a3d,#e0334f); box-shadow:0 4px 14px rgba(255,100,60,.35); }
+  .btn:disabled { opacity:.4; cursor:not-allowed; box-shadow:none; }
+  .btn.sec { background:rgba(255,255,255,.1); border:1px solid var(--line); box-shadow:none; color:var(--ink); }
+  .btn.go { background:linear-gradient(135deg,#19c98a,#1fb6ff); box-shadow:0 4px 14px rgba(30,180,200,.35); }
+  .btn.small { padding:7px 11px; font-size:14px; }
+  .btn.on { outline:2px solid var(--amb); }
+  .row { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; align-items:center; }
+  .cap { background:rgba(255,255,255,.07); border-left:4px solid var(--amb); border-radius:8px; padding:8px 12px; margin:8px 0; font-size:15.5px; }
+  .cap small { display:block; color:var(--muted); font-size:12.5px; letter-spacing:.6px; text-transform:uppercase; margin-bottom:2px; }
+  .fb { margin-top:8px; padding:9px 12px; border-radius:10px; font-size:15px; } .fb.ok { background:rgba(94,230,168,.14); border:1px solid rgba(94,230,168,.5); } .fb.no { background:rgba(255,125,125,.13); border:1px solid rgba(255,125,125,.5); } .fb.info { background:rgba(255,255,255,.07); border:1px solid var(--line); }
+  .tip { background:rgba(255,209,102,.12); border:1px dashed rgba(255,209,102,.55); border-radius:10px; padding:7px 11px; margin-top:7px; font-size:15px; }
+  .layers { display:flex; flex-direction:column-reverse; gap:3px; margin:8px 0; }
+  .layers span { display:block; border-radius:6px; padding:3px 10px; font-size:13.5px; font-weight:700; color:#111; }
+  .layers .k { background:#8a8f9c; } .layers .e { background:#c4623f; } .layers .c { background:#efe8d6; } .layers .empty { background:rgba(255,255,255,.07); color:var(--muted); font-weight:500; }
+  .chg { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:8px; }
+  .chg button { border:2px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-weight:700; font-size:14.5px; border-radius:14px; padding:10px 6px; cursor:pointer; }
+  .chg button small { display:block; font-weight:500; color:var(--muted); font-size:12px; }
+  .chg button:disabled { opacity:.4; cursor:not-allowed; }
+  .zlist { display:flex; flex-wrap:wrap; gap:6px; margin:8px 0; }
+  .zlist button { border:1px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-size:14px; font-weight:700; padding:7px 11px; border-radius:999px; cursor:pointer; }
+  .zlist button.on { background:rgba(255,138,61,.3); border-color:var(--org); } .zlist button.ok::after { content:' ✔'; color:var(--ok); }
+  .eq { display:flex; flex-wrap:wrap; align-items:center; gap:6px 4px; margin:8px 0; font-size:20px; font-weight:700; }
+  .eq .term { display:inline-flex; align-items:center; gap:4px; background:rgba(255,255,255,.07); border:1px solid var(--line); border-radius:12px; padding:3px 5px; }
+  .eq .term .st { display:flex; flex-direction:column; } .eq .term .st button { width:30px; height:19px; line-height:1; border:0; border-radius:6px; background:rgba(255,255,255,.14); color:#fff; font-weight:800; font-size:14px; cursor:pointer; padding:0; margin:1px 0; }
+  .eq .term .n { min-width:18px; text-align:center; font-size:20px; } .eq .op { color:var(--muted); padding:0 3px; }
+  .eq sub { font-size:.65em; }
+  .atoms { display:flex; flex-wrap:wrap; gap:6px; margin:6px 0; font-size:14px; } .atoms span { border-radius:9px; padding:2px 9px; background:rgba(255,255,255,.07); border:1px solid var(--line); } .atoms span.ok { border-color:var(--ok); color:var(--ok); } .atoms span.no { border-color:var(--bad); color:var(--bad); }
+  #cvR { display:block; width:100%; max-width:340px; height:auto; border-radius:12px; background:rgba(0,0,0,.3); border:1px solid var(--line); margin:6px 0; }
+  .bar { margin:7px 0; } .bar .lab { display:flex; justify-content:space-between; font-size:14.5px; font-weight:700; } .bar .tr { position:relative; height:12px; border-radius:7px; background:rgba(255,255,255,.12); overflow:hidden; } .bar .tr i { display:block; height:100%; border-radius:7px; background:linear-gradient(90deg,#ffd166,#ff8a3d); transition:width .15s; } .bar .tr b { position:absolute; top:0; bottom:0; width:2px; background:#fff; opacity:.8; }
+  .prog { height:10px; border-radius:6px; background:rgba(255,255,255,.12); overflow:hidden; margin:6px 0; } .prog i { display:block; height:100%; background:linear-gradient(90deg,#ff8a3d,#ffd166); transition:width .2s; }
+  .opts { display:flex; flex-direction:column; gap:7px; margin:8px 0; }
+  .opt { text-align:left; border:2px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-size:15.5px; border-radius:12px; padding:10px 14px; cursor:pointer; }
+  .opt:hover { border-color:var(--org); } .opt.good { border-color:var(--ok); background:rgba(94,230,168,.18); } .opt.bad { border-color:var(--bad); background:rgba(255,125,125,.16); animation:shake .3s; }
+  @keyframes shake { 25% { transform:translateX(-4px); } 75% { transform:translateX(4px); } }
+  .flow { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin:8px 0; } .flow b { background:rgba(255,255,255,.09); border:1px solid var(--line); border-radius:10px; padding:5px 10px; font-size:14px; } .flow span { color:var(--amb); font-weight:800; }
+  .rules { margin:6px 0 0; padding:0; list-style:none; } .rules li { margin:7px 0; padding-left:14px; border-left:3px solid var(--org); }
+  details.log summary { cursor:pointer; color:var(--muted); font-size:14px; margin-top:6px; } details.log p { margin:6px 0; font-size:14.5px; }
+  .burst { position:fixed; width:0; height:0; z-index:10000; pointer-events:none; } .burst i { position:absolute; left:-4px; top:-4px; width:8px; height:8px; border-radius:50%; animation:bu .9s ease-out forwards; } @keyframes bu { to { transform:translate(var(--dx),var(--dy)) scale(.2); opacity:0; } }
+  @media (max-width:480px) { .glass { padding:12px; } .eq { font-size:18px; } }
+  .bar .tr u { position:absolute; top:0; bottom:0; background:rgba(94,230,168,.55); }
+  .know { display:grid; gap:7px; margin:8px 0; } .know div { background:rgba(255,255,255,.07); border:1px solid var(--line); border-radius:10px; padding:8px 12px; font-size:14.5px; } .know b { display:block; }
+  .tg { display:flex; flex-direction:column; gap:7px; margin:8px 0; } .tg button { text-align:left; border:2px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-size:15px; border-radius:12px; padding:9px 13px; cursor:pointer; } .tg button small { display:block; color:var(--muted); font-size:13px; } .tg button.on { border-color:var(--ok); background:rgba(94,230,168,.16); }
+  #cv { cursor:default; }
+  .mat { border-collapse:collapse; width:100%; font-size:13.5px; margin:8px 0; }
+  .mat th, .mat td { border:1px solid var(--line); padding:4px 3px; text-align:center; }
+  .mat th { background:rgba(255,255,255,.07); font-weight:700; }
+  .mat td.r { background:rgba(94,230,168,.22); color:var(--ok); font-weight:800; } .mat td.n { background:rgba(255,125,125,.14); color:var(--bad); } .mat td.d { color:var(--muted); } .mat td.cur { outline:2px solid var(--amb); }
+  .chips { display:flex; flex-wrap:wrap; gap:7px; margin:8px 0; }
+  .chip { border:2px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-weight:800; font-size:16px; border-radius:12px; padding:7px 12px; cursor:pointer; min-width:48px; }
+  .chip.on { border-color:var(--amb); background:rgba(255,209,102,.2); } .chip.ok { border-color:var(--ok); } .chip:disabled { opacity:.45; cursor:not-allowed; }
+  .chip small { display:block; font-weight:500; font-size:11.5px; color:var(--muted); }
+  .ord { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin:8px 0; min-height:44px; padding:6px; border:2px dashed var(--line); border-radius:12px; }
+  .ord .ph { color:var(--muted); font-size:14px; }
+  .axis { display:flex; justify-content:space-between; font-size:13px; color:var(--muted); margin-top:2px; }
+  .tl { background:rgba(255,255,255,.07); border:1px solid var(--line); border-radius:10px; padding:7px 11px; margin:6px 0; font-size:15.5px; }
+  .tl b.k { display:inline-block; min-width:92px; color:var(--amb); }
+  .cards { display:flex; flex-wrap:wrap; gap:8px; margin:8px 0; }
+  .sp { display:inline-flex; flex-direction:column; align-items:center; background:rgba(255,255,255,.07); border:1px solid var(--line); border-radius:12px; padding:3px 9px 4px; font-size:18px; font-weight:700; line-height:1.25; }
+  .sp small { font-size:11.5px; font-weight:600; color:var(--amb); white-space:nowrap; }
+  .sp sub, .sp sup { font-size:.62em; }
+  .arrow { font-size:20px; color:var(--amb); font-weight:800; padding:0 2px; }
+  .eq sup { font-size:.62em; }
+  .sub2 { display:flex; gap:6px; flex-wrap:wrap; margin:6px 0 8px; }
+  .sub2 button { border:1px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-size:14px; font-weight:700; padding:6px 12px; border-radius:999px; cursor:pointer; } .sub2 button.on { background:rgba(255,138,61,.3); border-color:var(--org); }
+  .tgl { display:inline-flex; align-items:center; gap:6px; font-size:14px; color:var(--muted); cursor:pointer; margin-right:8px; } .tgl input { width:18px; height:18px; }
+  .big { font-size:34px; font-weight:800; }
+  a.btn { display:inline-block; text-decoration:none; }
+  .star { font-size:26px; letter-spacing:3px; }
+  .cards { align-items:center; }
+</style>
+<link rel="icon" type="image/png" href="../../../../icons/icon-192.png">
+<link rel="apple-touch-icon" href="../../../../icons/apple-touch-icon.png">
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← Zur Übersicht</a>
+  <h1>⚗️ Redoxreihe und Metallgewinnung</h1>
+  <p class="sub">Welches Metall gibt Elektronen an wen ab? Von der Abscheidung aus Salzlösungen bis zum Hochofen und zur Kupfergewinnung.</p>
+  <nav class="steps" id="steps"></nav>
+  <div class="main">
+    <div class="stagecol">
+      <div class="glass cvwrap" id="cvwrap">
+        <canvas id="cv" width="1200" height="1040" aria-label="Versuchsaufbau"></canvas>
+        <div class="banner" id="banner"></div>
+        <div class="legend" id="legend"></div>
+      </div>
+    </div>
+    <div class="glass" id="panel"></div>
+  </div>
+</div>
+<a href="/Virtuelles-Chemielabor/impressum.html" style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-family: sans-serif; font-size: 12px; z-index: 9999;">Impressum &amp; Datenschutz</a>
+<script>
+'use strict';
+/* ====== Hilfen ====== */
+function $(id) { return document.getElementById(id); }
+function mk(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; }
+function btn(label, cls, fn, dis) { var b = mk('button', 'btn ' + (cls || ''), label); b.type = 'button'; if (dis) b.disabled = true; b.addEventListener('click', fn); return b; }
+function lerp(a, b, t) { return a + (b - a) * t; }
+function clamp(x, a, b) { return x < a ? a : x > b ? b : x; }
+function rnd(a, b) { return a + Math.random() * (b - a); }
+function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+function gcd(a, b) { return b ? gcd(b, a % b) : a; }
+function lcm(a, b) { return a * b / gcd(a, b); }
+function burst(host) {
+  var r = host.getBoundingClientRect(), box = mk('div', 'burst'), i, cols = ['#ffd166', '#ff8a3d', '#ff5d73', '#7df9ff', '#5ee6a8'];
+  box.style.left = (r.left + r.width / 2) + 'px'; box.style.top = (r.top + Math.min(r.height / 2, 90)) + 'px';
+  for (i = 0; i < 18; i++) { var s = mk('i'), a = i / 18 * 6.283 + Math.random() * .3, d = 60 + Math.random() * 70; s.style.setProperty('--dx', Math.cos(a) * d + 'px'); s.style.setProperty('--dy', Math.sin(a) * d + 'px'); s.style.background = cols[i % cols.length]; box.appendChild(s); }
+  document.body.appendChild(box); setTimeout(function () { if (box.parentNode) box.parentNode.removeChild(box); }, 1000);
+}
+function mcq(parent, opts, correct, cb, why) {
+  var box = mk('div', 'opts'), order = shuffle(opts.map(function (t, i) { return i; })), fb = mk('div'), locked = false;
+  order.forEach(function (oi) {
+    var b = mk('button', 'opt', opts[oi]); b.type = 'button';
+    b.addEventListener('click', function () {
+      if (locked) return;
+      if (oi === correct) { locked = true; b.className = 'opt good'; fb.innerHTML = '<div class="fb ok">✔ Richtig. ' + (why || '') + '</div>'; cb(true); }
+      else { b.className = 'opt bad'; fb.innerHTML = '<div class="fb no">Nicht ganz. Überlege noch einmal.</div>'; cb(false); }
+    }); box.appendChild(b);
+  });
+  parent.appendChild(box); parent.appendChild(fb);
+}
+
+/* ====== Zeichenfläche ====== */
+var CW = 600, CH = 520, cv = $('cv'), g = cv.getContext('2d');
+cv.width = CW * 2; cv.height = CH * 2;
+function rgba(c, a) { return 'rgba(' + Math.round(c[0]) + ',' + Math.round(c[1]) + ',' + Math.round(c[2]) + ',' + (a === undefined ? c[3] : a) + ')'; }
+function mixc(a, b, t) { t = clamp(t, 0, 1); return [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t), lerp(a[3], b[3], t)]; }
+function rr(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.lineTo(x + w - r, y); c.quadraticCurveTo(x + w, y, x + w, y + r); c.lineTo(x + w, y + h - r); c.quadraticCurveTo(x + w, y + h, x + w - r, y + h); c.lineTo(x + r, y + h); c.quadraticCurveTo(x, y + h, x, y + h - r); c.lineTo(x, y + r); c.quadraticCurveTo(x, y, x + r, y); c.closePath(); }
+function txt(c, s, x, y, size, col, al, bold) { c.font = (bold ? 'bold ' : '') + size + 'px "Segoe UI",system-ui,sans-serif'; c.fillStyle = col || '#f6eee8'; c.textAlign = al || 'center'; c.textBaseline = 'middle'; c.fillText(s, x, y); }
+function liqPath(c, bx, top, bw, bb, r) { c.beginPath(); c.moveTo(bx + 3, top); c.lineTo(bx + bw - 3, top); c.lineTo(bx + bw - 3, bb - r); c.quadraticCurveTo(bx + bw - 3, bb - 3, bx + bw - 3 - r, bb - 3); c.lineTo(bx + 3 + r, bb - 3); c.quadraticCurveTo(bx + 3, bb - 3, bx + 3, bb - r); c.closePath(); }
+function bench(c) { var gr = c.createLinearGradient(0, 470, 0, CH); gr.addColorStop(0, '#3a2a28'); gr.addColorStop(1, '#1b1416'); c.fillStyle = gr; c.fillRect(0, 470, CW, 50); c.fillStyle = 'rgba(255,255,255,.08)'; c.fillRect(0, 470, CW, 2); }
+
+/* ====== Chemie-Daten ====== */
+var SUP = { '2': '²', '3': '³', '1': '' };
+/* Reihenfolge = Redoxreihe: vom unedelsten (stärkster Elektronendonator) zum edelsten */
+var MET = [
+  { id: 'Mg', n: 'Magnesium', z: 2, col: '#cfd3dc', salt: 'Magnesiumsulfat-Lösung', solc: [190, 225, 255, .17], dep: 'graue Flöckchen' },
+  { id: 'Zn', n: 'Zink', z: 2, col: '#a9b3c2', salt: 'Zinksulfat-Lösung', solc: [190, 225, 255, .17], dep: 'graue Zinkflitter' },
+  { id: 'Fe', n: 'Eisen', z: 2, col: '#7d8490', salt: 'Eisen(II)-sulfat-Lösung', solc: [120, 205, 140, .50], dep: 'dunkelgraues, feines Eisen' },
+  { id: 'Pb', n: 'Blei', z: 2, col: '#8f95a6', salt: 'Blei(II)-nitrat-Lösung', solc: [190, 225, 255, .17], dep: 'graue, glänzende Bleiblättchen („Bleibäumchen“)' },
+  { id: 'Cu', n: 'Kupfer', z: 2, col: '#d9803a', salt: 'Kupfer(II)-sulfat-Lösung', solc: [50, 140, 245, .72], dep: 'ein rotbrauner, schwammiger Kupferbelag' },
+  { id: 'Ag', n: 'Silber', z: 1, col: '#eef1f6', salt: 'Silbernitrat-Lösung', solc: [190, 225, 255, .17], dep: 'silbrig glänzende Nadeln („Silberbäumchen“)' }
+];
+function ionH(i) { var m = MET[i]; return m.id + '<sup>' + (m.z > 1 ? m.z : '') + '+</sup>'; }
+function ionT(i) { var m = MET[i]; return m.id + (m.z === 2 ? '²⁺' : '⁺'); }
+function cf(n) { return n > 1 ? n + ' ' : ''; }
+/* Redoxgleichung Metall A (Donator) + Kation B (Akzeptor) */
+function redoxEq(a, b) {
+  var A = MET[a], B = MET[b], L = lcm(A.z, B.z), nA = L / A.z, nB = L / B.z;
+  return { L: L, nA: nA, nB: nB,
+    ox: A.id + ' → ' + ionH(a) + ' + ' + cf(A.z) + 'e<sup>−</sup>',
+    red: ionH(b) + ' + ' + cf(B.z) + 'e<sup>−</sup> → ' + B.id,
+    sum: cf(nA) + A.id + ' + ' + cf(nB) + ionH(b) + ' → ' + cf(nA) + ionH(a) + ' + ' + cf(nB) + B.id };
+}
+
+/* ====== Zustand ====== */
+var S = { step: 1, done: {}, t: 0 };
+var STEPN = ['1 · Metalle & Lösungen', '2 · Elektronen im Spiel', '3 · Hochofen', '4 · Welches Verfahren?', '5 · Kupfer gewinnen', '6 · Check'];
+function markDone(n) { if (!S.done[n]) { S.done[n] = true; renderSteps(); } }
+function showBanner(t, ms) { var b = $('banner'); b.textContent = t; b.classList.add('show'); clearTimeout(showBanner.h); showBanner.h = setTimeout(function () { b.classList.remove('show'); }, ms || 4000); }
+
+/* ====== Schritt 1: Labor ====== */
+var L1 = { m: -1, s: -1, T: null, mat: {}, trials: 0, ord: [], ordOK: false, last: null, fast: false };
+function l1key(m, s) { return m + '-' + s; }
+function l1run() {
+  if (L1.m < 0 || L1.s < 0) return;
+  var react = L1.m < L1.s, cr = [], i;
+  for (i = 0; i < 170; i++) cr.push({ u: Math.random(), v: Math.random(), side: Math.random() < .5 ? -1 : 1, s: rnd(.6, 1.2), a: rnd(0, 3.14) });
+  L1.T = { m: L1.m, s: L1.s, react: react, t: 0, cr: cr, fin: false };
+}
+function l1finish() {
+  var T = L1.T; if (T.fin) return; T.fin = true;
+  var k = l1key(T.m, T.s), first = !(k in L1.mat);
+  L1.mat[k] = T.react ? 'r' : 'n'; if (first && T.m !== T.s) L1.trials++;
+  L1.last = k; panel();
+  if (first && T.react) burst($('panel'));
+}
+function l1draw(dt) {
+  var T = L1.T, c = g, d, r = 0, m = L1.m, sIdx = L1.s;
+  c.clearRect(0, 0, CW, CH); bench(c);
+  if (T) { T.t += dt * (L1.fast ? 4 : 1); }
+  var dipT = 1.2, reactT = 5;
+  d = T ? clamp(T.t / dipT, 0, 1) : 0; d = d * d * (3 - 2 * d);
+  if (T) { r = T.react ? clamp((T.t - dipT) / reactT, 0, 1) : 0; if (!T.fin && T.t > dipT + (T.react ? reactT : 2.2)) l1finish(); }
+  /* Becherglas */
+  var bx = 150, bw = 300, by = 150, bh = 320, top = 235;
+  var base = sIdx >= 0 ? MET[sIdx].solc : [190, 225, 255, .07];
+  var fin = base;
+  if (T && T.react) fin = mixc(base, MET[T.m].solc, r);
+  /* Metallblech */
+  var sl = 230, sw = 36, sx = 300, sb = lerp(185, 425, d), st = sb - sl;
+  if (m >= 0) {
+    var shr = (T && T.react) ? r * 5 : 0, w = sw - shr;
+    c.fillStyle = '#555a66'; rr(c, sx - 8, st - 22, 16, 24, 3); c.fill(); c.fillRect(sx - 2, st - 70, 4, 52);
+    var gm = c.createLinearGradient(sx - w / 2, 0, sx + w / 2, 0); gm.addColorStop(0, MET[m].col); gm.addColorStop(.5, '#ffffff'); gm.addColorStop(1, MET[m].col);
+    c.globalAlpha = 1; c.fillStyle = MET[m].col; c.fillRect(sx - w / 2, st, w, sl);
+    c.fillStyle = 'rgba(255,255,255,.22)'; c.fillRect(sx - w / 2 + 3, st, 4, sl);
+  }
+  /* Belag */
+  if (T && T.react && r > 0) {
+    var dp = MET[T.s], N = Math.floor(r * T.cr.length), k, o, sub = Math.max(st, top) + 5, subH = sb - sub - 4;
+    for (k = 0; k < N; k++) {
+      o = T.cr[k]; var cx = sx + o.side * ((sw - r * 5) / 2 + 1 + o.s * (1 + r * 3.2)), cy = sub + o.v * subH, sz = (1.4 + o.s * 1.6) * (.5 + r * .7);
+      if (subH <= 0) break;
+      if (dp.id === 'Ag') { c.strokeStyle = '#f4f7ff'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(cx, cy); c.lineTo(cx + o.side * (5 + 9 * o.s * r) * Math.cos(o.a), cy - (5 + 9 * o.s * r) * Math.sin(o.a)); c.stroke(); }
+      else if (dp.id === 'Cu') { c.fillStyle = k % 3 ? '#b4561f' : '#d9803a'; c.beginPath(); c.arc(cx, cy, sz * 1.15, 0, 6.283); c.fill(); }
+      else if (dp.id === 'Pb') { c.fillStyle = k % 2 ? '#a7adbd' : '#7b8191'; c.save(); c.translate(cx, cy); c.rotate(o.a); c.fillRect(-sz * 1.6, -sz * .6, sz * 3.2, sz * 1.2); c.restore(); }
+      else { c.fillStyle = k % 2 ? '#3f4450' : '#8a909c'; c.beginPath(); c.arc(cx, cy, sz, 0, 6.283); c.fill(); }
+    }
+  }
+  /* Lösung (vor/über dem Blech, tönt den eingetauchten Teil) */
+  c.save(); liqPath(c, bx, top, bw, by + bh, 22); c.clip();
+  c.fillStyle = rgba(fin); c.fillRect(bx, top, bw, bh);
+  var sh = c.createLinearGradient(0, top, 0, top + 40); sh.addColorStop(0, 'rgba(255,255,255,.22)'); sh.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = sh; c.fillRect(bx, top, bw, 40);
+  /* Blasen bei Magnesium (reagiert zusätzlich leicht mit Wasser) */
+  if (T && m === 0 && d > .9 && T.t < dipT + reactT + 1) { var q; for (q = 0; q < 9; q++) { var ph = (S.t * .6 + q * .37) % 1; c.fillStyle = 'rgba(255,255,255,.55)'; c.beginPath(); c.arc(sx + Math.sin(q * 5.1 + S.t * 2) * 22, top + 170 - ph * 160, 2 + (q % 3), 0, 6.283); c.fill(); } }
+  c.restore();
+  /* Glas */
+  c.strokeStyle = 'rgba(255,255,255,.6)'; c.lineWidth = 3; c.beginPath(); c.moveTo(bx, by); c.lineTo(bx, by + bh - 22); c.quadraticCurveTo(bx, by + bh, bx + 22, by + bh); c.lineTo(bx + bw - 22, by + bh); c.quadraticCurveTo(bx + bw, by + bh, bx + bw, by + bh - 22); c.lineTo(bx + bw, by); c.stroke();
+  c.strokeStyle = 'rgba(255,255,255,.28)'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(bx + 14, by + 20); c.lineTo(bx + 14, by + bh - 40); c.stroke();
+  /* Beschriftung */
+  if (m >= 0) txt(c, MET[m].n + '-Blech', 110, 60, 15, '#ffd166', 'center', true);
+  if (m >= 0) { c.strokeStyle = 'rgba(255,209,102,.5)'; c.lineWidth = 1.5; c.setLineDash([4, 4]); c.beginPath(); c.moveTo(150, 70); c.lineTo(sx - 20, Math.max(100, st + 40)); c.stroke(); c.setLineDash([]); }
+  if (sIdx >= 0) txt(c, ionT(sIdx) + '-Lösung', 300, 497, 16, '#f6eee8', 'center', true);
+  else if (m < 0) txt(c, 'Wähle ein Metall und eine Lösung', 300, 497, 15, '#c9b9ad');
+  if (T && !T.fin) { var tt = T.t < dipT ? 'Das Blech wird eingetaucht …' : (T.react ? 'Nach einigen Minuten …' : 'Wir warten …'); txt(c, tt, 450, 60, 14, '#7df9ff', 'center', true); }
+  if (T && T.fin) txt(c, T.react ? '✔ Reaktion!' : '✘ keine Reaktion', 480, 60, 18, T.react ? '#5ee6a8' : '#ff7d7d', 'center', true);
+}
+function l1obs(m, s) {
+  var A = MET[m], B = MET[s], eq, h;
+  if (m === s) return '<div class="fb info">Gleiches Metall in der eigenen Salzlösung – hier ist nichts zu erwarten. Wähle eine andere Kombination.</div>';
+  if (m < s) {
+    eq = redoxEq(m, s);
+    var col = B.id === 'Cu' ? 'Die blaue Farbe der Lösung verblasst' + (A.id === 'Fe' ? ' und wird blassgrün' : '') + '. ' : (B.id === 'Fe' ? 'Die blassgrüne Farbe der Lösung verschwindet. ' : '');
+    h = '<div class="fb ok"><b>Beobachtung:</b> Auf dem ' + A.n + '-Blech scheidet sich ' + B.dep + ' ab. ' + col + 'Das ' + A.n + ' wird dünner.' + (A.id === 'Mg' ? ' (Magnesium bildet zusätzlich ein paar Gasbläschen mit Wasser.)' : '') + '</div>';
+    h += '<div class="tl"><b class="k">Oxidation</b> ' + eq.ox + (eq.nA > 1 ? ' &nbsp;|&nbsp; ×' + eq.nA : '') + '<br><small class="muted">' + A.n + ' ist der Elektronen-<b>Donator</b> (Reduktionsmittel).</small></div>';
+    h += '<div class="tl"><b class="k">Reduktion</b> ' + eq.red + (eq.nB > 1 ? ' &nbsp;|&nbsp; ×' + eq.nB : '') + '<br><small class="muted">' + ionH(s) + ' ist der Elektronen-<b>Akzeptor</b> (Oxidationsmittel).</small></div>';
+    h += '<div class="tl"><b class="k">Redox</b> ' + eq.sum + '</div>';
+    h += '<div class="fb info"><b>Merke:</b> ' + A.n + ' ist <b>unedler</b> als ' + B.n + ' und gibt Elektronen an die ' + ionH(s) + '-Ionen ab. Das edlere Metall scheidet sich ab.</div>';
+    return h;
+  }
+  return '<div class="fb no"><b>Beobachtung:</b> Auch nach langer Zeit keine Veränderung am ' + A.n + '-Blech.</div><div class="fb info"><b>Deutung:</b> ' + A.n + ' ist <b>edler</b> als ' + B.n + '. ' + B.n + '-Ionen sind der schwächere Elektronen-Akzeptor – ' + A.n + ' kann ihnen keine Elektronen übertragen. Umgekehrt (' + B.n + ' in ' + ionH(m) + '-Lösung) würde es klappen.</div>';
+}
+function l1panel(p) {
+  p.appendChild(mk('h2', '', '🧪 Metall in Salzlösung'));
+  p.appendChild(mk('p', 'muted', 'Tauche ein Metallblech in die Lösung eines anderen Metallsalzes. Läuft eine Redoxreaktion ab, scheidet sich Metall ab. Aus vielen Versuchen entsteht die <b>Redoxreihe</b>.'));
+  p.appendChild(mk('h3', '', '1 · Metallblech'));
+  var cm = mk('div', 'chips');
+  MET.forEach(function (mt, i) { var b = mk('button', 'chip' + (L1.m === i ? ' on' : ''), mt.id + '<small>' + mt.n + '</small>'); b.type = 'button'; b.addEventListener('click', function () { L1.m = i; L1.T = null; panel(); }); cm.appendChild(b); });
+  p.appendChild(cm);
+  p.appendChild(mk('h3', '', '2 · Salzlösung'));
+  var cs = mk('div', 'chips');
+  MET.forEach(function (mt, i) { var b = mk('button', 'chip' + (L1.s === i ? ' on' : ''), ionT(i) + '<small>' + mt.salt.replace('-Lösung', '') + '</small>'); b.type = 'button'; b.addEventListener('click', function () { L1.s = i; L1.T = null; panel(); }); cs.appendChild(b); });
+  p.appendChild(cs);
+  var run = L1.T && !L1.T.fin, r = mk('div', 'row');
+  r.appendChild(btn('⬇ Eintauchen', '', function () { l1run(); panel(); }, L1.m < 0 || L1.s < 0 || run));
+  r.appendChild(btn('🎲 Zufalls-Versuch', 'sec', function () {
+    var free = [], i, j; for (i = 0; i < 6; i++) for (j = 0; j < 6; j++) if (i !== j && !((i + '-' + j) in L1.mat)) free.push([i, j]);
+    if (!free.length) { free = []; for (i = 0; i < 6; i++) for (j = 0; j < 6; j++) if (i !== j) free.push([i, j]); }
+    var q = free[Math.floor(Math.random() * free.length)]; L1.m = q[0]; L1.s = q[1]; l1run(); panel();
+  }, run));
+  r.appendChild(btn(L1.fast ? '⏩ schnell' : '▶ normal', 'sec small', function () { L1.fast = !L1.fast; panel(); }));
+  p.appendChild(r);
+  if (L1.T && L1.T.fin) { var o = mk('div'); o.innerHTML = l1obs(L1.T.m, L1.T.s); p.appendChild(o); }
+  p.appendChild(mk('h3', '', 'Deine Versuchstabelle'));
+  p.appendChild(mk('p', 'muted', '<small>Zeilen: Blech · Spalten: Lösung · <b style="color:var(--ok)">✔</b> Reaktion · <b style="color:var(--bad)">✘</b> keine Reaktion</small>'));
+  var h = '<table class="mat"><tr><th></th>', i, j;
+  for (j = 0; j < 6; j++) h += '<th>' + ionT(j) + '</th>';
+  h += '</tr>';
+  for (i = 0; i < 6; i++) {
+    h += '<tr><th>' + MET[i].id + '</th>';
+    for (j = 0; j < 6; j++) { var k = l1key(i, j), v = L1.mat[k], cl = i === j ? 'd' : (v === 'r' ? 'r' : v === 'n' ? 'n' : ''); if (L1.last === k) cl += ' cur'; h += '<td class="' + cl + '">' + (i === j ? '–' : v === 'r' ? '✔' : v === 'n' ? '✘' : '') + '</td>'; }
+    h += '</tr>';
+  }
+  p.appendChild(mk('div', '', h + '</table>'));
+  p.appendChild(mk('div', 'muted', '<small>' + L1.trials + ' von 30 Kombinationen getestet.</small>'));
+  /* Ordnen */
+  var ob = mk('div', 'tip');
+  if (L1.trials < 10) { ob.innerHTML = '🔒 <b>Aufgabe „Redoxreihe“</b> – schalte sie frei, indem du mindestens <b>10</b> verschiedene Kombinationen testest (noch ' + (10 - L1.trials) + ').'; p.appendChild(ob); return; }
+  p.appendChild(mk('h3', '', '🏁 Aufgabe: Stelle die Redoxreihe auf'));
+  p.appendChild(mk('p', 'muted', 'Tippe die Metalle in der Reihenfolge an: zuerst das <b>unedelste</b> (gibt Elektronen am leichtesten ab), zuletzt das <b>edelste</b>.'));
+  var od = mk('div', 'ord');
+  if (!L1.ord.length) od.appendChild(mk('span', 'ph', 'unedel … edel'));
+  L1.ord.forEach(function (idx, pos) { var b = mk('button', 'chip ok', MET[idx].id); b.type = 'button'; b.title = 'entfernen'; b.addEventListener('click', function () { if (L1.ordOK) return; L1.ord.splice(pos, 1); panel(); }); od.appendChild(b); if (pos < L1.ord.length - 1) od.appendChild(mk('span', 'arrow', '›')); });
+  p.appendChild(od);
+  var pool = mk('div', 'chips');
+  shuffle([0, 1, 2, 3, 4, 5]).forEach(function (idx) { if (L1.ord.indexOf(idx) >= 0) return; var b = mk('button', 'chip', MET[idx].id + '<small>' + MET[idx].n + '</small>'); b.type = 'button'; b.addEventListener('click', function () { if (L1.ordOK) return; L1.ord.push(idx); panel(); }); pool.appendChild(b); });
+  if (!L1.pool) L1.pool = shuffle([0, 1, 2, 3, 4, 5]);
+  pool.innerHTML = ''; L1.pool.forEach(function (idx) { if (L1.ord.indexOf(idx) >= 0) return; var b = mk('button', 'chip', MET[idx].id + '<small>' + MET[idx].n + '</small>'); b.type = 'button'; b.addEventListener('click', function () { if (L1.ordOK) return; L1.ord.push(idx); panel(); }); pool.appendChild(b); });
+  p.appendChild(pool);
+  if (L1.ordOK) {
+    p.appendChild(mk('div', 'fb ok', '<b>✔ Das ist die Redoxreihe der Metalle (Auswahl)!</b><div class="flow" style="margin:8px 0"><b>Mg</b><span>›</span><b>Zn</b><span>›</span><b>Fe</b><span>›</span><b>Pb</b><span>›</span><b>Cu</b><span>›</span><b>Ag</b></div><div class="axis"><span>unedel · starker Elektronen-Donator</span><span>edel</span></div>Jedes Metall reduziert die Kationen aller Metalle <b>rechts</b> von sich. Die Kationen rechts sind die stärkeren Elektronen-Akzeptoren.'));
+    p.appendChild(mk('div', 'tip', 'Weiter geht’s im nächsten Reiter: Was passiert dabei mit den einzelnen <b>Teilchen</b>?'));
+    var nr = mk('div', 'row'); nr.appendChild(btn('Weiter: Elektronen im Spiel →', 'go', function () { goStep(2); })); p.appendChild(nr);
+  } else {
+    var rr2 = mk('div', 'row'); rr2.appendChild(btn('Prüfen', '', function () {
+      var bad = null, i, j; for (i = 0; i < L1.ord.length && !bad; i++) for (j = i + 1; j < L1.ord.length; j++) if (L1.ord[i] > L1.ord[j]) { bad = [L1.ord[i], L1.ord[j]]; break; }
+      if (bad) { L1.fb = '<div class="fb no">Prüfe <b>' + MET[bad[0]].id + '</b> und <b>' + MET[bad[1]].id + '</b>: Schau in deiner Tabelle nach, wer von beiden dem anderen Elektronen geben kann. Dieses Metall steht weiter links (unedler).</div>'; panel(); }
+      else { L1.ordOK = true; L1.fb = ''; markDone(1); burst($('panel')); panel(); }
+    }, L1.ord.length < 6));
+    rr2.appendChild(btn('Zurücksetzen', 'sec', function () { L1.ord = []; L1.fb = ''; panel(); }, !L1.ord.length)); p.appendChild(rr2);
+    if (L1.fb) p.appendChild(mk('div', '', L1.fb));
+  }
+}
+
+/* ====== Schritt 2: Teilchen-Simulation Fe + Cu2+ ====== */
+var SIM = null, SM = { run: false, slow: false, showE: true, showSO: true, msg: '' };
+var RW = 8, DD = 26, X0 = 46, Y0 = 92, RY = 46, SOLX = 214;
+function simNew() {
+  var i, rows = [];
+  for (i = 0; i < RW; i++) rows.push({ fe: 5, cu: 0, f: 5, busy: false });
+  var cu2 = [], so4 = [];
+  for (i = 0; i < 8; i++) { cu2.push({ x: rnd(SOLX + 20, 560), y: rnd(90, 450), vx: rnd(-1, 1), vy: rnd(-1, 1), st: 'free' }); so4.push({ x: rnd(SOLX + 20, 560), y: rnd(90, 450), vx: rnd(-1, 1), vy: rnd(-1, 1) }); }
+  SIM = { rows: rows, cu2: cu2, so4: so4, fe2: [], ev: [], timer: 0, nDone: 0, single: false };
+  SM.msg = '';
+}
+function simStart1() {
+  var free = [], i, pool = SIM.cu2.filter(function (c) { return c.st === 'free'; });
+  if (!pool.length) return false;
+  SIM.rows.forEach(function (r, k) { if (!r.busy && r.fe > 0) free.push(k); });
+  if (!free.length) return false;
+  var rowI = free[Math.floor(Math.random() * free.length)], B = pool[Math.floor(Math.random() * pool.length)], R = SIM.rows[rowI];
+  R.busy = true; B.st = 'go'; SIM.ev.push({ r: rowI, B: B, t: 0, ph: 0, fe0: R.fe });
+  return true;
+}
+function simEnd() { return SIM.nDone >= 8; }
+function simStep(dt) {
+  if (!SIM) return; var sp = SM.slow ? .45 : 1, k;
+  dt *= sp;
+  if (SM.run && !simEnd()) { SIM.timer -= dt; if (SIM.timer <= 0) { if (simStart1()) SIM.timer = 1.5; else SIM.timer = .3; } }
+  /* Brownsche Bewegung */
+  function wander(o, bx0, bx1, by0, by1, vmax) {
+    o.vx += rnd(-.5, .5) * dt * 60 * .12; o.vy += rnd(-.5, .5) * dt * 60 * .12; o.vx = clamp(o.vx, -vmax, vmax); o.vy = clamp(o.vy, -vmax, vmax);
+    o.x += o.vx * dt * 30; o.y += o.vy * dt * 30; if (o.x < bx0) { o.x = bx0; o.vx = Math.abs(o.vx); } if (o.x > bx1) { o.x = bx1; o.vx = -Math.abs(o.vx); } if (o.y < by0) { o.y = by0; o.vy = Math.abs(o.vy); } if (o.y > by1) { o.y = by1; o.vy = -Math.abs(o.vy); }
+  }
+  SIM.cu2.forEach(function (c) { if (c.st === 'free') wander(c, SOLX + 22, 565, 88, 452, 1.2); });
+  SIM.so4.forEach(function (c) { wander(c, SOLX + 22, 565, 88, 452, 1.2); });
+  SIM.fe2.forEach(function (f) { if (f.tt < 1) { f.tt = Math.min(1, f.tt + dt / 1.4); f.x = lerp(f.x0, f.tx, f.tt); f.y = lerp(f.y0, f.ty, f.tt); } else wander(f, SOLX + 22, 565, 88, 452, 1.0); });
+  /* Zeilen: f nähert sich fe */
+  SIM.rows.forEach(function (R) { R.f += (R.fe - R.f) * Math.min(1, dt * 5); if (Math.abs(R.f - R.fe) < .01) R.f = R.fe; });
+  /* Ereignisse */
+  for (k = SIM.ev.length - 1; k >= 0; k--) {
+    var e = SIM.ev[k], R = SIM.rows[e.r], yy = Y0 + e.r * RY, tx = X0 + 5 * DD + 8, B = e.B; e.t += dt;
+    if (e.ph === 0) { var u = clamp(e.t / 1.2, 0, 1); u = u * u * (3 - 2 * u); if (!e.bx) { e.bx = B.x; e.by = B.y; } B.x = lerp(e.bx, tx, u); B.y = lerp(e.by, yy, u); if (e.t >= 1.2) { e.ph = 1; e.t = 0; } }
+    else if (e.ph === 1) { if (e.t >= .9) { e.ph = 2; e.t = 0;
+        /* Übergang: Fe-Atom wird zu Fe2+, Cu2+ zu Cu */
+        var fx = X0 + (e.fe0 - 1) * DD; R.fe--; R.cu++; R.busy = false;
+        SIM.fe2.push({ x: fx, y: yy, x0: fx, y0: yy, tx: rnd(SOLX + 40, 560), ty: rnd(90, 450), tt: 0, vx: 0, vy: 0 });
+        SIM.cu2.splice(SIM.cu2.indexOf(B), 1); SIM.nDone++; SM.msg = 'ox';
+        if (simEnd()) { SM.run = false; SM.endHint = true; panel(); }
+        SIM.ev.splice(k, 1); } }
+  }
+}
+function simDraw() {
+  var c = g, i, j; c.clearRect(0, 0, CW, CH); bench(c);
+  var nCu = SIM.cu2.length, nFe = SIM.fe2.length, fr = nCu / 8, fg = nFe / 8;
+  var col = [lerp(120, 50, fr), lerp(205, 140, fr), lerp(140, 245, fr), .16 + .5 * Math.max(fr, fg * .7)];
+  /* Lösung */
+  c.save(); rr(c, SOLX - 10, 70, 372, 400, 14); c.fillStyle = rgba(col); c.fill(); c.strokeStyle = 'rgba(255,255,255,.35)'; c.lineWidth = 2; c.stroke(); c.restore();
+  txt(c, 'Kupfer(II)-sulfat-Lösung', 400, 56, 14, '#9fd0ff', 'center', true);
+  txt(c, 'Eisen-Blech', 105, 56, 14, '#c9b9ad', 'center', true);
+  /* Metallplatte */
+  c.fillStyle = 'rgba(120,128,142,.13)'; rr(c, X0 - 20, 70, 5 * DD + 26, 400, 8); c.fill();
+  SIM.rows.forEach(function (R, r) {
+    var y = Y0 + r * RY, j;
+    for (j = 0; j < R.fe; j++) atom(c, X0 + j * DD, y, 'Fe', '#7d8490');
+    for (j = 0; j < R.cu; j++) atom(c, X0 + (R.f + j) * DD, y, 'Cu', '#d9803a');
+  });
+  /* Ionen */
+  if (SM.showSO) SIM.so4.forEach(function (s) { c.fillStyle = 'rgba(255,209,102,.8)'; rr(c, s.x - 12, s.y - 8, 24, 16, 5); c.fill(); txt(c, 'SO₄²⁻', s.x, s.y, 9, '#2b2200', 'center', true); });
+  SIM.fe2.forEach(function (f) { ion(c, f.x, f.y, 'Fe²⁺', '#8fe0a0', '#06301a'); });
+  SIM.cu2.forEach(function (b) { ion(c, b.x, b.y, 'Cu²⁺', '#3b9cff', '#fff'); });
+  /* Elektronen */
+  if (SM.showE) SIM.ev.forEach(function (e) {
+    if (e.ph !== 1) return; var R = SIM.rows[e.r], yy = Y0 + e.r * RY, x1 = X0 + (e.fe0 - 1) * DD, x2 = e.B.x, u = clamp(e.t / .9, 0, 1), q;
+    for (q = 0; q < 2; q++) { var uu = clamp(u * 1.25 - q * .22, 0, 1), xx = lerp(x1, x2 - 14, uu); c.fillStyle = '#ffe14a'; c.shadowColor = '#ffe14a'; c.shadowBlur = 10; c.beginPath(); c.arc(xx, yy - 9 + q * 18 - 9 * (q ? 0 : 0), 4.5, 0, 6.283); c.fill(); c.shadowBlur = 0; txt(c, 'e⁻', xx, yy - 21 + q * 36, 10, '#ffe14a', 'center', true); }
+  });
+  /* Zonen-Beschriftung */
+  txt(c, 'Metall', X0 + 2 * DD, 486, 13, '#c9b9ad'); txt(c, 'Lösung', 395, 486, 13, '#c9b9ad');
+  var mc = SIM.rows.reduce(function (a, r) { return a + r.cu; }, 0);
+  txt(c, 'Cu²⁺ übrig: ' + nCu + '   ·   Fe²⁺ gebildet: ' + nFe, 395, 500, 13, '#ffd166', 'center', true);
+}
+function atom(c, x, y, s, col) { var gr = c.createRadialGradient(x - 4, y - 4, 2, x, y, 13); gr.addColorStop(0, '#ffffff'); gr.addColorStop(.25, col); gr.addColorStop(1, 'rgba(0,0,0,.5)'); c.fillStyle = gr; c.beginPath(); c.arc(x, y, 12, 0, 6.283); c.fill(); txt(c, s, x, y + 1, 10, '#101018', 'center', true); }
+function ion(c, x, y, s, col, tc) { c.fillStyle = col; c.shadowColor = col; c.shadowBlur = 8; c.beginPath(); c.arc(x, y, 14, 0, 6.283); c.fill(); c.shadowBlur = 0; txt(c, s, x, y + 1, 10.5, tc, 'center', true); }
+
+/* ====== Gleichungen-Werkbank (generisch) ====== */
+var SPEC = {
+  Fe: { h: 'Fe', a: { Fe: 1 }, q: 0 }, 'Fe2+': { h: 'Fe<sup>2+</sup>', a: { Fe: 1 }, q: 2 }, Cu: { h: 'Cu', a: { Cu: 1 }, q: 0 }, 'Cu2+': { h: 'Cu<sup>2+</sup>', a: { Cu: 1 }, q: 2 },
+  Ag: { h: 'Ag', a: { Ag: 1 }, q: 0 }, 'Ag+': { h: 'Ag<sup>+</sup>', a: { Ag: 1 }, q: 1 }, Zn: { h: 'Zn', a: { Zn: 1 }, q: 0 }, 'Zn2+': { h: 'Zn<sup>2+</sup>', a: { Zn: 1 }, q: 2 },
+  Al: { h: 'Al', a: { Al: 1 }, q: 0 }, 'Al3+': { h: 'Al<sup>3+</sup>', a: { Al: 1 }, q: 3 }, Mg: { h: 'Mg', a: { Mg: 1 }, q: 0 }, 'Mg2+': { h: 'Mg<sup>2+</sup>', a: { Mg: 1 }, q: 2 },
+  Fe2O3: { h: 'Fe<sub>2</sub>O<sub>3</sub>', a: { Fe: 2, O: 3 }, q: 0 }, Al2O3: { h: 'Al<sub>2</sub>O<sub>3</sub>', a: { Al: 2, O: 3 }, q: 0 }, CuO: { h: 'CuO', a: { Cu: 1, O: 1 }, q: 0 },
+  C: { h: 'C', a: { C: 1 }, q: 0 }, CO2: { h: 'CO<sub>2</sub>', a: { C: 1, O: 2 }, q: 0 }, CO: { h: 'CO', a: { C: 1, O: 1 }, q: 0 }, Cu2S: { h: 'Cu<sub>2</sub>S', a: { Cu: 2, S: 1 }, q: 0 }, O2: { h: 'O<sub>2</sub>', a: { O: 2 }, q: 0 }, SO2: { h: 'SO<sub>2</sub>', a: { S: 1, O: 2 }, q: 0 }
+};
+var REAC = {
+  ion: [
+    { L: ['Fe', 'Cu2+'], R: ['Fe2+', 'Cu'], sol: [1, 1, 1, 1], info: '<b>Teilgleichungen:</b><br>Oxidation: Fe → Fe²⁺ + 2 e⁻<br>Reduktion: Cu²⁺ + 2 e⁻ → Cu<br>Es werden <b>2 Elektronen</b> übertragen.' },
+    { L: ['Cu', 'Ag+'], R: ['Cu2+', 'Ag'], sol: [1, 2, 1, 2], info: '<b>Teilgleichungen:</b><br>Oxidation: Cu → Cu²⁺ + 2 e⁻<br>Reduktion: Ag⁺ + e⁻ → Ag &nbsp;(<b>×2</b>, damit die Elektronen aufgehen)' },
+    { L: ['Zn', 'Ag+'], R: ['Zn2+', 'Ag'], sol: [1, 2, 1, 2], info: '<b>Teilgleichungen:</b><br>Oxidation: Zn → Zn²⁺ + 2 e⁻<br>Reduktion: Ag⁺ + e⁻ → Ag &nbsp;(<b>×2</b>)' },
+    { L: ['Al', 'Cu2+'], R: ['Al3+', 'Cu'], sol: [2, 3, 2, 3], info: '<b>Teilgleichungen:</b><br>Oxidation: Al → Al³⁺ + 3 e⁻ &nbsp;(<b>×2</b>)<br>Reduktion: Cu²⁺ + 2 e⁻ → Cu &nbsp;(<b>×3</b>)<br>Kleinstes gemeinsames Vielfaches: <b>6 Elektronen</b>.' }
+  ],
+  ox: [
+    { L: ['Al', 'Fe2O3'], R: ['Al2O3', 'Fe'], sol: [2, 1, 1, 2], info: '<b>Thermit-Reaktion:</b> Al: 0 → +III (Oxidation, 3 e⁻ je Atom), Fe: +III → 0 (Reduktion). Insgesamt <b>6 Elektronen</b>. Aluminium ist unedler als Eisen und nimmt dem Eisen den Sauerstoff weg.' },
+    { L: ['CuO', 'C'], R: ['Cu', 'CO2'], sol: [2, 1, 2, 1], info: '<b>Kupferoxid und Kohle:</b> Cu: +II → 0 (Reduktion), C: 0 → +IV (Oxidation). Insgesamt <b>4 Elektronen</b>. Kohlenstoff ist das Reduktionsmittel.' },
+    { L: ['Cu2S', 'O2'], R: ['Cu', 'SO2'], sol: [1, 1, 2, 1], info: '<b>Röstreduktion (Kupferglanz):</b> Cu: +I → 0 und S: −II → +IV. Sauerstoff: 0 → −II. Hier gibt der <b>Schwefel</b> die Elektronen ab, ohne dass ein weiteres Reduktionsmittel nötig ist.' }
+  ]
+};
+var EQS = {};
+function eqState(key, i) { var k = key + i, R = REAC[key][i]; if (!EQS[k]) { EQS[k] = { c: R.L.concat(R.R).map(function () { return 1; }), ok: false }; if (key === 'ion') EQS[k].c = [1, 1, 1, 1]; } return EQS[k]; }
+function eqCount(R, c) {
+  var l = {}, r = {}, ql = 0, qr = 0, n = R.L.length;
+  R.L.forEach(function (s, i) { var sp = SPEC[s], e; for (e in sp.a) l[e] = (l[e] || 0) + sp.a[e] * c[i]; ql += sp.q * c[i]; });
+  R.R.forEach(function (s, i) { var sp = SPEC[s], e; for (e in sp.a) r[e] = (r[e] || 0) + sp.a[e] * c[n + i]; qr += sp.q * c[n + i]; });
+  return { l: l, r: r, ql: ql, qr: qr };
+}
+function builder(p, key, i, onOK) {
+  var R = REAC[key][i], st = eqState(key, i), n = R.L.length, box = mk('div'), ch = eqCount(R, st.c), cp = mk('div', 'eq'), j;
+  function term(idx, sp) {
+    var t = mk('span', 'term'), s = mk('span', 'st'), up = mk('button', '', '+'), dn = mk('button', '', '−'); up.type = dn.type = 'button';
+    up.addEventListener('click', function () { if (st.ok) return; st.c[idx] = Math.min(9, st.c[idx] + 1); panel(); }); dn.addEventListener('click', function () { if (st.ok) return; st.c[idx] = Math.max(1, st.c[idx] - 1); panel(); });
+    s.appendChild(up); s.appendChild(dn); t.appendChild(s); t.appendChild(mk('span', 'n', String(st.c[idx]))); t.appendChild(mk('span', '', SPEC[sp].h)); return t;
+  }
+  R.L.forEach(function (sp, k) { if (k) cp.appendChild(mk('span', 'op', '+')); cp.appendChild(term(k, sp)); });
+  cp.appendChild(mk('span', 'arrow', '→'));
+  R.R.forEach(function (sp, k) { if (k) cp.appendChild(mk('span', 'op', '+')); cp.appendChild(term(n + k, sp)); });
+  box.appendChild(cp);
+  var at = mk('div', 'atoms'), els = {}, e; for (e in ch.l) els[e] = 1; for (e in ch.r) els[e] = 1;
+  Object.keys(els).forEach(function (el) { var a = ch.l[el] || 0, b = ch.r[el] || 0; at.appendChild(mk('span', a === b ? 'ok' : 'no', el + ': ' + a + ' | ' + b)); });
+  var hasIon = R.L.concat(R.R).some(function (s) { return SPEC[s].q !== 0; });
+  if (hasIon) at.appendChild(mk('span', ch.ql === ch.qr ? 'ok' : 'no', 'Ladung: ' + (ch.ql > 0 ? '+' : '') + ch.ql + ' | ' + (ch.qr > 0 ? '+' : '') + ch.qr));
+  box.appendChild(at);
+  var bal = Object.keys(els).every(function (el) { return (ch.l[el] || 0) === (ch.r[el] || 0); }) && ch.ql === ch.qr;
+  var isSol = st.c.every(function (v, k) { return v === R.sol[k]; });
+  if (!st.ok) {
+    if (bal && isSol) { st.ok = true; burst($('panel')); onOK && onOK(); setTimeout(panel, 0); }
+    else if (bal) box.appendChild(mk('div', 'fb info', 'Die Bilanz stimmt, aber es geht mit <b>kleineren Zahlen</b>. Kürze die Koeffizienten.'));
+  }
+  if (st.ok) box.appendChild(mk('div', 'fb ok', '<b>✔ Richtig ausgeglichen.</b> Atome <i>und</i> Ladungen stimmen.<br>' + R.info));
+  else box.appendChild(mk('div', 'muted', '<small>Stelle die Koeffizienten mit + / − ein. Die Chips zeigen links | rechts.</small>'));
+  p.appendChild(box);
+}
+function eqNav(p, key, cur, set) {
+  var r = mk('div', 'sub2');
+  REAC[key].forEach(function (R, i) { var b = mk('button', (cur === i ? 'on ' : '') + (eqState(key, i).ok ? 'ok' : ''), 'Aufgabe ' + (i + 1) + (eqState(key, i).ok ? ' ✔' : '')); b.type = 'button'; b.addEventListener('click', function () { set(i); panel(); }); r.appendChild(b); });
+  p.appendChild(r);
+}
+
+var P2 = { eq: 0, q: {} };
+function p2panel(p) {
+  p.appendChild(mk('h2', '', '⚛️ Was passiert mit den Teilchen?'));
+  p.appendChild(mk('p', 'muted', 'Ein Eisenblech steht in Kupfer(II)-sulfat-Lösung. Starte die Simulation und beobachte, wie Atome und Ionen die <b>Elektronen</b> weitergeben.'));
+  var r = mk('div', 'row');
+  r.appendChild(btn(SM.run ? '⏸ Pause' : '▶ Start', SM.run ? 'sec' : '', function () { if (simEnd()) simNew(); SM.run = !SM.run; SM.endHint = false; panel(); }));
+  r.appendChild(btn('⏭ Ein Schritt', 'sec small', function () { SM.run = false; if (simEnd()) simNew(); simStart1(); panel(); }));
+  r.appendChild(btn(SM.slow ? '🐢 Zeitlupe an' : '🐢 Zeitlupe', 'sec small' + (SM.slow ? ' on' : ''), function () { SM.slow = !SM.slow; panel(); }));
+  r.appendChild(btn('↺ Neu', 'sec small', function () { SM.run = false; simNew(); panel(); }));
+  p.appendChild(r);
+  var t = mk('div', 'row');
+  var l1 = mk('label', 'tgl', '<input type="checkbox"' + (SM.showE ? ' checked' : '') + '> Elektronen zeigen'); l1.firstChild.addEventListener('change', function (e) { SM.showE = e.target.checked; });
+  var l2 = mk('label', 'tgl', '<input type="checkbox"' + (SM.showSO ? ' checked' : '') + '> Sulfat-Ionen zeigen'); l2.firstChild.addEventListener('change', function (e) { SM.showSO = e.target.checked; });
+  t.appendChild(l1); t.appendChild(l2); p.appendChild(t);
+  p.appendChild(mk('div', 'cap', '<small>Was du siehst</small>① Ein Fe-Atom gibt <b>2 Elektronen</b> ab und geht als Fe²⁺ in Lösung. ② Ein Cu²⁺-Ion nimmt diese 2 Elektronen auf und wird zum Cu-Atom (Kupferbelag). Die <b>Sulfat-Ionen</b> machen nicht mit – sie sind <i>Zuschauer</i>.'));
+  if (simEnd()) p.appendChild(mk('div', 'fb ok', '<b>Alle Cu²⁺-Ionen verbraucht:</b> Die blaue Farbe ist verschwunden, die Lösung ist jetzt blassgrün (Fe²⁺).'));
+  p.appendChild(mk('h3', '', '1 · Zuordnen'));
+  var q1 = mk('div'); p.appendChild(mk('p', '', 'Welche Teilgleichung beschreibt die <b>Oxidation</b>?')); p.appendChild(q1);
+  if (!P2.q.a) mcq(q1, ['Fe → Fe²⁺ + 2 e⁻', 'Cu²⁺ + 2 e⁻ → Cu', 'Fe + 2 e⁻ → Fe²⁻', 'Cu → Cu²⁺'], 0, function (ok) { if (ok) { P2.q.a = 1; setTimeout(panel, 900); } }, 'Oxidation = Abgabe von Elektronen. Das Eisen ist der Elektronen-<b>Donator</b>.');
+  else q1.appendChild(mk('div', 'fb ok', '✔ Fe → Fe²⁺ + 2 e⁻ (Elektronen-Abgabe = Oxidation; Fe ist der Donator).'));
+  var q2 = mk('div'); p.appendChild(mk('p', '', 'Wer ist hier das <b>Oxidationsmittel</b> (der Elektronen-Akzeptor)?')); p.appendChild(q2);
+  if (!P2.q.b) mcq(q2, ['Cu²⁺', 'Fe', 'SO₄²⁻', 'Fe²⁺'], 0, function (ok) { if (ok) { P2.q.b = 1; setTimeout(panel, 900); } }, 'Cu²⁺ nimmt Elektronen auf und oxidiert dabei das Eisen. Redoxpaare: Fe/Fe²⁺ und Cu/Cu²⁺.');
+  else q2.appendChild(mk('div', 'fb ok', '✔ Cu²⁺ – es oxidiert das Eisen, wird selbst reduziert.'));
+  p.appendChild(mk('h3', '', '2 · Gleichungen aufstellen'));
+  p.appendChild(mk('p', 'muted', 'Gleiche Atome <b>und</b> Ladungen aus. Beim Zusammenfassen müssen die abgegebenen und aufgenommenen Elektronen gleich viele sein.'));
+  eqNav(p, 'ion', P2.eq, function (i) { P2.eq = i; });
+  builder(p, 'ion', P2.eq, function () { });
+  p.appendChild(mk('h3', '', '3 · Rechnen'));
+  var q3 = mk('div'); p.appendChild(mk('p', '', 'Ein Eisennagel (<b>5,6 g</b>, M(Fe) ≈ 56 g/mol) löst sich vollständig in überschüssiger Kupfer(II)-sulfat-Lösung. Wie viel Kupfer (M(Cu) ≈ 63,5 g/mol) scheidet sich ab?')); p.appendChild(q3);
+  if (!P2.q.c) mcq(q3, ['6,4 g', '3,2 g', '5,6 g', '12,7 g'], 0, function (ok) { if (ok) { P2.q.c = 1; setTimeout(panel, 900); } }, 'n(Fe) = 0,1 mol → 1 : 1 → n(Cu) = 0,1 mol → m = 6,35 g ≈ 6,4 g. Der Nagel wird dabei sogar schwerer (Cu-Atome sind schwerer als Fe-Atome).');
+  else q3.appendChild(mk('div', 'fb ok', '✔ 0,1 mol Fe ergibt 0,1 mol Cu, also ≈ 6,4 g.'));
+  if (P2.q.a && P2.q.b && P2.q.c && REAC.ion.every(function (x, i) { return eqState('ion', i).ok; })) {
+    markDone(2); p.appendChild(mk('div', 'fb ok', '<b>🏆 Reiter geschafft!</b>')); var nr = mk('div', 'row'); nr.appendChild(btn('Weiter: Hochofen →', 'go', function () { goStep(3); })); p.appendChild(nr);
+  }
+}
+
+/* ====== Schritt 3: Hochofen als Redoxreaktion ====== */
+var FP = [[40, 64], [80, 66], [270, 112], [330, 114], [420, 80], [478, 80]], FCX = 290;
+function fhw(y) { var i; if (y <= FP[0][0]) return FP[0][1]; for (i = 1; i < FP.length; i++) if (y <= FP[i][0]) return lerp(FP[i - 1][1], FP[i][1], (y - FP[i - 1][0]) / (FP[i][0] - FP[i - 1][0])); return FP[FP.length - 1][1]; }
+var FZ = [
+  { id: 'vor', n: 'Vorwärmzone', t: '200 – 400 °C', y0: 40, y1: 130 },
+  { id: 'red', n: 'Reduktionszone', t: '400 – 900 °C', y0: 130, y1: 245 },
+  { id: 'koh', n: 'Kohlungszone', t: '900 – 1400 °C', y0: 245, y1: 345 },
+  { id: 'sch', n: 'Schmelzzone', t: '1400 – 1600 °C', y0: 345, y1: 420 },
+  { id: 'ver', n: 'Verbrennungszone', t: 'bis ca. 2000 °C', y0: 420, y1: 478 }
+];
+/* Oxidationszahl-Karten: [Formel, Zahlen] */
+function spc(f, ox) { return '<span class="sp"><span>' + f + '</span><small>' + ox + '</small></span>'; }
+var HO = {
+  vor: { read: 'Hier wird das Gemisch aus Erz, Koks und Kalkstein von den aufsteigenden heißen Gasen <b>getrocknet</b> und vorgewärmt. Wasser verdampft – die Teilchen werden nicht umgebaut.',
+    cards: spc('H<sub>2</sub>O(l)', 'H +I · O −II') + '<span class="arrow">→</span>' + spc('H<sub>2</sub>O(g)', 'H +I · O −II'),
+    qs: [{ q: 'Ist das Verdampfen von Wasser eine Redoxreaktion?', o: ['Nein – es ändert sich nur der Aggregatzustand, keine Oxidationszahl', 'Ja – Wasser wird oxidiert', 'Ja – Wasserstoff wird reduziert', 'Das kann man nicht sagen'], a: 0, w: 'Eine Redoxreaktion erkennt man an <b>veränderten Oxidationszahlen</b>. Hier bleiben sie gleich (H +I, O −II).' }] },
+  red: { read: 'Das Eisenerz (Eisen(III)-oxid) wird <b>stufenweise</b> vom aufsteigenden Kohlenstoffmonoxid reduziert. Die Oxidationszahl des Eisens sinkt von +III bis 0.',
+    cards: spc('Fe<sub>2</sub>O<sub>3</sub>', 'Fe +III · O −II') + '<span class="arrow">→</span>' + spc('Fe<sub>3</sub>O<sub>4</sub>', 'Fe +8⁄3 (Ø) · O −II') + '<span class="arrow">→</span>' + spc('FeO', 'Fe +II · O −II') + '<span class="arrow">→</span>' + spc('Fe', '0'),
+    eq: 'Gesamt: Fe<sub>2</sub>O<sub>3</sub> + 3 CO → 2 Fe + 3 CO<sub>2</sub>', eq2: spc('Fe<sub>2</sub>O<sub>3</sub>', 'Fe +III') + '<span class="op">+ 3</span>' + spc('CO', 'C +II') + '<span class="arrow">→</span>' + '<span class="op">2</span>' + spc('Fe', '0') + '<span class="op">+ 3</span>' + spc('CO<sub>2</sub>', 'C +IV'),
+    qs: [{ q: 'Welche Oxidationszahl hat Eisen in Fe₂O₃?', o: ['+III', '+II', '+VI', '−III'], a: 0, w: '3 O-Atome: 3 · (−II) = −6. Zwei Fe-Atome müssen +6 ausgleichen: 2 · (+III).' },
+      { q: 'Wie ändert sich die Oxidationszahl von C beim Übergang CO → CO₂?', o: ['+II → +IV (Oxidation)', '+IV → +II (Reduktion)', '0 → +II', 'keine Änderung'], a: 0, w: 'C gibt Elektronen ab: von +II nach +IV (je CO-Teilchen 2 e⁻). CO ist das <b>Reduktionsmittel</b>.' },
+      { q: 'Wie viele Elektronen nehmen die 2 Fe³⁺ in Fe₂O₃ auf, wenn 2 Fe entstehen?', o: ['6', '3', '2', '12'], a: 0, w: '2 Fe³⁺ + 6 e⁻ → 2 Fe. Die 6 Elektronen liefern 3 CO (je 2 e⁻).' }] },
+  koh: { read: 'Das entstandene CO₂ trifft auf glühenden Koks und bildet wieder CO (<b>Boudouard-Gleichgewicht</b>). Bei hohen Temperaturen reduziert Kohlenstoff Eisen(II)-oxid auch direkt. Der Kalkstein zerfällt (keine Redoxreaktion).',
+    cards: spc('CO<sub>2</sub>', 'C +IV') + '<span class="op">+</span>' + spc('C', '0') + '<span class="arrow">⇌</span>' + '<span class="op">2</span>' + spc('CO', 'C +II'),
+    eq: 'CO<sub>2</sub> + C ⇌ 2 CO &nbsp;·&nbsp; FeO + C → Fe + CO &nbsp;·&nbsp; CaCO<sub>3</sub> → CaO + CO<sub>2</sub>',
+    qs: [{ q: 'Welcher Reaktionstyp ist das Boudouard-Gleichgewicht CO₂ + C ⇌ 2 CO?', o: ['Synproportionierung (C +IV und C 0 → C +II)', 'Disproportionierung', 'Keine Redoxreaktion', 'Säure-Base-Reaktion'], a: 0, w: 'Zwei Edukte mit <b>unterschiedlicher</b> Oxidationszahl des gleichen Elements (+IV und 0) bilden ein Produkt mit einer mittleren Zahl (+II) – <b>Synproportionierung</b>.' },
+      { q: 'Der Zerfall CaCO₃ → CaO + CO₂ ist …', o: ['keine Redoxreaktion (Oxidationszahlen bleiben gleich)', 'eine Oxidation des Calciums', 'eine Reduktion des Kohlenstoffs', 'eine Disproportionierung'], a: 0, w: 'Ca bleibt +II, C bleibt +IV, O bleibt −II – es werden keine Elektronen übertragen.' }] },
+  sch: { read: 'Das Eisen schmilzt, nimmt Kohlenstoff auf (Roheisen, ca. 4 % C) und sammelt sich unten. Der Kalk bildet mit dem Gestein im Erz die leichtere <b>Schlacke</b>, die oben auf dem Roheisen schwimmt.',
+    cards: spc('CaO', 'Ca +II · O −II') + '<span class="op">+</span>' + spc('SiO<sub>2</sub>', 'Si +IV · O −II') + '<span class="arrow">→</span>' + spc('CaSiO<sub>3</sub>', 'Ca +II · Si +IV'),
+    qs: [{ q: 'Ist die Schlackenbildung CaO + SiO₂ → CaSiO₃ eine Redoxreaktion?', o: ['Nein – alle Oxidationszahlen bleiben gleich', 'Ja – Silicium wird reduziert', 'Ja – Calcium wird oxidiert', 'Ja – Sauerstoff wird oxidiert'], a: 0, w: 'Ca +II, Si +IV, O −II vorher und nachher – kein Elektronenübergang. Die Schlacke dient dem Abtrennen unerwünschter Begleitstoffe.' }] },
+  ver: { read: 'Vor den Düsen strömt <b>Heißwind</b> (heiße Luft) ein. Der Koks verbrennt dort heftig und liefert die Wärme sowie das Kohlenstoffdioxid, aus dem später das Reduktionsmittel CO entsteht.',
+    cards: spc('C', '0') + '<span class="op">+</span>' + spc('O<sub>2</sub>', 'O 0') + '<span class="arrow">→</span>' + spc('CO<sub>2</sub>', 'C +IV · O −II'),
+    eq: 'C + O<sub>2</sub> → CO<sub>2</sub>',
+    qs: [{ q: 'Was wird bei C + O₂ → CO₂ oxidiert und was reduziert?', o: ['C wird oxidiert (0 → +IV), O wird reduziert (0 → −II)', 'C wird reduziert, O wird oxidiert', 'Beide werden oxidiert', 'Beide werden reduziert'], a: 0, w: 'C gibt 4 Elektronen ab, jedes O-Atom nimmt 2 auf. Elektronen-Donator: C. Elektronen-Akzeptor: O₂.' }] }
+};
+var P3 = { zone: 'red', ans: {} };
+var pellets = null;
+function pelNew() { pellets = []; var i; for (i = 0; i < 46; i++) pellets.push({ x: rnd(-1, 1), y: rnd(40, 430), v: rnd(.6, 1.0) }); }
+function pelCol(y) { return y < 150 ? '#c0502f' : y < 205 ? '#6a3f3a' : y < 255 ? '#3a3a44' : y < 345 ? '#aab1be' : '#ffd166'; }
+function furnDraw(dt) {
+  var c = g, i, z, y;
+  c.clearRect(0, 0, CW, CH); bench(c);
+  if (!pellets) pelNew();
+  /* Ofenkörper */
+  c.beginPath(); for (y = 40; y <= 478; y += 6) { if (y === 40) c.moveTo(FCX - fhw(y), y); else c.lineTo(FCX - fhw(y), y); }
+  for (y = 478; y >= 40; y -= 6) c.lineTo(FCX + fhw(y), y); c.closePath();
+  var gr = c.createLinearGradient(0, 40, 0, 478);
+  gr.addColorStop(0, '#2a2438'); gr.addColorStop(.18, '#5a2a24'); gr.addColorStop(.40, '#a63a22'); gr.addColorStop(.62, '#e07a28'); gr.addColorStop(.82, '#ffc23c'); gr.addColorStop(1, '#fff0b0');
+  c.save(); c.clip(); c.fillStyle = gr; c.fillRect(0, 40, CW, 450);
+  /* Schmelze unten */
+  c.fillStyle = 'rgba(255,214,102,.9)'; c.fillRect(FCX - 120, 455, 240, 30); c.fillStyle = 'rgba(255,138,61,.85)'; c.fillRect(FCX - 120, 447, 240, 8);
+  /* Gas (CO steigt) */
+  var t = S.t, k;
+  for (k = 0; k < 40; k++) {
+    var ph = (t * .18 + k * .071) % 1, yy = 470 - ph * 430, xx = FCX + Math.sin(k * 7.1 + t * 1.3) * (fhw(yy) - 12) * .92;
+    c.fillStyle = yy > 420 ? 'rgba(255,255,220,.8)' : yy > 245 ? 'rgba(125,249,255,.8)' : 'rgba(170,200,215,.65)'; c.beginPath(); c.arc(xx, yy, 2.6, 0, 6.283); c.fill();
+  }
+  /* Pellets (sinken) */
+  pellets.forEach(function (p) { p.y += dt * 11 * p.v; if (p.y > 440) { p.y = 40; p.x = rnd(-1, 1); } var xx = FCX + p.x * (fhw(p.y) - 14); if (p.y > 345) return; c.fillStyle = pelCol(p.y); c.beginPath(); c.arc(xx, p.y, 5, 0, 6.283); c.fill(); c.strokeStyle = 'rgba(0,0,0,.35)'; c.lineWidth = 1; c.stroke(); });
+  c.restore();
+  /* Zonen */
+  FZ.forEach(function (zn) {
+    c.strokeStyle = 'rgba(255,255,255,.25)'; c.lineWidth = 1; c.setLineDash([4, 4]); c.beginPath(); c.moveTo(FCX - fhw(zn.y0), zn.y0); c.lineTo(FCX + fhw(zn.y0) + 30, zn.y0); c.stroke(); c.setLineDash([]);
+    var on = P3.zone === zn.id, ym = (zn.y0 + zn.y1) / 2, xr = FCX + fhw(ym) + 40, ok = P3.ans[zn.id] === HO[zn.id].qs.length;
+    c.fillStyle = on ? 'rgba(255,209,102,.22)' : 'rgba(0,0,0,.35)'; rr(c, xr - 6, ym - 20, 156, 40, 9); c.fill(); c.strokeStyle = on ? '#ffd166' : 'rgba(255,255,255,.2)'; c.lineWidth = on ? 2 : 1; c.stroke();
+    txt(c, zn.n + (ok ? ' ✔' : ''), xr + 72, ym - 7, 12.5, on ? '#ffd166' : '#f6eee8', 'center', true); txt(c, zn.t, xr + 72, ym + 10, 11.5, '#c9b9ad');
+    zn.hx = xr - 6; zn.hy = ym - 20; zn.hw = 156; zn.hh = 40;
+  });
+  if (P3.zone) { var sz = FZ.filter(function (q) { return q.id === P3.zone; })[0]; c.save(); c.strokeStyle = '#ffd166'; c.lineWidth = 3; c.shadowColor = '#ffd166'; c.shadowBlur = 14; c.beginPath(); c.moveTo(FCX - fhw(sz.y0), sz.y0); c.lineTo(FCX + fhw(sz.y0), sz.y0); c.moveTo(FCX - fhw(sz.y1), sz.y1); c.lineTo(FCX + fhw(sz.y1), sz.y1); c.stroke(); c.restore(); }
+  /* Umriss */
+  c.strokeStyle = 'rgba(255,255,255,.55)'; c.lineWidth = 4; c.beginPath(); for (y = 40; y <= 478; y += 6) { if (y === 40) c.moveTo(FCX - fhw(y), y); else c.lineTo(FCX - fhw(y), y); } c.stroke();
+  c.beginPath(); for (y = 40; y <= 478; y += 6) { if (y === 40) c.moveTo(FCX + fhw(y), y); else c.lineTo(FCX + fhw(y), y); } c.stroke();
+  /* Pfeile und Beschriftung */
+  txt(c, 'Möller ↓', 70, 70, 13, '#ffb36b', 'center', true); txt(c, '(Erz, Koks, Kalk)', 70, 86, 11, '#c9b9ad');
+  txt(c, 'Gichtgas ↑', 70, 120, 13, '#7df9ff', 'center', true);
+  txt(c, 'Heißwind →', 62, 440, 12.5, '#ffd166', 'center', true);
+  txt(c, 'Roheisen', 70, 468, 12.5, '#ffd166', 'center', true);
+  txt(c, 'Zum Anklicken: die Zonen rechts', 150, 505, 12, '#c9b9ad');
+  /* Legende */
+  var lg = [['#c0502f', 'Fe₂O₃'], ['#6a3f3a', 'Fe₃O₄'], ['#3a3a44', 'FeO'], ['#aab1be', 'Fe'], ['#7df9ff', 'CO']];
+  lg.forEach(function (q, i) { c.fillStyle = q[0]; c.beginPath(); c.arc(396 + (i % 3) * 66, 28 + Math.floor(i / 3) * 0, 0, 0, 6.283); c.fill(); });
+}
+function furnLegend() { return [['#c0502f', 'Fe₂O₃'], ['#6a3f3a', 'Fe₃O₄'], ['#3a3a44', 'FeO'], ['#aab1be', 'Fe (fest)'], ['#7df9ff', 'CO-Gas']].map(function (q) { return '<span><i style="background:' + q[0] + '"></i>' + q[1] + '</span>'; }).join(' '); }
+function p3panel(p) {
+  p.appendChild(mk('h2', '', '🔥 Der Hochofen – eine große Redoxreaktion'));
+  p.appendChild(mk('p', 'muted', 'Aus Eisenerz wird Eisen: Das Metall liegt im Erz als Fe³⁺ <b>oxidiert</b> vor und muss <b>reduziert</b> werden. Wähle eine Zone und untersuche die Oxidationszahlen. Den Ofen selbst beschicken kannst du in der <a href="../../../../Sekundarstufe-I/Klasse-7-8/4-Metalle-Schätze-der-Erde/4-Hochofen-Eisen-und-Stahl/index.html" style="color:var(--amb)">Hochofen-Werkstatt (Klasse 7/8)</a>.'));
+  var zl = mk('div', 'zlist');
+  FZ.forEach(function (zn) { var b = mk('button', (P3.zone === zn.id ? 'on ' : '') + (P3.ans[zn.id] === HO[zn.id].qs.length ? 'ok' : ''), zn.n); b.type = 'button'; b.addEventListener('click', function () { P3.zone = zn.id; panel(); }); zl.appendChild(b); });
+  p.appendChild(zl);
+  var H = HO[P3.zone], zn = FZ.filter(function (q) { return q.id === P3.zone; })[0];
+  p.appendChild(mk('h3', '', zn.n + ' · ' + zn.t));
+  p.appendChild(mk('p', '', H.read));
+  p.appendChild(mk('div', 'cards', H.cards));
+  if (H.eq2) p.appendChild(mk('div', 'cards', H.eq2));
+  if (H.eq) p.appendChild(mk('div', 'tl', H.eq));
+  if (P3.zone === 'red') {
+    p.appendChild(mk('div', 'tip', '💡 <b>Warum klappt das?</b> Kohlenstoff bzw. CO sind bei diesen hohen Temperaturen die stärkeren Elektronen-Donatoren – „unedler“ als Eisen. Das Metall wird vom unedleren Reduktionsmittel aus seinem Oxid befreit.'));
+  }
+  var qd = P3.ans[P3.zone] || 0;
+  p.appendChild(mk('h3', '', 'Aufgaben (' + qd + '/' + H.qs.length + ')'));
+  if (qd >= H.qs.length) p.appendChild(mk('div', 'fb ok', '✔ Diese Zone hast du verstanden.'));
+  else { var Q = H.qs[qd], qb = mk('div'); qb.appendChild(mk('p', '', '<b>' + Q.q + '</b>')); mcq(qb, Q.o, Q.a, function (ok) { if (ok) { setTimeout(function () { P3.ans[P3.zone] = qd + 1; checkP3(); panel(); }, 900); } }, Q.w); p.appendChild(qb); }
+  var all = FZ.every(function (q) { return P3.ans[q.id] === HO[q.id].qs.length; });
+  if (all) { markDone(3); p.appendChild(mk('div', 'fb ok', '<b>🏆 Alle fünf Zonen untersucht!</b> Im Hochofen wird Fe<sup>III</sup> durch CO und C reduziert – die Elektronen kommen vom Kohlenstoff.')); var nr = mk('div', 'row'); nr.appendChild(btn('Weiter: Welches Verfahren? →', 'go', function () { goStep(4); })); p.appendChild(nr); }
+  else { var rest = FZ.filter(function (q) { return P3.ans[q.id] !== HO[q.id].qs.length; }).length; p.appendChild(mk('div', 'muted', '<small>Noch ' + rest + ' Zone(n) offen.</small>')); }
+}
+function checkP3() { }
+
+/* ====== Schritt 4: Welches Verfahren? ====== */
+var VER = [
+  { id: 'e', n: 'Schmelzfluss-Elektrolyse', c: '#b68cff', t: 'Der Strom erzwingt die Elektronenaufnahme (Thema in Q4)' },
+  { id: 'c', n: 'Reduktion mit Kohlenstoff / CO', c: '#ff8a3d', t: 'Koks, Kohle bzw. CO als Reduktionsmittel' },
+  { id: 'n', n: 'gediegen / einfaches Erhitzen', c: '#7df9ff', t: 'Als Metall zu finden oder Oxid zerfällt beim Erhitzen' }
+];
+var VM = [
+  { id: 'Na', n: 'Natrium', m: 'e', why: 'Natrium ist so unedel, dass kein gängiges Reduktionsmittel Na⁺ Elektronen aufdrängen kann. Der Strom (Schmelzfluss-Elektrolyse von NaCl) übernimmt das.' },
+  { id: 'Mg', n: 'Magnesium', m: 'e', why: 'Mg ist ein sehr starker Elektronen-Donator – Kohlenstoff reicht nicht aus, um Mg²⁺ zu reduzieren. Gewinnung durch Schmelzfluss-Elektrolyse von MgCl₂.' },
+  { id: 'Al', n: 'Aluminium', m: 'e', why: 'Al³⁺ wird nur durch Elektrolyse der Schmelze (Al₂O₃ in Kryolith) zu Aluminium reduziert – sehr energieaufwendig.' },
+  { id: 'Zn', n: 'Zink', m: 'c', why: 'Zn ist weniger unedel: Das Oxid ZnO lässt sich bei hoher Temperatur mit Kohlenstoff reduzieren (ZnO + C → Zn + CO).' },
+  { id: 'Fe', n: 'Eisen', m: 'c', why: 'Im Hochofen reduzieren Koks und CO das Eisenoxid: Fe₂O₃ + 3 CO → 2 Fe + 3 CO₂.' },
+  { id: 'Pb', n: 'Blei', m: 'c', why: 'PbO (aus dem gerösteten Bleiglanz) wird mit Kohle zu Blei reduziert.' },
+  { id: 'Cu', n: 'Kupfer', m: 'c', why: 'Kupfer(II)-oxid lässt sich schon mit Holzkohle reduzieren (2 CuO + C → 2 Cu + CO₂). Technisch: Rösten sulfidischer Erze und Reduktion, danach Raffination.' },
+  { id: 'Ag', n: 'Silber', m: 'n', why: 'Silber ist sehr edel: Das Oxid zerfällt schon beim Erhitzen (2 Ag₂O → 4 Ag + O₂), und Silber kommt auch gediegen vor.' },
+  { id: 'Au', n: 'Gold', m: 'n', why: 'Gold ist so edel, dass es nahezu nur gediegen vorkommt (Waschgold). Es muss nicht „reduziert“ werden.' }
+];
+var V4 = { sub: 'verf', order: null, idx: 0, ok: {}, firstTry: 0, tried: false, rc: null, rcN: 0, rcOK: 0, eq: 0 };
+function v4init() { if (!V4.order) { V4.order = shuffle(VM.map(function (m, i) { return i; })); } }
+function ladDraw() {
+  var c = g, i, y0 = 56, dy = 46;
+  c.clearRect(0, 0, CW, CH); bench(c);
+  /* Pfeil */
+  var gr = c.createLinearGradient(0, 40, 0, 470); gr.addColorStop(0, 'rgba(182,140,255,.85)'); gr.addColorStop(.5, 'rgba(255,138,61,.85)'); gr.addColorStop(1, 'rgba(125,249,255,.85)');
+  c.fillStyle = gr; rr(c, 50, 44, 10, 410, 5); c.fill();
+  txt(c, 'unedel', 55, 32, 12.5, '#b68cff', 'center', true); txt(c, 'edel', 55, 468, 12.5, '#7df9ff', 'center', true);
+  txt(c, 'starker Elektronen-Donator', 190, 22, 11, '#c9b9ad');
+  VM.forEach(function (m, i) {
+    var y = y0 + i * dy, v = VER.filter(function (q) { return q.id === m.m; })[0], on = V4.ok[m.id] || S.step === 6, cur = V4.cur === m.id;
+    c.fillStyle = on ? v.c : 'rgba(255,255,255,.08)'; c.globalAlpha = on ? .22 : 1; rr(c, 76, y - 17, 450, 36, 10); c.fill(); c.globalAlpha = 1;
+    c.strokeStyle = cur ? '#ffd166' : (on ? v.c : 'rgba(255,255,255,.2)'); c.lineWidth = cur ? 3 : 1.5; rr(c, 76, y - 17, 450, 36, 10); c.stroke();
+    c.fillStyle = on ? v.c : '#555a66'; c.beginPath(); c.arc(106, y + 1, 15, 0, 6.283); c.fill(); txt(c, m.id, 106, y + 2, 14, '#10101a', 'center', true);
+    txt(c, m.n, 130, y + 1, 15, '#f6eee8', 'left', true);
+    txt(c, on ? v.n : '?', 515, y + 1, 13, on ? v.c : '#8b8b99', 'right', true);
+  });
+}
+function v4panel(p) {
+  v4init();
+  p.appendChild(mk('h2', '', '⚖️ Welches Verfahren passt zu welchem Metall?'));
+  p.appendChild(mk('p', 'muted', 'Je <b>unedler</b> ein Metall ist, desto fester hält es seine Elektronen-Partner im Erz – desto aufwendiger ist die Gewinnung. Die Redoxreihe verrät das Verfahren.'));
+  var sb = mk('div', 'sub2');
+  [['verf', '🎯 Verfahren'], ['rc', '❓ Reagiert’s?'], ['eq', '⚗️ Gleichungen']].forEach(function (q) { var b = mk('button', V4.sub === q[0] ? 'on' : '', q[1]); b.type = 'button'; b.addEventListener('click', function () { V4.sub = q[0]; panel(); }); sb.appendChild(b); }); p.appendChild(sb);
+  if (V4.sub === 'verf') {
+    var n = Object.keys(V4.ok).length;
+    p.appendChild(mk('div', 'legend', VER.map(function (v) { return '<span><i style="background:' + v.c + '"></i>' + v.n + '</span>'; }).join(' ')));
+    if (n >= VM.length) {
+      p.appendChild(mk('div', 'fb ok', '<b>🏆 Alle neun Metalle zugeordnet!</b> (' + V4.firstTry + ' davon im ersten Versuch)'));
+      p.appendChild(mk('div', 'know', '<div><b>Faustregel</b>Je weiter oben (unedler) ein Metall in der Redoxreihe steht, desto stärker ist es ein Elektronen-<b>Donator</b> – und desto stärker muss die „Elektronen-Pumpe“ sein, um sein Kation zu reduzieren: Strom &gt; Kohlenstoff &gt; bloßes Erhitzen.</div>'));
+    } else {
+      var mi = V4.order[V4.idx % V4.order.length]; while (V4.ok[VM[mi].id]) { V4.idx++; mi = V4.order[V4.idx % V4.order.length]; }
+      var m = VM[mi]; V4.cur = m.id;
+      p.appendChild(mk('h3', '', n + ' / ' + VM.length + ' · Wie wird <u>' + m.n + '</u> (' + m.id + ') gewonnen?'));
+      var box = mk('div', 'tg');
+      VER.forEach(function (v) { var b = mk('button', '', '<b>' + v.n + '</b><small>' + v.t + '</small>'); b.type = 'button'; b.addEventListener('click', function () {
+        if (v.id === m.m) { V4.ok[m.id] = 1; if (!V4.tried) V4.firstTry++; V4.tried = false; V4.fb = '<div class="fb ok"><b>✔ ' + m.n + ':</b> ' + m.why + '</div>'; V4.idx++; burst($('panel')); if (Object.keys(V4.ok).length >= VM.length) markDone(4); }
+        else { V4.tried = true; V4.fb = '<div class="fb no">Nicht ganz. Überlege: Wo steht ' + m.n + ' in der Redoxreihe – eher oben (unedel) oder unten (edel)?</div>'; }
+        panel(); }); box.appendChild(b); });
+      p.appendChild(box);
+    }
+    if (V4.fb) p.appendChild(mk('div', '', V4.fb));
+  } else if (V4.sub === 'rc') {
+    var RC = [
+      { r: 'Al', o: 'Fe₂O₃', ok: true, w: 'Al ist unedler als Fe und reduziert Fe₂O₃ (Thermit-Verfahren zum Schweißen von Schienen).' },
+      { r: 'Fe', o: 'Al₂O₃', ok: false, w: 'Eisen ist edler als Aluminium – es kann Al³⁺ keine Elektronen aufdrängen.' },
+      { r: 'Mg', o: 'CuO', ok: true, w: 'Mg ist deutlich unedler als Cu: Mg + CuO → MgO + Cu (sehr heftig!).' },
+      { r: 'Cu', o: 'ZnO', ok: false, w: 'Kupfer ist edler als Zink – keine Reaktion.' },
+      { r: 'Zn', o: 'PbO', ok: true, w: 'Zn ist unedler als Pb: Zn + PbO → ZnO + Pb.' },
+      { r: 'C', o: 'CuO', ok: true, w: 'Kohlenstoff reduziert das edle Kupferoxid leicht: 2 CuO + C → 2 Cu + CO₂.' },
+      { r: 'Ag', o: 'CuO', ok: false, w: 'Silber ist edler als Kupfer – es kann dem Kupferoxid den Sauerstoff nicht wegnehmen.' },
+      { r: 'Fe', o: 'CuO', ok: true, w: 'Eisen ist unedler als Kupfer und reduziert CuO: Fe + CuO → FeO + Cu.' }
+    ];
+    if (!V4.rcList) { V4.rcList = shuffle(RC).slice(0, 6); V4.rcN = 0; V4.rcOK = 0; }
+    p.appendChild(mk('p', 'muted', 'Regel: Das <b>unedlere</b> Element reduziert das Oxid des <b>edleren</b> Metalls. (Kohlenstoff steht dabei etwa so unedel wie Zink–Eisen.)'));
+    if (V4.rcN >= V4.rcList.length) {
+      p.appendChild(mk('div', 'fb ok', '<b>Geschafft!</b> ' + V4.rcOK + ' von ' + V4.rcList.length + ' im ersten Versuch.')); var rr2 = mk('div', 'row'); rr2.appendChild(btn('Nochmal', 'sec', function () { V4.rcList = null; panel(); })); p.appendChild(rr2);
+    } else {
+      var q = V4.rcList[V4.rcN]; p.appendChild(mk('h3', '', 'Frage ' + (V4.rcN + 1) + ' / ' + V4.rcList.length));
+      p.appendChild(mk('div', 'tl', 'Reagiert <b>' + q.r + '</b> mit <b>' + q.o + '</b> beim Erhitzen?'));
+      var rw = mk('div', 'row'), fbx = mk('div'), done = false;
+      [['Ja – Reaktion', true], ['Nein', false]].forEach(function (a) { rw.appendChild(btn(a[0], 'sec', function () { if (done) return; if (a[1] === q.ok) { done = true; if (!q.miss) V4.rcOK++; fbx.innerHTML = '<div class="fb ok">✔ ' + q.w + '</div>'; var nx = mk('div', 'row'); nx.appendChild(btn('Weiter', 'go', function () { V4.rcN++; panel(); })); fbx.appendChild(nx); } else { q.miss = true; fbx.innerHTML = '<div class="fb no">Nicht ganz. Wer ist unedler – das Metall oder das Metall im Oxid?</div>'; } })); });
+      p.appendChild(rw); p.appendChild(fbx);
+    }
+  } else {
+    p.appendChild(mk('p', 'muted', 'Gleiche aus. Die Hinweise nennen dir die <b>Elektronenbilanz</b>.'));
+    eqNav(p, 'ox', V4.eq, function (i) { V4.eq = i; });
+    builder(p, 'ox', V4.eq);
+  }
+}
+
+/* ====== Schritt 5: Kupfer gewinnen ====== */
+var C5 = { sub: 'oxid', heat: false, r: 0, air: false, r2: 0, ans: { oxid: 0, erz: 0 } };
+var C5Q = {
+  oxid: [
+    { q: 'Woran erkennst du, dass beim Erhitzen Kupfer entstanden ist?', o: ['Das schwarze Pulver wird rotbraun und glänzt beim Reiben mit dem Spatel', 'Das Pulver wird blau und löst sich auf', 'Es entsteht eine grüne Flamme', 'Das Pulver bleibt schwarz, wird aber schwerer'], a: 0, w: 'Kupfer ist ein Metall: rotbraun und metallisch glänzend. Kupferoxid ist schwarz.' },
+    { q: 'Wie weist du das entstehende Gas Kohlenstoffdioxid nach?', o: ['Kalkwasser wird trüb (milchig weiß)', 'Ein glimmender Span glüht auf', 'Eine Knallgasprobe knallt', 'Die Flamme wird grün'], a: 0, w: 'CO₂ + Ca(OH)₂ → CaCO₃ + H₂O: Das schwerlösliche Calciumcarbonat trübt das Kalkwasser.' },
+    { q: 'Was ist bei 2 CuO + C → 2 Cu + CO₂ das Reduktionsmittel?', o: ['Kohlenstoff (0 → +IV)', 'Kupferoxid (+II → 0)', 'Kupfer', 'Kohlenstoffdioxid'], a: 0, w: 'C gibt Elektronen ab und wird oxidiert. Damit reduziert es das Cu²⁺ im Oxid zu Cu.' },
+    { q: 'Wie viele Elektronen nehmen die 2 Cu²⁺ bei 2 CuO + C → 2 Cu + CO₂ insgesamt auf?', o: ['4', '2', '1', '8'], a: 0, w: 'Jedes Cu²⁺ nimmt 2 e⁻ auf (insgesamt 4). Das C-Atom gibt dafür 4 e⁻ ab (0 → +IV).' },
+    { q: 'Warum gelingt diese Reduktion mit Kohlenstoff so leicht?', o: ['Kupfer ist edel: Cu²⁺ ist ein ziemlich guter Elektronen-Akzeptor', 'Kupfer ist sehr unedel', 'Kohlenstoff ist edler als Kupfer', 'Weil Kupferoxid ein Gas ist'], a: 0, w: 'Je edler das Metall, desto leichter lässt sich sein Oxid reduzieren. Bei sehr unedlen Metallen (z. B. Aluminium) reicht Kohlenstoff nicht.' }
+  ],
+  erz: [
+    { q: 'Welche Oxidationszahl hat Schwefel in Kupferglanz Cu₂S (Cu: +I)?', o: ['−II', '+II', '0', '+IV'], a: 0, w: '2 · (+I) = +2, also muss S −II haben (Sulfid).' },
+    { q: 'In Cu₂S + O₂ → 2 Cu + SO₂ ändert sich die Oxidationszahl von Schwefel von −II auf +IV. Das ist …', o: ['eine Oxidation (Elektronen-Abgabe)', 'eine Reduktion', 'keine Änderung der Elektronenzahl', 'eine Neutralisation'], a: 0, w: 'Schwefel gibt 6 Elektronen ab: −II → +IV.' },
+    { q: 'Was wird in dieser Reaktion <b>reduziert</b>?', o: ['Cu⁺ (+I → 0) und O₂ (0 → −II)', 'nur Schwefel', 'nur Sauerstoff', 'nichts'], a: 0, w: 'Cu⁺ nimmt 1 e⁻ auf, Sauerstoff je Atom 2 e⁻. Die Elektronen kommen vom Schwefel – ein zusätzliches Reduktionsmittel ist nicht nötig.' },
+    { q: 'Welches Problem entsteht beim Rösten sulfidischer Erze?', o: ['Schwefeldioxid-Abgas (Ursache für sauren Regen) – es wird zu Schwefelsäure weiterverarbeitet', 'Es entsteht radioaktive Strahlung', 'Es entsteht reiner Sauerstoff', 'Das Kupfer verdampft vollständig'], a: 0, w: 'SO₂ darf nicht in die Luft. Technisch wird es zu Schwefelsäure verarbeitet – ein nützliches Nebenprodukt.' },
+    { q: 'Das so gewonnene Rohkupfer enthält noch Fremdmetalle. Warum reinigt man es weiter?', o: ['Schon kleine Verunreinigungen senken die elektrische Leitfähigkeit stark', 'Weil Rohkupfer giftig ist', 'Weil Rohkupfer flüssig bleibt', 'Weil es sonst nicht glänzt'], a: 0, w: 'Für Leitungen braucht man sehr reines Kupfer. Wie man es reinigt (Elektrolyse), lernst du in Q4.' }
+  ]
+};
+function cuDraw(dt) {
+  var c = g, i, t = S.t; c.clearRect(0, 0, CW, CH); bench(c);
+  if (C5.sub === 'oxid') {
+    if (C5.heat) C5.r = Math.min(1, C5.r + dt * .085);
+    var r = C5.r, cx = 120, cy = 250, tw = 60;
+    /* Brenner und Flamme */
+    c.fillStyle = '#4a4e5c'; rr(c, 134, 400, 24, 66, 4); c.fill(); c.fillRect(120, 462, 52, 8);
+    if (C5.heat) { var fl = 40 + Math.sin(t * 20) * 4; var fg = c.createLinearGradient(0, 400, 0, 400 - fl * 2); fg.addColorStop(0, 'rgba(90,140,255,.95)'); fg.addColorStop(.4, 'rgba(255,190,70,.9)'); fg.addColorStop(1, 'rgba(255,120,40,0)'); c.fillStyle = fg; c.beginPath(); c.ellipse(146, 380, 13, 36 + fl / 3, 0, 0, 6.283); c.fill(); }
+    /* Reagenzglas (waagerecht) */
+    var glow = C5.heat ? .5 : 0; c.fillStyle = 'rgba(190,225,255,' + (.08 + glow * .12) + ')'; rr(c, 70, 222, 270, 56, 28); c.fill(); c.strokeStyle = 'rgba(255,255,255,.6)'; c.lineWidth = 3; rr(c, 70, 222, 270, 56, 28); c.stroke();
+    var pc = mixCol([34, 30, 36], [200, 112, 58], r); c.fillStyle = 'rgb(' + pc[0] + ',' + pc[1] + ',' + pc[2] + ')'; rr(c, 84, 250, 118, 24, 10); c.fill();
+    if (C5.heat && r < 1) { c.fillStyle = 'rgba(255,120,40,' + (.15 + .1 * Math.sin(t * 8)) + ')'; rr(c, 84, 250, 118, 24, 10); c.fill(); }
+    if (r > .6) { c.fillStyle = 'rgba(255,255,255,.35)'; c.fillRect(100, 254, 40, 3); }
+    c.fillStyle = '#7a4a2a'; rr(c, 338, 232, 22, 36, 4); c.fill();
+    /* Gasableitung */
+    c.strokeStyle = 'rgba(255,255,255,.55)'; c.lineWidth = 5; c.beginPath(); c.moveTo(352, 250); c.lineTo(440, 250); c.lineTo(440, 400); c.stroke();
+    /* Kalkwasser */
+    c.fillStyle = 'rgba(190,225,255,.08)'; rr(c, 380, 330, 120, 130, 12); c.fill(); var mk2 = .18 + .6 * r; c.fillStyle = 'rgba(235,240,255,' + mk2 + ')'; rr(c, 384, 360, 112, 96, 10); c.fill(); c.strokeStyle = 'rgba(255,255,255,.6)'; c.lineWidth = 3; rr(c, 380, 330, 120, 130, 12); c.stroke();
+    if (C5.heat && r < 1) for (i = 0; i < 6; i++) { var ph = (t * .7 + i * .17) % 1; c.fillStyle = 'rgba(255,255,255,.75)'; c.beginPath(); c.arc(440 + Math.sin(i * 3 + t * 3) * 6, 400 - ph * 36, 2.4 + i % 3, 0, 6.283); c.fill(); }
+    txt(c, 'CuO + C (schwarz)', 143, 200, 13, '#ffd166', 'center', true); txt(c, r > .9 ? 'Cu (rotbraun, metallisch)' : (r > .1 ? 'Gemisch wird rotbraun …' : ''), 143, 300, 12.5, '#ffb36b', 'center', true);
+    txt(c, 'Kalkwasser' + (r > .5 ? ': trüb!' : ''), 440, 480, 13.5, r > .5 ? '#ffffff' : '#9fd0ff', 'center', true); txt(c, 'Brenner', 146, 486, 12, '#c9b9ad');
+    txt(c, r >= 1 ? '✔ Umsatz vollständig' : (C5.heat ? 'Es wird erhitzt …' : 'Brenner aus'), 300, 60, 15, r >= 1 ? '#5ee6a8' : '#7df9ff', 'center', true);
+    txt(c, 'CO₂ ↗', 395, 235, 12.5, '#c9b9ad', 'center', true);
+  } else {
+    if (C5.air) C5.r2 = Math.min(1, C5.r2 + dt * .1);
+    var r2 = C5.r2;
+    /* Erz */
+    c.fillStyle = '#44444f'; rr(c, 30, 200, 120, 90, 12); c.fill(); c.strokeStyle = '#9aa0b4'; c.lineWidth = 2; rr(c, 30, 200, 120, 90, 12); c.stroke(); txt(c, 'Kupferglanz', 90, 228, 14, '#f6eee8', 'center', true); txt(c, 'Cu₂S', 90, 254, 20, '#bcd0ff', 'center', true); txt(c, 'Cu +I · S −II', 90, 276, 11.5, '#ffd166');
+    /* Röstofen */
+    var og = c.createLinearGradient(0, 160, 0, 340); og.addColorStop(0, '#6a2a22'); og.addColorStop(1, C5.air ? '#ff9a3c' : '#7a3a28'); c.fillStyle = og; rr(c, 230, 160, 150, 180, 16); c.fill(); c.strokeStyle = '#ffb36b'; c.lineWidth = 3; rr(c, 230, 160, 150, 180, 16); c.stroke(); txt(c, 'Röstofen', 305, 182, 15, '#fff', 'center', true);
+    /* Produkte */
+    c.fillStyle = '#c4703a'; c.globalAlpha = .35 + .65 * r2; rr(c, 230, 390, 150, 52, 12); c.fill(); c.globalAlpha = 1; c.strokeStyle = '#ff9a5c'; c.lineWidth = 2; rr(c, 230, 390, 150, 52, 12); c.stroke(); txt(c, 'Rohkupfer (ca. 98 %)', 305, 412, 14, '#fff', 'center', true); txt(c, 'Cu: 0', 305, 431, 11.5, '#ffe2c0');
+    c.fillStyle = 'rgba(180,190,210,.2)'; rr(c, 440, 190, 130, 90, 12); c.fill(); c.strokeStyle = '#9aa0b4'; c.lineWidth = 2; rr(c, 440, 190, 130, 90, 12); c.stroke(); txt(c, 'SO₂-Abgas', 505, 214, 14, '#f6eee8', 'center', true); txt(c, 'S +IV · O −II', 505, 236, 11.5, '#ffd166'); txt(c, '→ Schwefelsäure', 505, 262, 12, '#c9b9ad');
+    /* Pfeile / Teilchen */
+    function arrow(x0, y0, x1, y1, col) { c.strokeStyle = col; c.lineWidth = 4; c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke(); var a = Math.atan2(y1 - y0, x1 - x0); c.fillStyle = col; c.beginPath(); c.moveTo(x1, y1); c.lineTo(x1 - 12 * Math.cos(a - .4), y1 - 12 * Math.sin(a - .4)); c.lineTo(x1 - 12 * Math.cos(a + .4), y1 - 12 * Math.sin(a + .4)); c.closePath(); c.fill(); }
+    arrow(152, 245, 228, 245, '#bcd0ff'); arrow(305, 90, 305, 156, C5.air ? '#7df9ff' : '#555a66'); txt(c, 'Luft (O₂)', 305, 72, 14, C5.air ? '#7df9ff' : '#8b8b99', 'center', true); arrow(382, 235, 438, 235, '#aab1be'); arrow(305, 342, 305, 388, '#ff9a5c');
+    if (C5.air) for (i = 0; i < 7; i++) { var q = (t * .5 + i * .15) % 1; c.fillStyle = '#7df9ff'; c.beginPath(); c.arc(305 + Math.sin(i * 4) * 18, 100 + q * 60, 3.4, 0, 6.283); c.fill(); var q2 = (t * .4 + i * .15) % 1; c.fillStyle = 'rgba(200,205,220,.85)'; c.beginPath(); c.arc(384 + q2 * 54, 235 + Math.sin(i * 5 + t * 3) * 7, 3.6, 0, 6.283); c.fill(); var q3 = (t * .45 + i * .15) % 1; c.fillStyle = '#e2894a'; c.beginPath(); c.arc(305 + Math.sin(i * 7) * 20, 345 + q3 * 40, 3.8, 0, 6.283); c.fill(); var q4 = (t * .35 + i * .15) % 1; c.fillStyle = '#bcd0ff'; c.beginPath(); c.arc(156 + q4 * 70, 245 + Math.sin(i * 3 + t * 4) * 6, 3.4, 0, 6.283); c.fill(); }
+    txt(c, r2 >= 1 ? '✔ Kupfer entstanden' : (C5.air ? 'Es wird geröstet …' : 'Luftzufuhr aus'), 300, 500, 14.5, r2 >= 1 ? '#5ee6a8' : '#7df9ff', 'center', true);
+  }
+}
+function mixCol(a, b, t) { return [Math.round(lerp(a[0], b[0], t)), Math.round(lerp(a[1], b[1], t)), Math.round(lerp(a[2], b[2], t))]; }
+function p5panel(p) {
+  p.appendChild(mk('h2', '', '🔶 Kupfer gewinnen'));
+  p.appendChild(mk('p', 'muted', 'Kupfer ist edler als Eisen – seine Gewinnung ist daher einfacher. Zwei Wege: aus <b>Kupferoxid</b> (Schulversuch) und aus <b>sulfidischem Erz</b> (technisch).'));
+  var sb = mk('div', 'sub2');
+  [['oxid', '🧪 Kupferoxid + Kohle'], ['erz', '🏭 Sulfidisches Erz']].forEach(function (q) { var b = mk('button', (C5.sub === q[0] ? 'on ' : '') + (C5.ans[q[0]] >= C5Q[q[0]].length ? 'ok' : ''), q[1] + (C5.ans[q[0]] >= C5Q[q[0]].length ? ' ✔' : '')); b.type = 'button'; b.addEventListener('click', function () { C5.sub = q[0]; panel(); }); sb.appendChild(b); }); p.appendChild(sb);
+  var sub = C5.sub, r = mk('div', 'row');
+  if (sub === 'oxid') {
+    r.appendChild(btn(C5.heat ? '⏸ Brenner aus' : '🔥 Erhitzen', C5.heat ? 'sec' : '', function () { C5.heat = !C5.heat; panel(); }, C5.r >= 1));
+    r.appendChild(btn('↺ Neu', 'sec small', function () { C5.heat = false; C5.r = 0; panel(); })); p.appendChild(r);
+    p.appendChild(mk('div', 'cards', '<span class="op">2</span>' + spc('CuO', 'Cu +II · O −II') + '<span class="op">+</span>' + spc('C', '0') + '<span class="arrow">→</span>' + '<span class="op">2</span>' + spc('Cu', '0') + '<span class="op">+</span>' + spc('CO<sub>2</sub>', 'C +IV · O −II')));
+    p.appendChild(mk('div', 'tl', '2 CuO + C → 2 Cu + CO<sub>2</sub>'));
+    p.appendChild(mk('div', 'cap', '<small>Elektronenbilanz</small><b>Reduktion:</b> Cu²⁺ + 2 e⁻ → Cu (×2)<br><b>Oxidation:</b> C → C⁴⁺ + 4 e⁻<br>Insgesamt <b>4 Elektronen</b>.'));
+  } else {
+    r.appendChild(btn(C5.air ? '⏸ Luft aus' : '💨 Luft zuführen', C5.air ? 'sec' : '', function () { C5.air = !C5.air; panel(); }, C5.r2 >= 1));
+    r.appendChild(btn('↺ Neu', 'sec small', function () { C5.air = false; C5.r2 = 0; panel(); })); p.appendChild(r);
+    p.appendChild(mk('p', '', 'Beim <b>Röstreduktionsverfahren</b> wird Kupferglanz mit Luft erhitzt. Der Sauerstoff oxidiert den Schwefel – und die dabei frei werdenden Elektronen reduzieren das Kupfer. Vereinfacht:'));
+    p.appendChild(mk('div', 'cards', spc('Cu<sub>2</sub>S', 'Cu +I · S −II') + '<span class="op">+</span>' + spc('O<sub>2</sub>', 'O 0') + '<span class="arrow">→</span>' + '<span class="op">2</span>' + spc('Cu', '0') + '<span class="op">+</span>' + spc('SO<sub>2</sub>', 'S +IV · O −II')));
+    p.appendChild(mk('div', 'tl', 'Cu<sub>2</sub>S + O<sub>2</sub> → 2 Cu + SO<sub>2</sub>'));
+  }
+  var n = C5.ans[sub], tot = C5Q[sub].length;
+  p.appendChild(mk('h3', '', 'Aufgaben (' + n + '/' + tot + ')'));
+  if (n >= tot) p.appendChild(mk('div', 'fb ok', '✔ Diesen Weg hast du verstanden.'));
+  else { var Q = C5Q[sub][n], qb = mk('div'); qb.appendChild(mk('p', '', '<b>' + Q.q + '</b>')); mcq(qb, Q.o, Q.a, function (ok) { if (ok) setTimeout(function () { C5.ans[sub] = n + 1; panel(); }, 1100); }, Q.w); p.appendChild(qb); }
+  if (C5.ans.oxid >= C5Q.oxid.length && C5.ans.erz >= C5Q.erz.length) {
+    markDone(5); p.appendChild(mk('div', 'fb ok', '<b>🏆 Kupfergewinnung geschafft!</b> Das Rohkupfer wird anschließend noch gereinigt – das Verfahren (Elektrolyse) ist Thema in Q4.'));
+    var nr = mk('div', 'row'); nr.appendChild(btn('Weiter: Abschluss-Check →', 'go', function () { goStep(6); })); p.appendChild(nr);
+  }
+}
+
+/* ====== Schritt 6: Check ====== */
+var CHK = [
+  { q: 'Ein Zinkblech steht in Kupfer(II)-sulfat-Lösung. Was beobachtest du?', o: ['Rotbrauner Belag, die blaue Lösung verblasst', 'Nichts – Zink ist edler', 'Das Zinkblech wird dicker, die Lösung wird dunkelblau', 'Gasentwicklung und gelbe Lösung'], a: 0, w: 'Zn ist unedler als Cu: Zn + Cu²⁺ → Zn²⁺ + Cu. Zink geht in Lösung, Kupfer scheidet sich ab, die Cu²⁺-Farbe verschwindet.' },
+  { q: 'Silber steht in Kupfer(II)-sulfat-Lösung. Was passiert?', o: ['Nichts, Silber ist edler als Kupfer', 'Silber löst sich, Kupfer scheidet sich ab', 'Silber löst sich, Kupfer verdampft', 'Es entsteht Silberoxid'], a: 0, w: 'Ag gibt Cu²⁺ keine Elektronen: Ag steht in der Redoxreihe rechts von Cu.' },
+  { q: 'Was bedeutet „Reduktion“?', o: ['Aufnahme von Elektronen (Oxidationszahl sinkt)', 'Abgabe von Elektronen', 'Aufnahme von Sauerstoff', 'Abgabe von Protonen'], a: 0, w: 'Reduktion: Elektronenaufnahme, die Oxidationszahl wird kleiner. Oxidation: Elektronenabgabe, die Oxidationszahl wird größer.' },
+  { q: 'Welche Aussage über die Redoxreihe der Metalle stimmt?', o: ['Das unedlere Metall ist der stärkere Elektronen-Donator.', 'Das edlere Metall gibt leichter Elektronen ab.', 'Alle Metalle geben gleich leicht Elektronen ab.', 'Die Reihe zeigt, wie schwer ein Metall ist.'], a: 0, w: 'Je unedler, desto leichter die Elektronenabgabe. Das Kation des edleren Metalls ist der stärkere Akzeptor.' },
+  { q: 'Ausgeglichene Gleichung: Kupfer in Silbernitrat-Lösung', o: ['Cu + 2 Ag⁺ → Cu²⁺ + 2 Ag', 'Cu + Ag⁺ → Cu⁺ + Ag', '2 Cu + Ag⁺ → 2 Cu²⁺ + Ag', 'Cu²⁺ + 2 Ag → Cu + 2 Ag⁺'], a: 0, w: 'Cu gibt 2 e⁻ ab, jedes Ag⁺ nimmt nur 1 auf – also 2 Ag⁺ je Cu. Atome und Ladung (+2 | +2) stimmen.' },
+  { q: 'Im Hochofen: Fe₂O₃ + 3 CO → 2 Fe + 3 CO₂. Wer ist das Reduktionsmittel?', o: ['CO (C +II → +IV)', 'Fe₂O₃', 'Fe', 'CO₂'], a: 0, w: 'CO gibt Elektronen ab und wird zu CO₂ oxidiert. Es reduziert dabei das Fe³⁺.' },
+  { q: 'Wie viele Elektronen werden bei 2 Al + Fe₂O₃ → Al₂O₃ + 2 Fe insgesamt übertragen?', o: ['6', '2', '3', '12'], a: 0, w: '2 Al → 2 Al³⁺ + 6 e⁻ und 2 Fe³⁺ + 6 e⁻ → 2 Fe.' },
+  { q: 'Warum gewinnt man Aluminium durch Schmelzfluss-Elektrolyse und nicht im Hochofen?', o: ['Al ist so unedel, dass Kohlenstoff Al³⁺ nicht reduzieren kann', 'Aluminium schmilzt zu leicht', 'Aluminiumoxid ist ein Gas', 'Aluminium ist edler als Eisen'], a: 0, w: 'Je unedler ein Metall, desto stärkere „Elektronen-Pumpe“ ist nötig. Hier liefert der elektrische Strom die Elektronen.' },
+  { q: 'Kupferoxid wird mit Kohlenstoff erhitzt: 2 CuO + C → 2 Cu + CO₂. Was gilt?', o: ['C wird oxidiert (0 → +IV), Cu²⁺ wird reduziert; insgesamt 4 e⁻', 'C wird reduziert, Cu wird oxidiert', 'Es werden keine Elektronen übertragen', 'Sauerstoff wird oxidiert'], a: 0, w: 'Kohlenstoff ist der Elektronen-Donator (Reduktionsmittel), Kupfer(II) der Akzeptor.' },
+  { q: 'Welches Redoxpaar gehört zu „Fe + Cu²⁺ → Fe²⁺ + Cu“?', o: ['Fe/Fe²⁺ und Cu/Cu²⁺', 'Fe/Cu und Fe²⁺/Cu²⁺', 'Fe²⁺/Cu²⁺ und Fe/Cu', 'Fe/Cu²⁺ und Cu/Fe²⁺'], a: 0, w: 'Ein Redoxpaar besteht aus dem Metall und seinem Kation (reduzierte und oxidierte Form).' }
+];
+var CK = { list: null, i: 0, ok: 0, first: true, done: false };
+function p6panel(p) {
+  p.appendChild(mk('h2', '', '🏁 Abschluss-Check'));
+  if (!CK.list) { CK.list = shuffle(CHK).slice(0, 8); CK.i = 0; CK.ok = 0; CK.done = false; }
+  if (CK.done) {
+    var st = CK.ok >= 7 ? '⭐⭐⭐' : CK.ok >= 5 ? '⭐⭐' : '⭐';
+    p.appendChild(mk('div', 'fb ok', '<div class="star">' + st + '</div><b>' + CK.ok + ' von ' + CK.list.length + ' im ersten Versuch richtig.</b>'));
+    markDone(6);
+    p.appendChild(mk('h3', '', '📌 Merkkarte'));
+    p.appendChild(mk('div', 'know',
+      '<div><b>Redoxreihe</b>Mg › Zn › Fe › Pb › Cu › Ag: unedel (starker Donator) → edel. Ein Metall reduziert die Kationen aller edleren Metalle.</div>' +
+      '<div><b>Metall in Salzlösung</b>Unedleres Metall + edleres Kation → Kation des unedleren Metalls + edleres Metall (z. B. Zn + Cu²⁺ → Zn²⁺ + Cu).</div>' +
+      '<div><b>Elektronenbilanz</b>Abgegebene = aufgenommene Elektronen. Atome <i>und</i> Ladungen müssen links wie rechts gleich sein.</div>' +
+      '<div><b>Hochofen</b>Fe₂O₃ + 3 CO → 2 Fe + 3 CO₂ · CO ist das Reduktionsmittel (C +II → +IV), Fe +III → 0.</div>' +
+      '<div><b>Verfahren</b>Sehr unedel → Schmelzfluss-Elektrolyse · mittel → Reduktion mit C/CO · edel → gediegen / Erhitzen.</div>' +
+      '<div><b>Kupfergewinnung</b>2 CuO + C → 2 Cu + CO₂ · Cu₂S + O₂ → 2 Cu + SO₂ (Schwefel wird oxidiert, Kupfer reduziert).</div>'));
+    var r = mk('div', 'row'); r.appendChild(btn('Check wiederholen', 'sec', function () { CK.list = null; panel(); })); r.appendChild(btn('Zurück zur Übersicht', 'go', function () { location.href = '../index.html'; })); p.appendChild(r);
+    return;
+  }
+  p.appendChild(mk('div', 'prog', '<i style="width:' + (CK.i / CK.list.length * 100) + '%"></i>'));
+  var Q = CK.list[CK.i], first = true;
+  p.appendChild(mk('h3', '', 'Frage ' + (CK.i + 1) + ' / ' + CK.list.length));
+  p.appendChild(mk('p', '', '<b>' + Q.q + '</b>'));
+  mcq(p, Q.o, Q.a, function (ok) { if (!ok) { first = false; return; } if (first) CK.ok++; setTimeout(function () { CK.i++; if (CK.i >= CK.list.length) CK.done = true; panel(); if (CK.done) burst($('panel')); }, 1300); }, Q.w);
+}
+
+/* ====== Navigation, Panel, Hauptschleife ====== */
+function renderSteps() {
+  var n = $('steps'); n.innerHTML = '';
+  STEPN.forEach(function (nm, i) {
+    var b = mk('button', (S.step === i + 1 ? 'on ' : '') + (S.done[i + 1] ? 'done' : ''), nm); b.type = 'button';
+    b.addEventListener('click', function () { goStep(i + 1); }); n.appendChild(b);
+  });
+}
+function goStep(n) {
+  S.step = n; if (n === 2 && !SIM) simNew(); if (n === 5) { } SM.run = false;
+  panel(); window.scrollTo(0, 0);
+}
+function legendHTML() {
+  if (S.step === 1) return '<span><i style="background:#2f7deb"></i>Cu²⁺ (blau)</span> <span><i style="background:#82cd8c"></i>Fe²⁺ (blassgrün)</span> <span><i style="background:#d9803a"></i>Kupfer</span> <span><i style="background:#eef1f6"></i>Silber</span>';
+  if (S.step === 2) return '<span><i style="background:#7d8490"></i>Fe-Atom</span> <span><i style="background:#d9803a"></i>Cu-Atom</span> <span><i style="background:#3b9cff"></i>Cu²⁺</span> <span><i style="background:#8fe0a0"></i>Fe²⁺</span> <span><i style="background:#ffe14a"></i>Elektron</span>';
+  if (S.step === 3) return furnLegend();
+  return '';
+}
+function panel() {
+  var p = $('panel'); p.innerHTML = ''; renderSteps(); $('legend').innerHTML = legendHTML();
+  if (S.step === 1) l1panel(p);
+  else if (S.step === 2) { if (!SIM) simNew(); p2panel(p); }
+  else if (S.step === 3) p3panel(p);
+  else if (S.step === 4) v4panel(p);
+  else if (S.step === 5) p5panel(p);
+  else p6panel(p);
+}
+cv.addEventListener('click', function (e) {
+  if (S.step !== 3) return; var r = cv.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * CW, y = (e.clientY - r.top) / r.height * CH;
+  var hit = FZ.filter(function (z) { return x >= z.hx && x <= z.hx + z.hw && y >= z.hy && y <= z.hy + z.hh; })[0];
+  if (!hit && x > FCX - 130 && x < FCX + 130) hit = FZ.filter(function (z) { return y >= z.y0 && y < z.y1; })[0];
+  if (hit) { P3.zone = hit.id; panel(); }
+});
+var last = performance.now();
+function frame(now) {
+  var dt = Math.min(.05, (now - last) / 1000); last = now; S.t += dt;
+  g.setTransform(2, 0, 0, 2, 0, 0);
+  if (S.step === 1) l1draw(dt);
+  else if (S.step === 2) { simStep(dt); simDraw(); }
+  else if (S.step === 3) furnDraw(dt);
+  else if (S.step === 5) cuDraw(dt);
+  else ladDraw();
+  requestAnimationFrame(frame);
+}
+panel(); requestAnimationFrame(frame);
+
+</script>
+</body>
+</html>

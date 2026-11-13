@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Elektrolyse: Kupfer-Raffination</title>
+<style>
+  :root { --ink:#f6eee8; --muted:#c9b9ad; --org:#ff8a3d; --amb:#ffd166; --cy:#7df9ff; --ok:#5ee6a8; --bad:#ff7d7d; --line:rgba(255,176,120,.28); }
+  * { box-sizing:border-box; }
+  html { -webkit-text-size-adjust:100%; }
+  body { margin:0; min-height:100vh; color:var(--ink); font-family:'Segoe UI',system-ui,-apple-system,Roboto,sans-serif; line-height:1.5;
+    background: radial-gradient(ellipse at 12% -8%, #6a2212 0%, rgba(106,34,18,0) 55%), radial-gradient(ellipse at 100% 28%, #12365a 0%, rgba(18,54,90,0) 50%), radial-gradient(ellipse at 40% 115%, #4a1840 0%, rgba(74,24,64,0) 45%), #0b0c14; background-attachment:fixed; }
+  body::before { content:''; position:fixed; inset:0; pointer-events:none; opacity:.65;
+    background-image: radial-gradient(1.6px 1.6px at 9% 82%, #ffb36b, transparent), radial-gradient(1.2px 1.2px at 21% 64%, #ff8a3d, transparent), radial-gradient(1.5px 1.5px at 38% 91%, #ffd166, transparent), radial-gradient(1px 1px at 52% 72%, #ff9e5e, transparent), radial-gradient(1.4px 1.4px at 67% 88%, #ffb36b, transparent), radial-gradient(1px 1px at 81% 69%, #ff8a3d, transparent), radial-gradient(1.5px 1.5px at 93% 84%, #ffd166, transparent), radial-gradient(1px 1px at 14% 22%, #cfe3ff, transparent), radial-gradient(1.2px 1.2px at 47% 12%, #cfe3ff, transparent), radial-gradient(1px 1px at 76% 18%, #cfe3ff, transparent); }
+  .wrap { position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:12px 12px 90px; }
+  .back { display:inline-block; color:#fff; background:rgba(255,255,255,.12); border:1px solid var(--line); text-decoration:none; font-weight:700; font-size:14px; padding:8px 14px; border-radius:999px; }
+  h1 { margin:8px 0 0; font-size:clamp(24px,5.4vw,36px); line-height:1.15; background:linear-gradient(90deg,#ffd166,#ff8a3d 55%,#ff5d73); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .sub { color:var(--muted); margin:4px 0 8px; font-size:15px; }
+  nav.steps { position:sticky; top:0; z-index:40; display:flex; gap:6px; padding:8px 0; overflow-x:auto; background:linear-gradient(#0b0c14 75%, rgba(11,12,20,0)); -webkit-overflow-scrolling:touch; }
+  nav.steps button { flex:1 0 auto; border:1px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-weight:700; font-size:14px; padding:9px 12px; border-radius:12px; cursor:pointer; white-space:nowrap; }
+  nav.steps button.on { background:linear-gradient(135deg,#ff8a3d,#e0334f); border-color:transparent; box-shadow:0 4px 18px rgba(255,100,60,.4); }
+  nav.steps button.done::after { content:' ✔'; color:var(--ok); } nav.steps button.on.done::after { color:#fff; }
+  nav.steps button:disabled { opacity:.4; cursor:not-allowed; }
+  .glass { background:linear-gradient(160deg, rgba(60,40,48,.74), rgba(18,16,30,.82)); border:1px solid var(--line); border-radius:18px; padding:14px; box-shadow:0 10px 34px rgba(0,0,0,.4); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); }
+  h2 { margin:0 0 6px; font-size:19px; } h3 { margin:0 0 4px; font-size:16.5px; }
+  .muted { color:var(--muted); }
+  .main { display:grid; gap:14px; grid-template-columns:1fr; }
+  @media (min-width:900px) { .main { grid-template-columns:minmax(0,520px) minmax(0,1fr); align-items:start; } .stagecol { position:sticky; top:62px; } }
+  .cvwrap { position:relative; padding:8px; }
+  #cv { -webkit-tap-highlight-color:transparent; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; display:block; width:100%; height:auto; border-radius:14px; touch-action:pan-y; cursor:pointer; background:radial-gradient(ellipse at 50% 60%, rgba(120,50,30,.35), rgba(8,8,16,.6)); }
+  .banner { position:absolute; left:14px; right:14px; top:14px; background:rgba(10,10,18,.82); border:1px solid var(--line); border-radius:12px; padding:7px 11px; font-size:14px; pointer-events:none; opacity:0; transition:opacity .25s; }
+  .banner.show { opacity:1; }
+  .cvtools { display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; align-items:center; }
+  .legend { display:flex; flex-wrap:wrap; gap:4px 10px; margin-top:8px; font-size:12.5px; color:var(--muted); }
+  .legend i { display:inline-block; width:11px; height:11px; border-radius:50%; margin-right:4px; vertical-align:-1px; }
+  .btn { border:0; border-radius:11px; padding:11px 16px; font:inherit; font-size:15.5px; font-weight:700; color:#fff; cursor:pointer; background:linear-gradient(135deg,#ff8a3d,#e0334f); box-shadow:0 4px 14px rgba(255,100,60,.35); }
+  .btn:disabled { opacity:.4; cursor:not-allowed; box-shadow:none; }
+  .btn.sec { background:rgba(255,255,255,.1); border:1px solid var(--line); box-shadow:none; color:var(--ink); }
+  .btn.go { background:linear-gradient(135deg,#19c98a,#1fb6ff); box-shadow:0 4px 14px rgba(30,180,200,.35); }
+  .btn.small { padding:7px 11px; font-size:14px; }
+  .btn.on { outline:2px solid var(--amb); }
+  .row { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; align-items:center; }
+  .cap { background:rgba(255,255,255,.07); border-left:4px solid var(--amb); border-radius:8px; padding:8px 12px; margin:8px 0; font-size:15.5px; }
+  .cap small { display:block; color:var(--muted); font-size:12.5px; letter-spacing:.6px; text-transform:uppercase; margin-bottom:2px; }
+  .fb { margin-top:8px; padding:9px 12px; border-radius:10px; font-size:15px; } .fb.ok { background:rgba(94,230,168,.14); border:1px solid rgba(94,230,168,.5); } .fb.no { background:rgba(255,125,125,.13); border:1px solid rgba(255,125,125,.5); } .fb.info { background:rgba(255,255,255,.07); border:1px solid var(--line); }
+  .tip { background:rgba(255,209,102,.12); border:1px dashed rgba(255,209,102,.55); border-radius:10px; padding:7px 11px; margin-top:7px; font-size:15px; }
+  .layers { display:flex; flex-direction:column-reverse; gap:3px; margin:8px 0; }
+  .layers span { display:block; border-radius:6px; padding:3px 10px; font-size:13.5px; font-weight:700; color:#111; }
+  .layers .k { background:#8a8f9c; } .layers .e { background:#c4623f; } .layers .c { background:#efe8d6; } .layers .empty { background:rgba(255,255,255,.07); color:var(--muted); font-weight:500; }
+  .chg { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:8px; }
+  .chg button { border:2px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-weight:700; font-size:14.5px; border-radius:14px; padding:10px 6px; cursor:pointer; }
+  .chg button small { display:block; font-weight:500; color:var(--muted); font-size:12px; }
+  .chg button:disabled { opacity:.4; cursor:not-allowed; }
+  .zlist { display:flex; flex-wrap:wrap; gap:6px; margin:8px 0; }
+  .zlist button { border:1px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-size:14px; font-weight:700; padding:7px 11px; border-radius:999px; cursor:pointer; }
+  .zlist button.on { background:rgba(255,138,61,.3); border-color:var(--org); } .zlist button.ok::after { content:' ✔'; color:var(--ok); }
+  .eq { display:flex; flex-wrap:wrap; align-items:center; gap:6px 4px; margin:8px 0; font-size:20px; font-weight:700; }
+  .eq .term { display:inline-flex; align-items:center; gap:4px; background:rgba(255,255,255,.07); border:1px solid var(--line); border-radius:12px; padding:3px 5px; }
+  .eq .term .st { display:flex; flex-direction:column; } .eq .term .st button { width:30px; height:19px; line-height:1; border:0; border-radius:6px; background:rgba(255,255,255,.14); color:#fff; font-weight:800; font-size:14px; cursor:pointer; padding:0; margin:1px 0; }
+  .eq .term .n { min-width:18px; text-align:center; font-size:20px; } .eq .op { color:var(--muted); padding:0 3px; }
+  .eq sub { font-size:.65em; }
+  .atoms { display:flex; flex-wrap:wrap; gap:6px; margin:6px 0; font-size:14px; } .atoms span { border-radius:9px; padding:2px 9px; background:rgba(255,255,255,.07); border:1px solid var(--line); } .atoms span.ok { border-color:var(--ok); color:var(--ok); } .atoms span.no { border-color:var(--bad); color:var(--bad); }
+  #cvR { display:block; width:100%; max-width:340px; height:auto; border-radius:12px; background:rgba(0,0,0,.3); border:1px solid var(--line); margin:6px 0; }
+  .bar { margin:7px 0; } .bar .lab { display:flex; justify-content:space-between; font-size:14.5px; font-weight:700; } .bar .tr { position:relative; height:12px; border-radius:7px; background:rgba(255,255,255,.12); overflow:hidden; } .bar .tr i { display:block; height:100%; border-radius:7px; background:linear-gradient(90deg,#ffd166,#ff8a3d); transition:width .15s; } .bar .tr b { position:absolute; top:0; bottom:0; width:2px; background:#fff; opacity:.8; }
+  .prog { height:10px; border-radius:6px; background:rgba(255,255,255,.12); overflow:hidden; margin:6px 0; } .prog i { display:block; height:100%; background:linear-gradient(90deg,#ff8a3d,#ffd166); transition:width .2s; }
+  .opts { display:flex; flex-direction:column; gap:7px; margin:8px 0; }
+  .opt { text-align:left; border:2px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-size:15.5px; border-radius:12px; padding:10px 14px; cursor:pointer; }
+  .opt:hover { border-color:var(--org); } .opt.good { border-color:var(--ok); background:rgba(94,230,168,.18); } .opt.bad { border-color:var(--bad); background:rgba(255,125,125,.16); animation:shake .3s; }
+  @keyframes shake { 25% { transform:translateX(-4px); } 75% { transform:translateX(4px); } }
+  .flow { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin:8px 0; } .flow b { background:rgba(255,255,255,.09); border:1px solid var(--line); border-radius:10px; padding:5px 10px; font-size:14px; } .flow span { color:var(--amb); font-weight:800; }
+  .rules { margin:6px 0 0; padding:0; list-style:none; } .rules li { margin:7px 0; padding-left:14px; border-left:3px solid var(--org); }
+  details.log summary { cursor:pointer; color:var(--muted); font-size:14px; margin-top:6px; } details.log p { margin:6px 0; font-size:14.5px; }
+  .burst { position:fixed; width:0; height:0; z-index:10000; pointer-events:none; } .burst i { position:absolute; left:-4px; top:-4px; width:8px; height:8px; border-radius:50%; animation:bu .9s ease-out forwards; } @keyframes bu { to { transform:translate(var(--dx),var(--dy)) scale(.2); opacity:0; } }
+  @media (max-width:480px) { .glass { padding:12px; } .eq { font-size:18px; } }
+  .bar .tr u { position:absolute; top:0; bottom:0; background:rgba(94,230,168,.55); }
+  .know { display:grid; gap:7px; margin:8px 0; } .know div { background:rgba(255,255,255,.07); border:1px solid var(--line); border-radius:10px; padding:8px 12px; font-size:14.5px; } .know b { display:block; }
+  .tg { display:flex; flex-direction:column; gap:7px; margin:8px 0; } .tg button { text-align:left; border:2px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-size:15px; border-radius:12px; padding:9px 13px; cursor:pointer; } .tg button small { display:block; color:var(--muted); font-size:13px; } .tg button.on { border-color:var(--ok); background:rgba(94,230,168,.16); }
+  #cv { cursor:default; }
+  .mat { border-collapse:collapse; width:100%; font-size:13.5px; margin:8px 0; }
+  .mat th, .mat td { border:1px solid var(--line); padding:4px 3px; text-align:center; }
+  .mat th { background:rgba(255,255,255,.07); font-weight:700; }
+  .mat td.r { background:rgba(94,230,168,.22); color:var(--ok); font-weight:800; } .mat td.n { background:rgba(255,125,125,.14); color:var(--bad); } .mat td.d { color:var(--muted); } .mat td.cur { outline:2px solid var(--amb); }
+  .chips { display:flex; flex-wrap:wrap; gap:7px; margin:8px 0; }
+  .chip { border:2px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-weight:800; font-size:16px; border-radius:12px; padding:7px 12px; cursor:pointer; min-width:48px; }
+  .chip.on { border-color:var(--amb); background:rgba(255,209,102,.2); } .chip.ok { border-color:var(--ok); } .chip:disabled { opacity:.45; cursor:not-allowed; }
+  .chip small { display:block; font-weight:500; font-size:11.5px; color:var(--muted); }
+  .ord { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin:8px 0; min-height:44px; padding:6px; border:2px dashed var(--line); border-radius:12px; }
+  .ord .ph { color:var(--muted); font-size:14px; }
+  .axis { display:flex; justify-content:space-between; font-size:13px; color:var(--muted); margin-top:2px; }
+  .tl { background:rgba(255,255,255,.07); border:1px solid var(--line); border-radius:10px; padding:7px 11px; margin:6px 0; font-size:15.5px; }
+  .tl b.k { display:inline-block; min-width:92px; color:var(--amb); }
+  .cards { display:flex; flex-wrap:wrap; gap:8px; margin:8px 0; }
+  .sp { display:inline-flex; flex-direction:column; align-items:center; background:rgba(255,255,255,.07); border:1px solid var(--line); border-radius:12px; padding:3px 9px 4px; font-size:18px; font-weight:700; line-height:1.25; }
+  .sp small { font-size:11.5px; font-weight:600; color:var(--amb); white-space:nowrap; }
+  .sp sub, .sp sup { font-size:.62em; }
+  .arrow { font-size:20px; color:var(--amb); font-weight:800; padding:0 2px; }
+  .eq sup { font-size:.62em; }
+  .sub2 { display:flex; gap:6px; flex-wrap:wrap; margin:6px 0 8px; }
+  .sub2 button { border:1px solid var(--line); background:rgba(255,255,255,.07); color:var(--ink); font:inherit; font-size:14px; font-weight:700; padding:6px 12px; border-radius:999px; cursor:pointer; } .sub2 button.on { background:rgba(255,138,61,.3); border-color:var(--org); }
+  .tgl { display:inline-flex; align-items:center; gap:6px; font-size:14px; color:var(--muted); cursor:pointer; margin-right:8px; } .tgl input { width:18px; height:18px; }
+  .big { font-size:34px; font-weight:800; }
+  a.btn { display:inline-block; text-decoration:none; }
+  .star { font-size:26px; letter-spacing:3px; }
+  .cards { align-items:center; }
+</style>
+<link rel="icon" type="image/png" href="../../../../icons/icon-192.png">
+<link rel="apple-touch-icon" href="../../../../icons/apple-touch-icon.png">
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← Zur Übersicht</a>
+  <h1>🔌 Kupfer-Raffination</h1>
+  <p class="sub">Elektrolyse in der Technik: Aus Rohkupfer wird hochreines Kupfer – und die Edelmetalle fallen nebenbei an.</p>
+  <nav class="steps" id="steps"></nav>
+  <div class="main">
+    <div class="stagecol">
+      <div class="glass cvwrap" id="cvwrap">
+        <canvas id="cv" width="1200" height="1040" aria-label="Versuchsaufbau"></canvas>
+        <div class="banner" id="banner"></div>
+        <div class="legend" id="legend"></div>
+      </div>
+    </div>
+    <div class="glass" id="panel"></div>
+  </div>
+</div>
+<a href="/Virtuelles-Chemielabor/impressum.html" style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-family: sans-serif; font-size: 12px; z-index: 9999;">Impressum &amp; Datenschutz</a>
+<script>
+'use strict';
+/* ====== Hilfen ====== */
+function $(id) { return document.getElementById(id); }
+function mk(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; }
+function btn(label, cls, fn, dis) { var b = mk('button', 'btn ' + (cls || ''), label); b.type = 'button'; if (dis) b.disabled = true; b.addEventListener('click', fn); return b; }
+function lerp(a, b, t) { return a + (b - a) * t; }
+function clamp(x, a, b) { return x < a ? a : x > b ? b : x; }
+function rnd(a, b) { return a + Math.random() * (b - a); }
+function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+function gcd(a, b) { return b ? gcd(b, a % b) : a; }
+function lcm(a, b) { return a * b / gcd(a, b); }
+function burst(host) {
+  var r = host.getBoundingClientRect(), box = mk('div', 'burst'), i, cols = ['#ffd166', '#ff8a3d', '#ff5d73', '#7df9ff', '#5ee6a8'];
+  box.style.left = (r.left + r.width / 2) + 'px'; box.style.top = (r.top + Math.min(r.height / 2, 90)) + 'px';
+  for (i = 0; i < 18; i++) { var s = mk('i'), a = i / 18 * 6.283 + Math.random() * .3, d = 60 + Math.random() * 70; s.style.setProperty('--dx', Math.cos(a) * d + 'px'); s.style.setProperty('--dy', Math.sin(a) * d + 'px'); s.style.background = cols[i % cols.length]; box.appendChild(s); }
+  document.body.appendChild(box); setTimeout(function () { if (box.parentNode) box.parentNode.removeChild(box); }, 1000);
+}
+function mcq(parent, opts, correct, cb, why) {
+  var box = mk('div', 'opts'), order = shuffle(opts.map(function (t, i) { return i; })), fb = mk('div'), locked = false;
+  order.forEach(function (oi) {
+    var b = mk('button', 'opt', opts[oi]); b.type = 'button';
+    b.addEventListener('click', function () {
+      if (locked) return;
+      if (oi === correct) { locked = true; b.className = 'opt good'; fb.innerHTML = '<div class="fb ok">✔ Richtig. ' + (why || '') + '</div>'; cb(true); }
+      else { b.className = 'opt bad'; fb.innerHTML = '<div class="fb no">Nicht ganz. Überlege noch einmal.</div>'; cb(false); }
+    }); box.appendChild(b);
+  });
+  parent.appendChild(box); parent.appendChild(fb);
+}
+
+/* ====== Zeichenfläche ====== */
+var CW = 600, CH = 520, cv = $('cv'), g = cv.getContext('2d');
+cv.width = CW * 2; cv.height = CH * 2;
+function rgba(c, a) { return 'rgba(' + Math.round(c[0]) + ',' + Math.round(c[1]) + ',' + Math.round(c[2]) + ',' + (a === undefined ? c[3] : a) + ')'; }
+function mixc(a, b, t) { t = clamp(t, 0, 1); return [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t), lerp(a[3], b[3], t)]; }
+function rr(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.lineTo(x + w - r, y); c.quadraticCurveTo(x + w, y, x + w, y + r); c.lineTo(x + w, y + h - r); c.quadraticCurveTo(x + w, y + h, x + w - r, y + h); c.lineTo(x + r, y + h); c.quadraticCurveTo(x, y + h, x, y + h - r); c.lineTo(x, y + r); c.quadraticCurveTo(x, y, x + r, y); c.closePath(); }
+function txt(c, s, x, y, size, col, al, bold) { c.font = (bold ? 'bold ' : '') + size + 'px "Segoe UI",system-ui,sans-serif'; c.fillStyle = col || '#f6eee8'; c.textAlign = al || 'center'; c.textBaseline = 'middle'; c.fillText(s, x, y); }
+function liqPath(c, bx, top, bw, bb, r) { c.beginPath(); c.moveTo(bx + 3, top); c.lineTo(bx + bw - 3, top); c.lineTo(bx + bw - 3, bb - r); c.quadraticCurveTo(bx + bw - 3, bb - 3, bx + bw - 3 - r, bb - 3); c.lineTo(bx + 3 + r, bb - 3); c.quadraticCurveTo(bx + 3, bb - 3, bx + 3, bb - r); c.closePath(); }
+function bench(c) { var gr = c.createLinearGradient(0, 470, 0, CH); gr.addColorStop(0, '#3a2a28'); gr.addColorStop(1, '#1b1416'); c.fillStyle = gr; c.fillRect(0, 470, CW, 50); c.fillStyle = 'rgba(255,255,255,.08)'; c.fillRect(0, 470, CW, 2); }
+
+
+
+var RF = null, RQ = { n: 0 };
+function rfNew() { RF = { cur: 0, an: 1, ca: 0, ions: [], slime: [], dots: [], zn: [], t: 0 }; var i; for (i = 0; i < 5; i++) RF.dots.push(i / 5); }
+var AX = 150, CX2 = 450, RTOP = 235;
+function rfStep(dt) {
+  var R = RF; if (!R) return; R.t += dt;
+  if (R.cur > 0 && R.an > .08) {
+    var rate = R.cur * dt * .018; R.an = Math.max(.08, R.an - rate); R.ca = Math.min(1, R.ca + rate * .98);
+    R.spawn = (R.spawn || 0) + dt * R.cur * 2.6;
+    while (R.spawn > 1) { R.spawn -= 1; R.ions.push({ x: AX + 30, y: rnd(260, 410), vy: rnd(-6, 6) });
+      if (Math.random() < .45) R.slime.push({ x: AX + rnd(-14, 24), y: 240, vy: 20, col: Math.random() < .55 ? '#e8ecf4' : '#ffd24a', fixed: false, dy: 0 });
+      if (Math.random() < .25) R.zn.push({ x: AX + 40, y: rnd(270, 400), t: 0 }); }
+  }
+  R.ions.forEach(function (o) { o.x += (CX2 - 40 - AX - 30) / 4.2 * dt * R.cur; o.y += o.vy * dt; }); R.ions = R.ions.filter(function (o) { return o.x < CX2 - 20; });
+  R.slime.forEach(function (s) { if (!s.fixed) { s.y += s.vy * dt * 3; if (s.y > 452 - s.dy) { s.y = 452 - s.dy; s.fixed = true; } } });
+  if (R.slime.length > 90) R.slime.shift();
+  R.zn.forEach(function (z) { z.t += dt; z.x += Math.sin(z.t * 2 + z.y) * dt * 8; }); if (R.zn.length > 10) R.zn.shift();
+  R.dots = R.dots.map(function (d) { return (d + dt * .35 * R.cur) % 1; });
+}
+function rfDraw() {
+  var c = g, R = RF, i; c.clearRect(0, 0, CW, CH); bench(c);
+  /* Becherglas und Lösung */
+  var bx = 60, bw = 480, by = 190, bh = 285;
+  c.save(); liqPath(c, bx, RTOP, bw, by + bh, 20); c.clip(); c.fillStyle = 'rgba(50,140,245,.6)'; c.fillRect(bx, RTOP, bw, bh); c.fillStyle = 'rgba(255,255,255,.12)'; c.fillRect(bx, RTOP, bw, 30);
+  /* Anodenschlamm */
+  R.slime.forEach(function (s) { c.fillStyle = s.col; c.beginPath(); c.arc(s.x, s.y, 3.2, 0, 6.283); c.fill(); });
+  /* Zn/Fe-Ionen bleiben gelöst */
+  R.zn.forEach(function (z) { c.fillStyle = 'rgba(200,255,200,.85)'; c.beginPath(); c.arc(z.x, z.y, 6, 0, 6.283); c.fill(); txt(c, '2+', z.x, z.y + 1, 7, '#052', 'center', true); });
+  R.ions.forEach(function (o) { c.fillStyle = '#7cc4ff'; c.shadowColor = '#7cc4ff'; c.shadowBlur = 8; c.beginPath(); c.arc(o.x, o.y, 8, 0, 6.283); c.fill(); c.shadowBlur = 0; txt(c, '2+', o.x, o.y + 1, 8, '#012', 'center', true); });
+  c.restore();
+  c.strokeStyle = 'rgba(255,255,255,.6)'; c.lineWidth = 3; c.beginPath(); c.moveTo(bx, by); c.lineTo(bx, by + bh - 20); c.quadraticCurveTo(bx, by + bh, bx + 20, by + bh); c.lineTo(bx + bw - 20, by + bh); c.quadraticCurveTo(bx + bw, by + bh, bx + bw, by + bh - 20); c.lineTo(bx + bw, by); c.stroke();
+  /* Anode: Rohkupfer, wird dünner */
+  var aw = 10 + 46 * R.an;
+  c.fillStyle = '#9a5a30'; c.fillRect(AX - aw / 2, 205, aw, 230);
+  for (i = 0; i < 26; i++) { c.fillStyle = i % 3 === 0 ? '#e8ecf4' : (i % 3 === 1 ? '#ffd24a' : '#6e4222'); c.beginPath(); c.arc(AX - aw / 2 + ((i * 17) % Math.max(4, aw)), 215 + ((i * 53) % 215), 2.4, 0, 6.283); c.fill(); }
+  c.fillStyle = 'rgba(255,255,255,.22)'; c.fillRect(AX - aw / 2 + 2, 205, 4, 230);
+  /* Kathode: Reinkupfer, wird dicker */
+  var kw = 8 + 44 * R.ca;
+  c.fillStyle = '#e48a45'; c.fillRect(CX2 - kw / 2, 205, kw, 230); c.fillStyle = 'rgba(255,255,255,.25)'; c.fillRect(CX2 - kw / 2 + 2, 205, 3, 230);
+  /* Netzgerät und Leitungen */
+  c.strokeStyle = '#b8b8c4'; c.lineWidth = 3; c.beginPath(); c.moveTo(AX, 205); c.lineTo(AX, 80); c.lineTo(235, 80); c.moveTo(365, 80); c.lineTo(CX2, 80); c.lineTo(CX2, 205); c.stroke();
+  c.fillStyle = '#25283a'; rr(c, 235, 54, 130, 52, 10); c.fill(); c.strokeStyle = '#8f93a8'; c.lineWidth = 2; rr(c, 235, 54, 130, 52, 10); c.stroke();
+  txt(c, 'Gleichstrom', 300, 72, 12, '#c9b9ad'); txt(c, R.cur ? (R.cur === 1 ? 'schwach' : R.cur === 2 ? 'mittel' : 'stark') : 'AUS', 300, 92, 15, R.cur ? '#ffd166' : '#8b8b99', 'center', true);
+  txt(c, '+', 247, 80, 22, '#ff7d7d', 'center', true); txt(c, '−', 353, 80, 24, '#7df9ff', 'center', true);
+  /* Elektronen */
+  if (R.cur > 0) R.dots.forEach(function (d) {
+    var path = [[AX, 205], [AX, 80], [235, 80], [365, 80], [CX2, 80], [CX2, 205]], len = [125, 85, 130, 85, 125], tot = 550, s = d * tot, k = 0, x, y;
+    while (k < 4 && s > len[k]) { s -= len[k]; k++; } var u = s / len[k]; x = lerp(path[k][0], path[k + 1][0], u); y = lerp(path[k][1], path[k + 1][1], u);
+    if (x > 235 && x < 365 && y === 80) return; c.fillStyle = '#ffe14a'; c.shadowColor = '#ffe14a'; c.shadowBlur = 8; c.beginPath(); c.arc(x, y, 4.5, 0, 6.283); c.fill(); c.shadowBlur = 0;
+  });
+  txt(c, 'Anode (+)', AX, 175, 14, '#ff9d9d', 'center', true); txt(c, 'Rohkupfer', AX, 191, 11.5, '#c9b9ad');
+  txt(c, 'Kathode (−)', CX2, 175, 14, '#8fe9ff', 'center', true); txt(c, 'Reinkupfer', CX2, 191, 11.5, '#c9b9ad');
+  txt(c, 'Anodenschlamm: Ag, Au', AX + 25, 463, 11.5, '#ffd24a', 'center', true);
+  txt(c, 'CuSO₄ / H₂SO₄-Lösung', 300, 497, 13.5, '#9fd0ff', 'center', true);
+  if (R.an <= .09) txt(c, 'Anode aufgebraucht', 300, 335, 15, '#ffd166', 'center', true);
+}
+
+var RQS = [
+  { q: 'An welcher Elektrode findet die <b>Oxidation</b> statt?', o: ['An der Anode (Pluspol): Cu → Cu²⁺ + 2 e⁻', 'An der Kathode (Minuspol): Cu²⁺ + 2 e⁻ → Cu', 'An beiden Elektroden', 'An keiner – es ist keine Redoxreaktion'], a: 0, w: 'Oxidation = Elektronen-Abgabe. Das Rohkupfer gibt Elektronen ab und geht als Cu²⁺ in Lösung. Die Elektronen fließen über das Netzgerät zur Kathode.' },
+  { q: 'Warum findet man <b>Silber und Gold</b> am Ende im Anodenschlamm?', o: ['Sie sind edler als Kupfer und werden bei dieser Spannung nicht oxidiert', 'Sie sind unedler als Kupfer und lösen sich zuerst', 'Sie sind schwerer löslich, weil sie Salze bilden', 'Sie wandern zur Kathode'], a: 0, w: 'Edle Metalle geben ihre Elektronen schlechter ab als Kupfer. Sie bleiben als Metall zurück und fallen zu Boden – ein wertvolles Nebenprodukt.' },
+  { q: 'Zink und Eisen im Rohkupfer sind <b>unedler</b> als Kupfer. Was passiert mit ihnen?', o: ['Sie gehen als Ionen in Lösung und scheiden sich an der Kathode nicht ab', 'Sie scheiden sich an der Kathode ab', 'Sie bleiben im Anodenschlamm', 'Sie verdampfen'], a: 0, w: 'Zn und Fe werden oxidiert (Zn²⁺, Fe²⁺). An der Kathode wird aber bevorzugt das edlere Cu²⁺ reduziert. Die unedlen Ionen reichern sich in der Lösung an.' },
+  { q: 'Warum bleibt die Konzentration der Cu²⁺-Ionen in der Lösung ungefähr gleich?', o: ['An der Anode entsteht genauso viel Cu²⁺, wie an der Kathode verbraucht wird', 'Weil Kupfer nicht reagiert', 'Weil Wasser nachfließt', 'Weil die Lösung gerührt wird'], a: 0, w: 'Pro 2 abgegebene Elektronen löst sich 1 Cu an der Anode, pro 2 aufgenommene Elektronen scheidet sich 1 Cu an der Kathode ab.' }
+];
+
+/* ====== Zustand ====== */
+var S = { step: 1, done: {}, t: 0 };
+var STEPN = ['1 · Elektrolysezelle', '2 · Wer löst sich?', '3 · Check'];
+function markDone(n) { if (!S.done[n]) { S.done[n] = true; renderSteps(); } }
+var RQ = { n: 0 };
+
+/* ====== Tab 1 ====== */
+function p1panel(p) {
+  p.appendChild(mk('h2', '', '🔌 Elektrolyse: Kupfer reinigen'));
+  p.appendChild(mk('p', 'muted', 'Bei der Elektrolyse <b>erzwingt</b> eine äußere Spannungsquelle eine Redoxreaktion, die von selbst nicht abläuft. Technisch nutzt man das, um Rohkupfer (ca. 99 %) auf 99,99 % zu reinigen – nötig für elektrische Leitungen. Schalte den Strom ein und beobachte.'));
+  var r = mk('div', 'row');
+  [[0, '⏹ Aus'], [1, '⚡ schwach'], [2, '⚡⚡ mittel'], [3, '⚡⚡⚡ stark']].forEach(function (q) { r.appendChild(btn(q[1], 'sec small' + (RF.cur === q[0] ? ' on' : ''), function () { RF.cur = q[0]; panel(); })); });
+  r.appendChild(btn('↺ Neu', 'sec small', function () { var c = RF.cur; rfNew(); RF.cur = c; panel(); }));
+  p.appendChild(r);
+  p.appendChild(mk('div', 'cap', '<small>Halbgleichungen</small><b>Anode (+):</b> Cu → Cu²⁺ + 2 e⁻ &nbsp;(Oxidation)<br><b>Kathode (−):</b> Cu²⁺ + 2 e⁻ → Cu &nbsp;(Reduktion)<br><small style="text-transform:none;letter-spacing:0">Elektronen fließen über die Spannungsquelle von der Anode zur Kathode.</small>'));
+  p.appendChild(mk('div', 'legend', '<span><i style="background:#7cc4ff"></i>Cu²⁺-Ionen</span> <span><i style="background:#e8ecf4"></i>Silber</span> <span><i style="background:#ffd24a"></i>Gold</span> <span><i style="background:#c8ffc8"></i>Zn²⁺/Fe²⁺ (bleiben gelöst)</span>'));
+  p.appendChild(mk('h3', '', 'Aufgaben (' + RQ.n + '/' + RQS.length + ')'));
+  if (RQ.n >= RQS.length) {
+    markDone(1); p.appendChild(mk('div', 'fb ok', '<b>🏆 Zelle verstanden!</b>')); var nr = mk('div', 'row'); nr.appendChild(btn('Weiter: Wer löst sich? →', 'go', function () { goStep(2); })); p.appendChild(nr);
+  } else {
+    var Q = RQS[RQ.n], qb = mk('div'); qb.appendChild(mk('p', '', '<b>' + Q.q + '</b>')); mcq(qb, Q.o, Q.a, function (ok) { if (ok) setTimeout(function () { RQ.n++; panel(); }, 1100); }, Q.w); p.appendChild(qb);
+  }
+}
+
+/* ====== Tab 2: Verunreinigungen ====== */
+var IMP = [
+  { id: 'Zn', n: 'Zink', a: 0, w: 'Zink ist <b>unedler</b> als Kupfer (Redoxreihe!). Es gibt Elektronen leichter ab und geht als Zn²⁺ in Lösung. An der Kathode wird bevorzugt das edlere Cu²⁺ reduziert – Zn²⁺ bleibt gelöst.' },
+  { id: 'Fe', n: 'Eisen', a: 0, w: 'Eisen ist unedler als Kupfer: Fe → Fe²⁺ + 2 e⁻. Die Ionen bleiben in der Lösung.' },
+  { id: 'Ni', n: 'Nickel', a: 0, w: 'Nickel ist unedler als Kupfer und geht als Ni²⁺ in Lösung.' },
+  { id: 'Ag', n: 'Silber', a: 1, w: 'Silber ist <b>edler</b> als Kupfer. Es wird bei dieser geringen Spannung nicht oxidiert und fällt als Metall ab: Anodenschlamm.' },
+  { id: 'Au', n: 'Gold', a: 1, w: 'Gold ist so edel, dass es als Metall im Anodenschlamm landet – ein wertvolles Nebenprodukt.' },
+  { id: 'Pt', n: 'Platin', a: 1, w: 'Platin ist sehr edel und bleibt als Metall im Anodenschlamm.' }
+];
+var IM = { order: null, i: 0, ok: {}, first: 0, tried: false, fb: '' };
+function impDraw() {
+  var c = g, y0 = 56, dy = 46, rows = ['Zn', 'Fe', 'Ni', 'Cu', 'Ag', 'Au', 'Pt'], names = { Zn: 'Zink', Fe: 'Eisen', Ni: 'Nickel', Cu: 'Kupfer', Ag: 'Silber', Au: 'Gold', Pt: 'Platin' }; c.clearRect(0, 0, CW, CH); bench(c);
+  var gr = c.createLinearGradient(0, 40, 0, 470); gr.addColorStop(0, 'rgba(182,140,255,.85)'); gr.addColorStop(.5, 'rgba(255,138,61,.85)'); gr.addColorStop(1, 'rgba(125,249,255,.85)'); c.fillStyle = gr; rr(c, 50, 44, 10, 410, 5); c.fill();
+  txt(c, 'unedel', 55, 32, 12.5, '#b68cff', 'center', true); txt(c, 'edel', 55, 468, 12.5, '#7df9ff', 'center', true);
+  rows.forEach(function (id, i) {
+    var y = y0 + i * 52, cu = id === 'Cu', on = IM.ok[id], cur = IM.cur === id, lc = cu ? '#ff8a3d' : (on ? (IMP.filter(function (q) { return q.id === id; })[0].a ? '#ffd24a' : '#8fe0a0') : 'rgba(255,255,255,.2)');
+    c.fillStyle = cu ? 'rgba(255,138,61,.28)' : (on ? 'rgba(255,255,255,.1)' : 'rgba(255,255,255,.06)'); rr(c, 76, y - 19, 450, 38, 10); c.fill(); c.strokeStyle = cur ? '#ffd166' : lc; c.lineWidth = cur || cu ? 3 : 1.5; rr(c, 76, y - 19, 450, 38, 10); c.stroke();
+    c.fillStyle = cu ? '#ff8a3d' : '#555a66'; c.beginPath(); c.arc(106, y, 15, 0, 6.283); c.fill(); txt(c, id, 106, y + 1, 14, '#10101a', 'center', true);
+    txt(c, names[id] + (cu ? '  (Hauptbestandteil der Anode)' : ''), 130, y + 1, 15, '#f6eee8', 'left', true);
+    if (!cu && on) { var s = IMP.filter(function (q) { return q.id === id; })[0].a; txt(c, s ? 'Anodenschlamm' : 'bleibt gelöst', 515, y + 1, 13, s ? '#ffd24a' : '#8fe0a0', 'right', true); } else if (!cu) txt(c, '?', 515, y + 1, 13, '#8b8b99', 'right', true);
+  });
+}
+function p2panel(p) {
+  if (!IM.order) IM.order = shuffle(IMP.map(function (q, i) { return i; }));
+  p.appendChild(mk('h2', '', '🔍 Was passiert mit den Verunreinigungen?'));
+  p.appendChild(mk('p', 'muted', 'Das Rohkupfer der Anode enthält andere Metalle. Nutze die <b>Redoxreihe</b>: Ist das Metall unedler oder edler als Kupfer? Davon hängt ab, was die Spannungsquelle mit ihm macht.'));
+  var n = Object.keys(IM.ok).length;
+  if (n >= IMP.length) {
+    markDone(2); p.appendChild(mk('div', 'fb ok', '<b>🏆 Alle sechs Metalle eingeordnet!</b> (' + IM.first + ' davon im ersten Versuch)'));
+    p.appendChild(mk('div', 'know', '<div><b>Merke</b>Unedlere Metalle als Kupfer werden mit oxidiert, bleiben aber als Ionen in der Lösung. Edlere Metalle werden nicht oxidiert und sammeln sich als <u>Anodenschlamm</u>. Nur Cu²⁺ wird an der Kathode zu reinem Kupfer reduziert.</div>'));
+    var nr = mk('div', 'row'); nr.appendChild(btn('Weiter: Check →', 'go', function () { goStep(3); })); p.appendChild(nr);
+  } else {
+    var q = IMP[IM.order[IM.i % IM.order.length]]; while (IM.ok[q.id]) { IM.i++; q = IMP[IM.order[IM.i % IM.order.length]]; } IM.cur = q.id;
+    p.appendChild(mk('h3', '', n + ' / ' + IMP.length + ' · Wohin gelangt <u>' + q.n + '</u> (' + q.id + ')?'));
+    var box = mk('div', 'tg');
+    [['Geht als Ion in Lösung und bleibt dort', 'unedler als Cu'], ['Fällt als Anodenschlamm zu Boden', 'bleibt unverändert'], ['Scheidet sich an der Kathode ab', 'wie das Kupfer']].forEach(function (o, k) {
+      var b = mk('button', '', '<b>' + o[0] + '</b>'); b.type = 'button';
+      b.addEventListener('click', function () {
+        if (k === q.a) { IM.ok[q.id] = 1; if (!IM.tried) IM.first++; IM.tried = false; IM.fb = '<div class="fb ok"><b>✔ ' + q.n + ':</b> ' + q.w + '</div>'; IM.i++; burst($('panel')); }
+        else { IM.tried = true; IM.fb = '<div class="fb no">Nicht ganz. Vergleiche ' + q.n + ' mit Kupfer in der Redoxreihe: Wer gibt Elektronen leichter ab?</div>'; }
+        panel();
+      }); box.appendChild(b);
+    });
+    p.appendChild(box);
+  }
+  if (IM.fb) p.appendChild(mk('div', '', IM.fb));
+}
+
+/* ====== Tab 3: Check ====== */
+var CHK = [
+  { q: 'Was unterscheidet eine Elektrolyse von einer freiwillig ablaufenden Redoxreaktion?', o: ['Eine Spannungsquelle erzwingt die Reaktion', 'Es werden keine Elektronen übertragen', 'Sie läuft ohne Elektroden ab', 'Es gibt keine Oxidation'], a: 0, w: 'Bei der Elektrolyse wird eine Reaktion durch zugeführte elektrische Energie erzwungen. Es finden weiterhin Oxidation und Reduktion statt.' },
+  { q: 'Welche Elektrode ist bei der Elektrolyse der Pluspol und wo findet die Oxidation statt?', o: ['Anode – Oxidation', 'Kathode – Oxidation', 'Anode – Reduktion', 'Kathode – Reduktion'], a: 0, w: 'Anode = Pluspol = Oxidation (Elektronen-Abgabe). Kathode = Minuspol = Reduktion.' },
+  { q: 'Reines Kupfer scheidet sich ab an der …', o: ['Kathode (Minuspol) durch Reduktion von Cu²⁺', 'Anode (Pluspol) durch Reduktion von Cu²⁺', 'Anode durch Oxidation von Cu', 'Kathode durch Oxidation von Cu'], a: 0, w: 'Cu²⁺ + 2 e⁻ → Cu: Elektronen-Aufnahme = Reduktion, am Minuspol.' },
+  { q: 'Warum findet man Silber und Gold im Anodenschlamm?', o: ['Sie sind edler als Kupfer und werden nicht oxidiert', 'Sie sind unedler als Kupfer', 'Sie lösen sich besonders gut', 'Sie wandern zur Kathode'], a: 0, w: 'Je edler ein Metall, desto schlechter gibt es Elektronen ab.' },
+  { q: 'Wie ändert sich die Cu²⁺-Konzentration der Lösung während der Raffination?', o: ['Sie bleibt ungefähr gleich', 'Sie steigt stark an', 'Sie sinkt auf null', 'Sie schwankt stark'], a: 0, w: 'Pro abgeschiedenem Cu an der Kathode geht ein Cu von der Anode in Lösung.' },
+  { q: 'Zink im Rohkupfer wird …', o: ['oxidiert und bleibt als Zn²⁺ in Lösung', 'an der Kathode abgeschieden', 'zu Anodenschlamm', 'reduziert'], a: 0, w: 'Zn ist unedler als Cu, geht als Zn²⁺ in Lösung; an der Kathode wird bevorzugt Cu²⁺ reduziert.' }
+];
+var CK = { list: null, i: 0, ok: 0, done: false };
+function p3panel(p) {
+  p.appendChild(mk('h2', '', '🏁 Abschluss-Check'));
+  if (!CK.list) { CK.list = shuffle(CHK); CK.i = 0; CK.ok = 0; CK.done = false; }
+  if (CK.done) {
+    p.appendChild(mk('div', 'fb ok', '<div class="star">' + (CK.ok >= 5 ? '⭐⭐⭐' : CK.ok >= 4 ? '⭐⭐' : '⭐') + '</div><b>' + CK.ok + ' von ' + CK.list.length + ' im ersten Versuch richtig.</b>')); markDone(3);
+    p.appendChild(mk('div', 'know', '<div><b>Merkkarte</b>Anode (+): Oxidation, Cu → Cu²⁺ + 2 e⁻ · Kathode (−): Reduktion, Cu²⁺ + 2 e⁻ → Cu · Unedle Begleitmetalle → Lösung · Edle Begleitmetalle → Anodenschlamm.</div>'));
+    var r = mk('div', 'row'); r.appendChild(btn('Check wiederholen', 'sec', function () { CK.list = null; panel(); })); r.appendChild(btn('Zurück zur Übersicht', 'go', function () { location.href = '../index.html'; })); p.appendChild(r); return;
+  }
+  p.appendChild(mk('div', 'prog', '<i style="width:' + (CK.i / CK.list.length * 100) + '%"></i>'));
+  var Q = CK.list[CK.i], first = true;
+  p.appendChild(mk('h3', '', 'Frage ' + (CK.i + 1) + ' / ' + CK.list.length)); p.appendChild(mk('p', '', '<b>' + Q.q + '</b>'));
+  mcq(p, Q.o, Q.a, function (ok) { if (!ok) { first = false; return; } if (first) CK.ok++; setTimeout(function () { CK.i++; if (CK.i >= CK.list.length) CK.done = true; panel(); if (CK.done) burst($('panel')); }, 1300); }, Q.w);
+}
+
+function renderSteps() { var n = $('steps'); n.innerHTML = ''; STEPN.forEach(function (nm, i) { var b = mk('button', (S.step === i + 1 ? 'on ' : '') + (S.done[i + 1] ? 'done' : ''), nm); b.type = 'button'; b.addEventListener('click', function () { goStep(i + 1); }); n.appendChild(b); }); }
+function goStep(n) { S.step = n; panel(); window.scrollTo(0, 0); }
+function panel() { var p = $('panel'); p.innerHTML = ''; renderSteps(); $('legend').innerHTML = ''; if (S.step === 1) p1panel(p); else if (S.step === 2) p2panel(p); else p3panel(p); }
+rfNew(); RF.cur = 1;
+var last = performance.now();
+function frame(now) { var dt = Math.min(.05, (now - last) / 1000); last = now; S.t += dt; g.setTransform(2, 0, 0, 2, 0, 0); if (S.step === 1) { rfStep(dt); rfDraw(); } else impDraw(); requestAnimationFrame(frame); }
+panel(); requestAnimationFrame(frame);
+</script>
+</body>
+</html>
