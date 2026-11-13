@@ -153,6 +153,16 @@
         html { background: #e8eef7; }
         body { background: linear-gradient(160deg,#eaf2fb 0%,#f3eefb 55%,#fdf1e6 100%) fixed !important; min-height: 100vh; box-sizing: border-box; }
         .container { border-radius: 16px !important; border: 1px solid rgba(44,62,80,.08) !important; border-top: 5px solid #3498db !important; box-shadow: 0 8px 22px rgba(44,62,80,.10) !important; }
+
+        /* Handy-Ansicht */
+        @media (max-width: 800px) {
+            body { padding: 10px; }
+            .container { flex-direction: column; padding: 14px; gap: 14px; box-sizing: border-box; }
+            .canvas-area, .controls { max-width: none; width: 100%; flex: none; }
+            canvas { height: auto; aspect-ratio: 5 / 6; max-height: 60vh; width: auto; max-width: 100%; margin: 0 auto; display: block; }
+            .nav-buttons { gap: 8px; }
+            button.nav-btn { padding: 12px 14px; white-space: nowrap; }
+        }
 </style>
 <link rel="icon" type="image/png" href="../../../../icons/icon-192.png">
 <link rel="apple-touch-icon" href="../../../../icons/apple-touch-icon.png">
