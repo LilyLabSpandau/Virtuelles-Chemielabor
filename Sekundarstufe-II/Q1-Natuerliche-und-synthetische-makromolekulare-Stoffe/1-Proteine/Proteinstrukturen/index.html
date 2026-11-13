@@ -275,6 +275,24 @@ label.chk { display: inline-flex; align-items: center; gap: 6px; margin: 3px 12p
       </ul>
       <p class="muted">Die Vorhersage im Modell folgt den Neigungswerten nach Chou und Fasman (Balken unten). Die Struktur entsteht hier aus der Reihenfolge der Aminosäuren, die du baust.</p>
     </details>
+    <details class="expl gk" open>
+      <summary>⚠️ Grenzen des Modells</summary>
+      <ul>
+        <li>Das ist ein <b>Lehrmodell</b>: Es zeigt, welche Aminosäuren eine Helix oder ein Faltblatt <i>begünstigen</i>. Eine sichere Vorhersage ist es nicht.</li>
+        <li>Eine <b>kurze Kette</b> (wenige Aminosäuren) hat in Wasser meist keine feste Form, sondern bewegt sich als lockeres Knäuel. Das Modell zeichnet trotzdem eine saubere Spirale, wenn die Reste passen.</li>
+        <li>Ein einzelner Faltblatt-Strang ist allein nicht stabil. Im echten Protein liegen mehrere Stränge nebeneinander.</li>
+        <li>In echten Proteinen spielen außerdem Wechselwirkungen zwischen weit entfernten Aminosäuren sowie Umgebung (pH, Salze, Temperatur) eine Rolle.</li>
+      </ul>
+    </details>
+    <details class="expl lk" open>
+      <summary>⚠️ Grenzen des Modells</summary>
+      <ul>
+        <li>Das Verfahren nach Chou und Fasman (1974, hier mit den überarbeiteten Werten von 1978) rechnet nur mit den <b>Neigungswerten einzelner Aminosäuren</b> in der Umgebung weniger Nachbarn. Es trifft bei echten Proteinen nur etwa 50–60 % der Positionen. Moderne Verfahren (z. B. neuronale Netze wie AlphaFold) berücksichtigen Vergleichsdaten verwandter Proteine und weit entfernte Wechselwirkungen und sind deutlich genauer, lassen sich aber nicht nachvollziehbar „von Hand“ rechnen.</li>
+        <li><b>Kurze Peptide</b> bilden in Wasser meist kein stabiles Sekundärstrukturelement: Die Helixbildung ist kooperativ und braucht eine gewisse Mindestlänge, sonst überwiegt die Entropie des ungefalteten Zustands. Das Modell zeigt dagegen sofort eine fertige Helix.</li>
+        <li>Ein <b>einzelner β-Strang</b> ist ohne Nachbarstränge nicht stabil; solche Peptide neigen eher zur Aggregation. Die Faltblatt-Darstellung setzt Partnerstränge voraus.</li>
+        <li>Nicht berücksichtigt werden Tertiärkontakte, pH-Wert, Ionenstärke, Temperatur, Lösungsmittel sowie Disulfidbrücken und Chaperone. Die 3D-Darstellung verwendet idealisierte Torsionswinkel (α-Helix φ = −57°, ψ = −47°; β-Strang φ = −125°, ψ = 135°); reale Strukturen weichen davon ab.</li>
+      </ul>
+    </details>
     <h3>Deine Peptidkette</h3>
     <p class="muted" style="margin:2px 0 6px">Hier siehst du die Kette aus Reiter 1. Änderungen gelten für beide Reiter.</p>
     <div class="legend" id="sc-leg"></div>
