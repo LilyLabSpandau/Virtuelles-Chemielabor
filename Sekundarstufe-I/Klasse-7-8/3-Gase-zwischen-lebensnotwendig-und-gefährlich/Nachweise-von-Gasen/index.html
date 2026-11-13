@@ -754,7 +754,8 @@ async function splintTest() {
     FX.plopp.visible = false; setSpriteText(FX.plopp, 'Plopp!');
     tween(0.5, e => { FX.ball.material.opacity = 0.8 * (1 - e); FX.ball.scale.setScalar(0.3 + e * 1.4); FX.flash.intensity = 6 * (1 - e); }, false);
     await sleep(1.1); FX.plopp.visible = false; FX.ball.material.opacity = 0; FX.flash.intensity = 0;
-    res = ['<b>Es knallt (Plopp!)</b>, der Span erlischt.', 'Knallgasprobe: Typisch für Wasserstoff. H₂ verbrennt blitzschnell mit dem Sauerstoff der Luft zu Wasser.'];
+    setTubeGas(null);
+    res = ['<b>Es knallt (Plopp!)</b>, der Span erlischt.', 'Knallgasprobe: Typisch für Wasserstoff. H₂ hat blitzschnell mit dem Sauerstoff der Luft zu Wasser reagiert (2 H₂ + O₂ → 2 H₂O). Der Wasserstoff ist verbraucht, das Reagenzglas ist jetzt leer.'];
   } else if (g === 'O2') {
     if (s0 === 'glowing') { state.splint = 'burning'; updateSplintVisual(); }
     await sleep(0.9);
