@@ -98,6 +98,24 @@
       { sel: '#feedback-text', tips: ['Lies noch einmal den Namen und die Eigenschaften der Chemikalie. Welche Gefahr steckt dahinter?', 'Manche Stoffe brauchen mehr als ein Piktogramm. Prüfe, ob eines zu viel oder zu wenig im Kasten liegt.', 'Falsche Piktogramme kannst du im Kasten anklicken, dann verschwinden sie wieder.'] }
     ]
   };
+
+  // Standard für Anwendungen mit Rückmeldefeldern (.fb, .feedback, *-fb, *feedback*): themenbezogene Tipps. Für gezielte Tipps pro Aufgabe oben in CHECKS eintragen.
+  var AUTO_SEL = '.fb, .feedback, [id$="-fb"], [id^="fb-"], [id$="fb"], [id*="feedback"], [id$="Fb"]';
+  var AUTO = ['Brandbekämpfung', 'Laborgeräte', 'simulation-pse', '4-Hochofen-Eisen-und-Stahl', 'Eigenschaften-des-Wassers', 'Loeslichkeit', 'Aminosaeuren', 'Peptidbindung-EPA', 'Proteinstrukturen', 'Systeme-und-1-Hauptsatz', 'Gleichgewicht', 'Konduktometrie', 'Saeure-Base-Titration', 'Saeure-Basen-Konstanten', 'Chromatografie-Rf-Werte', 'Disproportionierung', 'Redoxreihe-Metallgewinnung', 'Sulfit-Titration', 'Doppelspaltexperiment', 'Orbitalmodell', 'd-und-f-Orbitale', 'Kupfer-Raffination'];
+  var TIPS = {
+    sicher: ['Lies die Aufgabe noch einmal in Ruhe und denk an die Grundregeln im Labor: erst überlegen, dann handeln.', 'Gehe die Antwortmöglichkeiten der Reihe nach durch und streiche gedanklich aus, was sicher nicht passt.'],
+    saeure: ['Lies die Aufgabe noch einmal genau und achte auf Einheiten, Vorzeichen und Größenordnungen.', 'Überlege dir zuerst, wer das Proton abgibt und wer es aufnimmt. Danach setzt du die Werte ein.', 'Schreibe die Reaktionsgleichung auf, bevor du rechnest. Sie zeigt dir die Stoffmengenverhältnisse.'],
+    organik: ['Suche zuerst die funktionelle Gruppe. Sie bestimmt Namen und Eigenschaften.', 'Zähle die Kohlenstoffatome der Hauptkette noch einmal ab und achte auf Doppelbindungen.'],
+    protein: ['Überlege, welche Gruppe des Moleküls sauer und welche basisch ist. Das hängt vom pH-Wert ab.', 'Gehe vom Aufbau aus: Wie hängen Struktur und Eigenschaft zusammen?', 'Schau dir das 3D-Modell noch einmal an und dreh es, bis du die gefragte Stelle findest.'],
+    atom: ['Gehe Schritt für Schritt vor: erst die Schale oder das Orbital, dann die Elektronen.', 'Beachte die Regeln zur Besetzung: niedrigste Energie zuerst, höchstens zwei Elektronen pro Orbital.', 'Schau dir die Darstellung noch einmal genau an, die Antwort steckt oft in der Abbildung.'],
+    energie: ['Überlege, in welche Richtung das System ausweicht, wenn du etwas veränderst.', 'Achte auf das Vorzeichen: Wird Energie aufgenommen oder abgegeben?', 'Vergleiche den Zustand vorher und nachher, die Änderung steckt in der Differenz.'],
+    redox: ['Bestimme zuerst die Oxidationszahlen. Wer gibt Elektronen ab, wer nimmt sie auf?', 'Je unedler ein Metall, desto lieber gibt es Elektronen ab. Schau noch einmal in die Redoxreihe.', 'Prüfe, ob die Zahl der abgegebenen und aufgenommenen Elektronen gleich ist.'],
+    wasser: ['Überlege, ob die beteiligten Teilchen polar oder unpolar sind. Gleiches löst sich in Gleichem.', 'Denk an den Bau des Moleküls: Winkel, Ladungsverteilung und Wasserstoffbrücken.'],
+    farbe: ['Vergleiche die Messwerte noch einmal genau, gerade bei Farben und Wegstrecken sind kleine Unterschiede wichtig.', 'Überlege, welcher Stoff am weitesten wandert und warum.'],
+    salz: ['Denk daran: Salze bestehen aus Kationen und Anionen, die sich zu einer neutralen Verbindung ergänzen.'],
+    gas: ['Überlege, welcher Nachweis zu welchem Gas gehört, und gehe die Schritte in der richtigen Reihenfolge durch.']
+  };
+  var GENERIC_TIPS = ['Lies die Aufgabe und die Rückmeldung noch einmal in Ruhe. Oft steckt der Hinweis schon dort.', 'Gehe die Aufgabe Schritt für Schritt durch und prüfe, wo dein Gedankengang abweicht.'];
   var OKS = ['Richtig! Das hast du stark gelöst. 🎉', 'Genau so ist es! Mein Flüssigkeitsspiegel hüpft vor Freude.', 'Volltreffer! Weiter so.', 'Das stimmt! Du hast den Dreh raus.'];
   var BADS = ['Noch nicht ganz, aber das kriegst du hin. Lies die Rückmeldung in Ruhe durch und versuche es noch einmal.', 'Das war noch nicht richtig. Fehler gehören zum Lernen dazu, probier es gleich nochmal!', 'Hm, so noch nicht. Kopf hoch, der nächste Versuch klappt bestimmt!', 'Fast! Schau dir die Rückmeldung an und denk noch einmal in Ruhe nach. Du bist auf dem richtigen Weg.'];
   function pickR(a) { return a[Math.floor(Math.random() * a.length)]; }
@@ -105,8 +123,8 @@
     if (!n.offsetParent && getComputedStyle(n).position !== 'fixed') return 0;           // unsichtbar
     var t = (n.textContent || '').trim(), c = n.className && n.className.baseVal === undefined ? String(n.className) : '';
     if (!t) return 0;
-    if (/^(✗|❌|✖|Leider|Falsch|Nicht ganz|Das stimmt (noch )?nicht)/i.test(t) || /\b(wrong|incorrect|error|danger|fail)\b/i.test(c)) return -1;
-    if (/^(✓|✔|✅|🎉|Richtig|Vollkommen richtig|Glückwunsch|Genau)/i.test(t) || /\b(correct|success|ok)\b/i.test(c)) return 1;
+    if (/^(✗|❌|✖|Leider|Falsch|Nicht ganz|Das stimmt (noch )?nicht)/i.test(t) || /\b(wrong|incorrect|error|danger|fail|no)\b/i.test(c)) return -1;
+    if (/^(✓|✔|✅|🎉|Richtig|Vollkommen richtig|Glückwunsch|Genau)/i.test(t) || /\b(correct|success)\b/i.test(c)) return 1;   // „fb ok“ allein zählt nicht: kann auch eine reine Beobachtung sein
     return 0;
   }
   function watchChecks(entries) {
@@ -126,7 +144,16 @@
       Kolbi.tell(head, ok ? 'interested' : 'oops');
     }
     var mo = new MutationObserver(function (list) {
-      list.forEach(function (m) { var t = m.target.nodeType === 1 ? m.target : m.target.parentElement; entries.forEach(function (en) { var h = t && t.closest && t.closest(en.sel); if (h) touched.add(h); }); });
+      list.forEach(function (m) {
+        var t = m.target.nodeType === 1 ? m.target : m.target.parentElement;
+        entries.forEach(function (en) {
+          var h = t && t.closest && t.closest(en.sel); if (h) touched.add(h);
+          if (m.addedNodes) m.addedNodes.forEach(function (an) {                       // neu eingefügte Rückmeldungen (innerHTML)
+            if (an.nodeType !== 1) return;
+            if (an.matches(en.sel)) touched.add(an); else an.querySelectorAll(en.sel).forEach(function (x) { touched.add(x); });
+          });
+        });
+      });
       if (touched.size && !timer) timer = setTimeout(flush, 300);
     });
     mo.observe(document.body, { childList: true, characterData: true, subtree: true });   // nur Textänderungen, keine Animations-Attribute
@@ -147,7 +174,8 @@
       idleHelp: function () { return { text: ASKS[Math.floor(Math.random() * ASKS.length)], tip: help.tip }; },
       comments: G[MAP[key]] || []
     });
-    if (CHECKS[key]) watchChecks(CHECKS[key]);
+    var chk = CHECKS[key] || (AUTO.indexOf(key) >= 0 ? [{ sel: AUTO_SEL, tips: TIPS[MAP[key]] || GENERIC_TIPS }] : null);
+    if (chk) watchChecks(chk);
     // Wer fleißig klickt, bekommt ab und zu ein Lob
     var clicks = 0, PRAISE = ['Du bist ja richtig fleißig am Ausprobieren! Weiter so.', 'Man merkt, dass du hier mit Neugier arbeitest. Das gefällt mir.', 'Wow, du legst dich ins Zeug. Ich schwappe vor Begeisterung!', 'So lernt man: ausprobieren, beobachten, nachdenken.'];
     document.addEventListener('pointerdown', function (e) {
