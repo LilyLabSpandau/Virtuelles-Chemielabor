@@ -876,13 +876,14 @@ tutAutoStart();
       'Merk dir: Die Protonenzahl legt fest, um welches Element es sich handelt.',
       'Die Elektronen füllen die Schalen von innen nach außen. Wie Sitzplätze im Kino, nur ohne Popcorn.',
       'Die Außenelektronen entscheiden, wie ein Atom reagiert.',
-      'Ich schaue dir gern beim Bauen zu.'
+      'Ich schaue dir gern beim Bauen zu.',
+      'Kolbi fragt sich bestimmt, wo ich stecke. Hier in der Atomwerkstatt bin ich der Chef, und Kolbi ist nur für den Rest des Labors zuständig.'
     ]
   });
   var HI = ['Hi, schön, dass du da bist! Ich bin Hugo und bleibe bei dir.', 'Willkommen in der Atomwerkstatt! Ich kreise schon mal warm.', 'Da bist du ja! Lass uns ein paar Atome bauen.'];
   var WIN = ['Geschafft! Mein Elektron macht einen Looping. 🎉', 'Stark! Das Atom stimmt in allen Punkten. 🎉', 'Perfekt gebaut! Ich bin positiv beeindruckt. 🎉', 'Das sitzt! Besser als ich es könnte. 🎉'];
   var FAIL = ['Noch nicht ganz, aber das kriegst du hin. Schau dir die Hinweise an.', 'Fast! Ein Elektron zu viel oder zu wenig ist schnell passiert. Mir auch.', 'Nicht schlimm. Selbst Atome brauchen manchmal mehrere Anläufe.'];
-  var PURPOSE = 'Die Atomwerkstatt zeigt dir, wie Atome aus Protonen, Neutronen und Elektronen aufgebaut sind. Du baust Atome nach, suchst Fehler und erkennst Elemente an ihren Angaben.';
+  var PURPOSE = 'Die Atomwerkstatt zeigt dir, wie Atome aus Protonen, Neutronen und Elektronen aufgebaut sind. Du baust Atome nach, suchst Fehler und erkennst Elemente an ihren Angaben. Kolbi, der Kolben von den anderen Seiten, ist hier nicht dabei: Ein Erlenmeyerkolben passt nicht in ein Atom, deshalb übernehme ich in der Atomwerkstatt. 😄';
   var seenH = false; try { seenH = !!sessionStorage.getItem('hugo-expl'); } catch (e) { }
   setTimeout(function greet0() { (function greet(n) {
     if (T.on) { try { sessionStorage.setItem('hugo-expl', '1'); } catch (e) { } return; }   // im Tutorial stellt Hugo sich dort selbst vor
@@ -900,7 +901,7 @@ tutAutoStart();
   renderQuiz = function () { rq.apply(this, arguments); watch(); };
   var tss = tutShowStep, te = tutEnd, ts = tutStart;
   tutShowStep = function () { tss.apply(this, arguments); var S = TS[T.i]; Kolbi.mood(S && S.cheer ? 'excited' : 'interested', 2200); };
-  tutEnd = function () { var was = T.on; te.apply(this, arguments); if (was) Kolbi.react('excited', 'Tutorial geschafft! Ich bleibe bei dir. Tippe mich an, wenn du Hilfe brauchst.'); };
+  tutEnd = function () { var was = T.on; te.apply(this, arguments); if (was) Kolbi.react('excited', 'Tutorial geschafft! Ich bleibe bei dir. Tippe mich an, wenn du Hilfe brauchst. Und falls du Kolbi vermisst: Der Kolben bleibt in den anderen Bereichen, hier bin nur ich.'); };
   tutStart = function () { ts.apply(this, arguments); Kolbi.mood('excited', 2500); };
 })();
 </script>
