@@ -522,6 +522,8 @@
     _break: function (min) { sset(SK.key + '-t0', String(Date.now() - min * 60000)); },
     say: function (text, m) { if (!el.char || st.off || introActive || (cfg.intro && !st.met)) return false; curAsk = null; showRemark(text, m || 'happy'); return true; },
     react: function (m, text) { if (!el.char || st.off) return; if (text && !bubbleOpen && !introActive && !st.quiet) showRemark(text, m); else mood(m, 2600); lastAct = Date.now(); },
+    tell: function (text, m) { if (!el.char || st.off || introActive) return false; lastAct = Date.now(); if (st.quiet) { mood(m || 'happy', 2600); return false; } curAsk = null; showRemark(text, m || 'happy'); return true; },
+    tellTip: function (text, tip, m) { if (!el.char || st.off || introActive) return false; lastAct = Date.now(); if (st.quiet) { mood(m || 'oops', 2600); return false; } showAsk({ id: '', text: text, tip: tip }); mood(m || 'oops', 3000); return true; },
     mood: function (m, ms) { mood(m, ms); },
     _remark: function () { if (el.char) remark(); },
     _idle: function (sec) { lastAct = Date.now() - sec * 1000; }, // nur zum Testen

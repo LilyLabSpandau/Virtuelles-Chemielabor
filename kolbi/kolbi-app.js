@@ -80,6 +80,58 @@
     'Disproportionierung': 'redox', 'Redoxreihe-Metallgewinnung': 'redox', 'Sulfit-Titration': 'saeure', 'Doppelspaltexperiment': 'atom', 'Elektronenkonfiguration': 'atom', 'Orbitalmodell': 'atom', 'd-und-f-Orbitale': 'atom', 'Kupfer-Raffination': 'redox'
   };
 
+
+  // Rückmeldung auf „Prüfen“: Kolbi liest die Ergebnis-Felder der Anwendung (CSS-Selektoren) und sagt, ob es stimmt.
+  // Erkannt wird ✓/✅/„Richtig“ bzw. ✗/❌/„Leider“ im Text oder Klassen wie correct/wrong/success/error. Neue Anwendung: Zeile ergänzen.
+  // sel = Selektor(en) der Ergebnis-Felder; tips = eigene Tipps (werden bei jedem Fehlversuch der Reihe nach angeboten, ohne die Lösung zu verraten);
+  // tipBtn = Selektor eines vorhandenen Tipp-Knopfes der Anwendung: dann verweist Kolbi darauf, statt eigene Tipps zu geben.
+  var CHECKS = {
+    'Indikatoren-Grundlagen': [
+      { sel: '.mc-feedback', tips: ['Bei diesen Aufgaben können mehrere Aussagen stimmen. Prüfe jede Aussage einzeln und achte auf Wörter wie „immer“ und „nur“.', 'Ein Indikator wechselt die Farbe nicht bei jedem pH-Wert, sondern in einem bestimmten Umschlagsbereich. Denk bei jeder Aussage daran.', 'Die roten Rückmeldungen zeigen dir, bei welcher Aufgabe noch etwas nicht stimmt. Gehe diese noch einmal in Ruhe durch.'] },
+      { sel: '#a1-feedback', tips: ['Beobachte im Becherglas, bei welchen pH-Bereichen sich die Farbe ändert. Zwei Indikatoren zusammen zeigen mehr Farbstufen als einer.', 'Schiebe den Regler langsam von pH 1 bis 14 und notiere dir, wo die Farbübergänge liegen. Dann vergleichst du mit den Beschreibungen.'] },
+      { sel: '#a2-feedback', tips: ['Überlege, wo der Äquivalenzpunkt liegt und in welchem pH-Bereich die Kurve dort steil abfällt. Der Umschlagsbereich des Indikators muss in diesen steilen Bereich passen.', 'Wähle zuerst den Indikator und prüfe dann, ob deine Begründung wirklich zur Reaktion am Äquivalenzpunkt passt.'] }
+    ],
+    'Säure-Base-Konzept-Brönsted': [
+      { sel: '#quiz-feedback', tips: ['Das Proton (H⁺) wandert von einem Teilchen zum anderen. Wer gibt es ab, und wer nimmt es auf?', 'Donator ist die Säure, Akzeptor ist die Base. Schau in der Simulation, in welche Richtung das gelbe Proton wandert.'] }
+    ],
+    'Laborregeln-und-Gefahrenstoffe': [
+      { sel: '#feedback-text', tips: ['Lies noch einmal den Namen und die Eigenschaften der Chemikalie. Welche Gefahr steckt dahinter?', 'Manche Stoffe brauchen mehr als ein Piktogramm. Prüfe, ob eines zu viel oder zu wenig im Kasten liegt.', 'Falsche Piktogramme kannst du im Kasten anklicken, dann verschwinden sie wieder.'] }
+    ]
+  };
+  var OKS = ['Richtig! Das hast du stark gelöst. 🎉', 'Genau so ist es! Mein Flüssigkeitsspiegel hüpft vor Freude.', 'Volltreffer! Weiter so.', 'Das stimmt! Du hast den Dreh raus.'];
+  var BADS = ['Noch nicht ganz, aber das kriegst du hin. Lies die Rückmeldung in Ruhe durch und versuche es noch einmal.', 'Das war noch nicht richtig. Fehler gehören zum Lernen dazu, probier es gleich nochmal!', 'Hm, so noch nicht. Kopf hoch, der nächste Versuch klappt bestimmt!', 'Fast! Schau dir die Rückmeldung an und denk noch einmal in Ruhe nach. Du bist auf dem richtigen Weg.'];
+  function pickR(a) { return a[Math.floor(Math.random() * a.length)]; }
+  function verdict(n) {
+    if (!n.offsetParent && getComputedStyle(n).position !== 'fixed') return 0;           // unsichtbar
+    var t = (n.textContent || '').trim(), c = n.className && n.className.baseVal === undefined ? String(n.className) : '';
+    if (!t) return 0;
+    if (/^(✗|❌|✖|Leider|Falsch|Nicht ganz|Das stimmt (noch )?nicht)/i.test(t) || /\b(wrong|incorrect|error|danger|fail)\b/i.test(c)) return -1;
+    if (/^(✓|✔|✅|🎉|Richtig|Vollkommen richtig|Glückwunsch|Genau)/i.test(t) || /\b(correct|success|ok)\b/i.test(c)) return 1;
+    return 0;
+  }
+  function watchChecks(entries) {
+    var timer = null, touched = new Set(), fails = {};
+    function entryOf(n) { for (var k = 0; k < entries.length; k++) if (n.matches && n.matches(entries[k].sel)) return k; return -1; }
+    function flush() {
+      timer = null; var ok = 0, bad = 0, badEntry = -1, okEntries = [];
+      touched.forEach(function (n) { var v = verdict(n), k = entryOf(n); if (v > 0) { ok++; if (k >= 0) okEntries.push(k); } else if (v < 0) { bad++; if (badEntry < 0) badEntry = k; } });
+      touched.clear();
+      if (!ok && !bad) return;
+      okEntries.forEach(function (k) { if (!bad) fails[k] = 0; });
+      if (!bad) return void Kolbi.tell(ok > 1 ? 'Alle ' + ok + ' Aufgaben stimmen. Starke Arbeit! 🎉' : pickR(OKS), 'excited');
+      var head = ok ? ok + ' von ' + (ok + bad) + ' stimmen schon. Du bist nah dran! Schau dir die roten Rückmeldungen an.' : pickR(BADS);
+      var e = badEntry >= 0 ? entries[badEntry] : null, n = e ? (fails[badEntry] = (fails[badEntry] || 0) + 1) : 0;
+      if (e && e.tipBtn && document.querySelector(e.tipBtn)) return void Kolbi.tell(head + ' Der Tipp-Knopf bei der Aufgabe hilft dir weiter.', ok ? 'interested' : 'oops');
+      if (e && e.tips && e.tips.length) return void Kolbi.tellTip(head, e.tips[(n - 1) % e.tips.length], ok ? 'interested' : 'oops');
+      Kolbi.tell(head, ok ? 'interested' : 'oops');
+    }
+    var mo = new MutationObserver(function (list) {
+      list.forEach(function (m) { var t = m.target.nodeType === 1 ? m.target : m.target.parentElement; entries.forEach(function (en) { var h = t && t.closest && t.closest(en.sel); if (h) touched.add(h); }); });
+      if (touched.size && !timer) timer = setTimeout(flush, 300);
+    });
+    mo.observe(document.body, { childList: true, characterData: true, subtree: true });   // nur Textänderungen, keine Animations-Attribute
+  }
+
   var parts = decodeURIComponent(location.pathname).split('/').filter(Boolean);
   var key = parts[parts.length - 1] || '';
   if (key === 'index.html') key = parts[parts.length - 2]; else if (/\.html?$/i.test(key)) key = key.replace(/\.html?$/i, '');
@@ -95,6 +147,7 @@
       idleHelp: function () { return { text: ASKS[Math.floor(Math.random() * ASKS.length)], tip: help.tip }; },
       comments: G[MAP[key]] || []
     });
+    if (CHECKS[key]) watchChecks(CHECKS[key]);
     // Wer fleißig klickt, bekommt ab und zu ein Lob
     var clicks = 0, PRAISE = ['Du bist ja richtig fleißig am Ausprobieren! Weiter so.', 'Man merkt, dass du hier mit Neugier arbeitest. Das gefällt mir.', 'Wow, du legst dich ins Zeug. Ich schwappe vor Begeisterung!', 'So lernt man: ausprobieren, beobachten, nachdenken.'];
     document.addEventListener('pointerdown', function (e) {
