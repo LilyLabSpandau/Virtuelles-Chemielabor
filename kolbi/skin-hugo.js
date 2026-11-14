@@ -112,6 +112,14 @@
       DIZZY: ['Uff, mir wird ganz schwindelig. Ich kreise schon genug!', 'Wow, so schnell flitzt nicht mal ein Elektron!', 'Langsam bitte, mein Elektron kommt nicht hinterher!'],
       BREAK: ['Du arbeitest schon lange. Trink einen Schluck Wasser, ich habe ja auch zwei Wasserstoffe drin. 💧', 'Kleine Pause gefällig? Danach sieht man klarer.'],
       BORED: ['Ähm … hallo? Ist da jemand?', 'Ich zähle mal meine Elektronen. Eins … Moment, das war schon alles.', 'Ist hier gerade Pause? Ich kreise einfach weiter.', '*gähn* Ich hätte Lust auf ein bisschen Atombau.'],
+      CHECKIN: ['Kurze Zwischenfrage von deinem Lieblingsatom: Wie geht es dir gerade?', 'Mein Elektron und ich wüssten gern: Wie läuft es bei dir?', 'Na, wie fühlst du dich beim Bauen?', 'Hand aufs Herz, äh, aufs Proton: Wie geht es dir?'],
+      CHECK_EMP: ['Oh …', 'Ach, das tut mir leid …', 'Oje, da kribbelt es mir im Kern …'],
+      CHECK_REPLY: {
+        good: ['Das freut mich! Mein Elektron macht vor Freude einen Looping. 🎉', 'Super! Dann bauen wir weiter. Ich bin ganz positiv gestimmt.'],
+        ok: ['Das kenne ich. Selbst Atome brauchen manchmal einen Anlauf. Schritt für Schritt klappt es.', 'Okay. Mach in Ruhe weiter. Wenn du hängst, tippe mich an.'],
+        tired: ['Dann gönn dir eine kurze Pause: Schultern lockern, einen Schluck trinken, kurz aus dem Fenster schauen. Danach geht es oft besser.', 'Verständlich. Sogar Elektronen ruhen sich mal auf ihrer Schale aus.'],
+        hard: ['Das ist völlig okay. Schwierige Aufgaben gehören dazu und du musst nicht alles sofort können.']
+      },
       WAKE: ['Oh! Ich bin kurz eingenickt. Schön, dass du wieder da bist!', 'Huch, da bist du ja wieder! Ich habe nur kurz die Schale zugemacht.']
     }
   };

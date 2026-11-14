@@ -221,7 +221,8 @@
     Kolbi.init({
       id: 'app-' + key, color: '#38bdf8', offsetBottom: big ? 130 : 64, tapHelp: function () { return help; },
       idleHelp: function () { return { text: ASKS[Math.floor(Math.random() * ASKS.length)], tip: help.tip }; },
-      comments: cm
+      comments: cm,
+      noFacts: EXPERT_APPS[key] ? expertMode : null
     });
     if (EXPERT_APPS[key]) setInterval(function () {                                    // im Expertenmodus nur neutrale Sprüche, damit nichts verraten wird
       var want = expertMode() ? NEUTRAL : (G[MAP[key]] || []);

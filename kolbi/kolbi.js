@@ -306,7 +306,7 @@
   }
   var bubbleSeq = 0, guide = null;   // guide: laufende Anleitung (Tutorial), Blase bleibt offen, bis sie beendet wird
   function openBubble(html, autoMs) {
-    bubbleSeq++; clearTimeout(closeT);
+    bubbleSeq++; clearTimeout(closeT); lastSpoke = Date.now();
     el.bubble.innerHTML = html; el.bubble.classList.add('on');
     bubbleOpen = true; quietUntil = Date.now() + 25000; layoutBubble();
     requestAnimationFrame(function () { el.bubble.classList.add('show'); layoutBubble(); });
@@ -352,6 +352,7 @@
   function onBubbleClick(e) {
     var t = e.target.closest ? e.target.closest('[data-k]') : null; if (!t) return;
     var k = t.getAttribute('data-k'), o = curAsk, m = document.getElementById('kb-mute');
+    if (k.indexOf('ci-') === 0) { checkReply(k.slice(3)); return; }
     if (k.indexOf('g-') === 0) { var g = guide && guide.o; if (!g) return; if (k === 'g-go' && g.onGo) g.onGo(); else if (k === 'g-skip' && g.onSkip) g.onSkip(); else if (k === 'g-end' && g.onEnd) g.onEnd(); return; }
     if (m && m.checked && o && o.id) { st.mute[o.id] = 1; save(); }
     if (k === 'tip' && o) { showTip(o); }
@@ -363,12 +364,45 @@
 
   // ------------------------------------------------------------------ Inaktivität & Persönlichkeit
   var bag = [];
-  function refillBag() { bag = ['nice', 'joke', 'motiv', 'comment', 'help', 'fact', 'joke', 'motiv', 'comment', 'fact', 'nice', 'comment']; for (var i = bag.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = bag[i]; bag[i] = bag[j]; bag[j] = t; } }
+  function refillBag() { bag = ['nice', 'joke', 'motiv', 'comment', 'help', 'fact', 'joke', 'motiv', 'comment', 'fact', 'nice', 'comment', 'checkin', 'checkin', 'checkin']; for (var i = bag.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = bag[i]; bag[i] = bag[j]; bag[j] = t; } }
   var lastText = '';
+  // Zwischendurch nach dem Befinden fragen (Antworten werden nicht gespeichert)
+  var CHECKIN = ['Kurze Zwischenfrage: Wie geht es dir gerade?', 'Na, wie fühlst du dich beim Arbeiten?', 'Ich wollte mal fragen: Wie läuft es bei dir?', 'Hand aufs Herz: Wie geht es dir gerade?'];
+  var CHECK_OPTS = [['good', '😊', 'Gut, es läuft!'], ['ok', '😐', 'Geht so'], ['tired', '😩', 'Ich bin müde'], ['hard', '🤯', 'Das ist mir zu schwer']];
+  var CHECK_REPLY = {
+    good: ['Das freut mich! Dann weiter so. 🎉', 'Super! Ich bin richtig stolz auf dich.', 'Schön zu hören. Ich bleibe an deiner Seite.', 'Wie schön! Das hebt auch meine Laune.', 'Prima! Gute Laune ist die halbe Arbeit.'],
+    ok: ['Das kenne ich. Manchmal braucht man einen Anlauf. Schritt für Schritt klappt es.', 'Okay. Mach in Ruhe weiter. Und wenn du stecken bleibst, tippe mich an.', 'Das wird gleich besser. Der erste Schritt ist oft der schwerste.'],
+    tired: ['Dann gönn dir kurz eine Pause: Schultern lockern, einen Schluck trinken, kurz aus dem Fenster schauen. Danach geht es oft besser.', 'Das ist nach einer Weile normal. Ein paar tiefe Atemzüge, dann machst du mit frischem Kopf weiter.', 'Manchmal hilft schon ein Glas Wasser und ein tiefer Atemzug. Probier es kurz aus.', 'Du musst nicht alles auf einmal schaffen. Mach in deinem Tempo weiter.'],
+    hard: ['Das ist völlig okay. Schwierige Aufgaben gehören dazu und du musst nicht alles sofort können.', 'Ich bin bei dir. Eins nach dem anderen, dann wird es leichter.', 'Das wird wieder. Fehler gehören zum Lernen dazu, und du bist schon mittendrin.']
+  };
+  var CHECK_EMP = ['Oh …', 'Ach, das tut mir leid …', 'Oje …', 'Hm … das mag ich nicht hören …'];
+  function typing() { var a = document.activeElement; return !!(a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)); }   // nicht stören, solange jemand tippt oder rechnet
+  var lastCheck = 0, lastSpoke = Date.now(), chatInt = 80;
+  function showCheckin() {
+    lastCheck = Date.now(); mood('interested', 4000);
+    openBubble(X + '<p class="kb-text">' + esc(pickFrom(SK.t.CHECKIN || CHECKIN)) + '</p>' +
+      CHECK_OPTS.map(function (o) { return '<button class="kb-opt" data-k="ci-' + o[0] + '"><span style="font-size:18px">' + o[1] + '</span>' + o[2] + '</button>'; }).join('') +
+      '<div class="kb-links">' + quietLink() + '</div>', 45000);
+  }
+  function checkReply(k) {
+    var R = (SK.t.CHECK_REPLY || CHECK_REPLY), arr = R[k] || CHECK_REPLY[k], sad = k === 'tired' || k === 'hard';
+    function main() {
+      if (k === 'hard') {
+        var o = cfg.tapHelp ? cfg.tapHelp() : null;
+        if (o) { showAsk({ id: '', text: rnd(arr), tip: o.tip }); mood('love', 3000); return; }
+      }
+      showRemark(rnd(arr), k === 'good' ? 'excited' : sad ? 'love' : 'happy');
+    }
+    if (sad) { var my = bubbleSeq + 1; showRemark(rnd(SK.t.CHECK_EMP || CHECK_EMP), 'oops'); setTimeout(function () { if (bubbleSeq === my) main(); }, 2400); }   // erst kurz mitfühlen, dann trösten
+    else main();
+  }
   function pickFrom(arr) { var t, n = 0; do { t = rnd(arr); n++; } while (t === lastText && n < 5 && arr.length > 1); lastText = Array.isArray(t) ? t[0] : t; return t; }
   function remark() {
     if (!bag.length) refillBag();
     var kind = bag.pop();
+    if (kind === 'fact' && cfg.noFacts && cfg.noFacts()) kind = 'motiv';   // z. B. im Expertenmodus keine Fachfakten, die die Probe verraten
+    if (kind === 'checkin' && Date.now() - lastCheck < 240000) kind = 'nice';   // höchstens alle 4 Minuten
+    if (kind === 'checkin') { showCheckin(); return; }
     if (kind === 'help') {
       var o = cfg.idleHelp ? cfg.idleHelp() : (cfg.tapHelp ? cfg.tapHelp() : null);
       if (o) { showAsk({ id: '', text: o.text, tip: o.tip }); return; }
@@ -382,7 +416,7 @@
   }
   function activity() {
     var was = (Date.now() - lastAct) / 1000; lastAct = Date.now();
-    nextRemark = 40 + Math.random() * 25; yawned = false;
+    nextRemark = 22 + Math.random() * 14; yawned = false;
     if (curMood === 'sleep' || curMood === 'bored' || curMood === 'yawn') {
       var slept = wasSleeping; wasSleeping = false; clearTimeout(moodT); moodT = null; base = 'happy';
       if (slept && !bubbleOpen && !st.quiet && !st.off) { mood('excited', 2600); showRemark(rnd(SK.t.WAKE), 'excited'); } else { mood('happy'); }
@@ -394,9 +428,11 @@
     if (idle >= 240 && curMood !== 'sleep') { wasSleeping = true; if (!bubbleOpen) { clearTimeout(moodT); moodT = null; base = 'sleep'; setFace('sleep'); } }
     else if (idle >= 120 && base === 'happy') { base = 'bored'; if (!moodT) setFace('bored'); }
     if (idle >= 150 && !yawned && base === 'bored' && !bubbleOpen) { yawned = true; mood('yawn', 3200); }
-    if (idle >= nextRemark && !bubbleOpen && !introActive && !st.quiet && base !== 'sleep' && talkOk()) {
-      if (base === 'bored') { showRemark(rnd(SK.t.BORED), 'bored'); nextRemark = idle + 70 + Math.random() * 50; }
-      else { remark(); nextRemark = idle + 55 + Math.random() * 45; }
+    if (idle >= nextRemark && !bubbleOpen && !introActive && !st.quiet && base !== 'sleep' && talkOk() && !typing()) {
+      if (base === 'bored') { showRemark(rnd(SK.t.BORED), 'bored'); nextRemark = idle + 45 + Math.random() * 35; }
+      else { remark(); nextRemark = idle + 32 + Math.random() * 28; }
+    } else if (!bubbleOpen && !introActive && !st.quiet && base !== 'sleep' && idle >= 4 && Date.now() - lastSpoke > chatInt * 1000 && talkOk() && !typing()) {
+      remark(); chatInt = 70 + Math.random() * 60;   // meldet sich auch, während jemand arbeitet
     }
   }
 
@@ -500,7 +536,7 @@
       else { pos = { x: a.x, y: vh() + 120 }; place(a.x, vh() + 120, false); setTimeout(function () { place(a.x, a.y, true); }, 400); }
       scheduleMicro(); breakCheck(); setInterval(breakCheck, 30000);
       applyOff(); wander(); requestAnimationFrame(loop); setInterval(tick, 1000);
-      nextRemark = 40 + Math.random() * 25;
+      nextRemark = 22 + Math.random() * 14;
       if (cfg.intro && !st.met && !st.off) setTimeout(showIntro, 1800);
     },
     ask: function (o) {
