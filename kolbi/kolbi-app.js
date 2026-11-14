@@ -81,11 +81,56 @@
   };
 
 
+  function expertMode() { var b = document.getElementById('badge-mode'); return !!b && /Expertenmodus/.test(b.textContent); }
   // Rückmeldung auf „Prüfen“: Kolbi liest die Ergebnis-Felder der Anwendung (CSS-Selektoren) und sagt, ob es stimmt.
   // Erkannt wird ✓/✅/„Richtig“ bzw. ✗/❌/„Leider“ im Text oder Klassen wie correct/wrong/success/error. Neue Anwendung: Zeile ergänzen.
   // sel = Selektor(en) der Ergebnis-Felder; tips = eigene Tipps (werden bei jedem Fehlversuch der Reihe nach angeboten, ohne die Lösung zu verraten);
   // tipBtn = Selektor eines vorhandenen Tipp-Knopfes der Anwendung: dann verweist Kolbi darauf, statt eigene Tipps zu geben.
   var CHECKS = {
+    // Expertenmodus: Kolbi verrät nichts über die Probe, er reagiert nur auf „Prüfen“ (Meldungen im Textfeld der Anwendung)
+    'Nachweise-von-Gasen': [
+      { sel: '#instruction-text', when: expertMode, tips: function () {
+        var o = window.KolbiObs || {}, t = [];
+        if (o.splint === 'plopp') t.push('Du hast ein „Plopp“ gehört. Welches Gas gibt bei der Knallgasprobe diesen Knall? Probiere im Lernmodus die Gase noch einmal aus und komm dann mit der Erfahrung zurück (die Probe wird dabei neu gewählt).');
+        else if (o.splint === 'auf') t.push('Der Span ist aufgeflammt. Welches Gas fördert die Verbrennung und lässt einen Glimmspan hell aufleuchten? Du kannst im Lernmodus die Gase noch einmal ausprobieren.');
+        else if (o.splint === 'aus') t.push('Der Span ist erloschen. Welche beiden Gase löschen ihn? Mit welcher Probe unterscheidest du sie? Im Lernmodus kannst du alles noch einmal testen.');
+        else t.push('Hast du schon die Span-Probe gemacht? Ob es knallt, aufflammt oder erlischt, grenzt die Gase stark ein.');
+        if (o.lime === 'trüb') t.push('Das Kalkwasser wurde trüb. Welches Gas weist man damit nach?');
+        else if (o.lime === 'klar') t.push('Das Kalkwasser blieb klar. Welches Gas kannst du damit ausschließen?');
+        else t.push('Hast du schon Kalkwasser in das Reagenzglas gegeben? Damit trennst du die Gase, die den Span löschen.');
+        t.push('Eine Probe allein reicht nicht immer. Passen beide Beobachtungen zu demselben Gas?');
+        return t;
+      } }
+    ],
+    'Salze-identifizieren': [
+      { sel: '#instruction-text', when: expertMode, tips: function () {
+        var o = window.KolbiObs || {}, t = [], AG = { white: 'weißen', cream: 'cremefarbenen', yellow: 'gelben' };
+        if (o.flame) t.push('Welches Kation färbt die Flamme nochmal ' + o.flame + '? Teste doch noch einmal ein bekanntes Salz und vergleiche die Flammenfarbe.');
+        else t.push('Hast du schon die Flammenfarbe der Probe getestet? Sie verrät dir das Kation.');
+        if (o.ag === 'arsenate') t.push('Der Niederschlag mit Silbernitrat wechselt nach und nach seine Farbe. Welches Anion macht das? Teste zum Vergleich ein bekanntes Salz.');
+        else if (o.ag) t.push('Welches Anion gibt mit Silbernitrat einen ' + AG[o.ag] + ' Niederschlag? Teste zum Vergleich ein bekanntes Salz mit Silbernitrat.');
+        else t.push('Hast du schon Silbernitrat zur gelösten Probe gegeben? Der Niederschlag verrät dir das Anion.');
+        t.push('Setze Kation und Anion zum Salznamen zusammen und achte auf die genaue Schreibweise, zum Beispiel Natriumchlorid.');
+        return t;
+      } }
+    ],
+    'Saeure-Base-Titration': [
+      { sel: '#fb-read', tips: ['Lies am tiefsten Punkt des Meniskus ab, in Augenhöhe. Die großen Striche sind volle mL, zwischen den kleinen schätzt du die Zehntel.', 'Die Skala läuft von oben (0) nach unten (50). Verbrauchtes Volumen = Wert am Ende minus Wert am Anfang.'] },
+      { sel: '#fb-n', tips: ['Rechne in zwei Schritten: Volumen in Liter umrechnen, dann n = c · V. Mit mL und mol/L erhältst du die Stoffmenge direkt in mmol.', 'Die Reaktion läuft im Verhältnis 1 : 1. Am Äquivalenzpunkt ist n(NaOH) genauso groß wie n(HCl).', 'Wenn du nicht weiterkommst: Der Knopf „💡 Rechenweg“ zeigt dir die Rechenschritte.'] },
+      { sel: '#fb-b', tips: ['Die Konzentration ist Stoffmenge geteilt durch Volumen: c = n / V. Welches Volumen hatte die Probe, nicht die Maßlösung?', 'Achte auf die Einheit: mmol geteilt durch mL ergibt mol/L.', 'Wenn du nicht weiterkommst: Der Knopf „💡 Rechenweg“ zeigt dir die Rechenschritte.'] },
+      { sel: '#fb-p', tips: ['NaOH ist eine starke Base und zerfällt vollständig. Also gilt c(OH⁻) = c(NaOH).', 'Erst pOH = −lg c(OH⁻), dann pH = 14 − pOH. Auf dem Taschenrechner ist „log“ der Zehnerlogarithmus.', 'Eine Base hat einen pH-Wert über 7. Passt dein Ergebnis dazu?'] },
+      { sel: '#fb-c', tips: ['Am Äquivalenzpunkt sind Säure und Base genau verbraucht. Welchen pH-Wert hat so eine Lösung? Schau auf die Farbskala.'] },
+      { sel: '#fbl-n, #fbl-nc, #fbl-c, #fbl-r', tips: ['Schritt 1: n(NaOH) = c · V mit dem abgelesenen Volumen. Schritt 2: Welches Stoffmengenverhältnis sagt die Reaktionsgleichung zwischen NaOH und Citronensäure?', 'Citronensäure kann mehrere Protonen abgeben. Wie viele NaOH braucht ein Säure-Teilchen? Daraus folgt n(Citronensäure), danach c = n / V.', 'Wenn du nicht weiterkommst: Der Knopf „💡 Rechenweg“ zeigt dir die Rechenschritte.'] },
+      { sel: '#fbl-col, #fbl-why', tips: ['Überlege, ob am Äquivalenzpunkt Säure oder Base im Überschuss ist, oder keins von beiden. Davon hängt der pH-Wert und damit die Farbe ab.'] }
+    ],
+    'Sulfit-Titration': [
+      { sel: '#fb-read', tips: ['Lies am tiefsten Punkt des Meniskus ab. Die Skala läuft von oben (0) nach unten (50).'] },
+      { sel: '#fb-n', tips: ['Rechne mit n = c · V. Mit c in mol/L und V in mL kommt die Stoffmenge in mmol heraus.', 'Iod und Sulfit reagieren im Verhältnis 1 : 1. Die Stoffmenge an SO₂ ist so groß wie die an verbrauchtem I₂.', 'Wenn du nicht weiterkommst: Der Knopf „💡 Rechenweg“ zeigt dir die Rechenschritte.'] },
+      { sel: '#fb-b', tips: ['Die Massenkonzentration ist β = m / V. Die Masse bekommst du aus m = n · M mit der molaren Masse von SO₂.', 'Das Volumen ist das der Weinprobe, in Litern. Rechne mL erst in L um, sonst stimmt die Größenordnung nicht.', 'Wenn du nicht weiterkommst: Der Knopf „💡 Rechenweg“ zeigt dir die Rechenschritte.'] }
+    ],
+    'Konduktometrie': [
+      { sel: '#feedback', tips: ['Den Äquivalenzpunkt liest du dort ab, wo die Leitfähigkeitskurve ihren Knick hat, am Schnittpunkt der beiden Geraden.', 'Rechne in zwei Schritten: erst n(Oxalsäure) = c · V(Äquivalenz), mit V in L. Bei einem 1 : 1-Verhältnis ist n(Ca²⁺) genauso groß.', 'Dann c(Ca²⁺) = n(Ca²⁺) / V(Ca²⁺-Probe). Beide Volumina müssen in der gleichen Einheit stehen.', 'Wenn du nicht weiterkommst: Der Knopf „Hilfe“ nennt dir den Äquivalenzpunkt.'] }
+    ],
     'Indikatoren-Grundlagen': [
       { sel: '.mc-feedback', tips: ['Bei diesen Aufgaben können mehrere Aussagen stimmen. Prüfe jede Aussage einzeln und achte auf Wörter wie „immer“ und „nur“.', 'Ein Indikator wechselt die Farbe nicht bei jedem pH-Wert, sondern in einem bestimmten Umschlagsbereich. Denk bei jeder Aussage daran.', 'Die roten Rückmeldungen zeigen dir, bei welcher Aufgabe noch etwas nicht stimmt. Gehe diese noch einmal in Ruhe durch.'] },
       { sel: '#a1-feedback', tips: ['Beobachte im Becherglas, bei welchen pH-Bereichen sich die Farbe ändert. Zwei Indikatoren zusammen zeigen mehr Farbstufen als einer.', 'Schiebe den Regler langsam von pH 1 bis 14 und notiere dir, wo die Farbübergänge liegen. Dann vergleichst du mit den Beschreibungen.'] },
@@ -101,7 +146,7 @@
 
   // Standard für Anwendungen mit Rückmeldefeldern (.fb, .feedback, *-fb, *feedback*): themenbezogene Tipps. Für gezielte Tipps pro Aufgabe oben in CHECKS eintragen.
   var AUTO_SEL = '.fb, .feedback, [id$="-fb"], [id^="fb-"], [id$="fb"], [id*="feedback"], [id$="Fb"]';
-  var AUTO = ['Brandbekämpfung', 'Laborgeräte', 'simulation-pse', '4-Hochofen-Eisen-und-Stahl', 'Eigenschaften-des-Wassers', 'Loeslichkeit', 'Aminosaeuren', 'Peptidbindung-EPA', 'Proteinstrukturen', 'Systeme-und-1-Hauptsatz', 'Gleichgewicht', 'Konduktometrie', 'Saeure-Base-Titration', 'Saeure-Basen-Konstanten', 'Chromatografie-Rf-Werte', 'Disproportionierung', 'Redoxreihe-Metallgewinnung', 'Sulfit-Titration', 'Doppelspaltexperiment', 'Orbitalmodell', 'd-und-f-Orbitale', 'Kupfer-Raffination'];
+  var AUTO = ['Brandbekämpfung', 'Laborgeräte', 'simulation-pse', '4-Hochofen-Eisen-und-Stahl', 'Eigenschaften-des-Wassers', 'Loeslichkeit', 'Aminosaeuren', 'Peptidbindung-EPA', 'Proteinstrukturen', 'Systeme-und-1-Hauptsatz', 'Gleichgewicht', 'Saeure-Basen-Konstanten', 'Chromatografie-Rf-Werte', 'Disproportionierung', 'Redoxreihe-Metallgewinnung', 'Doppelspaltexperiment', 'Orbitalmodell', 'd-und-f-Orbitale', 'Kupfer-Raffination'];
   var TIPS = {
     sicher: ['Lies die Aufgabe noch einmal in Ruhe und denk an die Grundregeln im Labor: erst überlegen, dann handeln.', 'Gehe die Antwortmöglichkeiten der Reihe nach durch und streiche gedanklich aus, was sicher nicht passt.'],
     saeure: ['Lies die Aufgabe noch einmal genau und achte auf Einheiten, Vorzeichen und Größenordnungen.', 'Überlege dir zuerst, wer das Proton abgibt und wer es aufnimmt. Danach setzt du die Werte ein.', 'Schreibe die Reaktionsgleichung auf, bevor du rechnest. Sie zeigt dir die Stoffmengenverhältnisse.'],
@@ -118,6 +163,8 @@
   var GENERIC_TIPS = ['Lies die Aufgabe und die Rückmeldung noch einmal in Ruhe. Oft steckt der Hinweis schon dort.', 'Gehe die Aufgabe Schritt für Schritt durch und prüfe, wo dein Gedankengang abweicht.'];
   var OKS = ['Richtig! Das hast du stark gelöst. 🎉', 'Genau so ist es! Mein Flüssigkeitsspiegel hüpft vor Freude.', 'Volltreffer! Weiter so.', 'Das stimmt! Du hast den Dreh raus.'];
   var BADS = ['Noch nicht ganz, aber das kriegst du hin. Lies die Rückmeldung in Ruhe durch und versuche es noch einmal.', 'Das war noch nicht richtig. Fehler gehören zum Lernen dazu, probier es gleich nochmal!', 'Hm, so noch nicht. Kopf hoch, der nächste Versuch klappt bestimmt!', 'Fast! Schau dir die Rückmeldung an und denk noch einmal in Ruhe nach. Du bist auf dem richtigen Weg.'];
+  var EXPERT_APPS = { 'Nachweise-von-Gasen': 1, 'Salze-identifizieren': 1 };
+  var NEUTRAL = ['Im Expertenmodus verrate ich nichts. Du schaffst das mit sauberem Beobachten.', 'Gute Detektive notieren jede Beobachtung. Das spart später Zeit.', 'Ruhig bleiben und der Reihe nach testen, dann klärt sich das Rätsel.', 'Ich halte mich zurück, die Lösung musst du selbst finden. 🧪'];
   function pickR(a) { return a[Math.floor(Math.random() * a.length)]; }
   function verdict(n) {
     if (!n.offsetParent && getComputedStyle(n).position !== 'fixed') return 0;           // unsichtbar
@@ -132,7 +179,7 @@
     function entryOf(n) { for (var k = 0; k < entries.length; k++) if (n.matches && n.matches(entries[k].sel)) return k; return -1; }
     function flush() {
       timer = null; var ok = 0, bad = 0, badEntry = -1, okEntries = [];
-      touched.forEach(function (n) { var v = verdict(n), k = entryOf(n); if (v > 0) { ok++; if (k >= 0) okEntries.push(k); } else if (v < 0) { bad++; if (badEntry < 0) badEntry = k; } });
+      touched.forEach(function (n) { var k = entryOf(n); if (k >= 0 && entries[k].when && !entries[k].when()) return; var v = verdict(n); if (v > 0) { ok++; if (k >= 0) okEntries.push(k); } else if (v < 0) { bad++; if (badEntry < 0) badEntry = k; } });
       touched.clear();
       if (!ok && !bad) return;
       okEntries.forEach(function (k) { if (!bad) fails[k] = 0; });
@@ -140,7 +187,8 @@
       var head = ok ? ok + ' von ' + (ok + bad) + ' stimmen schon. Du bist nah dran! Schau dir die roten Rückmeldungen an.' : pickR(BADS);
       var e = badEntry >= 0 ? entries[badEntry] : null, n = e ? (fails[badEntry] = (fails[badEntry] || 0) + 1) : 0;
       if (e && e.tipBtn && document.querySelector(e.tipBtn)) return void Kolbi.tell(head + ' Der Tipp-Knopf bei der Aufgabe hilft dir weiter.', ok ? 'interested' : 'oops');
-      if (e && e.tips && e.tips.length) return void Kolbi.tellTip(head, e.tips[(n - 1) % e.tips.length], ok ? 'interested' : 'oops');
+      var tl = e && (typeof e.tips === 'function' ? e.tips() : e.tips);
+      if (tl && tl.length) return void Kolbi.tellTip(head, tl[(n - 1) % tl.length], ok ? 'interested' : 'oops');
       Kolbi.tell(head, ok ? 'interested' : 'oops');
     }
     var mo = new MutationObserver(function (list) {
@@ -169,11 +217,16 @@
     var big = false; try { var c = document.querySelector('canvas'); big = !!c && c.clientWidth > innerWidth * 0.6 && c.clientHeight > innerHeight * 0.5; } catch (e) {}
     var help = { text: app[0], tip: app[1] || TIP };
     var ASKS = ['Kommst du gut voran?', 'Läuft alles rund oder hakt es irgendwo?', 'Alles klar bei dir? Ich helfe gern.', 'Hängst du irgendwo fest?'];
+    var cm = (G[MAP[key]] || []).slice();
     Kolbi.init({
       id: 'app-' + key, color: '#38bdf8', offsetBottom: big ? 130 : 64, tapHelp: function () { return help; },
       idleHelp: function () { return { text: ASKS[Math.floor(Math.random() * ASKS.length)], tip: help.tip }; },
-      comments: G[MAP[key]] || []
+      comments: cm
     });
+    if (EXPERT_APPS[key]) setInterval(function () {                                    // im Expertenmodus nur neutrale Sprüche, damit nichts verraten wird
+      var want = expertMode() ? NEUTRAL : (G[MAP[key]] || []);
+      if (cm.length !== want.length || cm[0] !== want[0]) { cm.length = 0; want.forEach(function (x) { cm.push(x); }); }
+    }, 800);
     var chk = CHECKS[key] || (AUTO.indexOf(key) >= 0 ? [{ sel: AUTO_SEL, tips: TIPS[MAP[key]] || GENERIC_TIPS }] : null);
     if (chk) watchChecks(chk);
     // Wer fleißig klickt, bekommt ab und zu ein Lob

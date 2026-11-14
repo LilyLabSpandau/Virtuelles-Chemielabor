@@ -770,6 +770,7 @@ async function splintTest() {
   }
   await moveSplint(above, 0, 0.6); await moveSplint(SPL_HOLD, -0.6, 0.7); splAnim = false;
   setBusy(false);
+  if (state.mode === 'expert' && window.KolbiObs) window.KolbiObs.splint = g === 'H2' ? 'plopp' : g === 'O2' ? 'auf' : 'aus';
   log('Probe mit dem ' + was + ' Span: ' + res[0], 'ok');
   say(res[0] + (state.mode === 'learn' ? '<br><span style="color:#cfd8dc">' + res[1] + '</span>' : (g === 'N2' || g === 'CO2' ? '<br><span style="color:#cfd8dc">Das Gas löscht den Span – hier hilft Kalkwasser weiter.</span>' : '')), 'ok');
 }
@@ -850,6 +851,7 @@ async function pourLime() {
   if (!g) { say('Kalkwasser im Reagenzglas. Es ist noch kein Gas darin.'); log('Kalkwasser in das leere Reagenzglas gegeben.', 'muted'); }
   else {
     state.limeResult = g === 'CO2' ? 'trüb' : 'klar'; updateTubeLabel();
+    if (state.mode === 'expert' && window.KolbiObs) window.KolbiObs.lime = state.limeResult;
     if (g === 'CO2') { say('Das Kalkwasser wird <b>milchig-trüb</b>.' + (state.mode === 'learn' ? '<br><span style="color:#cfd8dc">Kalkwasserprobe: CO₂ reagiert mit Calciumhydroxid zu schwer löslichem Calciumcarbonat (Kalk). So weist man Kohlenstoffdioxid nach.</span>' : ''), 'ok'); log('Kalkwasser-Probe: <b>trüb</b>.', 'ok'); }
     else { say('Das Kalkwasser <b>bleibt klar</b>.' + (state.mode === 'learn' ? '<br><span style="color:#cfd8dc">Kein Kohlenstoffdioxid im Reagenzglas.</span>' : ''), 'ok'); log('Kalkwasser-Probe: <b>bleibt klar</b>.', 'ok'); }
     dimT = 1;   // Hintergrund abdunkeln: Trübung gut erkennbar
@@ -890,7 +892,7 @@ $('btn-blow').onclick = () => blowOut();
 $('btn-empty').onclick = () => { if (!state.busy) resetTube(); };
 $('btn-collapse').onclick = () => { $('ui-panel').classList.toggle('collapsed'); $('btn-collapse').textContent = $('ui-panel').classList.contains('collapsed') ? '▸' : '▾'; };
 // Expertenmodus
-function newUnknown() { state.unknown = GAS_ORDER[Math.floor(Math.random() * 4)]; resetTubeSilent(); setTubeGas(state.unknown); $('inp-guess').value = ''; }
+function newUnknown() { window.KolbiObs = {}; state.unknown = GAS_ORDER[Math.floor(Math.random() * 4)]; resetTubeSilent(); setTubeGas(state.unknown); $('inp-guess').value = ''; }
 function setMode(m) {
   if (state.busy) return;
   state.mode = m; state.tool = null; resetTubeSilent(); $('log').innerHTML = '';

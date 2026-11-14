@@ -1093,6 +1093,7 @@ async function addAgNO3() {
   const back = await dripFrom(T, above, above.y - 0.05, TUBE_BASE + 1.15, 4, 0xe9f1f7);
   state.tube.ag = true;
   const chems = sampleChems(state.tube), chem = chems[0], hasArs = chems.some(c => c.ag === 'arsenate');
+  if (state.tube.unknown && window.KolbiObs) window.KolbiObs.ag = hasArs ? 'arsenate' : chems.reduce((t, c) => ({ white: 0, cream: 1, yellow: 2 }[c.ag] > { white: 0, cream: 1, yellow: 2 }[t] ? c.ag : t), chem.ag);
   const seq = ++state.tube.seq;
   if (hasArs) {
     tube.liqMat.color.setHex(0xf2f2ee); tube.liqMat.opacity = 0.55; setPrecip(ARSENATE_SEQ[0].c, 0.67);
@@ -1192,6 +1193,7 @@ async function flameTest() {
     const m = flameMix(st.smp);
     fl.tintColor.setHex(m.hex);
     await tween(0.4, e => { fl.tint = e; });
+    if (st.smp.unknown && window.KolbiObs) window.KolbiObs.flame = m.name;
     say('Flammenfarbe: <b>' + m.name + '</b>', 'ok'); log('<span class="ok">Flammenfarbe: <b>' + m.name + '</b>.</span>');
     await sleep(3.4);
     await tween(0.8, e => { fl.tint = 1 - e; });
@@ -1285,6 +1287,7 @@ $('btn-over').onclick = () => { resetBurner(); refreshUI(); say('Neustart: Nimm 
 // 13. EXPERTENMODUS
 // ============================================================================
 function pickUnknown() {
+  window.KolbiObs = {};   // Beobachtungen der Probe für Kolbis Tipps (Expertenmodus)
   const c = CATIONS[Math.floor(Math.random() * CATIONS.length)], a = ANIONS[Math.floor(Math.random() * ANIONS.length)];
   state.unknownActual = { cation: c, anion: a, formula: formatFormula(c, a), name: canonicalName(c, a), ag: a.ag, flame: FLAME_BY_CATION[c.key] || 'gelb' };
   log('<span class="muted">Unbekannt A wurde neu gewählt.</span>');
