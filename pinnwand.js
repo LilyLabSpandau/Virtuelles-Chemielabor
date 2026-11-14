@@ -5,6 +5,10 @@
   Bei jedem anderen Ergebnis (auch beim lokalen Öffnen der Datei ohne Server) wird er angezeigt.
 */
 (function () {
+  // Kolbi (Maskottchen) auf allen Pinnwänden
+  var me = document.currentScript;
+  if (me && me.src) { var k = document.createElement('script'); k.src = me.src.replace(/pinnwand\.js.*$/, 'kolbi/kolbi-auto.js'); document.head.appendChild(k); }
+
   var optional = document.querySelectorAll('a.note[data-optional]');
   var leer = document.querySelector('.leer');
   var offen = optional.length;
