@@ -147,6 +147,7 @@
   #stHeft .step-text { background:rgba(255,255,255,.07); border-left:4px solid var(--warn); border-radius:8px; padding:8px 12px; margin:12px 0 0; text-align:left; font-size:15.5px; }
   #stHeft .draw circle { stroke-dasharray:1; stroke-dashoffset:1; animation:dr .9s ease forwards; } #stHeft .draw circle[r="4.6"] { stroke-dasharray:none; stroke-dashoffset:0; animation:pop .5s ease; }
   @keyframes dr { to { stroke-dashoffset:0; } } @keyframes pop { from { transform:scale(0); } } #stHeft .draw circle[r="4.6"] { transform-box:fill-box; transform-origin:center; }
+  #stFlat { touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
   #cv3 { display:block; margin:0 auto; touch-action:none; border-radius:14px; background:radial-gradient(circle at 50% 50%, rgba(60,40,120,.45), rgba(5,8,25,.5)); border:1px solid var(--line); cursor:grab; }
   .flashring { animation:rf .7s ease-out; } @keyframes rf { 0% { stroke:#fff; stroke-opacity:1; stroke-width:7; } }
   .flashnuc { animation:nf .7s ease-out; } @keyframes nf { 0% { stroke:#fff; stroke-width:9; } }
@@ -309,7 +310,7 @@ function atomSVG(o) {
     }
     s += '</g>';
   }
-  if (o.hit) for (i = 0; i < rings; i++) s += '<circle class="hit" data-ring="' + i + '" cx="' + C + '" cy="' + C + '" r="' + R[i] + '" fill="none" stroke="#000" stroke-opacity="0.001" stroke-width="30" pointer-events="stroke" style="cursor:pointer"><title>' + SCH[i] + '-Schale: Elektron setzen</title></circle>';
+  if (o.hit) for (i = 0; i < rings; i++) s += '<circle class="hit" data-ring="' + i + '" cx="' + C + '" cy="' + C + '" r="' + R[i] + '" fill="none" stroke="#000" stroke-opacity="0.001" stroke-width="40" pointer-events="stroke" style="cursor:pointer"><title>' + SCH[i] + '-Schale: Elektron setzen</title></circle>';
   return s + '</svg>';
 }
 function chips(p, n, e, noLadung) {
@@ -763,7 +764,16 @@ function showView(v) {
   tutCheck();
 }
 document.getElementById('regelkarte').innerHTML = regelHTML();
-document.getElementById('stFlat').addEventListener('click', function (e) { var t = e.target, r = t && t.getAttribute ? t.getAttribute('data-ring') : null; if (r !== null && r !== undefined) stepE(+r, 1); });
+/* Schale antippen: Der Tipp zählt für die nächstgelegene Schale (großzügig, damit es auch mit dem Finger am Handy klappt). */
+document.getElementById('stFlat').addEventListener('click', function (e) {
+  var t = e.target, svg = t && t.closest ? t.closest('svg') : null, r = t && t.getAttribute ? t.getAttribute('data-ring') : null;
+  if (svg) {
+    var b = svg.getBoundingClientRect(), k = 360 / Math.max(1, b.width), x = (e.clientX - b.left) * k - 180, y = (e.clientY - b.top) * k - 180, d = Math.sqrt(x * x + y * y), RR = [78, 110, 140, 166], best = -1, bd = 1e9;
+    RR.forEach(function (rr, i) { var dd = Math.abs(d - rr); if (dd < bd) { bd = dd; best = i; } });
+    if (best >= 0 && bd <= 26 && d > 50) { stepE(best, 1); return; }
+  }
+  if (r !== null && r !== undefined) stepE(+r, 1);
+});
 (function tafelTilt() {
   var wrap = document.getElementById('tafelWrap'), t = document.getElementById('tafel');
   wrap.addEventListener('pointermove', function (e) { if (e.pointerType !== 'mouse') return; var r = wrap.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5; t.style.transform = 'rotateX(' + (12 - y * 10).toFixed(1) + 'deg) rotateY(' + (x * 12).toFixed(1) + 'deg)'; });
@@ -803,42 +813,69 @@ function tutStart() {
 }
 function tutEnd() {
   T.on = false; T.key = ''; if (T.pending) { clearTimeout(T.pending); T.pending = 0; } document.getElementById('coach').hidden = true; tutClearHl(); tutSeen();
+  if (window.Kolbi && Kolbi.guideEnd) Kolbi.guideEnd();
 }
-function tutNext() {
+var PRAISE_T = ['Genau!', 'Super!', 'Prima!', 'Das sitzt!', 'Sehr gut!'];
+function tutHost() { return (window.Kolbi && Kolbi.guideActive && Kolbi.guideActive() && document.getElementById('kolbi-char')) || document.getElementById('hugo'); }
+function tutNext(praise) {
   if (T.pending) { clearTimeout(T.pending); T.pending = 0; }
   if (TS[T.i] && TS[T.i].end) { tutEnd(); showView('board'); return; }
   T.i++; if (T.i >= TS.length) { tutEnd(); return; }
-  burst(document.getElementById('hugo')); tutShowStep(); tutCheck();
+  T.praise = praise === true ? PRAISE_T[Math.floor(Math.random() * PRAISE_T.length)] : '';
+  burst(tutHost()); tutShowStep(); tutCheck();
 }
 function tutShowStep() {
   var S = TS[T.i], h = document.getElementById('hugo');
-  T.key = ''; T.ready = false; T.armed = !(S.wait && S.wait()); T.scrolled = '';
+  T.key = ''; T.ready = false; T.armed = !(S.wait && S.wait()); T.scrolled = ''; T.pr = T.praise || ''; T.praise = '';
   h.className = 'mascot hop' + (S.cheer ? ' cheer' : ''); setTimeout(function () { h.className = 'mascot' + (S.cheer ? ' cheer' : ''); }, 700);
   tutRender(false);
 }
+/* Hugo spricht das Tutorial als Sprechblase (Kolbi-Engine). Ist er ausgeblendet oder nicht geladen, bleibt der Kasten oben als Ersatz. */
 function tutRender(lost) {
-  var S = TS[T.i], tx = document.getElementById('cText'), bt = document.getElementById('cBtns');
+  var S = TS[T.i], tx = document.getElementById('cText'), bt = document.getElementById('cBtns'), coach = document.getElementById('coach');
   T.key = T.i + (lost ? 'L' : '');
-  tx.innerHTML = (lost ? 'Hoppla, wir sind woanders gelandet. Ich warte an der Werkbank auf dich.' : S.t) + '<div class="cbad" id="cBad"></div>';
+  var html = lost ? 'Hoppla, wir sind woanders gelandet. Ich warte an der Werkbank auf dich.' : S.t, goLabel = null, goFn = null, skip = false;
+  if (lost) { goLabel = 'Zurück zu Hugo'; goFn = function () { var s = TS[T.i]; if (s.fixTo !== undefined) T.i = s.fixTo; s = TS[T.i]; s.fix(); tutShowStep(); tutCheck(); }; }
+  else {
+    if (S.btn || (S.wait && T.ready)) { goLabel = S.btn || 'Weiter'; goFn = function () { tutNext(); }; }
+    skip = !!(S.wait && !S.end);
+  }
+  var spoken = !!(window.Kolbi && Kolbi.guide && Kolbi.guide({
+    html: html, praise: T.pr, btn: goLabel, skip: skip, mood: S.cheer ? 'excited' : 'interested',
+    onGo: goFn, onSkip: function () { tutNext(); }, onEnd: function () { tutEnd(); },
+    onHide: function () { if (T.on) tutRender(T.key === T.i + 'L'); }
+  }));
+  coach.hidden = spoken || !T.on;
+  if (spoken) return;
+  tx.innerHTML = (T.pr ? '<b>' + T.pr + '</b> ' : '') + html + '<div class="cbad" id="cBad"></div>';
   bt.innerHTML = '';
-  if (lost) { bt.appendChild(btn('Zurück zu Hugo', 'go', function () { var s = TS[T.i]; if (s.fixTo !== undefined) T.i = s.fixTo; s = TS[T.i]; s.fix(); tutShowStep(); tutCheck(); })); }
-  else if (S.btn || (S.wait && T.ready)) bt.appendChild(btn(S.btn || 'Weiter', 'go', tutNext));
-  if (!lost && S.wait && !S.end) bt.appendChild(btn('Schritt überspringen', 'sec', tutNext));
+  if (goLabel) bt.appendChild(btn(goLabel, 'go', goFn));
+  if (skip) bt.appendChild(btn('Schritt überspringen', 'sec', function () { tutNext(); }));
+}
+/* Steht Hugos Blase vor dem markierten Element, geht er auf die andere Bildschirmhälfte. */
+function tutAvoid(el, i) {
+  if (!T.on || T.i !== i || !window.Kolbi || !Kolbi.guideActive || !Kolbi.guideActive()) return;
+  var b = Kolbi.bubbleRect(), sp = Kolbi.spot(), r = el.getBoundingClientRect(); if (!b || !sp) return;
+  var m = 10, hit = !(r.right < b.left - m || r.left > b.right + m || r.bottom < b.top - m || r.top > b.bottom + m);
+  if (!hit) return;
+  Kolbi.place(Math.max(0, sp.x / window.innerWidth - 0.1), sp.y > window.innerHeight / 2 ? 0.05 : 0.78);
 }
 function tutCheck() {
   if (!T.on || !T.key && T.key !== 0) return;
   var S = TS[T.i], i = T.i, bad, hits, first;
   if (S.need && !S.need()) { if (T.key !== i + 'L') { tutClearHl(); tutRender(true); } return; }
   if (T.key === i + 'L') { tutShowStep(); }
-  bad = S.bad ? S.bad() : ''; var cb = document.getElementById('cBad'); if (cb && cb.textContent !== bad) cb.textContent = bad;
+  bad = S.bad ? S.bad() : '';
+  if (window.Kolbi && Kolbi.guideActive && Kolbi.guideActive()) Kolbi.guideBad(bad);
+  else { var cb = document.getElementById('cBad'); if (cb && cb.textContent !== bad) cb.textContent = bad; }
   tutClearHl();
   if (S.hl) {
     hits = document.querySelectorAll(S.hl); Array.prototype.forEach.call(hits, function (e) { if (e.offsetParent !== null || e.ownerSVGElement) e.classList.add('coach-hl'); });
     first = (S.foc && document.querySelector(S.foc + '.coach-hl')) || document.querySelector('.coach-hl');
-    if (first && T.scrolled !== String(i)) { T.scrolled = String(i); try { first.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { first.scrollIntoView(); } }
+    if (first && T.scrolled !== String(i)) { T.scrolled = String(i); try { first.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { first.scrollIntoView(); } setTimeout(function () { tutAvoid(first, i); }, 800); }
   }
   if (S.wait && S.wait()) {
-    if (T.armed) { if (!T.pending) T.pending = setTimeout(function () { T.pending = 0; if (T.on && T.i === i) tutNext(); }, 650); }
+    if (T.armed) { if (!T.pending) T.pending = setTimeout(function () { T.pending = 0; if (T.on && T.i === i) tutNext(true); }, 800); }
     else if (!T.ready) { T.ready = true; tutRender(false); tutCheck(); }
   }
 }
@@ -859,7 +896,7 @@ tutAutoStart();
   document.head.appendChild(st); document.body.classList.add('hugo-float');
   function rnd(a) { return a[Math.floor(Math.random() * a.length)]; }
   function help() {
-    if (T.on) return { text: 'Ich bin beim Tutorial dabei. Folge einfach dem Text im Kasten oben, ich bleibe bei dir.', tip: 'Mit dem × im Kasten kannst du das Tutorial beenden. Ich helfe dir danach trotzdem weiter.' };
+    if (T.on) return { text: 'Ich bin beim Tutorial dabei und erkläre dir alles in meiner Sprechblase.', tip: 'Mit „Tutorial beenden“ in der Blase hörst du auf. Ich helfe dir danach trotzdem weiter.' };
     if (G.view === 'board') return { text: 'Das ist die Tafel. Tippe auf ein Element oder starte unten einen Auftrag: Zufallsauftrag, Fehlersuche, Atom erkennen, Wer bin ich? oder Frei bauen.', tip: 'Neu hier? Die Regelkarte erklärt dir, wie Atome aufgebaut sind.' };
     if (G.view === 'quiz') return { text: 'Untersuche das Atom genau: Zähle Schalen und Außenelektronen. Dann tippe das passende Element an.', tip: 'Die Zahl der Außenelektronen verrät dir die Hauptgruppe.' };
     if (G.mode === 'repair') return { text: 'Hier stimmt etwas nicht. Vergleiche Protonen, Neutronen und Elektronen mit den Angaben der Kachel, Zahl für Zahl.', tip: 'Prüfe auch, ob die Schalen richtig gefüllt sind. Innen zuerst!' };
@@ -903,6 +940,7 @@ tutAutoStart();
   tutShowStep = function () { tss.apply(this, arguments); var S = TS[T.i]; Kolbi.mood(S && S.cheer ? 'excited' : 'interested', 2200); };
   tutEnd = function () { var was = T.on; te.apply(this, arguments); if (was) Kolbi.react('excited', 'Tutorial geschafft! Ich bleibe bei dir. Tippe mich an, wenn du Hilfe brauchst. Und falls du Kolbi vermisst: Der Kolben bleibt in den anderen Bereichen, hier bin nur ich.'); };
   tutStart = function () { ts.apply(this, arguments); Kolbi.mood('excited', 2500); };
+  if (T.on) { tutShowStep(); tutCheck(); }   // Tutorial startete schon vor dem Laden von Hugo: jetzt in seine Sprechblase übernehmen
 })();
 </script>
 </body>

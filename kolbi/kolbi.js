@@ -185,6 +185,7 @@
   '#kolbi-bubble .kb-links{display:flex;justify-content:flex-end;gap:14px;margin-top:6px}' +
   '#kolbi-bubble .kb-link{border:0;background:none;color:#6b7280;font:inherit;font-size:12px;text-decoration:underline;cursor:pointer;padding:4px 0}' +
   '#kolbi-bubble .kb-ok{margin-top:6px;border:0;border-radius:8px;background:#2563eb;color:#fff;font:inherit;font-weight:600;padding:8px 16px;cursor:pointer}' +
+  '#kolbi-bubble .kb-bad{margin:2px 0 8px;font-size:13.5px;color:#b45309;font-weight:600}#kolbi-bubble .kb-praise{color:#15803d}' +
   '#kolbi-bubble .kb-punch{display:block;margin-top:6px;font-weight:700;animation:kb-in .3s}@keyframes kb-in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}' +
   '#kolbi-back{position:fixed;left:10px;pointer-events:auto;display:none;border:0;border-radius:999px;background:rgba(30,41,59,.92);color:#e2e8f0;font:600 12px "Segoe UI",system-ui,sans-serif;padding:7px 12px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.35)}' +
   '@media (max-width:520px){#kolbi-back .kb-hol{display:none}}' +
@@ -303,7 +304,7 @@
     b.classList.toggle('below', !above);
     var tx = Math.max(24, Math.min(w - 24, cx - x)); b.style.setProperty('--tx', tx + 'px'); b.style.setProperty('--ox', tx + 'px');
   }
-  var bubbleSeq = 0;
+  var bubbleSeq = 0, guide = null;   // guide: laufende Anleitung (Tutorial), Blase bleibt offen, bis sie beendet wird
   function openBubble(html, autoMs) {
     bubbleSeq++; clearTimeout(closeT);
     el.bubble.innerHTML = html; el.bubble.classList.add('on');
@@ -313,6 +314,7 @@
     if (autoMs) closeT = setTimeout(closeBubble, autoMs);
   }
   function closeBubble() {
+    if (guide) return;
     clearTimeout(closeT); bubbleOpen = false; curAsk = null; introActive = false;
     if (!el.bubble) return;
     el.bubble.classList.remove('show'); el.char.classList.remove('talk');
@@ -350,6 +352,7 @@
   function onBubbleClick(e) {
     var t = e.target.closest ? e.target.closest('[data-k]') : null; if (!t) return;
     var k = t.getAttribute('data-k'), o = curAsk, m = document.getElementById('kb-mute');
+    if (k.indexOf('g-') === 0) { var g = guide && guide.o; if (!g) return; if (k === 'g-go' && g.onGo) g.onGo(); else if (k === 'g-skip' && g.onSkip) g.onSkip(); else if (k === 'g-end' && g.onEnd) g.onEnd(); return; }
     if (m && m.checked && o && o.id) { st.mute[o.id] = 1; save(); }
     if (k === 'tip' && o) { showTip(o); }
     else if (k === 'off') { API.hide(); }
@@ -524,10 +527,27 @@
     react: function (m, text) { if (!el.char || st.off) return; if (text && !bubbleOpen && !introActive && !st.quiet) showRemark(text, m); else mood(m, 2600); lastAct = Date.now(); },
     tell: function (text, m) { if (!el.char || st.off || introActive) return false; lastAct = Date.now(); if (st.quiet) { mood(m || 'happy', 2600); return false; } curAsk = null; showRemark(text, m || 'happy'); return true; },
     tellTip: function (text, tip, m) { if (!el.char || st.off || introActive) return false; lastAct = Date.now(); if (st.quiet) { mood(m || 'oops', 2600); return false; } showAsk({ id: '', text: text, tip: tip }); mood(m || 'oops', 3000); return true; },
+    // Anleitung (Tutorial): Hugo/Kolbi spricht Schritt für Schritt. o = { html, praise, btn, skip, bad, mood, onGo, onSkip, onEnd, onHide }
+    guide: function (o) {
+      if (!el.char || st.off) return false;
+      guide = { o: o }; curAsk = null; introActive = false; lastAct = Date.now();
+      mood(o.mood || 'interested', 2600);
+      openBubble('<p class="kb-text" style="margin:0 0 6px">' + (o.praise ? '<b class="kb-praise">' + esc(o.praise) + '</b> ' : '') + o.html + '</p>' +
+        '<p class="kb-bad" id="kb-bad"' + (o.bad ? '' : ' style="display:none"') + '>' + esc(o.bad || '') + '</p>' +
+        (o.btn ? '<button class="kb-ok" data-k="g-go">' + esc(o.btn) + '</button>' : '') +
+        '<div class="kb-links">' + (o.skip ? '<button class="kb-link" data-k="g-skip">Schritt überspringen</button>' : '') + '<button class="kb-link" data-k="g-end">Tutorial beenden</button></div>', 0);
+      return true;
+    },
+    guideBad: function (t) { var b = document.getElementById('kb-bad'); if (!guide || !b || b.textContent === (t || '')) return; b.textContent = t || ''; b.style.display = t ? 'block' : 'none'; layoutBubble(); },
+    guideEnd: function () { guide = null; closeBubble(); },
+    guideActive: function () { return !!guide; },
+    place: function (fx, fy) { if (!el.char) return; place(fx * vw(), fy * vh(), true); savePos(); },
+    spot: function () { if (!el.char) return null; var r = el.char.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, top: r.top }; },
+    bubbleRect: function () { return el.bubble && bubbleOpen ? el.bubble.getBoundingClientRect() : null; },
     mood: function (m, ms) { mood(m, ms); },
     _remark: function () { if (el.char) remark(); },
     _idle: function (sec) { lastAct = Date.now() - sec * 1000; }, // nur zum Testen
-    hide: function () { st.off = true; save(); closeBubble(); applyOff(); },
+    hide: function () { st.off = true; save(); var g = guide; guide = null; closeBubble(); applyOff(); if (g && g.o.onHide) g.o.onHide(); },
     show: function () { st.off = false; save(); applyOff(); }
   };
   function applyOff() {
