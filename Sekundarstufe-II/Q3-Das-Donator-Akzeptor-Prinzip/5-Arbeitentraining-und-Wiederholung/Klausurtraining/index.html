@@ -25,6 +25,17 @@ aside{position:sticky;top:78px;align-self:start;display:flex;flex-direction:colu
 .mascot{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:14px;text-align:center}
 .mascot svg{width:120px;height:auto;display:block;margin:0 auto;animation:float 3.4s ease-in-out infinite;overflow:visible}
 .mascot.pop svg{animation:pop .6s ease}
+.mascot.free{display:none}
+#kolbi{cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+#kolbi svg{pointer-events:none;-webkit-user-drag:none}
+#kolbi.drag{cursor:grabbing}#kolbi.drag svg{animation:none}
+#kfloat{pointer-events:none;position:fixed;z-index:60;display:flex;align-items:center;gap:10px;max-width:min(340px,calc(100vw - 8px));padding-right:10px}
+#kfloat #kolbi{pointer-events:auto;flex:none;width:84px;filter:drop-shadow(0 8px 8px rgba(0,0,0,.45))}
+#kfloat #kolbi svg{width:100%}
+#kfloat .bubble{margin:0;font-size:14px;min-height:0;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+#kfloat .bubble:before{top:50%;left:-9px;margin:-9px 0 0 0;border:9px solid transparent;border-left:0;border-right-color:#fff}
+#kfloat .mback{pointer-events:auto;display:block;top:-8px;right:-2px}
+.mback{display:none;position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.1);color:var(--ink,#fff);font-size:15px;line-height:1;cursor:pointer;padding:0}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 @keyframes pop{0%{transform:scale(1)}30%{transform:scale(1.15) rotate(-4deg)}60%{transform:scale(.96) rotate(3deg)}100%{transform:scale(1)}}
 .bubble{position:relative;background:#fff;color:#241f4d;border-radius:16px;padding:10px 13px;font-size:15px;margin-top:10px;font-weight:600;min-height:48px;display:flex;align-items:center;justify-content:center}
@@ -134,7 +145,7 @@ sub,sup{line-height:0}
 </header>
 <div class="wrap">
   <aside>
-    <div class="mascot" id="mascot"><div id="kolbi"></div><div class="bubble" id="bubble">Hallo!</div></div>
+    <div class="mascot" id="mascot"><button class="mback" id="mback" type="button" aria-label="Kolbi zurückholen" title="Kolbi zurückholen">↩</button><div id="kolbi" title="Zieh mich irgendwohin. Doppelklick: zurück an meinen Platz."></div><div class="bubble" id="bubble">Hallo!</div></div>
     <div class="prog"><b id="progTxt">0 / 0 gelöst</b><div class="bar"><i id="progBar" style="width:0"></i></div><small>Wechsle jederzeit zwischen den Aufgaben – dein Stand wird automatisch gespeichert.</small></div>
     <div class="tabs" id="tabs"></div>
   </aside>
@@ -880,6 +891,40 @@ render();window.scrollTo(0,0);
 const nOk=T.filter(function(x){return S.st[x.id]==='ok'}).length;
 say(nOk?'Willkommen zurück! Du hast schon '+nOk+' Aufgaben geschafft.':pick(MSG.hello),'happy');
 window.__KT={T:T,S:function(){return S},go:go,parseNum:parseNum,parseOZ:parseOZ,checkEq:checkEq,checkSp:checkSp};
+})();
+
+/* ---------- Kolbi frei beweglich (startet in der Seitenleiste; nur er und seine Sprechblase wandern) ---------- */
+(function(){
+  const mas=document.getElementById('mascot'),grip=document.getElementById('kolbi'),bub=document.getElementById('bubble'),back=document.getElementById('mback');
+  const fl=document.createElement('div');fl.id='kfloat';let d=null,on=false;
+  function vw(){return window.innerWidth}
+  function vh(){return window.innerHeight}
+  function setPos(x,y){const w=fl.offsetWidth,h=fl.offsetHeight;x=Math.max(4,Math.min(vw()-w-4,x));y=Math.max(4,Math.min(vh()-h-4,y));fl.style.left=x+'px';fl.style.top=y+'px'}
+  function free(){
+    if(on)return;const r=grip.getBoundingClientRect();
+    fl.appendChild(back);fl.appendChild(grip);fl.appendChild(bub);document.body.appendChild(fl);mas.classList.add('free');on=true;setPos(r.left,r.top);
+  }
+  function home(){
+    if(!on)return;mas.appendChild(back);mas.appendChild(grip);mas.appendChild(bub);
+    if(fl.parentNode)fl.parentNode.removeChild(fl);mas.classList.remove('free');on=false;fl.style.left=fl.style.top='';
+    try{sessionStorage.removeItem('kt-kolbi')}catch(e){}
+  }
+  function save(){const r=fl.getBoundingClientRect();try{sessionStorage.setItem('kt-kolbi',JSON.stringify({fx:r.left/vw(),fy:r.top/vh()}))}catch(e){}}
+  grip.addEventListener('dragstart',function(e){e.preventDefault()});
+  grip.addEventListener('pointerdown',function(e){
+    if(e.pointerType==='mouse'){if(e.button!==0)return;e.preventDefault()}
+    const r=grip.getBoundingClientRect();d={sx:e.clientX,sy:e.clientY,px:r.left,py:r.top,moved:false};
+  });
+  window.addEventListener('pointermove',function(e){
+    if(!d)return;const dx=e.clientX-d.sx,dy=e.clientY-d.sy;
+    if(!d.moved&&Math.abs(dx)+Math.abs(dy)>6){d.moved=true;free();grip.classList.add('drag');const r=fl.getBoundingClientRect();d.px=r.left;d.py=r.top}
+    if(d.moved)setPos(d.px+dx,d.py+dy);
+  });
+  function end(){if(!d)return;const m=d.moved;d=null;grip.classList.remove('drag');if(m)save()}
+  window.addEventListener('pointerup',end);window.addEventListener('pointercancel',end);
+  grip.addEventListener('dblclick',home);back.addEventListener('click',home);
+  window.addEventListener('resize',function(){if(on){const r=fl.getBoundingClientRect();setPos(r.left,r.top)}});
+  try{const s=JSON.parse(sessionStorage.getItem('kt-kolbi')||'null');if(s&&isFinite(s.fx)){free();setPos(s.fx*vw(),s.fy*vh())}}catch(e){}
 })();
 </script>
 </body>

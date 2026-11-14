@@ -8,8 +8,8 @@
 */
 (function () {
   'use strict';
-  var KEY = 'kolbi-v1';
-  var cfg = { id: 'modul', color: '#38bdf8', tapHelp: null, offsetBottom: 56, comments: [], intro: true };
+  var KEY = 'kolbi-v1', SK = null;
+  var cfg = { id: 'modul', color: '#38bdf8', tapHelp: null, offsetBottom: 56, comments: [], intro: true, skin: null, canTalk: null };
   var st = { off: false, mute: {}, met: false, quiet: false };
   var el = {}, pos = { x: 0, y: 0 };
   var wanderT = null, quietUntil = 0, bubbleOpen = false, curAsk = null, shownIds = {}, queue = [], closeT = null, introActive = false;
@@ -147,9 +147,9 @@
 
   var CSS = '' +
   '#kolbi-root{position:fixed;left:0;top:0;width:0;height:0;z-index:9000;pointer-events:none;font-family:"Segoe UI",system-ui,-apple-system,sans-serif}' +
-  '#kolbi-char{position:fixed;left:0;top:0;width:78px;height:96px;pointer-events:auto;cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;perspective:420px;transition:left 1.8s cubic-bezier(.45,0,.25,1),top 1.8s cubic-bezier(.45,0,.25,1),opacity .3s}' +
+  '#kolbi-char{position:fixed;left:0;top:0;width:var(--kw,78px);height:var(--kh,96px);pointer-events:auto;cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;perspective:420px;transition:left 1.8s cubic-bezier(.45,0,.25,1),top 1.8s cubic-bezier(.45,0,.25,1),opacity .3s}' +
   '#kolbi-char.drag{cursor:grabbing;transition:none}#kolbi-char.nomove{transition:none}' +
-  '#kolbi-shadow{position:absolute;left:50%;bottom:-2px;width:62px;height:11px;margin-left:-31px;border-radius:50%;background:rgba(0,0,0,.35);filter:blur(3px);transition:transform .3s,opacity .3s}' +
+  '#kolbi-shadow{position:absolute;left:50%;bottom:-2px;width:calc(var(--kw,78px) * .8);height:11px;margin-left:calc(var(--kw,78px) * -.4);border-radius:50%;background:rgba(0,0,0,.35);filter:blur(3px);transition:transform .3s,opacity .3s}' +
   '#kolbi-body{position:absolute;left:0;top:0;width:100%;height:100%;transform-style:preserve-3d;transform:rotateY(var(--ry,0deg)) rotateZ(var(--rz,0deg));transform-origin:50% 90%;animation:kolbi-bob 3.2s ease-in-out infinite;filter:drop-shadow(0 6px 5px rgba(0,0,0,.35))}' +
   '#kolbi-char.walk #kolbi-body{animation:kolbi-hop .42s ease-in-out infinite}#kolbi-char.walk #kolbi-shadow{transform:scale(.8);opacity:.7}' +
   '#kolbi-char[data-mood=excited] #kolbi-body{animation:kolbi-hop .34s ease-in-out infinite}' +
@@ -188,7 +188,7 @@
   '#kolbi-bubble .kb-punch{display:block;margin-top:6px;font-weight:700;animation:kb-in .3s}@keyframes kb-in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}' +
   '#kolbi-back{position:fixed;left:10px;pointer-events:auto;display:none;border:0;border-radius:999px;background:rgba(30,41,59,.92);color:#e2e8f0;font:600 12px "Segoe UI",system-ui,sans-serif;padding:7px 12px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.35)}' +
   '@media (max-width:520px){#kolbi-back .kb-hol{display:none}}' +
-  '@media (max-width:700px){#kolbi-char{width:62px;height:77px}#kolbi-shadow{width:50px;margin-left:-25px}}' +
+  '@media (max-width:700px){#kolbi-char{width:var(--kwm,62px);height:var(--khm,77px)}#kolbi-shadow{width:calc(var(--kwm,62px) * .8);margin-left:calc(var(--kwm,62px) * -.4)}}' +
   '@media (prefers-reduced-motion:reduce){#kolbi-body,#kolbi-char.walk #kolbi-body,#kolbi-char[data-mood=excited] #kolbi-body{animation:none}#kolbi-body .k-lid,#kolbi-body .k-bub,#kolbi-body .k-zzz{animation:none}}';
 
   function svg(col) {
@@ -211,7 +211,7 @@
   function setFace(m) {
     curMood = m; if (!el.char) return;
     el.char.setAttribute('data-mood', m);
-    var f = el.root.querySelector('#kk-face'); if (f) f.innerHTML = face(m);
+    var f = el.root.querySelector('#kk-face'); if (f) f.innerHTML = SK.face(m);
     el.eyes = el.root.querySelector('#kolbi-eyes');
     if (el.eyes && eyeT) el.eyes.style.transform = eyeT;
   }
@@ -257,21 +257,22 @@
     ph.ry += (ryT - ph.ry) * Math.min(1, dt * 6);
     el.body.style.setProperty('--rz', ph.lean.toFixed(2) + 'deg');
     el.body.style.setProperty('--ry', ph.ry.toFixed(2) + 'deg');
-    // Flüssigkeitsoberfläche (bleibt waagerecht in der Welt, schwappt mit)
     ph.t += dt;
-    var alpha = ph.th - ph.lean * Math.PI / 180, tn = Math.tan(Math.max(-0.75, Math.min(0.75, alpha)));
+    var tn = Math.tan(Math.max(-0.75, Math.min(0.75, ph.th - ph.lean * Math.PI / 180)));
     var amp = 0.7 + Math.min(4.5, Math.abs(ph.w) * 1.1) + Math.min(2.5, Math.abs(ay) * 0.0012);
-    var L0 = 62, d = '', s = '', y;
+    if (SK.phys) SK.phys(el, ph, tn, amp);
+  }
+  function kolbiPhys(el, ph, tn, amp) {
+    var L0 = 62, d = '', y;
     for (var x = -2; x <= 106; x += 6) {
       y = L0 + tn * (x - 51) + amp * Math.sin(x * 0.11 + ph.t * 7) * 0.6;
       y = Math.max(40, Math.min(118, y));
       d += (d ? ' L' : 'M') + x + ' ' + y.toFixed(1);
     }
-    s = d;
+    var s = d;
     d += ' L106 125 L-2 125 Z';
-    var liq = el.liq, surf = el.surf;
-    if (liq) liq.setAttribute('d', d);
-    if (surf) surf.setAttribute('d', s);
+    if (el.liq) el.liq.setAttribute('d', d);
+    if (el.surf) el.surf.setAttribute('d', s);
   }
   function anchors() {
     var w = csz(), h = el.char.offsetHeight, b = cfg.offsetBottom;
@@ -282,12 +283,12 @@
     if (far && !reduce) { el.char.classList.add('walk'); setTimeout(function () { el.char.classList.remove('walk'); }, 1800); }
     place(a.x, a.y, true); savePos();
   }
-  function savePos() { try { sessionStorage.setItem('kolbi-pos', JSON.stringify({ fx: pos.x / vw(), fy: pos.y / vh() })); } catch (e) {} }
-  function loadPos() { try { var o = JSON.parse(sessionStorage.getItem('kolbi-pos') || 'null'); if (o && isFinite(o.fx) && isFinite(o.fy)) return o; } catch (e) {} return null; }
+  function savePos() { try { sessionStorage.setItem(SK.key + '-pos', JSON.stringify({ fx: pos.x / vw(), fy: pos.y / vh() })); } catch (e) {} }
+  function loadPos() { try { var o = JSON.parse(sessionStorage.getItem(SK.key + '-pos') || 'null'); if (o && isFinite(o.fx) && isFinite(o.fy)) return o; } catch (e) {} return null; }
   function wander() {
     clearTimeout(wanderT);
     wanderT = setTimeout(function () {
-      if (!bubbleOpen && !st.off && Date.now() > quietUntil && !reduce && !document.hidden && curMood !== 'sleep') { var a = anchors(); walkTo(rnd(a)); }
+      if (!bubbleOpen && !st.off && Date.now() > quietUntil && !reduce && !document.hidden && curMood !== 'sleep' && talkOk()) { var a = anchors(); walkTo(rnd(a)); }
       wander();
     }, 14000 + Math.random() * 14000);
   }
@@ -319,7 +320,7 @@
   }
   function runQueue() { if (bubbleOpen || !queue.length || st.off) return; var o = queue.shift(); API.ask(o); }
   var X = '<button class="kb-x" aria-label="Schließen" data-k="close">×</button>';
-  function quietLink() { return '<button class="kb-link" data-k="quiet">' + (st.quiet ? 'Kolbi darf wieder erzählen' : 'Weniger reden') + '</button>'; }
+  function quietLink() { return '<button class="kb-link" data-k="quiet">' + (st.quiet ? SK.name + ' darf wieder erzählen' : 'Weniger reden') + '</button>'; }
 
   function showAsk(o) {
     curAsk = o; mood('interested', 4000);
@@ -327,7 +328,7 @@
       '<button class="kb-opt" data-k="tip"><span class="kb-dot"></span>Tipp anzeigen</button>' +
       '<button class="kb-opt" data-k="no"><span class="kb-dot"></span>Ohne Hilfe weitermachen</button>' +
       (o.id ? '<label class="kb-mute"><input type="checkbox" id="kb-mute"> Diesen Tipp nicht mehr anzeigen</label>' : '') +
-      '<div class="kb-links">' + quietLink() + '<button class="kb-link" data-k="off">Kolbi ausblenden</button></div>', 40000);
+      '<div class="kb-links">' + quietLink() + '<button class="kb-link" data-k="off">' + SK.name + ' ausblenden</button></div>', 40000);
   }
   function showTip(o) { mood('thinking', 5000); openBubble(X + '<p class="kb-text" style="margin-bottom:8px">' + esc(o.tip) + '</p><button class="kb-ok" data-k="no">Alles klar</button>', 60000); }
   function showRemark(text, m, punch, sub) {
@@ -342,8 +343,8 @@
   }
   function showIntro() {
     introActive = true; mood('excited', 2800);
-    openBubble(X + '<p class="kb-text"><b>Hallo! Ich bin Kolbi 🧪</b><br>Ich bin der Erlenmeyerkolben in deinem Labor und passe auf, dass nichts überkocht. Ich erzähle ab und zu etwas, gebe Denkanstöße und helfe, wenn du magst.</p>' +
-      '<p class="kb-text" style="font-size:13px;color:#4b5563;margin-top:-4px">Du kannst mich ziehen, antippen oder ausblenden.</p><button class="kb-ok" data-k="hello">Hallo, Kolbi! 👋</button>', 0);
+    openBubble(X + '<p class="kb-text"><b>' + SK.t.intro[0] + '</b><br>' + SK.t.intro[1] + '</p>' +
+      '<p class="kb-text" style="font-size:13px;color:#4b5563;margin-top:-4px">Du kannst mich ziehen, antippen oder ausblenden.</p><button class="kb-ok" data-k="hello">Hallo, ' + SK.name + '! 👋</button>', 0);
   }
   function onBubbleClick(e) {
     var t = e.target.closest ? e.target.closest('[data-k]') : null; if (!t) return;
@@ -369,18 +370,18 @@
       if (o) { showAsk({ id: '', text: o.text, tip: o.tip }); return; }
       kind = 'nice';
     }
-    if (kind === 'nice') showRemark(pickFrom(NICE), 'love');
-    else if (kind === 'fact') showRemark(pickFrom(FACTS), 'interested');
-    else if (kind === 'motiv') showRemark(pickFrom(MOTIVATION), 'excited');
-    else if (kind === 'joke') { var j = pickFrom(JOKES); showRemark('Unlustiger Chemiker-Witz: ' + j[0], 'interested', j[1]); }
-    else { var c = cfg.comments && cfg.comments.length ? cfg.comments.concat(GENERIC) : GENERIC; showRemark(pickFrom(c), 'interested'); }
+    if (kind === 'nice') showRemark(pickFrom(SK.t.NICE), 'love');
+    else if (kind === 'fact') showRemark(pickFrom(SK.t.FACTS), 'interested');
+    else if (kind === 'motiv') showRemark(pickFrom(SK.t.MOTIVATION), 'excited');
+    else if (kind === 'joke') { var j = pickFrom(SK.t.JOKES); showRemark(SK.t.jokeLead + j[0], 'interested', j[1]); }
+    else { var c = cfg.comments && cfg.comments.length ? cfg.comments.concat(SK.t.GENERIC) : SK.t.GENERIC; showRemark(pickFrom(c), 'interested'); }
   }
   function activity() {
     var was = (Date.now() - lastAct) / 1000; lastAct = Date.now();
     nextRemark = 40 + Math.random() * 25; yawned = false;
     if (curMood === 'sleep' || curMood === 'bored' || curMood === 'yawn') {
       var slept = wasSleeping; wasSleeping = false; clearTimeout(moodT); moodT = null; base = 'happy';
-      if (slept && !bubbleOpen && !st.quiet && !st.off) { mood('excited', 2600); showRemark(rnd(WAKE), 'excited'); } else { mood('happy'); }
+      if (slept && !bubbleOpen && !st.quiet && !st.off) { mood('excited', 2600); showRemark(rnd(SK.t.WAKE), 'excited'); } else { mood('happy'); }
     }
   }
   function tick() {
@@ -389,12 +390,13 @@
     if (idle >= 240 && curMood !== 'sleep') { wasSleeping = true; if (!bubbleOpen) { clearTimeout(moodT); moodT = null; base = 'sleep'; setFace('sleep'); } }
     else if (idle >= 120 && base === 'happy') { base = 'bored'; if (!moodT) setFace('bored'); }
     if (idle >= 150 && !yawned && base === 'bored' && !bubbleOpen) { yawned = true; mood('yawn', 3200); }
-    if (idle >= nextRemark && !bubbleOpen && !introActive && !st.quiet && base !== 'sleep') {
-      if (base === 'bored') { showRemark(rnd(BORED), 'bored'); nextRemark = idle + 70 + Math.random() * 50; }
+    if (idle >= nextRemark && !bubbleOpen && !introActive && !st.quiet && base !== 'sleep' && talkOk()) {
+      if (base === 'bored') { showRemark(rnd(SK.t.BORED), 'bored'); nextRemark = idle + 70 + Math.random() * 50; }
       else { remark(); nextRemark = idle + 55 + Math.random() * 45; }
     }
   }
 
+  function talkOk() { return !cfg.canTalk || cfg.canTalk(); }
   function micro() {
     if (!el.char || st.off || bubbleOpen || document.hidden || moodT || base === 'sleep' || reduce) return;
     var a = rnd(['look', 'look', 'wink', 'hop', 'hum', 'look']);
@@ -409,14 +411,14 @@
   function sget(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }
   function sset(k, v) { try { sessionStorage.setItem(k, v); } catch (e) {} }
   function breakCheck() {
-    var t0 = +sget('kolbi-t0'); if (!t0) { sset('kolbi-t0', String(Date.now())); return; }
-    var min = (Date.now() - t0) / 60000, done = +sget('kolbi-brk') || 0, th = [40, 90, 140];
-    if (done < th.length && min >= th[done] && !bubbleOpen && !introActive && !st.quiet) { sset('kolbi-brk', String(done + 1)); showRemark(rnd(BREAK), 'interested'); }
+    var t0 = +sget(SK.key + '-t0'); if (!t0) { sset(SK.key + '-t0', String(Date.now())); return; }
+    var min = (Date.now() - t0) / 60000, done = +sget(SK.key + '-brk') || 0, th = [40, 90, 140];
+    if (done < th.length && min >= th[done] && !bubbleOpen && !introActive && !st.quiet) { sset(SK.key + '-brk', String(done + 1)); showRemark(rnd(SK.t.BREAK), 'interested'); }
   }
   function today() { var d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
   function greetText() {
     var d = new Date(), h = d.getHours(), wd = d.getDay(), v = { n: 1, last: 0 };
-    try { var o = JSON.parse(localStorage.getItem('kolbi-visit') || '{}'); v.last = +o.last || 0; v.n = (o.day === today() ? (+o.n || 0) : 0) + 1; localStorage.setItem('kolbi-visit', JSON.stringify({ day: today(), n: v.n, last: Date.now() })); } catch (e) {}
+    try { var o = JSON.parse(localStorage.getItem(SK.key + '-visit') || '{}'); v.last = +o.last || 0; v.n = (o.day === today() ? (+o.n || 0) : 0) + 1; localStorage.setItem(SK.key + '-visit', JSON.stringify({ day: today(), n: v.n, last: Date.now() })); } catch (e) {}
     var t = h < 5 ? 'Noch (oder schon) wach? Respekt! Willkommen im Labor.' : h < 10 ? 'Guten Morgen! Bereit für ein bisschen Chemie?' : h < 13 ? 'Guten Tag! Schön, dass du da bist.' : h < 17 ? 'Hallo! Na, wie läuft dein Tag?' : h < 22 ? 'Guten Abend! Noch ein bisschen Chemie vor dem Feierabend?' : 'So spät noch im Labor? Ich bin bei dir – aber denk an deinen Schlaf.';
     if (wd === 1 && h >= 5 && h < 17) t += ' Auf in die Woche!';
     else if (wd === 5 && h >= 5 && h < 17) t += ' Und gleich ist Wochenende!';
@@ -428,16 +430,28 @@
   }
 
   // ------------------------------------------------------------------ API
+  var DEFAULT_SKIN = {
+    name: 'Kolbi', emoji: '🧪', key: 'kolbi', size: { w: 78, h: 96, wm: 62, hm: 77 },
+    svg: svg, face: face, phys: kolbiPhys,
+    t: {
+      NICE: NICE, MOTIVATION: MOTIVATION, JOKES: JOKES, FACTS: FACTS, GENERIC: GENERIC, TICKLE: TICKLE, DIZZY: DIZZY, BREAK: BREAK, BORED: BORED, WAKE: WAKE,
+      jokeLead: 'Unlustiger Chemiker-Witz: ',
+      intro: ['Hallo! Ich bin Kolbi 🧪', 'Ich bin der Erlenmeyerkolben in deinem Labor und passe auf, dass nichts überkocht. Ich erzähle ab und zu etwas, gebe Denkanstöße und helfe, wenn du magst.']
+    }
+  };
+  window.KolbiSkins = window.KolbiSkins || {};
   var API = {
     init: function (c) {
       for (var k in c) cfg[k] = c[k];
+      SK = cfg.skin || DEFAULT_SKIN; KEY = SK.key + '-v1';
       load();
       if (document.getElementById('kolbi-root')) return;
       var s = document.createElement('style'); s.textContent = CSS; document.head.appendChild(s);
       var root = document.createElement('div'); root.id = 'kolbi-root';
-      root.innerHTML = '<div id="kolbi-char" role="button" tabindex="0" aria-label="Kolbi – Hilfe"><div id="kolbi-shadow"></div><div id="kolbi-body">' + svg(cfg.color) + '</div></div>' +
-        '<div id="kolbi-bubble" role="dialog" aria-live="polite"></div><button id="kolbi-back" type="button" aria-label="Kolbi wieder holen" title="Kolbi wieder holen">🧪 Kolbi<span class="kb-hol"> holen</span></button>';
+      root.innerHTML = '<div id="kolbi-char" role="button" tabindex="0" aria-label="' + SK.name + ' – Hilfe"><div id="kolbi-shadow"></div><div id="kolbi-body">' + SK.svg(cfg.color) + '</div></div>' +
+        '<div id="kolbi-bubble" role="dialog" aria-live="polite"></div><button id="kolbi-back" type="button" aria-label="' + SK.name + ' wieder holen" title="' + SK.name + ' wieder holen">' + SK.emoji + ' ' + SK.name + '<span class="kb-hol"> holen</span></button>';
       document.body.appendChild(root);
+      var z = SK.size; root.style.setProperty('--kw', z.w + 'px'); root.style.setProperty('--kh', z.h + 'px'); root.style.setProperty('--kwm', z.wm + 'px'); root.style.setProperty('--khm', z.hm + 'px');
       el.root = root; el.char = root.querySelector('#kolbi-char'); el.body = root.querySelector('#kolbi-body');
       el.bubble = root.querySelector('#kolbi-bubble'); el.back = root.querySelector('#kolbi-back');
       el.eyes = root.querySelector('#kolbi-eyes'); el.liq = root.querySelector('#kk-liq'); el.surf = root.querySelector('#kk-surf');
@@ -453,12 +467,12 @@
         if (d.moved) {
           place(d.px + dx, d.py + dy, false); quietUntil = Date.now() + 30000;
           var dd = e.clientX - d.lx;
-          if (Math.abs(dd) > 7) { var dir = dd > 0 ? 1 : -1, now = Date.now(); if (d.dir && dir !== d.dir) { d.flips.push(now); d.flips = d.flips.filter(function (t) { return now - t < 1500; }); if (d.flips.length >= 5 && now - lastDizzy > 12000) { lastDizzy = now; d.flips = []; showRemark(rnd(DIZZY), 'dizzy'); } } d.dir = dir; d.lx = e.clientX; }
+          if (Math.abs(dd) > 7) { var dir = dd > 0 ? 1 : -1, now = Date.now(); if (d.dir && dir !== d.dir) { d.flips.push(now); d.flips = d.flips.filter(function (t) { return now - t < 1500; }); if (d.flips.length >= 5 && now - lastDizzy > 12000) { lastDizzy = now; d.flips = []; showRemark(rnd(SK.t.DIZZY), 'dizzy'); } } d.dir = dir; d.lx = e.clientX; }
         }
       });
       el.char.addEventListener('pointerup', function () { if (!d) return; var m = d.moved; d = null; el.char.classList.remove('drag'); if (m) { savePos(); return; }
         var n = Date.now(); taps.push(n); taps = taps.filter(function (t) { return n - t < 2500; });
-        if (taps.length >= 4) { taps = []; showRemark(rnd(TICKLE), 'giggle'); return; }
+        if (taps.length >= 4) { taps = []; showRemark(rnd(SK.t.TICKLE), 'giggle'); return; }
         if (bubbleOpen) closeBubble(); else API.help();
       });
       el.char.addEventListener('pointercancel', function () { d = null; el.char.classList.remove('drag'); });
@@ -486,7 +500,7 @@
       if (cfg.intro && !st.met && !st.off) setTimeout(showIntro, 1800);
     },
     ask: function (o) {
-      if (!el.char || st.off) return;
+      if (!el.char || st.off || !talkOk()) return;
       if (o.id && (st.mute[o.id] || (shownIds[o.id] && !o.repeat))) return;
       if (bubbleOpen || introActive || (cfg.intro && !st.met)) { if (o.id && !shownIds['q' + o.id]) { shownIds['q' + o.id] = 1; queue.push(o); } return; }
       if (o.id) shownIds[o.id] = 1;
@@ -494,7 +508,7 @@
     },
     help: function () {
       var o = cfg.tapHelp ? cfg.tapHelp() : null;
-      if (!o) o = { text: 'Hallo, ich bin Kolbi!', tip: 'Tippe auf mich, wenn du Hilfe brauchst. Du kannst mich auch verschieben.' };
+      if (!o) o = { text: 'Hallo, ich bin ' + SK.name + '!', tip: 'Tippe auf mich, wenn du Hilfe brauchst. Du kannst mich auch verschieben.' };
       showAsk({ id: '', text: o.text, tip: o.tip });
     },
     greetHome: function (o) {
@@ -504,7 +518,7 @@
       showRemark(t, 'excited', null, o.hint || '');
     },
     arrive: function () { if (!el.char || st.off) return; el.char.classList.add('walk'); setTimeout(function () { if (el.char) el.char.classList.remove('walk'); }, 800); mood('excited', 1500); },
-    _break: function (min) { sset('kolbi-t0', String(Date.now() - min * 60000)); },
+    _break: function (min) { sset(SK.key + '-t0', String(Date.now() - min * 60000)); },
     say: function (text, m) { if (!el.char || st.off) return; curAsk = null; showRemark(text, m || 'happy'); },
     react: function (m, text) { if (!el.char || st.off) return; if (text && !bubbleOpen && !introActive && !st.quiet) showRemark(text, m); else mood(m, 2600); lastAct = Date.now(); },
     mood: function (m, ms) { mood(m, ms); },

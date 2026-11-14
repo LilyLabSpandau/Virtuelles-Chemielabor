@@ -848,5 +848,55 @@ buildTafel();
 showView('board');
 tutAutoStart();
 </script>
+<script src="../../../../kolbi/kolbi.js"></script>
+<script src="../../../../kolbi/skin-hugo.js"></script>
+<script>
+/* Hugo begleitet als frei beweglicher Helfer durch die ganze Anwendung */
+(function () {
+  if (!window.Kolbi || !window.KolbiSkins || !KolbiSkins.hugo) return;
+  var st = document.createElement('style');
+  st.textContent = '.hugo-float .coach .mascot{display:none}.hugo-float .coach{padding-left:14px}';
+  document.head.appendChild(st); document.body.classList.add('hugo-float');
+  function rnd(a) { return a[Math.floor(Math.random() * a.length)]; }
+  function help() {
+    if (T.on) return { text: 'Ich bin beim Tutorial dabei. Folge einfach dem Text im Kasten oben, ich bleibe bei dir.', tip: 'Mit dem × im Kasten kannst du das Tutorial beenden. Ich helfe dir danach trotzdem weiter.' };
+    if (G.view === 'board') return { text: 'Das ist die Tafel. Tippe auf ein Element oder starte unten einen Auftrag: Zufallsauftrag, Fehlersuche, Atom erkennen, Wer bin ich? oder Frei bauen.', tip: 'Neu hier? Die Regelkarte erklärt dir, wie Atome aufgebaut sind.' };
+    if (G.view === 'quiz') return { text: 'Untersuche das Atom genau: Zähle Schalen und Außenelektronen. Dann tippe das passende Element an.', tip: 'Die Zahl der Außenelektronen verrät dir die Hauptgruppe.' };
+    if (G.mode === 'repair') return { text: 'Hier stimmt etwas nicht. Vergleiche Protonen, Neutronen und Elektronen mit den Angaben der Kachel, Zahl für Zahl.', tip: 'Prüfe auch, ob die Schalen richtig gefüllt sind. Innen zuerst!' };
+    if (G.mode === 'free') return { text: 'Hier darfst du frei experimentieren. Baue ein Atom und schau, welches Element dabei herauskommt.', tip: 'Ein neutrales Atom hat gleich viele Protonen und Elektronen.' };
+    return { text: 'Lies die Kachel ab und baue das Atom nach. Tippe auf eine Schale, um ein Elektron zu setzen.', tip: 'Protonen = Ordnungszahl. Neutronen = Atommasse minus Protonen. Elektronen füllst du Schale für Schale von innen nach außen.' };
+  }
+  Kolbi.init({
+    id: 'atombau', skin: KolbiSkins.hugo, color: '#e0334f', offsetBottom: 48, intro: false,
+    canTalk: function () { return !T.on; }, tapHelp: help,
+    comments: [
+      'Auf der ersten Schale ist nur Platz für 2 Elektronen. Bei mir passt das genau: ich habe nur eins!',
+      'Probier ruhig verschiedene Elemente aus. Jedes Atom hat seine eigene Mischung.',
+      'Merk dir: Die Protonenzahl legt fest, um welches Element es sich handelt.',
+      'Die Elektronen füllen die Schalen von innen nach außen. Wie Sitzplätze im Kino, nur ohne Popcorn.',
+      'Die Außenelektronen entscheiden, wie ein Atom reagiert.',
+      'Ich schaue dir gern beim Bauen zu.'
+    ]
+  });
+  var HI = ['Hi, schön, dass du da bist! Ich bin Hugo und bleibe bei dir.', 'Willkommen in der Atomwerkstatt! Ich kreise schon mal warm.', 'Da bist du ja! Lass uns ein paar Atome bauen.'];
+  var WIN = ['Geschafft! Mein Elektron macht einen Looping. 🎉', 'Stark! Das Atom stimmt in allen Punkten. 🎉', 'Perfekt gebaut! Ich bin positiv beeindruckt. 🎉', 'Das sitzt! Besser als ich es könnte. 🎉'];
+  var FAIL = ['Noch nicht ganz, aber das kriegst du hin. Schau dir die Hinweise an.', 'Fast! Ein Elektron zu viel oder zu wenig ist schnell passiert. Mir auch.', 'Nicht schlimm. Selbst Atome brauchen manchmal mehrere Anläufe.'];
+  if (!T.on) setTimeout(function () { if (!T.on) Kolbi.greetHome({ text: rnd(HI) }); }, 2600);
+
+  var lw = '', lq = '';
+  function watch() {
+    if (T.on) { lw = G.fb; lq = G.q && G.q.fb; return; }
+    if (G.view === 'work' && G.fb !== lw) { lw = G.fb; if (G.win) Kolbi.react('excited', rnd(WIN)); else if (G.checked && /fb show no/.test(G.fb)) Kolbi.react('oops', rnd(FAIL)); }
+    if (G.view === 'quiz' && G.q && G.q.fb !== lq) { lq = G.q.fb; if (G.q.done) Kolbi.react('excited', rnd(WIN)); else if (G.q.fb) Kolbi.react('oops', rnd(FAIL)); }
+  }
+  var rw = renderWork, rq = renderQuiz;
+  renderWork = function () { rw.apply(this, arguments); watch(); };
+  renderQuiz = function () { rq.apply(this, arguments); watch(); };
+  var tss = tutShowStep, te = tutEnd, ts = tutStart;
+  tutShowStep = function () { tss.apply(this, arguments); var S = TS[T.i]; Kolbi.mood(S && S.cheer ? 'excited' : 'interested', 2200); };
+  tutEnd = function () { var was = T.on; te.apply(this, arguments); if (was) Kolbi.react('excited', 'Tutorial geschafft! Ich bleibe bei dir. Tippe mich an, wenn du Hilfe brauchst.'); };
+  tutStart = function () { ts.apply(this, arguments); Kolbi.mood('excited', 2500); };
+})();
+</script>
 </body>
 </html>
