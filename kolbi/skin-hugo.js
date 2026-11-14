@@ -87,7 +87,7 @@
         ['Warum ist Hugo so gut drauf?', 'Er ist positiv.'],
         ['Wieso sind Neutronen so entspannt?', 'Ihnen ist alles egal. Sie sind neutral.'],
         ['Warum geht ein Elektron nie allein auf Reisen?', 'Weil es immer auf seiner Schale bleibt.'],
-        ['Treffen sich zwei Atome. Sagt das eine: „Ich glaube, ich habe ein Elektron verloren.“', '„Bist du sicher?“ – „Ja, ich bin ganz positiv.“'],
+        ['Was sagt das Neutron an der Kasse im Supermarkt?', '„Für mich bitte keine Ladung.“'],
         ['Warum sind Edelgase so unnahbar?', 'Sie haben die Schale voll und brauchen niemanden.'],
         ['Was macht ein Proton am Wochenende?', 'Es hängt im Kern ab.'],
         ['Wie nennt man ein Atom mit Humor?', 'Hugo.'],
