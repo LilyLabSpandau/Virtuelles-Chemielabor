@@ -9,7 +9,7 @@
 (function () {
   'use strict';
   var KEY = 'kolbi-v1', SK = null;
-  var cfg = { id: 'modul', color: '#38bdf8', tapHelp: null, offsetBottom: 56, comments: [], intro: true, skin: null, canTalk: null };
+  var cfg = { id: 'modul', color: '#38bdf8', tapHelp: null, offsetBottom: 56, comments: [], intro: true, skin: null, canTalk: null, introExtra: '' };
   var st = { off: false, mute: {}, met: false, quiet: false };
   var el = {}, pos = { x: 0, y: 0 };
   var wanderT = null, quietUntil = 0, bubbleOpen = false, curAsk = null, shownIds = {}, queue = [], closeT = null, introActive = false;
@@ -344,7 +344,7 @@
   function showIntro() {
     introActive = true; mood('excited', 2800);
     openBubble(X + '<p class="kb-text"><b>' + SK.t.intro[0] + '</b><br>' + SK.t.intro[1] + '</p>' +
-      '<p class="kb-text" style="font-size:13px;color:#4b5563;margin-top:-4px">Du kannst mich ziehen, antippen oder ausblenden.</p><button class="kb-ok" data-k="hello">Hallo, ' + SK.name + '! 👋</button>', 0);
+      (cfg.introExtra ? '<p class="kb-text">' + cfg.introExtra + '</p>' : '') + '<p class="kb-text" style="font-size:13px;color:#4b5563;margin-top:-4px">Du kannst mich ziehen, antippen oder ausblenden.</p><button class="kb-ok" data-k="hello">Hallo, ' + SK.name + '! 👋</button>', 0);
   }
   function onBubbleClick(e) {
     var t = e.target.closest ? e.target.closest('[data-k]') : null; if (!t) return;
@@ -519,7 +519,7 @@
     },
     arrive: function () { if (!el.char || st.off) return; el.char.classList.add('walk'); setTimeout(function () { if (el.char) el.char.classList.remove('walk'); }, 800); mood('excited', 1500); },
     _break: function (min) { sset(SK.key + '-t0', String(Date.now() - min * 60000)); },
-    say: function (text, m) { if (!el.char || st.off) return; curAsk = null; showRemark(text, m || 'happy'); },
+    say: function (text, m) { if (!el.char || st.off || introActive || (cfg.intro && !st.met)) return false; curAsk = null; showRemark(text, m || 'happy'); return true; },
     react: function (m, text) { if (!el.char || st.off) return; if (text && !bubbleOpen && !introActive && !st.quiet) showRemark(text, m); else mood(m, 2600); lastAct = Date.now(); },
     mood: function (m, ms) { mood(m, ms); },
     _remark: function () { if (el.char) remark(); },

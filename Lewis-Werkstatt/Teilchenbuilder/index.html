@@ -3866,8 +3866,10 @@
       name: { text: 'Anscheinend möchtest du den Namen des Teilchens bestimmen.', tip: 'Im Lern-Modus siehst du die Regeln Schritt für Schritt. Im Selbst-Test gibst du den Namen selbst ein – der Tipp-Knopf zeigt dir dann den Weg, nicht das Ergebnis.' }
     };
     function tab() { return document.body.dataset.tab || 'draw'; }
+    var PURPOSE = 'Im Teilchenbuilder zeichnest du Lewis-Formeln von Molekülen und Ionen, lässt sie prüfen und siehst sie danach als drehbares 3D-Modell. Im Lern-Modus lernst du, wie man sie benennt, im Selbst-Test übst du es.';
+    var seenTB = false; try { seenTB = !!sessionStorage.getItem('tb-expl'); sessionStorage.setItem('tb-expl', '1'); } catch (e) {}
     Kolbi.init({
-      id: 'teilchenbuilder', color: '#38bdf8', offsetBottom: 64,
+      id: 'teilchenbuilder', color: '#38bdf8', offsetBottom: 64, introExtra: PURPOSE,
       tapHelp: function () { return T[tab()]; },
       comments: [
         'Kohlenstoff geht gern vier Bindungen ein – deshalb gibt es so unglaublich viele organische Verbindungen.',
@@ -3880,6 +3882,7 @@
         'Ich schaue dir gern beim Zeichnen zu.'
       ]
     });
+    if (!seenTB) setTimeout(function () { Kolbi.say(PURPOSE, 'interested'); }, 2200);
     setTimeout(function () { Kolbi.ask({ id: 'tb-' + tab(), text: T[tab()].text, tip: T[tab()].tip }); }, 3500);
     new MutationObserver(function () {
       var t = tab();

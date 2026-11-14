@@ -15,10 +15,24 @@
   function run() {
     var paper = document.querySelector('.paper h1'), title = paper ? paper.textContent.trim() : (document.title || '').replace(/\s*[-–]\s*Chemie.*$/, '').trim();
     var onBoard = !!document.querySelector('.paper');
-    var help;
-    if (isRoot) help = { text: 'Anscheinend suchst du dir ein Thema aus.', tip: 'Tippe auf einen Gegenstand auf dem Tisch: Der Erlenmeyerkolben führt zur Sekundarstufe I, der Messkolben zur Sekundarstufe II, das Lineal zu den Schultools und der Mörser zur Lewis-Werkstatt.' };
-    else if (onBoard) help = { text: 'Anscheinend suchst du dir ein Modul aus.', tip: 'Die Zettel an der Pinnwand führen zu Simulationen und Übungen. Tippe einen an. Mit dem Knopf unten links kommst du eine Ebene zurück.' };
-    else help = { text: 'Anscheinend suchst du dir einen Bereich aus.', tip: 'Tippe auf einen Gegenstand auf dem Tisch. Jeder führt zu einer Klassenstufe oder einem Halbjahr. Mit dem Knopf unten links kommst du eine Ebene zurück.' };
+    function clean(t) { return (t || '').replace(/\u00ad/g, '').replace(/\s+/g, ' ').trim(); }
+    function names(l) { return l.length < 2 ? l.join('') : l.slice(0, -1).join(', ') + ' und ' + l[l.length - 1]; }
+    function explain() {
+      if (isRoot) return 'Das ist dein virtuelles Chemielabor. Die Sekundarstufe I und II enthalten Lernmodule und Simulationen zu den Klassenstufen, die Schultools praktische Werkzeuge für den Schulalltag und die Lewis-Werkstatt eine Werkstatt für Moleküle und Lewis-Formeln.';
+      if (onBoard) {
+        var notes = [].slice.call(document.querySelectorAll('a.note')).filter(function (n) { return !n.hidden && n.offsetParent !== null; });
+        if (!notes.length) return 'Das ist die Pinnwand zu „' + title + '“. Hier hängt noch nichts. Schau später wieder vorbei!';
+        var t = notes.map(function (n) { var b = n.querySelector('b'); return clean(b ? b.textContent : n.textContent); }).filter(Boolean);
+        var shown = t.slice(0, 4), more = t.length > 4 ? ' und ' + (t.length - 4) + ' weitere' : '';
+        return 'Das ist die Pinnwand zu „' + title + '“. Hier ' + (notes.length === 1 ? 'hängt ein Zettel: ' : 'hängen ' + notes.length + ' Zettel: ') + (more ? shown.join(', ') + more : names(shown)) + '. Das Etikett auf dem Zettel verrät dir, ob es eine Simulation, ein Lernmodul oder etwas anderes ist.';
+      }
+      var links = [].slice.call(document.querySelectorAll('a.lab-link, a.item')).map(function (a) { var t = clean(a.getAttribute('title')); return a.classList.contains('item') ? t.split(/\s–\s|:\s/)[0] : t; }).filter(Boolean);
+      return 'Das ist der Bereich „' + title + '“. Hier wählst du, womit du weitermachst: ' + names(links) + '.';
+    }
+    var tip = isRoot ? 'Tippe auf einen Gegenstand auf dem Tisch: Der Erlenmeyerkolben führt zur Sekundarstufe I, der Messkolben zur Sekundarstufe II, das Lineal zu den Schultools und der Mörser zur Lewis-Werkstatt.'
+      : onBoard ? 'Die Zettel an der Pinnwand führen zu Simulationen und Übungen. Tippe einen an. Mit dem Knopf unten links kommst du eine Ebene zurück.'
+      : 'Tippe auf einen Gegenstand auf dem Tisch. Mit dem Knopf unten links kommst du eine Ebene zurück.';
+    var help = { get text() { return explain(); }, tip: tip };
     var comments = isRoot ? [
       'Auf dem Tisch liegt alles, was du brauchst. Fang bei dem an, was dich neugierig macht.',
       'Hast du schon die Lewis-Werkstatt ausprobiert? Der Mörser ist ein Geheimtipp.',
@@ -33,18 +47,16 @@
     ];
     Kolbi.init({ id: 'site', color: '#38bdf8', offsetBottom: 56, tapHelp: function () { return help; }, comments: comments });
 
+    var key = 'kolbi-expl-' + rel, seen = false;
+    try { seen = !!sessionStorage.getItem(key); } catch (e) {}
+    function mark() { try { sessionStorage.setItem(key, '1'); } catch (e) {} }
     if (isRoot) {
-      // Auf der Startseite begrüßt Kolbi bei jedem Besuch
-      setTimeout(function () { Kolbi.greetHome({ hint: 'Tippe auf einen Gegenstand auf dem Tisch, um loszulegen.' }); }, 2300);
-    } else {
-      // Auf den anderen Seiten winkt er kurz; ab und zu sagt er, wo man ist (nicht bei jedem Klick)
-      try {
-        var last = +sessionStorage.getItem('kolbi-lastsay') || 0;
-        if (title && Date.now() - last > 4 * 60000 && Math.random() < 0.35) {
-          sessionStorage.setItem('kolbi-lastsay', String(Date.now()));
-          setTimeout(function () { Kolbi.say(onBoard ? 'Du bist jetzt bei „' + title + '“. Viel Spaß beim Stöbern!' : 'Weiter geht’s! Such dir einen Gegenstand aus.', 'interested'); }, 1800);
-        }
-      } catch (e) {}
+      // Startseite: Begrüßung bei jedem Besuch, beim ersten Besuch der Sitzung mit Erklärung
+      setTimeout(function () { Kolbi.greetHome({ hint: seen ? 'Tippe auf einen Gegenstand auf dem Tisch, um loszulegen.' : explain() }); mark(); }, 2300);
+    } else if (!seen) {
+      // Übersichtsseiten: beim ersten Besuch pro Sitzung erklärt Kolbi, was man hier findet (wartet notfalls das Kennenlernen ab)
+      var tries = 0;
+      setTimeout(function go() { if (Kolbi.say(explain(), 'interested')) mark(); else if (++tries < 5) setTimeout(go, 6000); }, onBoard ? 2400 : 1800);
     }
   }
   function start() { if (window.Kolbi) return run(); var s = document.createElement('script'); s.src = base + 'kolbi.js'; s.onload = run; document.head.appendChild(s); }

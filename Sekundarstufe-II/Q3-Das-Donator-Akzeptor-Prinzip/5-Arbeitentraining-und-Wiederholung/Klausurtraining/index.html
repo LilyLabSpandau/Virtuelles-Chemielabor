@@ -889,7 +889,8 @@ document.addEventListener('keydown',function(e){if(e.key==='Enter'&&e.target.tag
 load();if(!byId(S.cur))S.cur='A1';
 render();window.scrollTo(0,0);
 const nOk=T.filter(function(x){return S.st[x.id]==='ok'}).length;
-say(nOk?'Willkommen zurück! Du hast schon '+nOk+' Aufgaben geschafft.':pick(MSG.hello),'happy');
+let seenX=false;try{seenX=!!sessionStorage.getItem('kt-expl');sessionStorage.setItem('kt-expl','1')}catch(e){}
+say(seenX?(nOk?'Willkommen zurück! Du hast schon '+nOk+' Aufgaben geschafft.':pick(MSG.hello)):'Hi, ich bin Kolbi! Hier trainierst du für die Klausur: Säure-Base-Konzepte, Säure- und Basenstärke, Neutralisationstitration und Redoxreaktionen. Such dir ein Thema und eine Aufgabe aus, dein Stand wird automatisch gespeichert.'+(nOk?' Du hast schon '+nOk+' Aufgaben geschafft.':''),'happy');
 window.__KT={T:T,S:function(){return S},go:go,parseNum:parseNum,parseOZ:parseOZ,checkEq:checkEq,checkSp:checkSp};
 })();
 
