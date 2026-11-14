@@ -334,5 +334,6 @@ var last = performance.now();
 function frame(now) { var dt = Math.min(.05, (now - last) / 1000); last = now; S.t += dt; g.setTransform(2, 0, 0, 2, 0, 0); if (S.step === 1) { rfStep(dt); rfDraw(); } else impDraw(); requestAnimationFrame(frame); }
 panel(); requestAnimationFrame(frame);
 </script>
+<script src="../../../../kolbi/kolbi-app.js"></script>
 </body>
 </html>

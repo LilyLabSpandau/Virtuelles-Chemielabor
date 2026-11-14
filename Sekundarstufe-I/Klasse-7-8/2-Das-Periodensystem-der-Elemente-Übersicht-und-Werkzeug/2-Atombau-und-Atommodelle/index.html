@@ -869,6 +869,7 @@ tutAutoStart();
   Kolbi.init({
     id: 'atombau', skin: KolbiSkins.hugo, color: '#e0334f', offsetBottom: 48, intro: false,
     canTalk: function () { return !T.on; }, tapHelp: help,
+    idleHelp: function () { var h = help(); return { text: rnd(['Kommst du gut voran?', 'Hängst du irgendwo fest? Ich helfe gern.', 'Alles klar bei dir? Mein Elektron und ich sind bereit.']), tip: h.tip }; },
     comments: [
       'Auf der ersten Schale ist nur Platz für 2 Elektronen. Bei mir passt das genau: ich habe nur eins!',
       'Probier ruhig verschiedene Elemente aus. Jedes Atom hat seine eigene Mischung.',
@@ -881,7 +882,12 @@ tutAutoStart();
   var HI = ['Hi, schön, dass du da bist! Ich bin Hugo und bleibe bei dir.', 'Willkommen in der Atomwerkstatt! Ich kreise schon mal warm.', 'Da bist du ja! Lass uns ein paar Atome bauen.'];
   var WIN = ['Geschafft! Mein Elektron macht einen Looping. 🎉', 'Stark! Das Atom stimmt in allen Punkten. 🎉', 'Perfekt gebaut! Ich bin positiv beeindruckt. 🎉', 'Das sitzt! Besser als ich es könnte. 🎉'];
   var FAIL = ['Noch nicht ganz, aber das kriegst du hin. Schau dir die Hinweise an.', 'Fast! Ein Elektron zu viel oder zu wenig ist schnell passiert. Mir auch.', 'Nicht schlimm. Selbst Atome brauchen manchmal mehrere Anläufe.'];
-  if (!T.on) setTimeout(function () { if (!T.on) Kolbi.greetHome({ text: rnd(HI) }); }, 2600);
+  var PURPOSE = 'Die Atomwerkstatt zeigt dir, wie Atome aus Protonen, Neutronen und Elektronen aufgebaut sind. Du baust Atome nach, suchst Fehler und erkennst Elemente an ihren Angaben.';
+  var seenH = false; try { seenH = !!sessionStorage.getItem('hugo-expl'); } catch (e) { }
+  setTimeout(function greet0() { (function greet(n) {
+    if (T.on) { try { sessionStorage.setItem('hugo-expl', '1'); } catch (e) { } return; }   // im Tutorial stellt Hugo sich dort selbst vor
+    if (Kolbi.say(seenH ? rnd(HI) : rnd(HI) + ' ' + PURPOSE, 'excited')) { try { sessionStorage.setItem('hugo-expl', '1'); } catch (e) { } }
+  })(0); }, 2400);
 
   var lw = '', lq = '';
   function watch() {

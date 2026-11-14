@@ -9,7 +9,7 @@
 (function () {
   'use strict';
   var KEY = 'kolbi-v1', SK = null;
-  var cfg = { id: 'modul', color: '#38bdf8', tapHelp: null, offsetBottom: 56, comments: [], intro: true, skin: null, canTalk: null, introExtra: '' };
+  var cfg = { id: 'modul', color: '#38bdf8', tapHelp: null, offsetBottom: 56, comments: [], intro: true, skin: null, canTalk: null, introExtra: '', idleHelp: null };
   var st = { off: false, mute: {}, met: false, quiet: false };
   var el = {}, pos = { x: 0, y: 0 };
   var wanderT = null, quietUntil = 0, bubbleOpen = false, curAsk = null, shownIds = {}, queue = [], closeT = null, introActive = false;
@@ -189,6 +189,7 @@
   '#kolbi-back{position:fixed;left:10px;pointer-events:auto;display:none;border:0;border-radius:999px;background:rgba(30,41,59,.92);color:#e2e8f0;font:600 12px "Segoe UI",system-ui,sans-serif;padding:7px 12px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.35)}' +
   '@media (max-width:520px){#kolbi-back .kb-hol{display:none}}' +
   '@media (max-width:700px){#kolbi-char{width:var(--kwm,62px);height:var(--khm,77px)}#kolbi-shadow{width:calc(var(--kwm,62px) * .8);margin-left:calc(var(--kwm,62px) * -.4)}}' +
+  '@media print{#kolbi-root{display:none!important}}' +
   '@media (prefers-reduced-motion:reduce){#kolbi-body,#kolbi-char.walk #kolbi-body,#kolbi-char[data-mood=excited] #kolbi-body{animation:none}#kolbi-body .k-lid,#kolbi-body .k-bub,#kolbi-body .k-zzz{animation:none}}';
 
   function svg(col) {
@@ -366,7 +367,7 @@
     if (!bag.length) refillBag();
     var kind = bag.pop();
     if (kind === 'help') {
-      var o = cfg.tapHelp ? cfg.tapHelp() : null;
+      var o = cfg.idleHelp ? cfg.idleHelp() : (cfg.tapHelp ? cfg.tapHelp() : null);
       if (o) { showAsk({ id: '', text: o.text, tip: o.tip }); return; }
       kind = 'nice';
     }
@@ -447,7 +448,7 @@
       load();
       if (document.getElementById('kolbi-root')) return;
       var s = document.createElement('style'); s.textContent = CSS; document.head.appendChild(s);
-      var root = document.createElement('div'); root.id = 'kolbi-root';
+      var root = document.createElement('div'); root.id = 'kolbi-root'; root.setAttribute('data-html2canvas-ignore', 'true');
       root.innerHTML = '<div id="kolbi-char" role="button" tabindex="0" aria-label="' + SK.name + ' – Hilfe"><div id="kolbi-shadow"></div><div id="kolbi-body">' + SK.svg(cfg.color) + '</div></div>' +
         '<div id="kolbi-bubble" role="dialog" aria-live="polite"></div><button id="kolbi-back" type="button" aria-label="' + SK.name + ' wieder holen" title="' + SK.name + ' wieder holen">' + SK.emoji + ' ' + SK.name + '<span class="kb-hol"> holen</span></button>';
       document.body.appendChild(root);
