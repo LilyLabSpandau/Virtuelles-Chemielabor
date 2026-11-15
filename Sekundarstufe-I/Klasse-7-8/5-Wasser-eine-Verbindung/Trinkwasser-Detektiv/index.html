@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trinkwasser-Detektiv</title>
+<link rel="icon" type="image/png" href="../../../../icons/icon-192.png">
+<link rel="apple-touch-icon" href="../../../../icons/apple-touch-icon.png">
+<style>
+:root{
+  --blue:#1565c0; --blue-d:#0d3c78; --teal:#00838f; --bg1:#e0f7fa; --bg2:#b2ebf2;
+  --ink:#22313f; --ok:#2e7d32; --okbg:#e8f5e9; --bad:#c62828; --badbg:#ffebee; --sun:#f9a825;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-family:'Comic Sans MS','Segoe UI',Tahoma,Verdana,sans-serif;color:var(--ink);
+  background:linear-gradient(135deg,var(--bg1) 0%,var(--bg2) 100%);background-attachment:fixed;line-height:1.5;
+  padding-bottom:60px}
+header{background:linear-gradient(120deg,var(--blue) 0%,var(--teal) 100%);color:#fff;padding:18px 16px 14px;text-align:center;box-shadow:0 4px 10px rgba(0,0,0,.15)}
+header h1{margin:0;font-size:clamp(24px,5vw,34px)}
+header p{margin:4px 0 8px;font-size:clamp(14px,2.6vw,17px)}
+.badge{display:inline-block;background:rgba(255,255,255,.2);border:2px solid rgba(255,255,255,.7);border-radius:20px;padding:2px 12px;font-size:13px;font-weight:bold}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;max-width:1000px;margin:10px auto 0;padding:0 14px;font-size:15px}
+.topbar a{color:var(--blue-d);font-weight:bold;text-decoration:none}
+#drops{background:#fff;border:2px solid var(--blue);border-radius:20px;padding:3px 12px;font-weight:bold;color:var(--blue-d);white-space:nowrap}
+nav{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;max-width:1000px;margin:10px auto 0;padding:0 10px}
+nav button{font:inherit;font-size:14px;font-weight:bold;padding:9px 12px;border-radius:22px;border:3px solid transparent;background:#fff;color:var(--blue-d);cursor:pointer;box-shadow:0 2px 5px rgba(0,0,0,.12);min-height:44px}
+nav button.active{background:var(--blue);color:#fff;border-color:#82b1ff}
+nav button.done::after{content:" 💧"}
+.station{display:none;max-width:1000px;margin:14px auto;padding:20px 22px;background:rgba(255,255,255,.96);border-radius:16px;box-shadow:0 10px 20px rgba(0,0,0,.1)}
+.station.active{display:block}
+h2{margin:0 0 6px;color:var(--blue-d);font-size:clamp(21px,4.4vw,28px)}
+h3{margin:18px 0 6px;color:var(--teal);font-size:19px}
+.lead{font-size:17px;margin:4px 0 14px}
+.card{background:#f4fbfd;border:3px solid #80deea;border-radius:14px;padding:14px 16px;margin:12px 0}
+.card.warn{background:#fff8e1;border-color:#ffd54f}
+.card.good{background:var(--okbg);border-color:#81c784}
+.btn{font:inherit;font-size:16px;font-weight:bold;padding:11px 18px;margin:4px 6px 4px 0;border-radius:10px;border:none;background:var(--blue);color:#fff;cursor:pointer;min-height:44px;box-shadow:0 3px 0 var(--blue-d);touch-action:manipulation}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--blue-d)}
+.btn.alt{background:#fff;color:var(--blue-d);border:3px solid var(--blue);box-shadow:none}
+.btn.green{background:#2e7d32;box-shadow:0 3px 0 #1b5e20}
+.btn:disabled{opacity:.45;cursor:default}
+.row{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
+.row>*{flex:1 1 300px;min-width:0}
+.fb{margin-top:10px;padding:10px 14px;border-radius:10px;font-weight:bold;display:none}
+.fb.show{display:block}
+.fb.ok{background:var(--okbg);color:#1b5e20;border:2px solid #81c784}
+.fb.bad{background:var(--badbg);color:#7f1d1d;border:2px solid #e57373}
+.fb.info{background:#e3f2fd;color:#0d3c78;border:2px solid #90caf9}
+.shake{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+svg text{font-family:inherit}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.chip{font:inherit;font-size:15px;font-weight:bold;padding:7px 13px;border-radius:18px;border:2px solid #90a4ae;background:#fff;cursor:pointer;min-height:40px;touch-action:manipulation}
+.chip.sel{background:#e3f2fd;border-color:var(--blue)}
+.chip.found{background:var(--okbg);border-color:#66bb6a}
+.opts button{display:block;width:100%;text-align:left;font:inherit;font-size:16px;padding:11px 14px;margin:7px 0;border-radius:10px;border:3px solid #b0bec5;background:#fff;cursor:pointer;min-height:44px;touch-action:manipulation}
+.opts button.ok{background:var(--okbg);border-color:#66bb6a}
+.opts button.bad{background:var(--badbg);border-color:#e57373}
+.opts button:disabled{cursor:default;color:var(--ink);opacity:1}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{border:2px solid #b2dfdb;padding:6px 9px;text-align:left}
+th{background:#e0f2f1}
+details{background:#fff;border:2px solid #90caf9;border-radius:10px;padding:8px 12px;margin:10px 0}
+summary{cursor:pointer;font-weight:bold;color:var(--blue-d);min-height:30px}
+sub,sup{line-height:0}
+.pill{display:inline-block;background:#e0f2f1;border-radius:14px;padding:2px 10px;margin:2px 3px 2px 0;font-size:14px}
+.big{font-size:20px}
+.formel{font-weight:bold;font-size:22px;color:var(--blue-d)}
+.cardgame{text-align:center;padding:16px}
+.cardgame .prt{display:inline-block;min-width:150px;padding:16px 20px;font-size:34px;font-weight:bold;background:#fff;border:4px solid var(--blue);border-radius:16px;box-shadow:0 6px 12px rgba(0,0,0,.15)}
+.src{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-top:14px}
+.src button{font:inherit;font-size:15px;font-weight:bold;text-align:left;padding:10px 12px;border-radius:12px;border:3px solid #80cbc4;background:#fff;cursor:pointer;min-height:64px;touch-action:manipulation}
+.src button small{display:block;font-weight:normal;color:#51606d;margin-top:2px}
+.src button .got{display:block;margin-top:4px;font-weight:bold;color:var(--ok)}
+.src button.wrongflash{background:var(--badbg);border-color:#e57373}
+.chain{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:10px 0}
+.chain span.st{background:#e3f2fd;border:3px solid var(--blue);border-radius:12px;padding:6px 10px;font-weight:bold}
+.chain span.ar{font-size:20px;color:var(--blue)}
+.worksteps{display:flex;flex-wrap:wrap;gap:8px}
+.worksteps button{font:inherit;font-size:15px;font-weight:bold;padding:10px 14px;border-radius:12px;border:3px solid #80cbc4;background:#fff;cursor:pointer;min-height:48px;touch-action:manipulation}
+.worksteps button.used{display:none}
+.sortcard{text-align:center}
+.sortcard .prt{font-size:32px}
+.hint{font-size:14px;color:#51606d}
+.final{text-align:center;background:linear-gradient(120deg,#fff59d,#ffe082);border:4px solid var(--sun);border-radius:18px;padding:18px;margin:16px 0;display:none}
+.final.show{display:block}
+.final .big{font-size:26px}
+.nextrow{margin-top:18px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.imp{position:fixed;bottom:10px;right:10px;background:rgba(0,0,0,.6);color:#fff;padding:5px 10px;text-decoration:none;border-radius:5px;font-family:sans-serif;font-size:12px;z-index:9999}
+@media (max-width:560px){.station{padding:14px 12px;margin:10px 6px;border-radius:12px} nav button{font-size:13px;padding:8px 9px}}
+@media (prefers-reduced-motion:reduce){.shake{animation:none}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🔍 Trinkwasser-Detektiv</h1>
+  <p>Was steckt in unserem Leitungswasser – und worauf müssen wir achten?</p>
+  <span class="badge">Wahlpflicht Chemie · Klasse 10</span>
+</header>
+
+<div class="topbar"><a href="../index.html">← Zurück zu Wasser</a><span id="drops">💧 0 / 6</span></div>
+
+<nav id="nav">
+  <button data-go="s0" class="active">Start</button>
+  <button data-go="s1">1 Zoom ins Glas</button>
+  <button data-go="s2">2 Woher kommt das?</button>
+  <button data-go="s3">3 Vom Brunnen zum Hahn</button>
+  <button data-go="s4">4 Grenzwert-Check</button>
+  <button data-go="s5">5 Härte &amp; Kalk</button>
+  <button data-go="s6">6 Säure oder Base?</button>
+  <button data-go="s7">7 Ausblick Labor</button>
+</nav>
+
+<!-- ============ START ============ -->
+<section class="station active" id="s0">
+  <h2>Dein Auftrag</h2>
+  <p class="lead">Du füllst ein Glas am Wasserhahn. Das Wasser ist klar und riecht nach nichts. Ist da wirklich nur H<sub>2</sub>O drin?</p>
+  <div class="card">
+    <p><b>Als Wasser-Detektiv</b> untersuchst du das Trinkwasser Schritt für Schritt:</p>
+    <ul>
+      <li>Welche Stoffe sind gelöst, und woher kommen sie?</li>
+      <li>Wie wird aus Grundwasser Trinkwasser?</li>
+      <li>Welche Grenzwerte gelten, und was passiert, wenn sie überschritten werden?</li>
+      <li>Warum setzt sich Kalk ab?</li>
+    </ul>
+    <p>Für jede gelöste Station bekommst du einen Wassertropfen 💧. Die Stationen kannst du in beliebiger Reihenfolge bearbeiten.</p>
+  </div>
+  <div class="card good">
+    <p><b>Das weißt du schon und brauchst du hier:</b></p>
+    <span class="pill">Polarität und Dipol</span><span class="pill">Wasserstoffbrückenbindungen</span><span class="pill">Leitfähigkeit</span><span class="pill">Lösen von Salzen</span><span class="pill">Säuren, Basen, Ampholyte</span>
+  </div>
+  <p class="hint">Alle Zahlen stammen aus der Trinkwasserverordnung (TrinkwV 2023) und aus den Analysewerten der Berliner Wasserwerke (Jahresmedian 2025).</p>
+  <button class="btn green" data-go="s1">Los geht's →</button>
+</section>
+
+<!-- ============ STATION 1 ============ -->
+<section class="station" id="s1">
+  <h2>1 · Zoom ins Wasserglas</h2>
+  <h3>Teil A: Leitet das Wasser den Strom?</h3>
+  <p>Ein Leitfähigkeitstester zeigt, ob frei bewegliche Ladungsträger im Wasser sind. Tauche ihn in drei Proben.</p>
+  <div class="row">
+    <div>
+      <svg id="tester" viewBox="0 0 400 250" width="100%" role="img" aria-label="Leitfähigkeitstester">
+        <rect x="10" y="10" width="380" height="230" fill="#fafafa" stroke="#cfd8dc" rx="12"/>
+        <!-- Batterie + LED -->
+        <rect x="40" y="30" width="60" height="34" rx="4" fill="#455a64"/><rect x="100" y="40" width="8" height="14" fill="#455a64"/>
+        <text x="70" y="53" font-size="16" fill="#fff" text-anchor="middle">9 V</text>
+        <circle id="led" cx="300" cy="47" r="20" fill="#ffd54f" stroke="#8d6e63" stroke-width="3" opacity=".15"/>
+        <circle id="ledglow" cx="300" cy="47" r="34" fill="#fff59d" opacity="0"/>
+        <text x="300" y="86" font-size="14" text-anchor="middle" fill="#455a64">Lämpchen</text>
+        <path d="M108 47 H180 V110 M180 110 H150 V150 M280 47 H250 V110 M250 110 H275 V150" fill="none" stroke="#37474f" stroke-width="3"/>
+        <path d="M150 110 H275" stroke="none"/>
+        <!-- Elektroden -->
+        <rect x="143" y="110" width="8" height="70" fill="#90a4ae"/><rect x="268" y="110" width="8" height="70" fill="#90a4ae"/>
+        <!-- Becher -->
+        <path d="M110 140 V225 H310 V140" fill="none" stroke="#546e7a" stroke-width="4"/>
+        <rect id="liquid" x="112" y="160" width="196" height="63" fill="#bbdefb" opacity=".8"/>
+        <text id="probname" x="210" y="205" font-size="15" text-anchor="middle" fill="#0d3c78" font-weight="bold">destilliertes Wasser</text>
+      </svg>
+    </div>
+    <div>
+      <div class="chips" id="probChips">
+        <button class="chip sel" data-p="dest">destilliertes Wasser</button>
+        <button class="chip" data-p="tap">Leitungswasser</button>
+        <button class="chip" data-p="salz">Kochsalzlösung (1 %)</button>
+      </div>
+      <div class="card"><b>Leitfähigkeit:</b> <span id="kappa" class="big">&lt; 5 µS/cm</span><br><span id="kappaTxt" class="hint">Kein Strom, das Lämpchen bleibt dunkel.</span></div>
+      <div id="q1a"></div>
+    </div>
+  </div>
+
+  <h3>Teil B: Zoom auf die Teilchen</h3>
+  <p>So könnte ein winziger Wassertropfen aussehen (nicht maßstabsgetreu). <b>Tippe jedes Teilchen an</b>, das nicht H<sub>2</sub>O ist, und finde alle 11 gelösten Stoffe.</p>
+  <div style="background:#e8f4fb;border:3px solid #81d4fa;border-radius:14px;overflow:hidden">
+    <svg id="scene" viewBox="0 0 760 400" width="100%" style="display:block;touch-action:manipulation" role="img" aria-label="Teilchenmodell von Trinkwasser"></svg>
+  </div>
+  <div style="margin-top:8px">
+    <button class="btn alt" id="shellBtn">Hydrathüllen zeigen</button>
+    <button class="btn alt" id="pauseBtn">⏸ Bewegung anhalten</button>
+    <span id="foundCount" class="big">0 / 11 gefunden</span>
+  </div>
+  <div class="card" id="pinfo"><span class="hint">Tippe ein Teilchen an, um mehr zu erfahren.</span></div>
+  <div class="chips" id="foundChips"></div>
+  <div class="nextrow"><span></span><button class="btn" data-go="s2">Weiter zu Station 2 →</button></div>
+</section>
+
+<!-- ============ STATION 2 ============ -->
+<section class="station" id="s2">
+  <h2>2 · Woher kommt das?</h2>
+  <p class="lead">Regen sickert durch den Boden und wird zu Grundwasser. Auf dem Weg löst es Stoffe aus Gestein, Boden und aus der Luft. Ordne jedes Teilchen seiner wichtigsten Quelle zu.</p>
+  <div class="card cardgame">
+    <div class="hint">Teilchen <span id="g2n">1</span> von 11</div>
+    <div id="g2card" class="prt">?</div>
+    <div id="g2name" style="margin-top:8px;font-weight:bold"></div>
+  </div>
+  <div class="src" id="g2src"></div>
+  <div class="fb" id="g2fb"></div>
+  <div class="card good" id="g2sum" style="display:none"></div>
+  <div class="nextrow"><button class="btn alt" data-go="s1">← Station 1</button><button class="btn" data-go="s3">Weiter zu Station 3 →</button></div>
+</section>
+
+<!-- ============ STATION 3 ============ -->
+<section class="station" id="s3">
+  <h2>3 · Vom Brunnen zum Hahn</h2>
+  <p class="lead">Rohwasser aus dem Untergrund ist noch kein Trinkwasser. Baue den Weg im Wasserwerk in der richtigen Reihenfolge auf. Tippe immer den <b>nächsten</b> Schritt an.</p>
+  <div class="card warn hint" style="font-size:15px">Berlin gewinnt sein Trinkwasser aus Grundwasser, auch aus Uferfiltrat (Wasser, das durch den Boden am Seeufer gereinigt wurde), in 9 Wasserwerken. Der Ablauf unten gilt vereinfacht für viele Wasserwerke.</div>
+  <div class="worksteps" id="g3pool"></div>
+  <h3>Dein Weg</h3>
+  <div class="chain" id="g3chain"><span class="hint">Noch leer</span></div>
+  <div class="fb" id="g3fb"></div>
+  <div class="card good" id="g3sum" style="display:none"></div>
+  <div class="nextrow"><button class="btn alt" data-go="s2">← Station 2</button><button class="btn" data-go="s4">Weiter zu Station 4 →</button></div>
+</section>
+
+<!-- ============ STATION 4 ============ -->
+<section class="station" id="s4">
+  <h2>4 · Grenzwert-Check</h2>
+  <p class="lead">Fünf Wasserproben liegen im Labor. Prüfe die Messwerte, entscheide und finde die Ursache.</p>
+  <details>
+    <summary>📖 Grenzwerte nachschlagen (TrinkwV 2023)</summary>
+    <table>
+      <tr><th>Parameter</th><th>Grenzwert</th><th>Warum?</th></tr>
+      <tr><td>Nitrat NO<sub>3</sub><sup>−</sup></td><td>50 mg/L</td><td>kann im Körper zu Nitrit werden, gefährlich für Säuglinge</td></tr>
+      <tr><td>Nitrit NO<sub>2</sub><sup>−</sup></td><td>0,5 mg/L</td><td>behindert den Sauerstofftransport im Blut</td></tr>
+      <tr><td>Ammonium NH<sub>4</sub><sup>+</sup></td><td>0,5 mg/L</td><td>Hinweis auf Verunreinigung</td></tr>
+      <tr><td>Chlorid Cl<sup>−</sup></td><td>250 mg/L</td><td>Geschmack, fördert Korrosion</td></tr>
+      <tr><td>Sulfat SO<sub>4</sub><sup>2−</sup></td><td>250 mg/L</td><td>Geschmack, greift Beton an</td></tr>
+      <tr><td>Natrium Na<sup>+</sup></td><td>200 mg/L</td><td>Geschmack</td></tr>
+      <tr><td>Eisen Fe</td><td>0,2 mg/L</td><td>Rostflocken, Geschmack, Flecken in der Wäsche</td></tr>
+      <tr><td>Mangan Mn</td><td>0,05 mg/L</td><td>braun-schwarze Ablagerungen</td></tr>
+      <tr><td>Blei Pb</td><td>0,010 mg/L (ab 12.1.2028: 0,005)</td><td>Nervengift, besonders für Kinder</td></tr>
+      <tr><td>Kupfer Cu</td><td>2,0 mg/L</td><td>Magen-Darm-Beschwerden</td></tr>
+      <tr><td>Uran U</td><td>0,010 mg/L</td><td>giftig für die Nieren</td></tr>
+      <tr><td>pH-Wert</td><td>6,5 bis 9,5</td><td>zu saures Wasser greift Rohre an</td></tr>
+      <tr><td>Leitfähigkeit</td><td>2790 µS/cm (25 °C)</td><td>Hinweis auf viel gelöste Salze</td></tr>
+      <tr><td>coliforme Bakterien</td><td>0 pro 100 mL</td><td>Hinweis auf Verschmutzung</td></tr>
+    </table>
+  </details>
+  <div id="g4" class="card"></div>
+  <div class="nextrow"><button class="btn alt" data-go="s3">← Station 3</button><button class="btn" data-go="s5">Weiter zu Station 5 →</button></div>
+</section>
+
+<!-- ============ STATION 5 ============ -->
+<section class="station" id="s5">
+  <h2>5 · Härte &amp; Kalk</h2>
+  <p class="lead">Wasser mit viel gelöstem Calcium und Magnesium nennt man <b>hartes Wasser</b>. Die Härte wird in °dH (Grad deutscher Härte) oder in mmol/L angegeben.</p>
+  <div class="card">
+    <div class="row">
+      <div><b>Härtebereiche</b>
+        <table>
+          <tr><th>Bereich</th><th>°dH</th><th>mmol/L</th></tr>
+          <tr><td>weich</td><td>unter 8,4</td><td>unter 1,5</td></tr>
+          <tr><td>mittel</td><td>8,4 bis 14</td><td>1,5 bis 2,5</td></tr>
+          <tr><td>hart</td><td>über 14</td><td>über 2,5</td></tr>
+        </table>
+      </div>
+      <div class="card warn"><b>Berlin:</b> 15 bis 23 °dH, also <b>hart</b> (Analysewerte der Berliner Wasserwerke 2025). Die Härtebildner sind gelöste <b>Ca<sup>2+</sup></b>- und <b>Mg<sup>2+</sup></b>-Ionen.</div>
+    </div>
+  </div>
+
+  <h3>Versuch 1: Der Wasserkocher</h3>
+  <div class="row">
+    <div>
+      <svg id="kettle" viewBox="0 0 300 220" width="100%" role="img" aria-label="Wasserkocher mit Kalkschicht">
+        <rect x="5" y="5" width="290" height="210" fill="#fafafa" stroke="#cfd8dc" rx="12"/>
+        <path d="M70 40 H230 L220 190 H80 Z" fill="#e3f2fd" stroke="#546e7a" stroke-width="4"/>
+        <rect id="scale" x="82" y="190" width="136" height="0" fill="#d7ccc8" stroke="#8d6e63"/>
+        <path d="M230 60 Q275 70 270 120 Q265 160 222 150" fill="none" stroke="#546e7a" stroke-width="8"/>
+        <text id="scaleLbl" x="150" y="120" font-size="15" text-anchor="middle" fill="#0d3c78">Wasser</text>
+      </svg>
+    </div>
+    <div>
+      <div class="chips" id="hardChips">
+        <button class="chip" data-h="5">weich (5 °dH)</button>
+        <button class="chip" data-h="11">mittel (11 °dH)</button>
+        <button class="chip sel" data-h="19">hart, wie Berlin (19 °dH)</button>
+        <button class="chip" data-h="25">sehr hart (25 °dH)</button>
+      </div>
+      <button class="btn" id="boilBtn">+10 Mal aufkochen</button>
+      <button class="btn alt" id="boilReset">Neu starten</button>
+      <div class="card"><span id="boilTxt">Der Kocher ist neu. Aufgekocht: 0 Mal.</span></div>
+      <p class="hint">Beim Erhitzen fällt schwer lösliches Calciumcarbonat aus (stark vereinfacht):<br><b>Ca<sup>2+</sup> + 2 HCO<sub>3</sub><sup>−</sup> → CaCO<sub>3</sub> + CO<sub>2</sub> + H<sub>2</sub>O</b></p>
+    </div>
+  </div>
+
+  <h3>Versuch 2: Seifentest</h3>
+  <div class="row">
+    <div>
+      <svg id="soap" viewBox="0 0 300 220" width="100%" role="img" aria-label="Zwei Reagenzgläser, weiches und hartes Wasser mit Seife">
+        <rect x="5" y="5" width="290" height="210" fill="#fafafa" stroke="#cfd8dc" rx="12"/>
+        <g id="tubeSoft"><path d="M60 40 V170 Q60 195 85 195 Q110 195 110 170 V40" fill="none" stroke="#546e7a" stroke-width="4"/>
+          <rect id="softWater" x="63" y="90" width="44" height="80" fill="#bbdefb"/><rect id="softFoam" x="63" y="90" width="44" height="0" fill="#fff" stroke="#b0bec5"/></g>
+        <g id="tubeHard"><path d="M190 40 V170 Q190 195 215 195 Q240 195 240 170 V40" fill="none" stroke="#546e7a" stroke-width="4"/>
+          <rect id="hardWater" x="193" y="90" width="44" height="80" fill="#bbdefb"/><rect id="hardFoam" x="193" y="90" width="44" height="0" fill="#fff" stroke="#b0bec5"/></g>
+        <text x="85" y="30" font-size="15" text-anchor="middle" fill="#0d3c78" font-weight="bold">weich</text>
+        <text x="215" y="30" font-size="15" text-anchor="middle" fill="#0d3c78" font-weight="bold">hart</text>
+      </svg>
+    </div>
+    <div>
+      <button class="btn" id="soapBtn">Seifenlösung zutropfen</button>
+      <button class="btn alt" id="soapReset">Neu</button>
+      <div class="card"><span id="soapTxt">Gib Seifenlösung dazu und schüttle jedes Glas.</span></div>
+      <p class="hint">Calcium- und Magnesium-Ionen verbinden sich mit den Seifen-Anionen zu schwer löslicher <b>Kalkseife</b>. Das sieht man als Trübung und Flocken. Erst wenn alle Härtebildner gebunden sind, schäumt die Seife.</p>
+    </div>
+  </div>
+
+  <h3>Deine Erklärung</h3>
+  <div id="q5"></div>
+  <div class="card good" style="margin-top:14px"><b>Enthärten:</b> Ein <b>Ionenaustauscher</b> tauscht Ca<sup>2+</sup> und Mg<sup>2+</sup> gegen Na<sup>+</sup>-Ionen aus (zwei Na<sup>+</sup> für ein Ca<sup>2+</sup>, damit die Ladung stimmt). Dann setzt sich kaum noch Kalk ab. Dafür steigt der Natriumgehalt.</div>
+  <div class="nextrow"><button class="btn alt" data-go="s4">← Station 4</button><button class="btn" data-go="s6">Weiter zu Station 6 →</button></div>
+</section>
+
+<!-- ============ STATION 6 ============ -->
+<section class="station" id="s6">
+  <h2>6 · Säure, Base oder Ampholyt?</h2>
+  <p class="lead">Im Wasser spielen Säuren und Basen eine wichtige Rolle. Entscheide für jedes Teilchen: Gibt es Protonen ab (Säure), nimmt es Protonen auf (Base) oder kann es beides (Ampholyt)?</p>
+  <div class="card sortcard">
+    <div class="hint">Teilchen <span id="g6n">1</span> von 7</div>
+    <div class="prt" id="g6card" style="display:inline-block;padding:10px 22px;font-weight:bold;border:4px solid var(--blue);border-radius:14px;background:#fff">?</div>
+    <div id="g6name" style="font-weight:bold;margin:6px 0"></div>
+    <div>
+      <button class="btn" data-s6="S">Säure</button>
+      <button class="btn" data-s6="B">Base</button>
+      <button class="btn" data-s6="A">Ampholyt</button>
+    </div>
+  </div>
+  <div class="fb" id="g6fb"></div>
+  <div class="card good" id="g6sum" style="display:none"></div>
+
+  <h3>Die pH-Skala und das Trinkwasser</h3>
+  <p>Tippe die Beispiele an und sieh, wo sie auf der Skala liegen. Der grüne Bereich ist der erlaubte pH-Wert für Trinkwasser.</p>
+  <svg id="phsvg" viewBox="0 0 760 200" width="100%" role="img" aria-label="pH-Skala"></svg>
+  <div class="chips" id="phchips"></div>
+  <div class="card" id="phinfo"><span class="hint">Tippe ein Beispiel an.</span></div>
+  <div id="q6"></div>
+  <div class="nextrow"><button class="btn alt" data-go="s5">← Station 5</button><button class="btn" data-go="s7">Weiter zu Station 7 →</button></div>
+</section>
+
+<!-- ============ STATION 7 ============ -->
+<section class="station" id="s7">
+  <h2>7 · Ausblick: Wir werden Labor-Detektive</h2>
+  <div class="final" id="final"><div class="big">🏅 Du bist Wasser-Detektiv!</div><p>Du hast die Stationen 1 bis 6 gelöst. Jetzt untersuchst du echtes Wasser.</p></div>
+  <p class="lead">Bisher hast du Daten gelesen. Im Labor misst du selbst. Das sind die Fragen, die wir mit unserem Leitungswasser klären:</p>
+  <div class="row">
+    <div class="card"><b>🧪 pH-Wert und Säurekapazität</b><br>Wie viel Säure kann unser Wasser abpuffern? Das bestimmen wir durch <b>Titration</b>.</div>
+    <div class="card"><b>🧱 Wasserhärte</b><br>Wie hart ist unser Wasser, und wie weit liegt es vom Berliner Durchschnitt entfernt?</div>
+  </div>
+  <div class="row">
+    <div class="card"><b>🔎 Salze identifizieren</b><br>Welche Ionen sind enthalten? Mit gezielten <b>Nachweisreaktionen</b> suchen wir nach Chlorid, Sulfat, Calcium und mehr.</div>
+    <div class="card"><b>⚡ Leitfähigkeit messen</b><br>Wie viele Ionen sind insgesamt gelöst? Wir vergleichen mit destilliertem Wasser und mit dem Grenzwert.</div>
+  </div>
+  <div class="card warn"><b>Merkzettel:</b>
+    <ul style="margin:6px 0">
+      <li>Trinkwasser ist kein reines H<sub>2</sub>O, sondern eine Lösung mit Ionen und Gasen.</li>
+      <li>Die Ionen stammen aus Gestein, Boden, Luft und manchmal aus Rohren oder Dünger.</li>
+      <li>Grenzwerte schützen die Gesundheit. Manche Parameter sind Hinweise auf die Qualität.</li>
+      <li>Ca<sup>2+</sup> und Mg<sup>2+</sup> machen das Wasser hart und bilden Kalk.</li>
+      <li>HCO<sub>3</sub><sup>−</sup> und H<sub>2</sub>O sind Ampholyte.</li>
+    </ul>
+  </div>
+  <div class="nextrow"><button class="btn alt" data-go="s6">← Station 6</button><button class="btn alt" data-go="s0">Zum Start</button></div>
+</section>
+
+<a class="imp" href="/Virtuelles-Chemielabor/impressum.html">Impressum &amp; Datenschutz</a>
+
+<script>
+(function(){
+'use strict';
+var $=function(s,r){return (r||document).querySelector(s)};
+var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- Navigation und Tropfen ---------- */
+var TOTAL=6, got={};
+function show(id){
+  $$('.station').forEach(function(s){s.classList.toggle('active',s.id===id)});
+  $$('#nav button').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-go')===id)});
+  window.scrollTo(0,0);
+}
+$$('[data-go]').forEach(function(b){b.addEventListener('click',function(){show(b.getAttribute('data-go'))})});
+function award(id){
+  if(got[id])return; got[id]=1;
+  var n=Object.keys(got).length;
+  $('#drops').textContent='💧 '+n+' / '+TOTAL;
+  var nb=$('#nav button[data-go="'+id+'"]'); if(nb)nb.classList.add('done');
+  if(n===TOTAL)$('#final').classList.add('show');
+}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function fb(el,type,html){el.className='fb show '+type;el.innerHTML=html}
+function mc(host,q,opts,onOk){
+  var box=document.createElement('div');
+  box.innerHTML='<p><b>'+q+'</b></p><div class="opts"></div><div class="fb"></div>';
+  var list=$('.opts',box),f=$('.fb',box),solved=false;
+  opts.forEach(function(o){
+    var b=document.createElement('button');b.innerHTML=o.t;
+    b.addEventListener('click',function(){
+      if(solved)return;
+      if(o.ok){solved=true;b.classList.add('ok');fb(f,'ok','✔ '+o.why);$$('button',list).forEach(function(x){x.disabled=true});if(onOk)onOk();}
+      else{b.classList.add('bad');b.classList.add('shake');setTimeout(function(){b.classList.remove('shake')},400);fb(f,'bad','✘ '+o.why);}
+    });
+    list.appendChild(b);
+  });
+  host.appendChild(box);
+}
+function chemSvg(parts){ /* parts: [['Ca'],['2+','sup']] -> tspans */
+  var out='',off=0;
+  parts.forEach(function(p){
+    var t=p[0],k=p[1],dy=0,fs='';
+    if(k==='sup'){dy=-7-off;off=-7;fs=' font-size="60%"'}
+    else if(k==='sub'){dy=5-off;off=5;fs=' font-size="60%"'}
+    else{dy=-off;off=0}
+    out+='<tspan'+(dy?' dy="'+dy+'"':'')+fs+'>'+t+'</tspan>';
+  });
+  return out;
+}
+
+/* ---------- Station 1 Teil A: Leitfähigkeit ---------- */
+var PR={
+  dest:{n:'destilliertes Wasser',k:'< 5 µS/cm',led:0,col:'#bbdefb',t:'Kein Strom, das Lämpchen bleibt dunkel. Reines Wasser leitet den Strom kaum.'},
+  tap:{n:'Leitungswasser',k:'≈ 800 µS/cm',led:.65,col:'#bbdefb',t:'Das Lämpchen leuchtet. In Berlin liegt die Leitfähigkeit des Trinkwassers etwa zwischen 650 und 1040 µS/cm.'},
+  salz:{n:'Kochsalzlösung (1 %)',k:'> 10 000 µS/cm',led:1,col:'#b3e5fc',t:'Das Lämpchen leuchtet hell. Sehr viele gelöste Ionen, viel mehr als im Trinkwasser.'}
+};
+$$('#probChips .chip').forEach(function(c){c.addEventListener('click',function(){
+  $$('#probChips .chip').forEach(function(x){x.classList.remove('sel')});c.classList.add('sel');
+  var p=PR[c.getAttribute('data-p')];
+  $('#led').setAttribute('opacity',.15+p.led*.85);$('#ledglow').setAttribute('opacity',p.led*.7);
+  $('#probname').textContent=p.n;$('#kappa').textContent=p.k;$('#kappaTxt').textContent=p.t;
+})});
+mc($('#q1a'),'Warum leitet das Leitungswasser den Strom, das destillierte Wasser aber nicht?',[
+  {t:'Im Leitungswasser sind gelöste Ionen, die sich frei bewegen können.',ok:true,why:'Richtig. Gelöste Salze liegen als bewegliche Ionen vor. Sie transportieren die elektrische Ladung.'},
+  {t:'Leitungswasser enthält mehr H<sub>2</sub>O-Moleküle.',ok:false,why:'Die H<sub>2</sub>O-Moleküle sind ungeladen. Es kommt auf bewegliche Ladungsträger an.'},
+  {t:'Leitungswasser ist wärmer.',ok:false,why:'Die Temperatur ist in beiden Fällen gleich. Der Unterschied liegt an den gelösten Teilchen.'}
+],function(){part('a')});
+
+/* ---------- Station 1 Teil B: Teilchenszene ---------- */
+var P=[
+ {id:'ca',l:[['Ca'],['2+','sup']],r:20,c:'#5c6bc0',charge:1,name:'Calcium-Ion',berlin:'93 bis 143 mg/L',gw:'kein Grenzwert (Härtebildner)',from:'Kalkgestein im Untergrund',eff:'Gut für Knochen und Zähne. Macht das Wasser hart und bildet Kalk.'},
+ {id:'mg',l:[['Mg'],['2+','sup']],r:17,c:'#3949ab',charge:1,name:'Magnesium-Ion',berlin:'8 bis 15 mg/L',gw:'kein Grenzwert (Härtebildner)',from:'Dolomit- und Kalkgestein',eff:'Wichtig für Muskeln und Nerven. Macht das Wasser hart.'},
+ {id:'na',l:[['Na'],['+','sup']],r:16,c:'#7986cb',charge:1,name:'Natrium-Ion',berlin:'24 bis 66 mg/L',gw:'200 mg/L',from:'Salzlager im Untergrund, Streusalz, Abwasser',eff:'Zu viel gibt einen salzigen Geschmack.'},
+ {id:'hco3',l:[['HCO'],['3','sub'],['−','sup']],r:25,c:'#ef6c00',charge:-1,name:'Hydrogencarbonat-Ion',berlin:'ca. 200 bis 300 mg/L (aus der Karbonathärte berechnet)',gw:'kein Grenzwert',from:'Kalkgestein, gelöst mit CO₂ aus dem Boden',eff:'Meist das häufigste Anion im Trinkwasser. Es ist ein Ampholyt und bildet mit Ca²⁺ den Kalk.'},
+ {id:'cl',l:[['Cl'],['−','sup']],r:20,c:'#e64a19',charge:-1,name:'Chlorid-Ion',berlin:'42 bis 91 mg/L',gw:'250 mg/L',from:'Salzlager, Streusalz, Abwasser',eff:'Zu viel gibt einen salzigen Geschmack und fördert Korrosion.'},
+ {id:'so4',l:[['SO'],['4','sub'],['2−','sup']],r:27,c:'#f57c00',charge:-1,name:'Sulfat-Ion',berlin:'62 bis 175 mg/L',gw:'250 mg/L',from:'Gips im Untergrund',eff:'Sehr viel wirkt abführend und greift Beton an.'},
+ {id:'no3',l:[['NO'],['3','sub'],['−','sup']],r:25,c:'#d84315',charge:-1,name:'Nitrat-Ion',berlin:'1 bis 4 mg/L',gw:'50 mg/L',from:'Düngung und Gülle in der Landwirtschaft',eff:'Kann im Körper zu Nitrit werden, das für Säuglinge gefährlich ist.'},
+ {id:'fe',l:[['Fe'],['2+','sup']],r:17,c:'#8e24aa',charge:1,name:'Eisen(II)-Ion',berlin:'unter 0,03 mg/L',gw:'0,2 mg/L',from:'eisenhaltiger Boden ohne Sauerstoff',eff:'Nicht giftig in diesen Mengen, aber es bildet braune Rostflocken. Das Wasserwerk entfernt es.'},
+ {id:'pb',l:[['Pb'],['2+','sup']],r:22,c:'#6a1b9a',charge:1,name:'Blei-Ion',berlin:'kaum nachweisbar (kommt eher aus alten Hausleitungen)',gw:'0,010 mg/L (ab 12.1.2028: 0,005 mg/L)',from:'alte Bleirohre und Armaturen',eff:'Nervengift, besonders gefährlich für Kinder.'},
+ {id:'o2',gas:'o2',r:20,c:'#43a047',name:'Sauerstoff-Molekül O₂',berlin:'gelöst, nicht begrenzt',gw:'kein Grenzwert',from:'Luft',eff:'Gelöster Sauerstoff macht das Wasser frisch im Geschmack.'},
+ {id:'co2',gas:'co2',r:24,c:'#2e7d32',name:'Kohlenstoffdioxid-Molekül CO₂',berlin:'gelöst, nicht begrenzt',gw:'kein Grenzwert',from:'Luft und Boden',eff:'Reagiert zu einem kleinen Teil mit Wasser zu Kohlensäure H₂CO₃ und macht das Wasser leicht sauer.'}
+];
+var ents=[],sceneW=760,sceneH=400,sceneRun=true,showShell=false,found={},raf=null;
+var scene=$('#scene');
+function waterSvg(scale,fill){
+  return '<g transform="scale('+scale+')"><circle cx="0" cy="0" r="7" fill="#e53935"/><circle cx="-6.3" cy="4.9" r="4" fill="#fff" stroke="#90a4ae"/><circle cx="6.3" cy="4.9" r="4" fill="#fff" stroke="#90a4ae"/></g>';
+}
+function buildScene(){
+  var html='',i;
+  // Wassermoleküle
+  for(i=0;i<46;i++){html+='<g class="w" id="w'+i+'">'+waterSvg(1.25)+'</g>'}
+  // Teilchen
+  P.forEach(function(p){
+    var g='<g class="ion" id="p_'+p.id+'" style="cursor:pointer">';
+    var shellN=p.gas?0:(p.r>22?6:5), sh='';
+    if(shellN){
+      sh='<g class="shell" opacity="0">';
+      for(var k=0;k<shellN;k++){
+        var a=k/shellN*Math.PI*2, d=p.r+15, x=Math.cos(a)*d, y=Math.sin(a)*d;
+        var phi=Math.atan2(Math.sin(a),Math.cos(a))-Math.PI/2; if(p.charge<0)phi+=Math.PI;
+        sh+='<g transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+') rotate('+(phi*180/Math.PI).toFixed(1)+')">'+waterSvg(1.1)+'</g>';
+      }
+      sh+='</g>';
+    }
+    g+=sh;
+    if(p.gas==='o2'){
+      g+='<circle cx="-11" cy="0" r="12" fill="#66bb6a" stroke="#1b5e20" stroke-width="2"/><circle cx="11" cy="0" r="12" fill="#66bb6a" stroke="#1b5e20" stroke-width="2"/><rect x="-6" y="-2" width="12" height="4" fill="#1b5e20"/>';
+    }else if(p.gas==='co2'){
+      g+='<circle cx="-22" cy="0" r="11" fill="#66bb6a" stroke="#1b5e20" stroke-width="2"/><circle cx="0" cy="0" r="9" fill="#78909c" stroke="#37474f" stroke-width="2"/><circle cx="22" cy="0" r="11" fill="#66bb6a" stroke="#1b5e20" stroke-width="2"/>';
+    }else{
+      g+='<circle r="'+p.r+'" fill="'+p.c+'" stroke="#fff" stroke-width="2"/><text text-anchor="middle" y="5" font-size="'+(p.r>22?14:15)+'" font-weight="bold" fill="#fff">'+chemSvg(p.l)+'</text>';
+    }
+    g+='<circle class="tick" r="8" cx="'+(p.gas?0:p.r*0.72+4)+'" cy="'+(p.gas?-24:-p.r*0.72-4)+'" fill="#43a047" stroke="#fff" stroke-width="2" style="display:none"/>';
+    g+='<circle r="'+(p.gas?36:p.r+8)+'" fill="transparent"/></g>';
+    html+=g;
+  });
+  scene.innerHTML=html;
+}
+function initEnts(){
+  ents=[];
+  var occ=[];
+  function place(rad){
+    for(var t=0;t<60;t++){
+      var x=rad+10+Math.random()*(sceneW-2*rad-20),y=rad+10+Math.random()*(sceneH-2*rad-20),ok=true;
+      for(var i=0;i<occ.length;i++){var dx=occ[i][0]-x,dy=occ[i][1]-y;if(dx*dx+dy*dy<Math.pow(occ[i][2]+rad+4,2)){ok=false;break}}
+      if(ok){occ.push([x,y,rad]);return [x,y]}
+    }
+    var xy=[rad+10+Math.random()*(sceneW-2*rad-20),rad+10+Math.random()*(sceneH-2*rad-20)];occ.push([xy[0],xy[1],rad]);return xy;
+  }
+  P.forEach(function(p){var rad=p.gas?(p.gas==='co2'?34:26):p.r+(p.charge?16:0);var xy=place(rad);ents.push({el:$('#p_'+p.id),x:xy[0],y:xy[1],vx:(Math.random()-.5)*.5,vy:(Math.random()-.5)*.5,rot:0,vr:(Math.random()-.5)*.4,rad:rad,p:p})});
+  for(var i=0;i<46;i++){var xy=place(12);ents.push({el:$('#w'+i),x:xy[0],y:xy[1],vx:(Math.random()-.5)*.7,vy:(Math.random()-.5)*.7,rot:Math.random()*360,vr:(Math.random()-.5)*1.4,rad:12})}
+  draw();
+}
+function draw(){ents.forEach(function(e){e.el.setAttribute('transform','translate('+e.x.toFixed(1)+' '+e.y.toFixed(1)+') rotate('+e.rot.toFixed(1)+')')})}
+function step(){
+  if(sceneRun&&!reduce){
+    ents.forEach(function(e){
+      e.x+=e.vx;e.y+=e.vy;e.rot+=e.vr;
+      if(e.x<e.rad||e.x>sceneW-e.rad)e.vx=-e.vx;
+      if(e.y<e.rad||e.y>sceneH-e.rad)e.vy=-e.vy;
+      if(Math.random()<.01){e.vx+=(Math.random()-.5)*.2;e.vy+=(Math.random()-.5)*.2;var s=Math.sqrt(e.vx*e.vx+e.vy*e.vy);var m=e.p?.6:.9;if(s>m){e.vx*=m/s;e.vy*=m/s}}
+    });
+    draw();
+  }
+  raf=requestAnimationFrame(step);
+}
+function esc(s){return s.replace(/([A-Za-z])(\d)/g,function(m,a,b){return m})}
+function sub(s){ // einfache Unicode-Formel -> HTML
+  return s.replace(/₂/g,'<sub>2</sub>').replace(/₃/g,'<sub>3</sub>').replace(/₄/g,'<sub>4</sub>').replace(/²⁺/g,'<sup>2+</sup>').replace(/²⁻/g,'<sup>2−</sup>').replace(/⁻/g,'<sup>−</sup>').replace(/⁺/g,'<sup>+</sup>');
+}
+function showInfo(p){
+  var f=$('#pinfo');
+  f.innerHTML='<div class="formel">'+sub(p.name)+'</div>'+
+    '<table style="margin-top:8px"><tr><th>Herkunft</th><td>'+sub(p.from)+'</td></tr>'+
+    '<tr><th>Berliner Trinkwasser</th><td>'+sub(p.berlin)+'</td></tr>'+
+    '<tr><th>Grenzwert</th><td>'+sub(p.gw)+'</td></tr>'+
+    '<tr><th>Wirkung</th><td>'+sub(p.eff)+'</td></tr></table>';
+}
+scene.addEventListener('click',function(ev){
+  var t=ev.target;while(t&&t!==scene){if(t.classList&&t.classList.contains('ion'))break;t=t.parentNode}
+  if(!t||t===scene)return;
+  var id=t.id.replace('p_','');var p=P.filter(function(x){return x.id===id})[0];
+  showInfo(p);
+  if(!found[id]){found[id]=1;$('.tick',t).style.display='';
+    var c=document.createElement('button');c.className='chip found';c.innerHTML=p.gas?sub(p.name.split(' ').slice(-1)[0]):chemSvgHtml(p);c.addEventListener('click',function(){showInfo(p)});$('#foundChips').appendChild(c);
+    var n=Object.keys(found).length;$('#foundCount').textContent=n+' / 11 gefunden';if(n===11)part('b')}
+});
+function chemSvgHtml(p){return p.l.map(function(x){return x[1]?'<'+x[1]+'>'+x[0]+'</'+x[1]+'>':x[0]}).join('')}
+var p1={};function part(k){p1[k]=1;if(p1.a&&p1.b)award('s1')}
+$('#shellBtn').addEventListener('click',function(){
+  showShell=!showShell;this.textContent=showShell?'Hydrathüllen verbergen':'Hydrathüllen zeigen';
+  $$('.shell',scene).forEach(function(s){s.setAttribute('opacity',showShell?1:0)});
+  if(showShell)fb($('#pinfo'),'info','<b>Hydrathüllen:</b> Wasser-Moleküle sind Dipole. Um positive Ionen lagern sie sich mit dem negativen Sauerstoff-Ende an, um negative Ionen mit den positiven Wasserstoff-Enden.');
+});
+$('#pauseBtn').addEventListener('click',function(){sceneRun=!sceneRun;this.textContent=sceneRun?'⏸ Bewegung anhalten':'▶ Bewegung starten'});
+buildScene();initEnts();step();
+
+/* ---------- Station 2 ---------- */
+var SRC=[
+ {k:'kalk',t:'Kalkgestein im Boden',s:'Kalk und Dolomit'},
+ {k:'salz',t:'Gips- und Salzlager im Untergrund',s:'auch Streusalz und Abwasser'},
+ {k:'dung',t:'Düngung und Landwirtschaft',s:'Felder, Gülle'},
+ {k:'eisen',t:'Eisenhaltiger Boden ohne Sauerstoff',s:'tiefe Schichten'},
+ {k:'rohr',t:'Alte Wasserrohre und Armaturen',s:'Hausinstallation'},
+ {k:'luft',t:'Luft',s:'Atmosphäre, Regen'}
+];
+var G2=[
+ {f:'Ca²⁺',n:'Calcium-Ion',s:'kalk',m:'Regenwasser enthält CO₂ und löst Kalkgestein (CaCO₃) langsam auf.'},
+ {f:'Mg²⁺',n:'Magnesium-Ion',s:'kalk',m:'Magnesium steckt vor allem im Dolomitgestein, das dem Kalk ähnlich ist.'},
+ {f:'HCO₃⁻',n:'Hydrogencarbonat-Ion',s:'kalk',m:'Beim Lösen von Kalk durch CO₂-haltiges Wasser entsteht Hydrogencarbonat.'},
+ {f:'SO₄²⁻',n:'Sulfat-Ion',s:'salz',m:'Sulfat kommt vor allem aus Gips (Calciumsulfat) im Untergrund.'},
+ {f:'Cl⁻',n:'Chlorid-Ion',s:'salz',m:'Chlorid stammt aus Salzlagern, aber auch aus Streusalz und Abwasser.'},
+ {f:'Na⁺',n:'Natrium-Ion',s:'salz',m:'Natrium kommt mit dem Chlorid aus Salzlagern, Streusalz und Abwasser.'},
+ {f:'NO₃⁻',n:'Nitrat-Ion',s:'dung',m:'Nitrat aus Düngern und Gülle wird vom Regen in den Boden gespült.'},
+ {f:'Fe²⁺',n:'Eisen(II)-Ion',s:'eisen',m:'Ohne Sauerstoff bleibt Eisen als Fe²⁺ gelöst. Mit Sauerstoff würde es zu Rost.'},
+ {f:'Pb²⁺',n:'Blei-Ion',s:'rohr',m:'Blei löst sich aus alten Bleirohren und manchen Armaturen, vor allem wenn das Wasser lange stand.'},
+ {f:'O₂',n:'Sauerstoff-Molekül',s:'luft',m:'Sauerstoff löst sich aus der Luft im Wasser, wenn auch nur wenig.'},
+ {f:'CO₂',n:'Kohlenstoffdioxid-Molekül',s:'luft',m:'CO₂ stammt aus der Luft und aus der Atmung von Bodenlebewesen.'}
+];
+var g2order,g2i,g2lock;
+var g2bucket={};
+function g2start(){
+  g2order=shuffle(G2);g2i=0;g2bucket={};SRC.forEach(function(s){g2bucket[s.k]=[]});
+  $('#g2sum').style.display='none';$('#g2fb').className='fb';g2render();
+}
+function g2render(){
+  var host=$('#g2src');host.innerHTML='';
+  SRC.forEach(function(s){
+    var b=document.createElement('button');b.setAttribute('data-k',s.k);
+    b.innerHTML=s.t+'<small>'+s.s+'</small><span class="got">'+g2bucket[s.k].map(sub).join('  ')+'</span>';
+    b.addEventListener('click',function(){g2pick(s.k,b)});host.appendChild(b);
+  });
+  if(g2i>=g2order.length){
+    $('#g2card').innerHTML='✔';$('#g2name').textContent='Alle Teilchen zugeordnet';$('#g2n').textContent=11;
+    var sum='<b>Geschafft!</b> Die meisten Stoffe kommen ganz natürlich aus dem Untergrund. Nitrat und Blei sind dagegen Hinweise auf menschliche Einflüsse: Landwirtschaft und alte Leitungen.';
+    $('#g2sum').innerHTML=sum;$('#g2sum').style.display='block';award('s2');return;
+  }
+  var cur=g2order[g2i];$('#g2card').innerHTML=sub(cur.f);$('#g2name').textContent=cur.n;$('#g2n').textContent=g2i+1;
+}
+function g2pick(k,btn){
+  if(g2i>=g2order.length)return;
+  var cur=g2order[g2i];
+  if(cur.s===k){g2bucket[k].push(cur.f);fb($('#g2fb'),'ok','✔ '+sub(cur.m));g2i++;g2render();}
+  else{btn.classList.add('wrongflash','shake');setTimeout(function(){btn.classList.remove('wrongflash','shake')},500);fb($('#g2fb'),'bad','✘ Das passt nicht. Überlege: Wo kommt '+sub(cur.n)+' her?');}
+}
+g2start();
+
+/* ---------- Station 3 ---------- */
+var G3=[
+ {t:'1 Grundwasser fördern',m:'Brunnen holen das Rohwasser aus dem Untergrund. Es enthält gelöstes Ca²⁺, HCO₃⁻ und oft Fe²⁺ und Mn²⁺, aber kaum Sauerstoff.'},
+ {t:'2 Belüften',m:'Das Wasser kommt mit Luft in Berührung. Überschüssiges CO₂ entweicht, Sauerstoff löst sich. Eisen(II) wird zu Eisen(III) oxidiert und bildet rotbraune Flocken.'},
+ {t:'3 Filtern',m:'In Sand- oder Kiesfiltern bleiben die Flocken hängen. Eisen und Mangan werden so entfernt.'},
+ {t:'4 Desinfizieren (falls nötig)',m:'Je nach Wasserwerk werden Keime sicherheitshalber abgetötet, zum Beispiel mit UV-Licht oder einer kleinen Menge Chlor.'},
+ {t:'5 Im Reinwasserbehälter speichern',m:'Das fertige Trinkwasser wird gesammelt. So können Verbrauchsspitzen am Morgen und Abend ausgeglichen werden.'},
+ {t:'6 Durchs Rohrnetz verteilen',m:'Pumpen drücken das Wasser durch das Leitungsnetz. Es wird laufend im Labor kontrolliert.'},
+ {t:'7 Hausanschluss und Hahn',m:'Im Haus kann sich das Wasser verändern. In alten Leitungen können zum Beispiel Blei oder Kupfer dazukommen. Deshalb lässt man Stagnationswasser morgens kurz ablaufen.'}
+];
+var g3i;
+function g3start(){
+  g3i=0;$('#g3chain').innerHTML='<span class="hint">Noch leer</span>';$('#g3fb').className='fb';$('#g3sum').style.display='none';
+  var host=$('#g3pool');host.innerHTML='';
+  shuffle(G3.map(function(x,i){return i})).forEach(function(idx){
+    var b=document.createElement('button');b.innerHTML=G3[idx].t.replace(/^\d\s/,'');
+    b.addEventListener('click',function(){
+      if(idx===g3i){
+        if(g3i===0)$('#g3chain').innerHTML='';
+        $('#g3chain').insertAdjacentHTML('beforeend',(g3i?'<span class="ar">➜</span>':'')+'<span class="st">'+G3[idx].t+'</span>');
+        fb($('#g3fb'),'ok','✔ '+sub(G3[idx].m));b.classList.add('used');g3i++;
+        if(g3i===G3.length){$('#g3sum').innerHTML='<b>Was wird entfernt, was bleibt?</b> Eisen, Mangan und Schwebstoffe werden im Wasserwerk entfernt. Die gelösten Salze wie Ca²⁺, Mg²⁺, HCO₃⁻, SO₄²⁻ und Cl⁻ bleiben. Sie sind harmlos und machen das Berliner Wasser hart.'.replace(/Ca²⁺|Mg²⁺|HCO₃⁻|SO₄²⁻|Cl⁻/g,sub);$('#g3sum').style.display='block';award('s3')}
+      }else{b.classList.add('shake');setTimeout(function(){b.classList.remove('shake')},400);fb($('#g3fb'),'bad','✘ Das ist noch nicht dran. Welcher Schritt kommt als Nächstes?')}
+    });
+    host.appendChild(b);
+  });
+}
+g3start();
+
+/* ---------- Station 4 ---------- */
+var C4=[
+ {t:'Fall 1: Der Dorfbrunnen',s:'Ein Landwirt lässt sein Brunnenwasser untersuchen. Rundherum liegen Äcker.',
+  v:[['Nitrat','68 mg/L'],['Nitrit','0,05 mg/L'],['Chlorid','40 mg/L'],['pH-Wert','7,1']],ok:false,
+  why:'Nitrat liegt bei 68 mg/L, der Grenzwert ist 50 mg/L.',
+  q:'Woher kommt das Nitrat wahrscheinlich?',
+  o:[{t:'Aus Düngern und Gülle der Felder',ok:true,why:'Stickstoffdünger und Gülle werden im Boden zu Nitrat, das ins Grundwasser gelangt.'},{t:'Aus dem Kalkgestein',ok:false,why:'Kalk liefert Calcium und Hydrogencarbonat, kein Nitrat.'},{t:'Aus der Luft über dem Dorf',ok:false,why:'Die Luft liefert O₂ und CO₂. Die Nitratmenge passt zu Düngung.'}]},
+ {t:'Fall 2: Altbau, morgens',s:'Eine Probe aus dem Wasserhahn eines Altbaus, genommen direkt nach einer Nacht ohne Wasserverbrauch.',
+  v:[['Blei','0,018 mg/L'],['Kupfer','0,3 mg/L'],['pH-Wert','7,4'],['Nitrat','4 mg/L']],ok:false,
+  why:'Blei liegt bei 0,018 mg/L, der Grenzwert ist 0,010 mg/L.',
+  q:'Was ist die wahrscheinlichste Ursache?',
+  o:[{t:'Bleirohre oder Armaturen im Haus, in denen das Wasser über Nacht stand',ok:true,why:'Richtig. Im Wasserwerk wird kein Blei zugegeben. Es löst sich aus alten Leitungen, vor allem bei langem Stehen. Tipp: Morgens das Wasser kurz ablaufen lassen.'},{t:'Verunreinigungen aus dem Wasserwerk',ok:false,why:'Im Wasserwerk wird das Wasser kontrolliert. Blei gelangt meist erst im Haus ins Wasser.'},{t:'Der hohe Kalkgehalt',ok:false,why:'Kalk besteht aus Ca²⁺ und HCO₃⁻, nicht aus Blei.'}]},
+ {t:'Fall 3: Braunes Wasser',s:'Nach Bauarbeiten am Rohrnetz läuft das Wasser eine Zeit lang bräunlich aus dem Hahn.',
+  v:[['Eisen','0,6 mg/L'],['Mangan','0,02 mg/L'],['pH-Wert','7,2'],['Nitrat','3 mg/L']],ok:false,
+  why:'Eisen liegt bei 0,6 mg/L, der Wert ist 0,2 mg/L. Das ist kein Gesundheitsproblem, aber das Wasser ist nicht in Ordnung.',
+  q:'Was ist die wahrscheinlichste Ursache?',
+  o:[{t:'Rost, der sich aus alten Stahlrohren löst',ok:true,why:'Aufgewirbelter Rost färbt das Wasser braun (Eisen(III)-Verbindungen). Man lässt das Wasser ablaufen, bis es klar ist.'},{t:'Der Schmutz stammt von den Ionen Ca²⁺ und Mg²⁺',ok:false,why:'Ca²⁺ und Mg²⁺ sind farblos. Die braune Farbe kommt von Eisenverbindungen.'},{t:'Zu viel Sauerstoff im Wasser',ok:false,why:'Sauerstoff färbt das Wasser nicht. Er oxidiert aber gelöstes Eisen zu Rost.'}]},
+ {t:'Fall 4: Das saure Wasser',s:'Ein Haus hat Kupferrohre. Das Wasser aus der Hausbrunnen-Anlage schmeckt metallisch.',
+  v:[['pH-Wert','5,9'],['Kupfer','2,6 mg/L'],['Nitrat','2 mg/L'],['Leitfähigkeit','180 µS/cm']],ok:false,
+  why:'Der pH-Wert 5,9 liegt unter 6,5 und Kupfer liegt bei 2,6 mg/L (Grenzwert 2,0 mg/L).',
+  q:'Wie hängen die beiden Messwerte zusammen?',
+  o:[{t:'Das saure Wasser löst Kupfer aus den Rohren.',ok:true,why:'Richtig. Mit Sauerstoff und H₃O⁺-Ionen reagiert Kupfer zu gelöstem Cu²⁺. Darum darf der pH-Wert nicht unter 6,5 liegen.'},{t:'Das Kupfer macht das Wasser sauer.',ok:false,why:'Es ist umgekehrt: Das saure Wasser greift das Kupfer an.'},{t:'Die beiden Werte haben nichts miteinander zu tun.',ok:false,why:'Doch: Saures Wasser löst Metalle aus Rohren.'}]},
+ {t:'Fall 5: Berliner Leitungswasser',s:'Eine Probe aus einem Berliner Wasserwerk (typische Werte).',
+  v:[['Nitrat','3,1 mg/L'],['Sulfat','120 mg/L'],['Chlorid','56 mg/L'],['Natrium','41 mg/L'],['Eisen','unter 0,03 mg/L'],['pH-Wert','7,5'],['Leitfähigkeit','790 µS/cm']],ok:true,
+  why:'Alle Werte liegen deutlich unter den Grenzwerten, der pH-Wert liegt im erlaubten Bereich.',
+  q:'Das Wasser leitet den Strom deutlich (790 µS/cm), ist aber in Ordnung. Warum?',
+  o:[{t:'Die Leitfähigkeit stammt von harmlosen gelösten Salzen wie Ca²⁺ und HCO₃⁻.',ok:true,why:'Richtig. Gelöste Ionen sind natürlich. Erst ab 2790 µS/cm wäre die Leitfähigkeit auffällig.'},{t:'Das Wasser ist stark verschmutzt, aber das erlaubt die Verordnung.',ok:false,why:'Nein. Alle Werte liegen unter den Grenzwerten.'},{t:'Trinkwasser sollte gar nicht leiten.',ok:false,why:'Dann wäre es destilliertes Wasser, das nicht gesund und nicht schmackhaft ist.'}]}
+];
+var c4i=0,c4done=0;
+function c4render(){
+  var host=$('#g4'),c=C4[c4i];
+  var rows=c.v.map(function(r){return '<tr><td>'+sub(r[0])+'</td><td>'+sub(r[1])+'</td></tr>'}).join('');
+  host.innerHTML='<h3 style="margin-top:0">'+c.t+' <span class="hint">('+(c4i+1)+' von '+C4.length+')</span></h3><p>'+c.s+'</p><table style="max-width:420px"><tr><th>Parameter</th><th>Messwert</th></tr>'+rows+'</table>'+
+    '<p><b>Sind alle Werte in Ordnung?</b></p><div class="chips"><button class="chip" data-a="y">Ja, alle Werte sind in Ordnung</button><button class="chip" data-a="n">Nein, mindestens ein Wert passt nicht</button></div><div class="fb" id="c4f"></div><div id="c4q"></div><div id="c4n"></div>';
+  $$('.chip',host).forEach(function(b){b.addEventListener('click',function(){
+    var yes=b.getAttribute('data-a')==='y';
+    if(yes===c.ok){
+      $$('.chip',host).forEach(function(x){x.disabled=true});b.classList.add('found');
+      fb($('#c4f'),'ok','✔ '+sub(c.why));
+      mc($('#c4q'),c.q,c.o.map(function(o){return {t:sub(o.t),ok:o.ok,why:sub(o.why)}}),function(){
+        c4done++;
+        var n=$('#c4n');
+        if(c4i<C4.length-1){n.innerHTML='<button class="btn green" id="c4next">Nächster Fall →</button>';$('#c4next').addEventListener('click',function(){c4i++;c4render()})}
+        else{n.innerHTML='<div class="card good"><b>Alle Fälle gelöst!</b> Du kannst Messwerte mit Grenzwerten vergleichen und Ursachen erkennen.</div>';award('s4')}
+      });
+    }else{b.classList.add('shake');setTimeout(function(){b.classList.remove('shake')},400);fb($('#c4f'),'bad','✘ Schau noch einmal in die Grenzwert-Tabelle.')}
+  })});
+}
+c4render();
+
+/* ---------- Station 5 ---------- */
+var hardness=19,uses=0;
+function updKettle(){
+  var th=Math.min(60,uses*hardness*0.022);
+  $('#scale').setAttribute('y',190-th);$('#scale').setAttribute('height',th);
+  var cls=hardness<8.4?'weich':(hardness<=14?'mittel':'hart');
+  $('#boilTxt').innerHTML=uses?'Aufgekocht: '+uses+' Mal. Bei '+hardness+' °dH ('+cls+') setzt sich '+(th<12?'nur wenig':(th<30?'eine deutliche':'eine dicke'))+' Kalkschicht ab.':'Der Kocher ist neu. Aufgekocht: 0 Mal.';
+}
+$$('#hardChips .chip').forEach(function(c){c.addEventListener('click',function(){
+  $$('#hardChips .chip').forEach(function(x){x.classList.remove('sel')});c.classList.add('sel');hardness=+c.getAttribute('data-h');updKettle();
+})});
+$('#boilBtn').addEventListener('click',function(){uses=Math.min(100,uses+10);updKettle();done5()});
+$('#boilReset').addEventListener('click',function(){uses=0;updKettle()});
+var soapN=0;
+function updSoap(){
+  var s=Math.min(soapN,4);
+  // weiches Wasser: schäumt sofort, hartes: erst trüb
+  $('#softFoam').setAttribute('y',90-s*10);$('#softFoam').setAttribute('height',s*10);
+  var hardFoam=Math.max(0,soapN-5)*8;$('#hardFoam').setAttribute('y',90-hardFoam);$('#hardFoam').setAttribute('height',hardFoam);
+  var hz=Math.min(1,soapN/4);$('#hardWater').setAttribute('fill','rgb('+(187+hz*40)+','+(222+hz*6)+','+(251-hz*20)+')');
+  $('#hardWater').setAttribute('opacity',1-hz*.2);
+  $('#soapTxt').innerHTML=soapN===0?'Gib Seifenlösung dazu und schüttle jedes Glas.':(soapN<5?'Weiches Wasser: dichter Schaum. Hartes Wasser: es wird milchig-trüb (Kalkseife), kaum Schaum.':'Hartes Wasser schäumt erst, wenn alle Härtebildner gebunden sind. Es braucht viel mehr Seife.');
+}
+$('#soapBtn').addEventListener('click',function(){soapN=Math.min(soapN+1,9);updSoap();done5()});
+$('#soapReset').addEventListener('click',function(){soapN=0;updSoap()});
+var q5ok=false,tried=false;
+function done5(){tried=true;if(q5ok&&uses>0&&soapN>0)award('s5')}
+mc($('#q5'),'Welche Teilchen machen das Wasser hart?',[
+  {t:'Calcium- und Magnesium-Ionen',ok:true,why:'Richtig. Ca²⁺ und Mg²⁺ bilden beim Erhitzen Kalk und mit Seife Kalkseife.'},
+  {t:'Natrium- und Chlorid-Ionen',ok:false,why:'Na⁺ und Cl⁻ bilden keinen Kalk. Natriumchlorid ist gut löslich.'},
+  {t:'Sauerstoff- und Kohlenstoffdioxid-Moleküle',ok:false,why:'Gase machen das Wasser nicht hart. Sie entweichen sogar beim Erhitzen.'}
+].map(function(o){o.t=sub(o.t);o.why=sub(o.why);return o}),function(){q5ok=true;done5()});
+updKettle();updSoap();
+
+/* ---------- Station 6 ---------- */
+var S6=[
+ {f:'H₃O⁺',n:'Hydronium-Ion',a:'S',m:'H₃O⁺ gibt ein Proton ab (zu H₂O). Es ist die typische Säure in wässriger Lösung.'},
+ {f:'OH⁻',n:'Hydroxid-Ion',a:'B',m:'OH⁻ nimmt ein Proton auf (zu H₂O). Es ist die typische Base in wässriger Lösung.'},
+ {f:'H₂O',n:'Wasser-Molekül',a:'A',m:'H₂O kann ein Proton abgeben (zu OH⁻) und eines aufnehmen (zu H₃O⁺). Es ist ein Ampholyt.'},
+ {f:'HCO₃⁻',n:'Hydrogencarbonat-Ion',a:'A',m:'HCO₃⁻ kann ein Proton aufnehmen (zu H₂CO₃) oder abgeben (zu CO₃²⁻). Ampholyt.'},
+ {f:'H₂CO₃',n:'Kohlensäure',a:'S',m:'H₂CO₃ gibt Protonen ab. Es ist die Säure, die entsteht, wenn sich CO₂ in Wasser löst.'},
+ {f:'CO₃²⁻',n:'Carbonat-Ion',a:'B',m:'CO₃²⁻ kann Protonen aufnehmen, aber keines abgeben. Es ist eine Base.'},
+ {f:'NH₄⁺',n:'Ammonium-Ion',a:'S',m:'NH₄⁺ kann ein Proton abgeben (zu NH₃), aber keines aufnehmen. Es ist eine Säure.'}
+];
+var s6o,s6i;
+function s6start(){s6o=shuffle(S6);s6i=0;$('#g6sum').style.display='none';s6render()}
+function s6render(){
+  if(s6i>=s6o.length){$('#g6card').innerHTML='✔';$('#g6name').textContent='Alle sortiert';$('#g6n').textContent=7;$$('[data-s6]').forEach(function(b){b.disabled=true});
+    $('#g6sum').innerHTML='<b>Merke:</b> Nur Teilchen mit abgebbarem Proton (H) können Säuren sein. Nur Teilchen mit freiem Elektronenpaar können Protonen aufnehmen. Hat ein Teilchen beides, ist es ein Ampholyt.';$('#g6sum').style.display='block';award('s6');return}
+  var c=s6o[s6i];$('#g6card').innerHTML=sub(c.f);$('#g6name').textContent=c.n;$('#g6n').textContent=s6i+1;
+}
+$$('[data-s6]').forEach(function(b){b.addEventListener('click',function(){
+  if(s6i>=s6o.length)return;var c=s6o[s6i];
+  if(b.getAttribute('data-s6')===c.a){fb($('#g6fb'),'ok','✔ '+sub(c.m));s6i++;s6render()}
+  else{b.classList.add('shake');setTimeout(function(){b.classList.remove('shake')},400);fb($('#g6fb'),'bad','✘ Nicht ganz. Kann das Teilchen ein Proton abgeben, aufnehmen oder beides?')}
+})});
+s6start();
+var PH=[
+ {n:'Zitronensaft',v:2.2,e:'Zitronensaft ist sauer (etwa pH 2).'},
+ {n:'Cola',v:2.5,e:'Cola enthält Säuren (etwa pH 2,5).'},
+ {n:'Sprudelwasser',v:5.5,e:'Das gelöste CO₂ bildet Kohlensäure. Sprudelwasser ist leicht sauer (etwa pH 5 bis 6).'},
+ {n:'Berliner Trinkwasser',v:7.4,e:'Zwischen 7,3 und 7,5. Das liegt im erlaubten Bereich von 6,5 bis 9,5.'},
+ {n:'Meerwasser',v:8.1,e:'Meerwasser ist leicht alkalisch (etwa pH 8).'},
+ {n:'Seifenlauge',v:10,e:'Seifenlauge ist alkalisch (etwa pH 10).'},
+ {n:'Rohrreiniger',v:13.5,e:'Rohrreiniger ist stark alkalisch (etwa pH 13 bis 14).'}
+];
+(function(){
+  var W=760,x0=30,x1=730,y0=60,h=34;function X(v){return x0+(x1-x0)*v/14}
+  var cols=['#e53935','#ef5350','#fb8c00','#fdd835','#c0ca33','#7cb342','#43a047','#26a69a','#29b6f6','#1e88e5','#3949ab','#5e35b1','#6a1b9a','#4a148c'];
+  var s='';
+  for(var i=0;i<14;i++)s+='<rect x="'+X(i)+'" y="'+y0+'" width="'+(X(i+1)-X(i)+.5)+'" height="'+h+'" fill="'+cols[i]+'"/>';
+  s+='<rect x="'+X(6.5)+'" y="'+(y0-8)+'" width="'+(X(9.5)-X(6.5))+'" height="'+(h+16)+'" fill="none" stroke="#1b5e20" stroke-width="5" rx="4"/>';
+  s+='<text x="'+X(8)+'" y="'+(y0-16)+'" text-anchor="middle" font-size="15" font-weight="bold" fill="#1b5e20">erlaubt für Trinkwasser</text>';
+  for(i=0;i<=14;i++)s+='<text x="'+X(i)+'" y="'+(y0+h+28)+'" text-anchor="middle" font-size="15" fill="#22313f">'+i+'</text>';
+  s+='<text x="'+X(1)+'" y="'+(y0+h+56)+'" text-anchor="middle" font-size="14" fill="#c62828" font-weight="bold">sauer</text><text x="'+X(7)+'" y="'+(y0+h+56)+'" text-anchor="middle" font-size="14" fill="#2e7d32" font-weight="bold">neutral</text><text x="'+X(13)+'" y="'+(y0+h+56)+'" text-anchor="middle" font-size="14" fill="#4a148c" font-weight="bold">alkalisch</text>';
+  s+='<g id="phmark" style="display:none"><path id="phtri" d="" fill="#22313f"/><text id="phtxt" y="22" text-anchor="middle" font-size="15" font-weight="bold" fill="#22313f"></text></g>';
+  $('#phsvg').innerHTML=s;
+  var chips=$('#phchips');
+  PH.forEach(function(p){
+    var b=document.createElement('button');b.className='chip';b.textContent=p.n;
+    b.addEventListener('click',function(){
+      $$('.chip',chips).forEach(function(x){x.classList.remove('sel')});b.classList.add('sel');
+      var x=X(p.v);$('#phmark').style.display='';$('#phtri').setAttribute('d','M'+x+' '+(y0+h+2)+' l-9 -16 h18 z');
+      var yy=y0-30;$('#phtri').setAttribute('d','M'+x+' '+(y0-2)+' l-9 -16 h18 z');$('#phtxt').setAttribute('x',x);$('#phtxt').setAttribute('y',y0-24);$('#phtxt').textContent=p.n+' · pH ≈ '+p.v;
+      $('#phinfo').innerHTML=sub(p.e);
+    });
+    chips.appendChild(b);
+  });
+})();
+mc($('#q6'),'Warum darf der pH-Wert von Trinkwasser nicht unter 6,5 sinken?',[
+  {t:'Zu saures Wasser greift Rohre und Armaturen an und löst Metalle wie Kupfer und Blei.',ok:true,why:'Richtig. Das war in Fall 4 zu sehen.'},
+  {t:'Saures Wasser enthält weniger Wasser-Moleküle.',ok:false,why:'Auch saure Lösungen bestehen überwiegend aus H₂O-Molekülen.'},
+  {t:'Bei pH unter 6,5 leitet das Wasser den Strom nicht mehr.',ok:false,why:'Saure Lösungen leiten durch die H₃O⁺-Ionen sogar gut.'}
+].map(function(o){o.t=sub(o.t);o.why=sub(o.why);return o}),null);
+
+if(location.hash&&/^#s[0-7]$/.test(location.hash))show(location.hash.slice(1));
+})();
+</script>
+</body>
+</html>
