@@ -390,7 +390,7 @@ function mc(host,q,opts,onOk){
     b.addEventListener('click',function(){
       if(solved)return;
       if(o.ok){solved=true;b.classList.add('ok');fb(f,'ok','✔ '+o.why);$$('button',list).forEach(function(x){x.disabled=true});if(onOk)onOk();}
-      else{b.classList.add('bad');b.classList.add('shake');setTimeout(function(){b.classList.remove('shake')},400);fb(f,'bad','✘ '+o.why);}
+      else{b.classList.add('bad');b.classList.add('shake');setTimeout(function(){b.classList.remove('shake')},400);fb(f,'bad','✗ '+o.why);}
     });
     list.appendChild(b);
   });
@@ -600,7 +600,7 @@ function g2pick(k,btn){
   if(g2i>=g2order.length)return;
   var cur=g2order[g2i];
   if(cur.s===k){g2bucket[k].push(cur.f);fb($('#g2fb'),'ok','✔ '+sub(cur.m));g2i++;g2render();}
-  else{btn.classList.add('wrongflash','shake');setTimeout(function(){btn.classList.remove('wrongflash','shake')},500);fb($('#g2fb'),'bad','✘ Das passt nicht. Überlege: Wo kommt '+sub(cur.n)+' her?');}
+  else{btn.classList.add('wrongflash','shake');setTimeout(function(){btn.classList.remove('wrongflash','shake')},500);fb($('#g2fb'),'bad','✗ Das passt nicht. Überlege: Wo kommt '+sub(cur.n)+' her?');}
 }
 g2start();
 
@@ -626,7 +626,7 @@ function g3start(){
         $('#g3chain').insertAdjacentHTML('beforeend',(g3i?'<span class="ar">➜</span>':'')+'<span class="st">'+G3[idx].t+'</span>');
         fb($('#g3fb'),'ok','✔ '+sub(G3[idx].m));b.classList.add('used');g3i++;
         if(g3i===G3.length){$('#g3sum').innerHTML='<b>Was wird entfernt, was bleibt?</b> Eisen, Mangan und Schwebstoffe werden im Wasserwerk entfernt. Die gelösten Salze wie Ca²⁺, Mg²⁺, HCO₃⁻, SO₄²⁻ und Cl⁻ bleiben. Sie sind harmlos und machen das Berliner Wasser hart.'.replace(/Ca²⁺|Mg²⁺|HCO₃⁻|SO₄²⁻|Cl⁻/g,sub);$('#g3sum').style.display='block';award('s3')}
-      }else{b.classList.add('shake');setTimeout(function(){b.classList.remove('shake')},400);fb($('#g3fb'),'bad','✘ Das ist noch nicht dran. Welcher Schritt kommt als Nächstes?')}
+      }else{b.classList.add('shake');setTimeout(function(){b.classList.remove('shake')},400);fb($('#g3fb'),'bad','✗ Das ist noch nicht dran. Welcher Schritt kommt als Nächstes?')}
     });
     host.appendChild(b);
   });
@@ -678,7 +678,7 @@ function c4render(){
         if(c4i<C4.length-1){n.innerHTML='<button class="btn green" id="c4next">Nächster Fall →</button>';$('#c4next').addEventListener('click',function(){c4i++;c4render()})}
         else{n.innerHTML='<div class="card good"><b>Alle Fälle gelöst!</b> Du kannst Messwerte mit Grenzwerten vergleichen und Ursachen erkennen.</div>';award('s4')}
       });
-    }else{b.classList.add('shake');setTimeout(function(){b.classList.remove('shake')},400);fb($('#c4f'),'bad','✘ Schau noch einmal in die Grenzwert-Tabelle.')}
+    }else{b.classList.add('shake');setTimeout(function(){b.classList.remove('shake')},400);fb($('#c4f'),'bad','✗ Schau noch einmal in die Grenzwert-Tabelle.')}
   })});
 }
 c4render();
@@ -737,7 +737,7 @@ function s6render(){
 $$('[data-s6]').forEach(function(b){b.addEventListener('click',function(){
   if(s6i>=s6o.length)return;var c=s6o[s6i];
   if(b.getAttribute('data-s6')===c.a){fb($('#g6fb'),'ok','✔ '+sub(c.m));s6i++;s6render()}
-  else{b.classList.add('shake');setTimeout(function(){b.classList.remove('shake')},400);fb($('#g6fb'),'bad','✘ Nicht ganz. Kann das Teilchen ein Proton abgeben, aufnehmen oder beides?')}
+  else{b.classList.add('shake');setTimeout(function(){b.classList.remove('shake')},400);fb($('#g6fb'),'bad','✗ Nicht ganz. Kann das Teilchen ein Proton abgeben, aufnehmen oder beides?')}
 })});
 s6start();
 var PH=[
