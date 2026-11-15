@@ -52,7 +52,8 @@
     'Elektronenkonfiguration': ['Hier verteilst du Elektronen auf die Orbitale und schreibst die Elektronenkonfiguration auf.'],
     'Orbitalmodell': ['Hier gehst du vom Bohr-Modell zur Orbitalwolke und erkundest, wie Elektronen im Atom beschrieben werden.'],
     'd-und-f-Orbitale': ['Hier erkundest du die Gestalt der d- und f-Orbitale, Übergangsmetalle und die Farbe von Komplexen.'],
-    'Kupfer-Raffination': ['Hier lernst du die Elektrolyse in der Technik kennen: Aus Rohkupfer wird hochreines Kupfer, und die Edelmetalle fallen nebenbei an.']
+    'Kupfer-Raffination': ['Hier lernst du die Elektrolyse in der Technik kennen: Aus Rohkupfer wird hochreines Kupfer, und die Edelmetalle fallen nebenbei an.'],
+    'Trinkwasser-Detektiv': ['Hier gehst du dem Trinkwasser auf die Spur: Was ist gelöst, woher kommt es, welche Grenzwerte gelten und warum setzt sich Kalk ab? Das Modul ist für Wahlpflicht Chemie Klasse 10.']
   };
 
 
@@ -77,7 +78,7 @@
     'Eigenschaften-des-Wassers': 'wasser', 'Loeslichkeit': 'wasser', 'Aminosaeuren': 'protein', 'Biuretprobe': 'protein', 'Peptidbindung-EPA': 'protein', 'Proteinstrukturen': 'protein',
     'Systeme-und-1-Hauptsatz': 'energie', 'Der-Kohlenstoffdioxid-Carbonat-Kreislauf': 'energie', 'Gleichgewicht': 'energie', 'Haber-Bosch-Verfahren': 'energie', 'Konduktometrie': 'saeure', 'Nukleophile-Substitution': 'organik',
     'Saeure-Base-Titration': 'saeure', 'Saeure-Basen-Konstanten': 'saeure', 'Säure-Base-Konzept-Brönsted': 'saeure', 'Chromatografie-Rf-Werte': 'farbe', 'Indikatoren-Grundlagen': 'saeure', 'Zusammenhang-von-Licht-und-Farbe': 'farbe',
-    'Disproportionierung': 'redox', 'Redoxreihe-Metallgewinnung': 'redox', 'Sulfit-Titration': 'saeure', 'Doppelspaltexperiment': 'atom', 'Elektronenkonfiguration': 'atom', 'Orbitalmodell': 'atom', 'd-und-f-Orbitale': 'atom', 'Kupfer-Raffination': 'redox'
+    'Disproportionierung': 'redox', 'Redoxreihe-Metallgewinnung': 'redox', 'Sulfit-Titration': 'saeure', 'Doppelspaltexperiment': 'atom', 'Elektronenkonfiguration': 'atom', 'Orbitalmodell': 'atom', 'd-und-f-Orbitale': 'atom', 'Kupfer-Raffination': 'redox', 'Trinkwasser-Detektiv': 'wasser'
   };
 
 
@@ -146,7 +147,7 @@
 
   // Standard für Anwendungen mit Rückmeldefeldern (.fb, .feedback, *-fb, *feedback*): themenbezogene Tipps. Für gezielte Tipps pro Aufgabe oben in CHECKS eintragen.
   var AUTO_SEL = '.fb, .feedback, [id$="-fb"], [id^="fb-"], [id$="fb"], [id*="feedback"], [id$="Fb"]';
-  var AUTO = ['Brandbekämpfung', 'Laborgeräte', 'simulation-pse', '4-Hochofen-Eisen-und-Stahl', 'Eigenschaften-des-Wassers', 'Loeslichkeit', 'Aminosaeuren', 'Peptidbindung-EPA', 'Proteinstrukturen', 'Systeme-und-1-Hauptsatz', 'Gleichgewicht', 'Saeure-Basen-Konstanten', 'Chromatografie-Rf-Werte', 'Disproportionierung', 'Redoxreihe-Metallgewinnung', 'Doppelspaltexperiment', 'Orbitalmodell', 'd-und-f-Orbitale', 'Kupfer-Raffination'];
+  var AUTO = ['Trinkwasser-Detektiv', 'Brandbekämpfung', 'Laborgeräte', 'simulation-pse', '4-Hochofen-Eisen-und-Stahl', 'Eigenschaften-des-Wassers', 'Loeslichkeit', 'Aminosaeuren', 'Peptidbindung-EPA', 'Proteinstrukturen', 'Systeme-und-1-Hauptsatz', 'Gleichgewicht', 'Saeure-Basen-Konstanten', 'Chromatografie-Rf-Werte', 'Disproportionierung', 'Redoxreihe-Metallgewinnung', 'Doppelspaltexperiment', 'Orbitalmodell', 'd-und-f-Orbitale', 'Kupfer-Raffination'];
   var TIPS = {
     sicher: ['Lies die Aufgabe noch einmal in Ruhe und denk an die Grundregeln im Labor: erst überlegen, dann handeln.', 'Gehe die Antwortmöglichkeiten der Reihe nach durch und streiche gedanklich aus, was sicher nicht passt.'],
     saeure: ['Lies die Aufgabe noch einmal genau und achte auf Einheiten, Vorzeichen und Größenordnungen.', 'Überlege dir zuerst, wer das Proton abgibt und wer es aufnimmt. Danach setzt du die Werte ein.', 'Schreibe die Reaktionsgleichung auf, bevor du rechnest. Sie zeigt dir die Stoffmengenverhältnisse.'],
