@@ -140,14 +140,17 @@
     'Säure-Base-Konzept-Brönsted': [
       { sel: '#quiz-feedback', tips: ['Das Proton (H⁺) wandert von einem Teilchen zum anderen. Wer gibt es ab, und wer nimmt es auf?', 'Donator ist die Säure, Akzeptor ist die Base. Schau in der Simulation, in welche Richtung das gelbe Proton wandert.'] }
     ],
+    'Brenner-entzuenden': [
+      { sel: '#bubbleText', tips: ['Lies die Anweisung in der Sprechblase noch einmal in Ruhe. Beim Brenner kommt es auf die Reihenfolge an.', 'Überlege dir, warum die Reihenfolge so wichtig ist: Was darf nicht passieren, solange Gas ausströmt?', 'Fang den Schritt noch einmal an und achte darauf, was der Brenner dir als Nächstes sagt.'] }
+    ],
     'Laborregeln-und-Gefahrenstoffe': [
       { sel: '#feedback-text', tips: ['Lies noch einmal den Namen und die Eigenschaften der Chemikalie. Welche Gefahr steckt dahinter?', 'Manche Stoffe brauchen mehr als ein Piktogramm. Prüfe, ob eines zu viel oder zu wenig im Kasten liegt.', 'Falsche Piktogramme kannst du im Kasten anklicken, dann verschwinden sie wieder.'] }
     ]
   };
 
   // Standard für Anwendungen mit Rückmeldefeldern (.fb, .feedback, *-fb, *feedback*): themenbezogene Tipps. Für gezielte Tipps pro Aufgabe oben in CHECKS eintragen.
-  var AUTO_SEL = '.fb, .feedback, [id$="-fb"], [id^="fb-"], [id$="fb"], [id*="feedback"], [id$="Fb"]';
-  var AUTO = ['Trinkwasser-Detektiv', 'Brandbekämpfung', 'Laborgeräte', 'simulation-pse', '4-Hochofen-Eisen-und-Stahl', 'Eigenschaften-des-Wassers', 'Loeslichkeit', 'Aminosaeuren', 'Peptidbindung-EPA', 'Proteinstrukturen', 'Systeme-und-1-Hauptsatz', 'Gleichgewicht', 'Saeure-Basen-Konstanten', 'Chromatografie-Rf-Werte', 'Disproportionierung', 'Redoxreihe-Metallgewinnung', 'Doppelspaltexperiment', 'Orbitalmodell', 'd-und-f-Orbitale', 'Kupfer-Raffination'];
+  var AUTO_SEL = '.fb, .res, .feedback, [id$="-fb"], [id^="fb-"], [id$="fb"], [id*="feedback"], [id$="Fb"]';
+  var AUTO = ['Trinkwasser-Detektiv', 'Elektronenkonfiguration', 'Zusammenhang-von-Licht-und-Farbe', 'Molekuelbau-und-Dipol', 'Ueberblick-Alkene-Alkine-Cycloalkane', 'Ueberblick-Alkohole', 'Ueberblick-Alkanale-Alkanone-Alkansaeuren', 'Ueberblick-Ester', 'Brandbekämpfung', 'Laborgeräte', 'simulation-pse', '4-Hochofen-Eisen-und-Stahl', 'Eigenschaften-des-Wassers', 'Loeslichkeit', 'Aminosaeuren', 'Peptidbindung-EPA', 'Proteinstrukturen', 'Systeme-und-1-Hauptsatz', 'Gleichgewicht', 'Saeure-Basen-Konstanten', 'Chromatografie-Rf-Werte', 'Disproportionierung', 'Redoxreihe-Metallgewinnung', 'Doppelspaltexperiment', 'Orbitalmodell', 'd-und-f-Orbitale', 'Kupfer-Raffination'];
   var TIPS = {
     sicher: ['Lies die Aufgabe noch einmal in Ruhe und denk an die Grundregeln im Labor: erst überlegen, dann handeln.', 'Gehe die Antwortmöglichkeiten der Reihe nach durch und streiche gedanklich aus, was sicher nicht passt.'],
     saeure: ['Lies die Aufgabe noch einmal genau und achte auf Einheiten, Vorzeichen und Größenordnungen.', 'Überlege dir zuerst, wer das Proton abgibt und wer es aufnimmt. Danach setzt du die Werte ein.', 'Schreibe die Reaktionsgleichung auf, bevor du rechnest. Sie zeigt dir die Stoffmengenverhältnisse.'],
@@ -171,7 +174,7 @@
     if (!n.offsetParent && getComputedStyle(n).position !== 'fixed') return 0;           // unsichtbar
     var t = (n.textContent || '').trim(), c = n.className && n.className.baseVal === undefined ? String(n.className) : '';
     if (!t) return 0;
-    if (/^(✗|❌|✖|Leider|Falsch|Nicht ganz|Das stimmt (noch )?nicht)/i.test(t) || /\b(wrong|incorrect|error|danger|fail|no)\b/i.test(c)) return -1;
+    if (/^(✗|✘|✕|❌|❎|✖|Leider|Falsch|Nicht ganz|Das stimmt (noch )?nicht)/i.test(t) || /\b(wrong|incorrect|error|danger|fail|no)\b/i.test(c)) return -1;
     if (/^(✓|✔|✅|🎉|Richtig|Vollkommen richtig|Glückwunsch|Genau)/i.test(t) || /\b(correct|success)\b/i.test(c)) return 1;   // „fb ok“ allein zählt nicht: kann auch eine reine Beobachtung sein
     return 0;
   }

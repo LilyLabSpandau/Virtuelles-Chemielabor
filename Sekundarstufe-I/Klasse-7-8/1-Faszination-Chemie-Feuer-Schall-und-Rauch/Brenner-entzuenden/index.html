@@ -463,7 +463,8 @@
     valveStatus.textContent = `Status: Ventil ${gasOpen ? "geöffnet" : "geschlossen"}.`;
   }
   function softError(msg){
-    bubbleText.textContent = msg;
+    var isErr = /^(Falsche|Noch nicht|Kein Gas|Der Schlauch ist bereits|Klicken Sie|Luftzufuhr verändert|Schlauch ist nicht|Erst )/.test(msg);
+    bubbleText.textContent = (isErr ? "✗ " : "") + msg;
     stepTag.textContent = "Hinweis";
     setTimeout(() => setBubble(), 1200);
   }
