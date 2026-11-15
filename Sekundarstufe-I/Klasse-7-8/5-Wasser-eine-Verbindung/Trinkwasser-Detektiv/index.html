@@ -104,7 +104,7 @@ sub,sup{line-height:0}
 
 <nav id="nav">
   <button data-go="s0" class="active">Start</button>
-  <button data-go="s1">1 Zoom ins Glas</button>
+  <button data-go="s1">1 Was ist im Glas?</button>
   <button data-go="s2">2 Woher kommt das?</button>
   <button data-go="s3">3 Vom Brunnen zum Hahn</button>
   <button data-go="s4">4 Grenzwert-Check</button>
@@ -137,52 +137,44 @@ sub,sup{line-height:0}
 
 <!-- ============ STATION 1 ============ -->
 <section class="station" id="s1">
-  <h2>1 · Zoom ins Wasserglas</h2>
-  <h3>Teil A: Leitet das Wasser den Strom?</h3>
-  <p>Ein Leitfähigkeitstester zeigt, ob frei bewegliche Ladungsträger im Wasser sind. Tauche ihn in drei Proben.</p>
-  <div class="row">
-    <div>
-      <svg id="tester" viewBox="0 0 400 250" width="100%" role="img" aria-label="Leitfähigkeitstester">
-        <rect x="10" y="10" width="380" height="230" fill="#fafafa" stroke="#cfd8dc" rx="12"/>
-        <!-- Batterie + LED -->
-        <rect x="40" y="30" width="60" height="34" rx="4" fill="#455a64"/><rect x="100" y="40" width="8" height="14" fill="#455a64"/>
-        <text x="70" y="53" font-size="16" fill="#fff" text-anchor="middle">9 V</text>
-        <circle id="led" cx="300" cy="47" r="20" fill="#ffd54f" stroke="#8d6e63" stroke-width="3" opacity=".15"/>
-        <circle id="ledglow" cx="300" cy="47" r="34" fill="#fff59d" opacity="0"/>
-        <text x="300" y="86" font-size="14" text-anchor="middle" fill="#455a64">Lämpchen</text>
-        <path d="M108 47 H180 V110 M180 110 H150 V150 M280 47 H250 V110 M250 110 H275 V150" fill="none" stroke="#37474f" stroke-width="3"/>
-        <path d="M150 110 H275" stroke="none"/>
-        <!-- Elektroden -->
-        <rect x="143" y="110" width="8" height="70" fill="#90a4ae"/><rect x="268" y="110" width="8" height="70" fill="#90a4ae"/>
-        <!-- Becher -->
-        <path d="M110 140 V225 H310 V140" fill="none" stroke="#546e7a" stroke-width="4"/>
-        <rect id="liquid" x="112" y="160" width="196" height="63" fill="#bbdefb" opacity=".8"/>
-        <text id="probname" x="210" y="205" font-size="15" text-anchor="middle" fill="#0d3c78" font-weight="bold">destilliertes Wasser</text>
-      </svg>
-    </div>
-    <div>
-      <div class="chips" id="probChips">
-        <button class="chip sel" data-p="dest">destilliertes Wasser</button>
-        <button class="chip" data-p="tap">Leitungswasser</button>
-        <button class="chip" data-p="salz">Kochsalzlösung (1 %)</button>
-      </div>
-      <div class="card"><b>Leitfähigkeit:</b> <span id="kappa" class="big">&lt; 5 µS/cm</span><br><span id="kappaTxt" class="hint">Kein Strom, das Lämpchen bleibt dunkel.</span></div>
-      <div id="q1a"></div>
-    </div>
-  </div>
-
-  <h3>Teil B: Zoom auf die Teilchen</h3>
+  <h2>1 · Was ist im Glas?</h2>
+  <h3>Teil A: Zoom auf die Teilchen</h3>
   <p>So könnte ein winziger Wassertropfen aussehen (nicht maßstabsgetreu). <b>Tippe jedes Teilchen an</b>, das nicht H<sub>2</sub>O ist, und finde alle 11 gelösten Stoffe.</p>
   <div style="background:#e8f4fb;border:3px solid #81d4fa;border-radius:14px;overflow:hidden">
     <svg id="scene" viewBox="0 0 760 400" width="100%" style="display:block;touch-action:manipulation" role="img" aria-label="Teilchenmodell von Trinkwasser"></svg>
   </div>
   <div style="margin-top:8px">
-    <button class="btn alt" id="shellBtn">Hydrathüllen zeigen</button>
     <button class="btn alt" id="pauseBtn">⏸ Bewegung anhalten</button>
     <span id="foundCount" class="big">0 / 11 gefunden</span>
   </div>
   <div class="card" id="pinfo"><span class="hint">Tippe ein Teilchen an, um mehr zu erfahren.</span></div>
   <div class="chips" id="foundChips"></div>
+  <h3>Teil B: Die Ladungsbilanz</h3>
+  <p>Wasser ist nach außen elektrisch neutral. Hier siehst du die gelösten Ionen einer Probe aus dem Berliner Wasserwerk Kladow (Jahresmedian 2025). Die Ladungsmengen sind in <b>mmol Ladung pro Liter</b> angegeben. Auf der negativen Seite fehlt noch das <b>Hydrogencarbonat</b>. Stelle den Regler so ein, dass die Waage im Gleichgewicht ist.</p>
+  <div class="row">
+    <div>
+      <svg id="balsvg" viewBox="0 0 440 330" width="100%" role="img" aria-label="Ladungsbilanz als Säulen"></svg>
+    </div>
+    <div>
+      <table>
+        <tr><th>Kationen</th><th>mg/L</th><th>mmol Ladung/L</th></tr>
+        <tr><td>Ca<sup>2+</sup></td><td>113</td><td>5,6</td></tr>
+        <tr><td>Mg<sup>2+</sup></td><td>9,8</td><td>0,8</td></tr>
+        <tr><td>Na<sup>+</sup></td><td>41</td><td>1,8</td></tr>
+        <tr><th>Anionen</th><th>mg/L</th><th>mmol Ladung/L</th></tr>
+        <tr><td>Cl<sup>−</sup></td><td>56</td><td>1,6</td></tr>
+        <tr><td>SO<sub>4</sub><sup>2−</sup></td><td>120</td><td>2,5</td></tr>
+        <tr><td>NO<sub>3</sub><sup>−</sup></td><td>3,1</td><td>0,05</td></tr>
+        <tr><td>HCO<sub>3</sub><sup>−</sup></td><td>?</td><td id="hcoval">0,0</td></tr>
+      </table>
+      <p style="margin:12px 0 2px"><b>Regler: HCO<sub>3</sub><sup>−</sup> in mmol Ladung/L</b></p>
+      <input type="range" id="hco3" min="0" max="6" step="0.1" value="0" style="width:100%;height:36px" aria-label="Hydrogencarbonat">
+      <div class="fb info show" id="balfb">Die Waage ist noch nicht im Gleichgewicht.</div>
+      <p class="hint">Kalium ist hier vernachlässigt (vereinfachte Bilanz).</p>
+    </div>
+  </div>
+  <div id="balres" style="display:none"></div>
+  <div id="q1b"></div>
   <div class="nextrow"><span></span><button class="btn" data-go="s2">Weiter zu Station 2 →</button></div>
 </section>
 
@@ -416,25 +408,7 @@ function chemSvg(parts){ /* parts: [['Ca'],['2+','sup']] -> tspans */
   return out;
 }
 
-/* ---------- Station 1 Teil A: Leitfähigkeit ---------- */
-var PR={
-  dest:{n:'destilliertes Wasser',k:'< 5 µS/cm',led:0,col:'#bbdefb',t:'Kein Strom, das Lämpchen bleibt dunkel. Reines Wasser leitet den Strom kaum.'},
-  tap:{n:'Leitungswasser',k:'≈ 800 µS/cm',led:.65,col:'#bbdefb',t:'Das Lämpchen leuchtet. In Berlin liegt die Leitfähigkeit des Trinkwassers etwa zwischen 650 und 1040 µS/cm.'},
-  salz:{n:'Kochsalzlösung (1 %)',k:'> 10 000 µS/cm',led:1,col:'#b3e5fc',t:'Das Lämpchen leuchtet hell. Sehr viele gelöste Ionen, viel mehr als im Trinkwasser.'}
-};
-$$('#probChips .chip').forEach(function(c){c.addEventListener('click',function(){
-  $$('#probChips .chip').forEach(function(x){x.classList.remove('sel')});c.classList.add('sel');
-  var p=PR[c.getAttribute('data-p')];
-  $('#led').setAttribute('opacity',.15+p.led*.85);$('#ledglow').setAttribute('opacity',p.led*.7);
-  $('#probname').textContent=p.n;$('#kappa').textContent=p.k;$('#kappaTxt').textContent=p.t;
-})});
-mc($('#q1a'),'Warum leitet das Leitungswasser den Strom, das destillierte Wasser aber nicht?',[
-  {t:'Im Leitungswasser sind gelöste Ionen, die sich frei bewegen können.',ok:true,why:'Richtig. Gelöste Salze liegen als bewegliche Ionen vor. Sie transportieren die elektrische Ladung.'},
-  {t:'Leitungswasser enthält mehr H<sub>2</sub>O-Moleküle.',ok:false,why:'Die H<sub>2</sub>O-Moleküle sind ungeladen. Es kommt auf bewegliche Ladungsträger an.'},
-  {t:'Leitungswasser ist wärmer.',ok:false,why:'Die Temperatur ist in beiden Fällen gleich. Der Unterschied liegt an den gelösten Teilchen.'}
-],function(){part('a')});
-
-/* ---------- Station 1 Teil B: Teilchenszene ---------- */
+/* ---------- Station 1 Teil A: Teilchenszene ---------- */
 var P=[
  {id:'ca',l:[['Ca'],['2+','sup']],r:20,c:'#5c6bc0',charge:1,name:'Calcium-Ion',berlin:'93 bis 143 mg/L',gw:'kein Grenzwert (Härtebildner)',from:'Kalkgestein im Untergrund',eff:'Gut für Knochen und Zähne. Macht das Wasser hart und bildet Kalk.'},
  {id:'mg',l:[['Mg'],['2+','sup']],r:17,c:'#3949ab',charge:1,name:'Magnesium-Ion',berlin:'8 bis 15 mg/L',gw:'kein Grenzwert (Härtebildner)',from:'Dolomit- und Kalkgestein',eff:'Wichtig für Muskeln und Nerven. Macht das Wasser hart.'},
@@ -531,17 +505,54 @@ scene.addEventListener('click',function(ev){
   showInfo(p);
   if(!found[id]){found[id]=1;$('.tick',t).style.display='';
     var c=document.createElement('button');c.className='chip found';c.innerHTML=p.gas?sub(p.name.split(' ').slice(-1)[0]):chemSvgHtml(p);c.addEventListener('click',function(){showInfo(p)});$('#foundChips').appendChild(c);
-    var n=Object.keys(found).length;$('#foundCount').textContent=n+' / 11 gefunden';if(n===11)part('b')}
+    var n=Object.keys(found).length;$('#foundCount').textContent=n+' / 11 gefunden';if(n===11)part('a')}
 });
 function chemSvgHtml(p){return p.l.map(function(x){return x[1]?'<'+x[1]+'>'+x[0]+'</'+x[1]+'>':x[0]}).join('')}
 var p1={};function part(k){p1[k]=1;if(p1.a&&p1.b)award('s1')}
-$('#shellBtn').addEventListener('click',function(){
-  showShell=!showShell;this.textContent=showShell?'Hydrathüllen verbergen':'Hydrathüllen zeigen';
-  $$('.shell',scene).forEach(function(s){s.setAttribute('opacity',showShell?1:0)});
-  if(showShell)fb($('#pinfo'),'info','<b>Hydrathüllen:</b> Wasser-Moleküle sind Dipole. Um positive Ionen lagern sie sich mit dem negativen Sauerstoff-Ende an, um negative Ionen mit den positiven Wasserstoff-Enden.');
-});
 $('#pauseBtn').addEventListener('click',function(){sceneRun=!sceneRun;this.textContent=sceneRun?'⏸ Bewegung anhalten':'▶ Bewegung starten'});
 buildScene();initEnts();step();
+
+
+/* ---------- Station 1 Teil B: Ladungsbilanz ---------- */
+(function(){
+  var POS=[['Ca²⁺',5.64,'#5c6bc0'],['Mg²⁺',0.81,'#3949ab'],['Na⁺',1.78,'#7986cb']];
+  var NEG=[['Cl⁻',1.58,'#e64a19'],['SO₄²⁻',2.50,'#f57c00'],['NO₃⁻',0.05,'#d84315']];
+  var posSum=POS.reduce(function(a,x){return a+x[1]},0), negSum=NEG.reduce(function(a,x){return a+x[1]},0);
+  var U=24,base=300,svg=$('#balsvg'),asked=false;
+  function stack(x,list,extra){
+    var y=base,o='';
+    list.concat(extra>0?[['HCO₃⁻',extra,'#ffb300']]:[]).forEach(function(p){
+      var h=p[1]*U;y-=h;
+      o+='<rect x="'+x+'" y="'+y.toFixed(1)+'" width="150" height="'+h.toFixed(1)+'" fill="'+p[2]+'" stroke="#fff" stroke-width="2"/>';
+      if(h>18)o+='<text x="'+(x+75)+'" y="'+(y+h/2+5).toFixed(1)+'" text-anchor="middle" font-size="15" font-weight="bold" fill="#fff">'+p[0]+'</text>';
+    });
+    return o;
+  }
+  function render(){
+    var h=parseFloat($('#hco3').value);
+    var o='<line x1="20" y1="'+base+'" x2="420" y2="'+base+'" stroke="#455a64" stroke-width="3"/>';
+    o+=stack(50,POS,0)+stack(240,NEG,h);
+    var top=base-posSum*U;
+    o+='<line x1="40" y1="'+top.toFixed(1)+'" x2="410" y2="'+top.toFixed(1)+'" stroke="#c62828" stroke-width="2" stroke-dasharray="6 5"/>';
+    o+='<text x="125" y="'+(base+22)+'" text-anchor="middle" font-size="14" font-weight="bold" fill="#22313f">positive Ladungen</text><text x="315" y="'+(base+22)+'" text-anchor="middle" font-size="14" font-weight="bold" fill="#22313f">negative Ladungen</text>';
+    svg.innerHTML=o;
+    $('#hcoval').textContent=h.toFixed(1).replace('.',',');
+    var diff=(negSum+h)-posSum, ok=Math.abs(diff)<0.12, f=$('#balfb');
+    if(ok){f.className='fb ok show';f.innerHTML='✔ Die Waage ist im Gleichgewicht: positive und negative Ladungen sind gleich groß.';
+      if(!asked){asked=true;
+        $('#balres').style.display='block';
+        $('#balres').innerHTML='<div class="card good"><b>Das Ergebnis:</b> Es fehlen etwa 4,1 mmol Ladung pro Liter. Ein Hydrogencarbonat-Ion trägt eine Ladung, 1 mmol HCO<sub>3</sub><sup>−</sup> wiegt etwa 61 mg. Also sind es etwa 4,1 · 61 ≈ <b>250 mg/L Hydrogencarbonat</b>. Das ist der Wert, der in der Teilchen-Karte oben steht. Er ist berechnet, nicht gemessen.</div>';
+        mc($('#q1b'),'Warum müssen die positiven und die negativen Ladungen im Wasser gleich groß sein?',[
+          {t:'Wasser ist nach außen elektrisch neutral. Jede positive Ladung wird durch negative Ladungen ausgeglichen.',ok:true,why:'Richtig. Darum gibt es im Wasser nie nur Kationen oder nur Anionen.'},
+          {t:'Anionen sind schwerer als Kationen.',ok:false,why:'Das Gewicht spielt keine Rolle. Es kommt auf die Ladung an.'},
+          {t:'Sonst würde das Wasser nicht mehr leiten.',ok:false,why:'Auch bei ungleicher Ladung könnten Ionen leiten. Neutralität ist ein eigenes Prinzip.'}
+        ],function(){part('b')});
+      }
+    }else{f.className='fb info show';f.innerHTML=diff<0?'Die Waage kippt nach links: Es sind zu wenig negative Ladungen.':'Die Waage kippt nach rechts: Es sind zu viele negative Ladungen.';}
+  }
+  $('#hco3').addEventListener('input',render);
+  render();
+})();
 
 /* ---------- Station 2 ---------- */
 var SRC=[
