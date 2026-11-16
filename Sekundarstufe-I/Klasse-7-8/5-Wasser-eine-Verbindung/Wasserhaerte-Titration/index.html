@@ -485,7 +485,7 @@ const V_PROBE = 100.0;      // mL Wasserprobe im Kolben
 const DH_PER_ML = 0.5608;   // °dH je mL EDTA bei 100 mL Probe: 1 mmol/L (Ca²⁺ + Mg²⁺) = 5,608 °dH
 const WINE = new THREE.Color(0xa6173f), VIOLET = new THREE.Color(0x6b3fa0), BLUE = new THREE.Color(0x2b62d9);
 // Farbe des Indikators: weinrot (Härtebildner noch frei), kurz vor dem Umschlag violett, am Endpunkt blau
-const ebtAmount = (vol, eq) => clamp((vol - (eq - 0.35)) / 0.45, 0, 1);
+const ebtAmount = (vol, eq) => clamp((vol - (eq - 1.6)) / 1.6, 0, 1);   // weinrot -> violett -> blau über die letzten ~1,6 mL
 function ebtColor(vol, eq, out) { const t = ebtAmount(vol, eq); return t < 0.5 ? out.copy(WINE).lerp(VIOLET, t * 2) : out.copy(VIOLET).lerp(BLUE, (t - 0.5) * 2); }
 const _c = new THREE.Color();
 function renderEbt(el) { el.innerHTML = '<span style="flex:3;background:#a6173f">weinrot</span><span style="flex:1.2;background:linear-gradient(90deg,#a6173f,#6b3fa0)">violett</span><span style="flex:1.2;background:linear-gradient(90deg,#6b3fa0,#2b62d9)"></span><span style="flex:3;background:#2b62d9">blau</span>'; }
@@ -1639,7 +1639,7 @@ function animate(now) {
   if (flask.baseColor) {
     if (state.ind) {
       ebtColor(state.vol, eq, _c);
-      flask.sampleMat.color.copy(_c); flask.sampleMat.emissive.copy(_c).multiplyScalar(0.3); flask.sampleMat.emissiveIntensity = 1.0; flask.sampleMat.opacity = 0.9;
+      flask.sampleMat.color.copy(_c).multiplyScalar(0.55); flask.sampleMat.emissive.copy(_c).multiplyScalar(0.03); flask.sampleMat.emissiveIntensity = 1.0; flask.sampleMat.opacity = 0.96;
     } else {
       flask.sampleMat.color.copy(flask.baseColor); flask.sampleMat.emissive.copy(flask.baseEmissive); flask.sampleMat.emissiveIntensity = 1.0; flask.sampleMat.opacity = 0.55;
     }
@@ -1983,7 +1983,7 @@ $('cv').oninput = cvUpd; cvUpd();
   let ions, edta, bound;
   function reset(){
     ions = []; edta = []; bound = 0;
-    for (let i = 0; i < N; i++) ions.push({ x: 70 + Math.random() * 220, y: 120 + Math.random() * 130, vx: (Math.random() - .5) * 1.2, vy: (Math.random() - .5) * 1.2, mg: i % 3 === 2, b: false });
+    for (let i = 0; i < N; i++) ions.push({ x: 110 + Math.random() * 140, y: 160 + Math.random() * 100, vx: (Math.random() - .5) * 1.2, vy: (Math.random() - .5) * 1.2, mg: i % 3 === 2, b: false });
     txt();
   }
   function txt(){
@@ -2019,11 +2019,9 @@ $('cv').oninput = cvUpd; cvUpd();
           i.ex += (i.x - i.ex) * .08; i.ey += (i.y - i.ey) * .08;
           if (Math.abs(i.ex - i.x) < 2 && Math.abs(i.ey - i.y) < 2) i.b = true;
         } else {
-          i.x += i.vx; i.y += i.vy;
-          if (i.x < 70 || i.x > 290) i.vx *= -1; if (i.y < 125 || i.y > 262) i.vy *= -1;
-          if (i.y < 150 && (i.x < 140 || i.x > 220)) i.vy = Math.abs(i.vy);
+          i.x += i.vx; i.y += i.vy; clampIon(i);
         }
-      } else { i.x += i.vx * .3; i.y += i.vy * .3; if (i.x < 70 || i.x > 290) i.vx *= -1; if (i.y < 125 || i.y > 262) i.vy *= -1; }
+      } else { i.x += i.vx * .3; i.y += i.vy * .3; clampIon(i); }
       // Ion
       g.beginPath(); g.arc(i.x, i.y, 11, 0, 7); g.fillStyle = i.mg ? '#7e57c2' : '#ff9800'; g.fill(); g.fillStyle = '#fff'; g.fillText(i.mg ? 'Mg²⁺' : 'Ca²⁺', i.x, i.y + 4);
       if (i.target) { // EDTA-Klammer
@@ -2032,6 +2030,16 @@ $('cv').oninput = cvUpd; cvUpd();
       }
     });
     requestAnimationFrame(draw);
+  }
+  // Kolbenwand: Hals x 130..230 (y 20..90), Körper weitet sich bis x 30..330 bei y 270
+  function wallL(y){ return y <= 90 ? 130 : 130 - (y - 90) * (100 / 180); }
+  function clampIon(i){
+    const m = 16;
+    if (i.y < 110) { i.y = 110; i.vy = Math.abs(i.vy); }
+    if (i.y > 268) { i.y = 268; i.vy = -Math.abs(i.vy); }
+    const l = wallL(i.y) + m, r = 360 - wallL(i.y) - m;
+    if (i.x < l) { i.x = l; i.vx = Math.abs(i.vx); }
+    if (i.x > r) { i.x = r; i.vx = -Math.abs(i.vx); }
   }
   function mix(a, b, t){ return a.map((v, k) => Math.round(v + (b[k] - v) * t)); }
   reset(); requestAnimationFrame(draw);
