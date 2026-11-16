@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Farbe und Konstitution</title>
+<link rel="icon" type="image/png" href="../../../../icons/icon-192.png">
+<link rel="apple-touch-icon" href="../../../../icons/apple-touch-icon.png">
+<style>
+  :root{--ink:#1f2937;--mut:#64748b;--bg:#f1f5f9;--card:#fff;--line:#d9e2ec;--pri:#2563eb;--pri2:#1d4ed8;--ok:#15803d;--okbg:#e8f6ec;--bad:#b91c1c;--badbg:#fdecec;--acc:#b45309;--accbg:#fff4e0}
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Segoe UI",system-ui,-apple-system,sans-serif;padding:0 0 70px}
+  .wrap{max-width:1000px;margin:0 auto;padding:14px 14px 0}
+  .top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+  .back{color:var(--pri2);font-size:14px;text-decoration:none;font-weight:600}
+  h1{font-size:clamp(22px,4.6vw,30px);margin:4px 0 2px;line-height:1.2}
+  .sub{margin:0 0 12px;color:var(--mut)}
+  h2{font-size:clamp(19px,3.6vw,23px);margin:0 0 6px}
+  h3{font-size:17px;margin:20px 0 6px}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 0}
+  .tab{flex:1 1 200px;border:0;background:#cbd5e1;color:#1e293b;font:inherit;font-weight:700;font-size:15px;padding:11px 12px;border-radius:10px 10px 0 0;cursor:pointer;min-height:46px;text-align:left}
+  .tab small{display:block;font-weight:500;font-size:12.5px;opacity:.8}
+  .tab.on{background:var(--pri);color:#fff}
+  .tab .done{display:none;margin-left:6px}.tab.fin .done{display:inline}
+  .mod{display:none;background:var(--card);border:1px solid var(--line);border-radius:0 0 14px 14px;padding:clamp(14px,3vw,26px);box-shadow:0 4px 14px rgba(15,23,42,.06)}
+  .mod.on{display:block}
+  .lead{background:#eef4ff;border-left:4px solid var(--pri);padding:10px 13px;border-radius:8px;margin:8px 0 14px}
+  .lead p{margin:0}
+  .grid{display:grid;grid-template-columns:1.25fr 1fr;gap:14px;align-items:start}
+  @media (max-width:780px){.grid{grid-template-columns:1fr}}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px}
+  .card h4{margin:0 0 6px;font-size:14px;color:var(--mut);text-transform:uppercase;letter-spacing:.4px}
+  svg{max-width:100%;height:auto;display:block;overflow:visible}
+  .btn{border:0;background:var(--pri);color:#fff;font:inherit;font-weight:700;padding:10px 16px;border-radius:10px;cursor:pointer;min-height:44px;touch-action:manipulation}
+  .btn:hover{background:var(--pri2)}.btn:disabled{background:#94a3b8;cursor:default}
+  .btn.sec{background:#e2e8f0;color:#1e293b}.btn.sec:hover{background:#cbd5e1}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:8px 0}
+  .chip{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:7px 10px}
+  .chip b{display:block;font-size:11.5px;color:var(--mut);font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+  .chip span{font-size:17px;font-weight:700}
+  input[type=range]{width:100%;min-height:34px;accent-color:var(--pri)}
+  table{border-collapse:collapse;width:100%;font-size:14.5px}
+  th,td{border:1px solid var(--line);padding:5px 8px;text-align:left}th{background:#f1f5f9}
+  td .dot{display:inline-block;width:14px;height:14px;border-radius:50%;border:1px solid #64748b;vertical-align:-2px;margin-right:6px}
+  .q{border:1px solid var(--line);border-radius:12px;padding:12px;margin:12px 0;background:#fcfdff}
+  .q.done{border-color:#86d09b;background:#f5fbf7}
+  .qt{margin:0 0 8px;font-weight:600}
+  .opts{display:grid;gap:7px}
+  .opt{border:1.5px solid #cbd5e1;background:#fff;border-radius:10px;padding:10px 12px;font:inherit;text-align:left;cursor:pointer;min-height:44px;touch-action:manipulation;color:var(--ink)}
+  .opt:hover{border-color:var(--pri)}.opt.ok{border-color:var(--ok);background:var(--okbg)}.opt.no{border-color:#e4a0a0;background:var(--badbg);color:#7f1d1d}
+  .opt:disabled{cursor:default}
+  .fb{margin-top:8px;padding:8px 11px;border-radius:9px;font-size:15px}.fb[hidden]{display:none}
+  .fb.ok{background:var(--okbg);color:#14532d}.fb.bad{background:var(--badbg);color:#7f1d1d}
+  select{font:inherit;padding:6px 8px;border-radius:8px;border:1.5px solid #94a3b8;background:#fff;max-width:100%;min-height:40px}
+  select.ok{border-color:var(--ok);background:var(--okbg)}select.no{border-color:#e08a8a;background:var(--badbg)}
+  .gaptext{line-height:2.4}
+  .merke{background:var(--accbg);border-left:4px solid #f59e0b;border-radius:8px;padding:10px 13px;margin:16px 0}
+  .merke b.t{color:var(--acc)}
+  details{margin:10px 0}summary{cursor:pointer;font-weight:700;color:var(--pri2);min-height:34px}
+  .small{font-size:13.5px;color:#475569}
+  .tag{display:inline-block;font-size:12px;font-weight:800;border-radius:999px;padding:2px 9px;background:#e2e8f0}
+  .tag.b{background:#fde2e2;color:#991b1b}.tag.h{background:#dbeafe;color:#1e40af}
+  .grp{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;border-bottom:1px solid #eef2f6;padding:7px 0}
+  .grp:last-child{border:0}.grp .nm{font-weight:700;font-size:17px}.grp .ef{font-size:13.5px;color:#475569}
+  .grp .bt{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+  .grp .bt .btn{padding:7px 10px;min-height:40px;font-size:14px}
+  .grp .fb{grid-column:1/-1;margin:0}
+  .sel{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0}
+  .sel button{border:1.5px solid #cbd5e1;background:#fff;border-radius:10px;padding:8px 11px;font:inherit;font-weight:700;cursor:pointer;min-height:44px;touch-action:manipulation}
+  .sel button.on{border-color:var(--pri);background:#e8efff;color:var(--pri2)}
+  .sel button.aux{border-left:5px solid #16a34a}.sel button.anti{border-left:5px solid #dc2626}
+  .steps{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 12px}
+  .stp{flex:1 1 120px;border:1.5px solid #cbd5e1;background:#f8fafc;border-radius:10px;padding:7px 9px;font:inherit;font-weight:700;font-size:14px;text-align:left;cursor:pointer;min-height:44px}
+  .stp.on{border-color:var(--pri);background:#e8efff;color:var(--pri2)}.stp.ok::after{content:" ✔";color:var(--ok)}.stp:disabled{opacity:.5;cursor:not-allowed}
+  .stagepane{display:none}.stagepane.on{display:block}
+  .bench{position:relative;background:linear-gradient(#e8eef6,#dfe8f2);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .bench svg.bsvg{width:100%;height:auto;display:block}
+  .floor{height:clamp(96px,22vw,128px);background:linear-gradient(#cbd5e1,#b9c6d6);border-top:3px solid #94a3b8;position:relative}
+  .floor::before{content:"";position:absolute;left:0;right:0;top:10px;height:2px;background:rgba(255,255,255,.4)}
+  #skipBtn{white-space:nowrap;position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:9500;display:none}
+  .mech{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;align-items:start}
+  @media (max-width:780px){.mech{grid-template-columns:1fr}}
+  .legend{display:flex;gap:12px;flex-wrap:wrap;font-size:13px;color:#475569;margin-top:6px}
+  .legend i{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:-2px;margin-right:4px}
+  textarea{width:100%;min-height:110px;font:inherit;padding:10px;border-radius:10px;border:1.5px solid #94a3b8}
+  .foot{position:fixed;left:0;right:0;bottom:0;text-align:center;font-size:12px;padding:6px;color:#64748b;pointer-events:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><a class="back" href="../index.html">← Zurück zu den Indikatorfarbstoffen</a></div>
+  <h1>Farbe und Konstitution</h1>
+  <p class="sub">Lerneinheit für die Oberstufe: Wie hängt die Farbe eines Stoffes von seiner Struktur ab? Drei Module, die aufeinander aufbauen.</p>
+
+  <div class="tabs" role="tablist">
+    <button class="tab on" role="tab" data-t="m1" id="tab-m1">1 · Konjugation und Farbe<span class="done">✔</span><small>Kette verlängern, Farbe beobachten</small></button>
+    <button class="tab" role="tab" data-t="m2" id="tab-m2">2 · Auxochrome &amp; Antiauxochrome<span class="done">✔</span><small>Bathochrom oder hypsochrom?</small></button>
+    <button class="tab" role="tab" data-t="m3" id="tab-m3">3 · Der Tintenkiller<span class="done">✔</span><small>Triphenylmethanfarbstoff erklären</small></button>
+  </div>
+
+  <!-- ================================================= MODUL 1 -->
+  <section class="mod on" id="m1" role="tabpanel">
+    <h2>Modul 1: Je länger die Kette, desto farbiger</h2>
+    <div class="lead"><p><b>Auftrag:</b> Du startest bei Ethen und hängst Schritt für Schritt eine weitere C=C-Doppelbindung an die Kette. Beobachte, wie sich das Becherglas, das Absorptionsspektrum und die Energiestufen der π-Elektronen verändern. Notiere dir, ab wann die Lösung farbig wird.</p></div>
+
+    <div class="grid">
+      <div class="card">
+        <h4>Die Kohlenstoffkette</h4>
+        <svg id="chain" role="img" aria-label="Kohlenstoffkette mit konjugierten Doppelbindungen"></svg>
+        <p id="chainName" style="margin:6px 0 2px;font-weight:700"></p>
+        <p id="chainFormel" class="small" style="margin:0 0 8px"></p>
+        <div class="row"><button class="btn sec" id="m1minus" aria-label="Eine C=C-Einheit entfernen">− C=C</button><button class="btn" id="m1plus" aria-label="Eine C=C-Einheit anhängen">+ C=C anhängen</button></div>
+        <input type="range" id="m1range" min="1" max="14" value="1" aria-label="Anzahl der konjugierten Doppelbindungen" style="margin-top:6px">
+      </div>
+      <div class="card">
+        <h4>Becherglas mit der Lösung</h4>
+        <div class="row" style="align-items:flex-end;flex-wrap:nowrap"><svg id="m1beaker" style="width:130px;flex:none" role="img" aria-label="Becherglas"></svg>
+          <div style="flex:1;min-width:0"><div class="chip" style="margin-bottom:8px"><b>Farbe der Lösung</b><span id="m1farbe"></span></div><div class="chip"><b>Absorbiert wird</b><span id="m1abs" style="font-size:15px"></span></div></div></div>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:14px">
+      <div class="card"><h4>Absorptionsspektrum</h4><svg id="m1plot" role="img" aria-label="Absorptionsspektrum"></svg>
+        <div class="chips"><div class="chip"><b>Absorptionsmaximum</b><span id="m1lmax"></span></div><div class="chip"><b>Anzahl C=C</b><span id="m1n"></span></div></div></div>
+      <div class="card"><h4>Energiestufen der π-Elektronen</h4><svg id="m1lev" role="img" aria-label="Energiestufen der π-Orbitale"></svg>
+        <p class="small" style="margin:6px 0 0">Der Abstand ΔE zwischen dem höchsten besetzten und dem niedrigsten leeren Niveau beträgt jetzt <b id="m1de"></b> vom Wert bei Ethen.</p></div>
+    </div>
+
+    <div class="card" style="margin-top:14px"><h4>Dein Messprotokoll (füllt sich beim Ausprobieren)</h4>
+      <table><thead><tr><th>C=C</th><th>Name</th><th>λmax</th><th>Farbe der Lösung</th></tr></thead><tbody id="m1tab"></tbody></table></div>
+    <p class="small" style="margin-top:8px">Die Wellenlängen sind gerundete Modellwerte für die Kette H–(CH=CH)ₙ–H. Wichtig ist die Tendenz, nicht die einzelne Zahl.</p>
+
+    <h3>Aufgaben</h3>
+    <div id="m1q"></div>
+    <div class="merke" id="m1merke" hidden><b class="t">Merke:</b> Mit jeder weiteren konjugierten C=C-Doppelbindung wird das π-Elektronensystem größer und stärker delokalisiert. Der Abstand zwischen HOMO und LUMO sinkt, deshalb genügt energieärmeres, also langwelligeres Licht zur Anregung: Das Absorptionsmaximum wandert aus dem UV in den sichtbaren Bereich. Der Stoff erscheint in der Komplementärfarbe zum absorbierten Licht.</div>
+    <div class="row" style="margin-top:12px"><button class="btn" data-go="m2">Weiter zu Modul 2 →</button></div>
+  </section>
+
+  <!-- ================================================= MODUL 2 -->
+  <section class="mod" id="m2" role="tabpanel">
+    <h2>Modul 2: Gruppen, die die Farbe verschieben</h2>
+    <div class="lead"><p><b>Auftrag:</b> Du kennst jetzt den Zusammenhang zwischen Kettenlänge und Farbe. Nun bleibt die Kette gleich lang, und du setzt an ein Ende verschiedene Gruppen. Finde heraus, welche die Absorption zu längeren Wellenlängen (<b>bathochrom</b>) und welche zu kürzeren (<b>hypsochrom</b>) verschieben.</p></div>
+
+    <div class="card"><h4>Erst die Werkzeuge: vier Effekte</h4>
+      <table><tbody>
+        <tr><th>+M</th><td>Die Gruppe hat ein freies Elektronenpaar (oder ein π-System) und schiebt Elektronendichte <b>in</b> das π-System der Kette. Beispiele: –OH, –NH₂.</td></tr>
+        <tr><th>−M</th><td>Die Gruppe hat eine Doppelbindung zu einem elektronegativen Atom und zieht Elektronendichte <b>aus</b> dem π-System. Beispiele: –NO₂, –C≡N, –COOH.</td></tr>
+        <tr><th>+I</th><td>Die Gruppe schiebt Elektronen über die σ-Bindung. Beispiel: Alkylgruppen wie –CH₃.</td></tr>
+        <tr><th>−I</th><td>Die Gruppe zieht Elektronen über die σ-Bindung, weil sie elektronegative Atome enthält. Beispiel: –CF₃.</td></tr>
+      </tbody></table>
+      <p class="small" style="margin:8px 0 0"><b>Auxochrome</b> sind Gruppen, die als Elektronendonatoren wirken (+M, +I). <b>Antiauxochrome</b> sind Elektronenakzeptoren (−M, −I).</p></div>
+
+    <h3>Schritt 1: Sortiere die Gruppen</h3>
+    <div class="card" id="m2sort"></div>
+
+    <h3>Schritt 2: Der Versuch</h3>
+    <p style="margin-top:0">Die Kette hat sechs C=C-Doppelbindungen und endet in einer Aldehydgruppe. Am anderen Ende sitzt die Gruppe, die du auswählst.</p>
+    <div class="sel" id="m2sel"></div>
+    <div class="grid">
+      <div class="card"><h4>Die Verbindung</h4><svg id="m2chain" role="img" aria-label="Kette mit Substituent"></svg>
+        <label class="row small" style="margin-top:6px"><input type="checkbox" id="m2gf" style="width:20px;height:20px"> Zweite Grenzformel zeigen (Ladungsverschiebung)</label>
+        <p class="small" id="m2expl" style="margin:8px 0 0"></p></div>
+      <div class="card"><h4>Becherglas: Vergleich mit der Kette ohne Gruppe</h4>
+        <div class="row" style="flex-wrap:nowrap;justify-content:space-around;align-items:flex-end"><div style="text-align:center"><svg id="m2bkR" style="width:92px"></svg><div class="small">–H (Bezug)</div></div>
+          <div style="text-align:center"><svg id="m2bkS" style="width:92px"></svg><div class="small" id="m2bkN">mit Gruppe</div></div></div>
+        <div class="chips"><div class="chip"><b>λmax</b><span id="m2lmax"></span></div><div class="chip"><b>Verschiebung</b><span id="m2d"></span></div></div>
+        <div class="chip"><b>Farbe der Lösung</b><span id="m2farbe"></span></div>
+        <div class="chip" style="margin-top:8px"><b>Fachbegriff</b><span id="m2term" style="font-size:15px"></span></div></div>
+    </div>
+    <div class="card" style="margin-top:14px"><h4>Absorptionsspektrum (gestrichelt: Bezug ohne Gruppe)</h4><svg id="m2plot" role="img" aria-label="Spektrum"></svg></div>
+    <div class="card" style="margin-top:14px"><h4>Dein Messprotokoll</h4><table><thead><tr><th>Gruppe</th><th>Effekt</th><th>λmax</th><th>Δλ</th><th>Farbe</th></tr></thead><tbody id="m2tab"></tbody></table></div>
+    <details><summary>Kleingedrucktes für Genaue</summary><p class="small">Die Zahlen sind gerundete Modellwerte. Das Schulmodell „Donatoren → bathochrom, Akzeptoren → hypsochrom“ gilt für Chromophore, die selbst Elektronenakzeptoren sind, wie hier die C=O-Gruppe: Ein Donator am anderen Ende verstärkt das Push-Pull-System, ein zweiter Akzeptor schwächt es. Bei einem reinen Kohlenwasserstoff ohne Akzeptor verschiebt dagegen auch ein einzelner Akzeptor die Bande etwas ins Rote, weil er das π-System verlängert.</p></details>
+
+    <h3>Aufgaben</h3>
+    <div id="m2q"></div>
+    <div class="merke" id="m2merke" hidden><b class="t">Merke:</b> <b>Auxochrome</b> (+M, +I, Elektronendonatoren) vergrößern die Delokalisierung der Elektronen und verkleinern ΔE: <b>bathochromer Effekt</b>, die Absorption wandert nach Rot, die Farbe wird tiefer. <b>Antiauxochrome</b> (−M, −I, Elektronenakzeptoren) halten die Elektronen stärker fest: <b>hypsochromer Effekt</b>, die Absorption wandert nach Blau, die Farbe wird heller. Mesomere Effekte wirken deutlich stärker als induktive.</div>
+    <div class="row" style="margin-top:12px"><button class="btn" data-go="m3">Weiter zu Modul 3 →</button></div>
+  </section>
+
+  <!-- ================================================= MODUL 3 -->
+  <section class="mod" id="m3" role="tabpanel">
+    <h2>Modul 3: Wie funktioniert ein Tintenkiller?</h2>
+    <div class="lead"><p>Blaue Tinte enthält Triphenylmethanfarbstoffe. Ein Tintenkiller enthält Sulfit-Ionen und löscht die Farbe, ohne dass der Farbstoff „verschwindet“. Du erklärst es mit dem Wissen aus den Modulen 1 und 2.</p></div>
+    <div class="steps" id="m3steps">
+      <button class="stp on" data-s="s1">1 · Der Versuch</button>
+      <button class="stp" data-s="s2" disabled>2 · Der Farbstoff</button>
+      <button class="stp" data-s="s3" disabled>3 · Der Mechanismus</button>
+      <button class="stp" data-s="s4" disabled>4 · Erklären</button>
+    </div>
+
+    <div class="stagepane on" id="s1">
+      <div class="bench" id="benchBox">
+        <svg class="bsvg" id="benchSvg" viewBox="0 0 360 200" role="img" aria-label="Labortisch mit Becherglas, Tintenkiller und Säure"></svg>
+        <div class="floor" id="floor"></div>
+      </div>
+      <div class="row" style="margin-top:10px"><button class="btn" id="m3start">▶ Versuch starten</button><span class="small" id="m3hint">Im Becherglas ist blaue Tinte. Gleich kommt der Tintenkiller dazu.</span></div>
+      <div id="m3obs" hidden>
+        <h3>Beobachtung</h3>
+        <div id="m3q1"></div>
+      </div>
+    </div>
+
+    <div class="stagepane" id="s2">
+      <div class="mech">
+        <div class="card"><h4>Der Farbstoff: Kristallviolett als Modell der Tinte</h4>
+          <svg id="dye1" viewBox="-135 -125 270 265" role="img" aria-label="Strukturformel des Triphenylmethan-Kations"></svg>
+          <div class="sel"><button id="dyePi">π-System markieren</button><button id="dyeGf">Grenzformeln durchblättern</button></div>
+          <div class="legend"><span><i style="background:rgba(37,99,235,.28)"></i>delokalisiertes π-System</span><span><i style="background:#fde68a"></i>positive Ladung</span></div>
+          <p class="small" id="dyeTxt" style="margin:6px 0 0"></p></div>
+        <div><div class="card"><h4>Zum Vergleich</h4><p class="small" style="margin:0">Das Kation ist planar. Das zentrale C-Atom ist <b>sp²-hybridisiert</b> und bindet über drei σ-Bindungen an die drei Ringe. Sein leeres p-Orbital ist Teil des π-Systems. Die Stickstoff-Atome bringen je ein freies Elektronenpaar ein.</p></div>
+          <div id="m3q2"></div></div>
+      </div>
+    </div>
+
+    <div class="stagepane" id="s3">
+      <div class="mech">
+        <div class="card"><h4>Der Mechanismus in vier Schritten</h4>
+          <svg id="dye2" viewBox="-135 -125 270 265" role="img" aria-label="Mechanismus: Angriff des Sulfit-Ions"></svg>
+          <div class="row" style="margin-top:6px"><button class="btn sec" id="mPrev">◀ Zurück</button><button class="btn" id="mNext">Weiter ▶</button><span class="small" id="mNo"></span></div></div>
+        <div><div class="card"><h4 id="mHead"></h4><p id="mTxt" style="margin:0"></p></div>
+          <div id="m3q3"></div></div>
+      </div>
+    </div>
+
+    <div class="stagepane" id="s4">
+      <h3 style="margin-top:0">Erkläre mit deinem Wissen</h3>
+      <p style="margin-top:0">Wähle in jedem Satz die passende Aussage. Danach formulierst du die Erklärung in eigenen Worten.</p>
+      <div class="card"><div class="gaptext" id="m3gap"></div></div>
+      <h3>In eigenen Worten</h3>
+      <textarea id="m3free" placeholder="Erkläre in drei bis fünf Sätzen, warum die Tinte durch den Tintenkiller farblos wird. Benutze die Begriffe Konjugation, Delokalisierung, sp², sp³, HOMO–LUMO und hypsochrom."></textarea>
+      <div class="row" style="margin-top:8px"><button class="btn" id="m3sample">Musterlösung anzeigen</button></div>
+      <div id="m3sampleBox" class="merke" hidden></div>
+      <h3>Transfer</h3>
+      <div id="m3q4"></div>
+      <div class="merke" id="m3merke" hidden><b class="t">Merke:</b> Der Tintenkiller löscht die Farbe, indem Sulfit-Ionen als Nucleophil am elektrophilen, positiv polarisierten zentralen C-Atom angreifen. Es entsteht ein sp³-Kohlenstoff, die Konjugation ist unterbrochen, das große π-System zerfällt in drei kleine. ΔE steigt stark: Die Absorption wandert ins UV (extrem hypsochrom) und der Stoff ist farblos.</div>
+    </div>
+  </section>
+</div>
+<button class="btn sec" id="skipBtn">Szene überspringen ⏭</button>
+
+<script src="farbe.js"></script>
+<script src="common.js"></script>
+<script src="m1.js"></script>
+<script src="m2.js"></script>
+<script src="../../../../kolbi/gaeste.js"></script>
+<script src="m3.js"></script>
+<script src="../../../../kolbi/kolbi-app.js"></script>
+<a href="/Virtuelles-Chemielabor/impressum.html" style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-family: sans-serif; font-size: 12px; z-index: 9999;">Impressum &amp; Datenschutz</a>
+</body>
+</html>

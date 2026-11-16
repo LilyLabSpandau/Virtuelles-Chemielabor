@@ -12,7 +12,7 @@
   var cfg = { id: 'modul', color: '#38bdf8', tapHelp: null, offsetBottom: 56, comments: [], intro: true, skin: null, canTalk: null, introExtra: '', idleHelp: null };
   var st = { off: false, mute: {}, met: false, quiet: false };
   var el = {}, pos = { x: 0, y: 0 };
-  var wanderT = null, quietUntil = 0, bubbleOpen = false, curAsk = null, shownIds = {}, queue = [], closeT = null, introActive = false;
+  var wanderT = null, quietUntil = 0, bubbleOpen = false, curAsk = null, shownIds = {}, queue = [], closeT = null, introActive = false, locked = false;
   var lastAct = Date.now(), nextRemark = 45, base = 'happy', curMood = 'happy', moodT = null, wasSleeping = false, yawned = false;
   var eyeT = '', lastPtr = 0, taps = [], lastDizzy = 0, microT = null, reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -325,11 +325,17 @@
   var X = '<button class="kb-x" aria-label="Schließen" data-k="close">×</button>';
   function quietLink() { return '<button class="kb-link" data-k="quiet">' + (st.quiet ? SK.name + ' darf wieder erzählen' : 'Weniger reden') + '</button>'; }
 
+  // Zusatzoptionen im Klickmenü (nur wenn das Modul sie über cfg.extraOpts anmeldet), z. B. eine Szene wiederholen
+  function extraHtml(o) {
+    var a = cfg.extraOpts; if (!a || !a.length || (o && o.id)) return '';
+    return a.map(function (x, i) { return '<button class="kb-opt" data-k="x-' + i + '"><span class="kb-dot" style="background:#f59e0b"></span>' + esc(x.label) + '</button>'; }).join('');
+  }
   function showAsk(o) {
     curAsk = o; mood('interested', 4000);
     openBubble(X + '<p class="kb-text">' + esc(o.text) + '<br><br><b>Brauchst du Hilfe?</b></p>' +
       '<button class="kb-opt" data-k="tip"><span class="kb-dot"></span>Tipp anzeigen</button>' +
       '<button class="kb-opt" data-k="no"><span class="kb-dot"></span>Ohne Hilfe weitermachen</button>' +
+      extraHtml(o) +
       (o.id ? '<label class="kb-mute"><input type="checkbox" id="kb-mute"> Diesen Tipp nicht mehr anzeigen</label>' : '') +
       '<div class="kb-links">' + quietLink() + '<button class="kb-link" data-k="off">' + SK.name + ' ausblenden</button></div>', 40000);
   }
@@ -352,6 +358,8 @@
   function onBubbleClick(e) {
     var t = e.target.closest ? e.target.closest('[data-k]') : null; if (!t) return;
     var k = t.getAttribute('data-k'), o = curAsk, m = document.getElementById('kb-mute');
+    if (locked) return;
+    if (k.indexOf('x-') === 0) { var xo = cfg.extraOpts && cfg.extraOpts[+k.slice(2)]; closeBubble(); if (xo && xo.fn) setTimeout(xo.fn, 250); return; }
     if (k.indexOf('ci-') === 0) { checkReply(k.slice(3)); return; }
     if (k.indexOf('g-') === 0) { var g = guide && guide.o; if (!g) return; if (k === 'g-go' && g.onGo) g.onGo(); else if (k === 'g-skip' && g.onSkip) g.onSkip(); else if (k === 'g-end' && g.onEnd) g.onEnd(); return; }
     if (m && m.checked && o && o.id) { st.mute[o.id] = 1; save(); }
@@ -436,7 +444,7 @@
     }
   }
 
-  function talkOk() { return !cfg.canTalk || cfg.canTalk(); }
+  function talkOk() { return !locked && (!cfg.canTalk || cfg.canTalk()); }
   function micro() {
     if (!el.char || st.off || bubbleOpen || document.hidden || moodT || base === 'sleep' || reduce) return;
     var a = rnd(['look', 'look', 'wink', 'hop', 'hum', 'look']);
@@ -500,7 +508,7 @@
 
       var d = null;
       el.char.addEventListener('dragstart', function (e) { e.preventDefault(); });
-      el.char.addEventListener('pointerdown', function (e) { if (e.pointerType === 'mouse') e.preventDefault(); d = { sx: e.clientX, sy: e.clientY, px: pos.x, py: pos.y, moved: false }; try { el.char.setPointerCapture(e.pointerId); } catch (x) {} });
+      el.char.addEventListener('pointerdown', function (e) { if (locked) return; if (e.pointerType === 'mouse') e.preventDefault(); d = { sx: e.clientX, sy: e.clientY, px: pos.x, py: pos.y, moved: false }; try { el.char.setPointerCapture(e.pointerId); } catch (x) {} });
       el.char.addEventListener('pointermove', function (e) {
         if (!d) return; var dx = e.clientX - d.sx, dy = e.clientY - d.sy;
         if (!d.moved && Math.abs(dx) + Math.abs(dy) > 6) { d.moved = true; d.flips = []; d.lx = e.clientX; el.char.classList.add('drag'); if (curMood !== 'excited') mood('excited', 1600); }
@@ -516,7 +524,7 @@
         if (bubbleOpen) closeBubble(); else API.help();
       });
       el.char.addEventListener('pointercancel', function () { d = null; el.char.classList.remove('drag'); });
-      el.char.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); bubbleOpen ? closeBubble() : API.help(); } });
+      el.char.addEventListener('keydown', function (e) { if (locked) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); bubbleOpen ? closeBubble() : API.help(); } });
 
       document.addEventListener('pointermove', function (e) {
         if (!el.eyes || st.off) return;
@@ -529,7 +537,7 @@
 
       window.addEventListener('resize', function () { place(pos.x, pos.y, false); });
       window.addEventListener('orientationchange', function () { setTimeout(function () { place(pos.x, pos.y, false); }, 200); });
-      document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && bubbleOpen) closeBubble(); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && bubbleOpen && !locked) closeBubble(); });
 
       var sp = loadPos(), a = anchors()[0];
       if (sp) { place(sp.fx * vw(), sp.fy * vh(), false); setTimeout(API.arrive, 300); }
@@ -584,6 +592,16 @@
     _remark: function () { if (el.char) remark(); },
     _idle: function (sec) { lastAct = Date.now() - sec * 1000; }, // nur zum Testen
     hide: function () { st.off = true; save(); var g = guide; guide = null; closeBubble(); applyOff(); if (g && g.o.onHide) g.o.onHide(); },
+    // Moderator-Modus: Kolbi ist nicht bedienbar (kein Ziehen, kein Antippen, kein Plaudern) und wird vom Modul gesteuert
+    lock: function (on) { locked = !!on; if (el.char) { el.char.style.pointerEvents = locked ? 'none' : ''; el.char.classList.remove('drag'); } if (locked) { clearTimeout(closeT); } },
+    isLocked: function () { return locked; },
+    line: function (html, ms, m) {   // Sprechblase ohne Schließen-Knopf; Text ist bereits sicherer HTML-Text des Moduls
+      if (!el.char || st.off) return false; curAsk = null; introActive = false; mood(m || 'happy', ms || 3000);
+      openBubble('<p class="kb-text" style="margin:0">' + html + '</p>', ms || 4000); return true;
+    },
+    hush: function () { clearTimeout(closeT); bubbleOpen = false; if (!el.bubble) return; el.bubble.classList.remove('show'); el.char.classList.remove('talk'); setTimeout(function () { if (!bubbleOpen) el.bubble.classList.remove('on'); }, 200); },
+    moveTo: function (fx, fy) { if (!el.char) return; var a = { x: fx * vw(), y: fy * vh() }; walkTo(a); },
+    setExtra: function (a) { cfg.extraOpts = a || null; },
     show: function () { st.off = false; save(); applyOff(); }
   };
   function applyOff() {
