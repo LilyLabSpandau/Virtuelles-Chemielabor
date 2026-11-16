@@ -106,9 +106,7 @@ sub,sup{line-height:0}
 .pulse{animation:pulse 1.4s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
 .layer{transition:opacity .8s}
-@media (prefers-reduced-motion:reduce){.dr,.fall,.pulse{animation:none}.layer{transition:none}}
 @media (max-width:560px){.station{padding:14px 12px;margin:10px 6px;border-radius:12px} nav button{font-size:13px;padding:8px 9px}}
-@media (prefers-reduced-motion:reduce){.shake{animation:none}}
 </style>
 </head>
 <body>
@@ -229,8 +227,22 @@ sub,sup{line-height:0}
 <!-- ============ STATION 3 ============ -->
 <section class="station" id="s3">
   <h2>3 · Vom Brunnen zum Hahn</h2>
-  <p class="lead">Rohwasser aus dem Untergrund ist noch kein Trinkwasser. Baue den Weg im Wasserwerk in der richtigen Reihenfolge auf. Tippe immer den <b>nächsten</b> Schritt an.</p>
+  <p class="lead">Rohwasser aus dem Untergrund ist noch kein Trinkwasser. Lies zuerst den Fachtext. Baue dann den Weg im Wasserwerk in der richtigen Reihenfolge auf und tippe immer den <b>nächsten</b> Schritt an.</p>
   <div class="card warn hint" style="font-size:15px">Berlin gewinnt sein Trinkwasser aus Grundwasser, auch aus Uferfiltrat (Wasser, das durch den Boden am Seeufer gereinigt wurde), in 9 Wasserwerken. Der Ablauf unten gilt vereinfacht für viele Wasserwerke.</div>
+  <div class="card" id="g3fach">
+    <h3 style="margin-top:0">📖 Fachtext: Was passiert im Wasserwerk, und warum in dieser Reihenfolge?</h3>
+    <p><b>Ausgangslage:</b> Grundwasser enthält kaum Sauerstoff. Eisen und Mangan liegen deshalb als farblose Ionen <b>Fe<sup>2+</sup></b> und <b>Mn<sup>2+</sup></b> gelöst vor. Dazu kommt überschüssiges gelöstes CO<sub>2</sub>. Das Wasserwerk entfernt, was stört. Die harmlosen Salze (Ca<sup>2+</sup>, Mg<sup>2+</sup>, HCO<sub>3</sub><sup>−</sup>) bleiben.</p>
+    <ol style="margin:6px 0 6px 18px;padding:0">
+      <li><b>Fördern:</b> Brunnenpumpen holen das Rohwasser aus dem Untergrund. Es ist die Grundlage für alle weiteren Schritte.</li>
+      <li><b>Belüften vor dem Filtern:</b> Gelöste Ionen bleiben in einem Filter nicht hängen. Sauerstoff aus der Luft oxidiert das Eisen, es entstehen feste, rotbraune Flocken:<div class="formel" style="font-size:16px;margin:4px 0">4 Fe<sup>2+</sup> + O<sub>2</sub> + 10 H<sub>2</sub>O → 4 Fe(OH)<sub>3</sub>↓ + 8 H<sup>+</sup></div>Erst dadurch lässt sich das Eisen abtrennen. Gleichzeitig entweicht überschüssiges CO<sub>2</sub>. Mangan reagiert ähnlich, aber langsamer.</li>
+      <li><b>Filtern vor dem Desinfizieren:</b> Sand- und Kiesfilter halten die Flocken und andere Schwebstoffe zurück. Das muss vor dem Desinfizieren passieren: Teilchen würden Keime vor UV-Licht abschirmen und Chlor verbrauchen.</li>
+      <li><b>Desinfizieren vor dem Speichern:</b> Je nach Wasserwerk werden Keime sicherheitshalber abgetötet (UV-Licht, wenig Chlor). Das geschieht, bevor das Wasser in den Speicher kommt, damit dort nichts verkeimt.</li>
+      <li><b>Speichern:</b> Der Reinwasserbehälter gleicht schwankenden Verbrauch aus, zum Beispiel morgens und abends. Er enthält nur fertig aufbereitetes Wasser.</li>
+      <li><b>Verteilen:</b> Pumpen drücken das geprüfte Wasser durch das Rohrnetz, das laufend im Labor kontrolliert wird. Nur fertiges Trinkwasser gehört ins Netz.</li>
+      <li><b>Hausanschluss und Hahn:</b> Ab hier endet der Einfluss des Wasserwerks. In alten Hausleitungen können Blei oder Kupfer dazukommen.</li>
+    </ol>
+    <p style="margin-bottom:0"><b>Merke:</b> Erst Stoffe in eine abtrennbare Form bringen (belüften), dann abtrennen (filtern), dann Keime abtöten (desinfizieren), dann speichern und verteilen.</p>
+  </div>
   <div class="worksteps" id="g3pool"></div>
   <h3>Dein Weg</h3>
   <div class="chain" id="g3chain"><span class="hint">Noch leer</span></div>
@@ -263,6 +275,7 @@ sub,sup{line-height:0}
       <tr><td>coliforme Bakterien</td><td>0 pro 100 mL</td><td>Hinweis auf Verschmutzung</td></tr>
     </table>
   </details>
+  <div class="chips" id="c4tabs" aria-label="Fälle"></div>
   <div id="g4" class="card"></div>
   <div class="nextrow"><button class="btn alt" data-go="s3">← Station 3</button><button class="btn" data-go="s5">Weiter zu Station 5 →</button></div>
 </section>
@@ -395,7 +408,7 @@ sub,sup{line-height:0}
 'use strict';
 var $=function(s,r){return (r||document).querySelector(s)};
 var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
-var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+var reduce=false; // Erklär-Animationen laufen immer (viele Schulrechner melden "Animationen reduzieren")
 
 /* ---------- Navigation und Tropfen ---------- */
 var TOTAL=6, got={};
@@ -640,9 +653,9 @@ g2start();
 /* ---------- Station 3 ---------- */
 var G3=[
  {t:'1 Grundwasser fördern',m:'Brunnen holen das Rohwasser aus dem Untergrund. Es enthält gelöstes Ca²⁺, HCO₃⁻ und oft Fe²⁺ und Mn²⁺, aber kaum Sauerstoff.'},
- {t:'2 Belüften',m:'Das Wasser kommt mit Luft in Berührung. Überschüssiges CO₂ entweicht, Sauerstoff löst sich. Eisen(II) wird zu Eisen(III) oxidiert und bildet rotbraune Flocken.'},
- {t:'3 Filtern',m:'In Sand- oder Kiesfiltern bleiben die Flocken hängen. Eisen und Mangan werden so entfernt.'},
- {t:'4 Desinfizieren (falls nötig)',m:'Je nach Wasserwerk werden Keime sicherheitshalber abgetötet, zum Beispiel mit UV-Licht oder einer kleinen Menge Chlor.'},
+ {t:'2 Belüften',m:'Das Wasser kommt mit Luft in Berührung. Überschüssiges CO₂ entweicht, Sauerstoff löst sich. Eisen(II) wird zu Eisen(III) oxidiert und bildet rotbraune Flocken. Erst jetzt kann man das Eisen abfiltern.'},
+ {t:'3 Filtern',m:'In Sand- oder Kiesfiltern bleiben die Flocken hängen. Eisen und Mangan werden so entfernt. Das kommt vor dem Desinfizieren, weil Partikel Keime vor UV-Licht und Chlor schützen würden.'},
+ {t:'4 Desinfizieren (falls nötig)',m:'Je nach Wasserwerk werden Keime sicherheitshalber abgetötet, zum Beispiel mit UV-Licht oder einer kleinen Menge Chlor. Das passiert vor dem Speichern, damit der Behälter sauber bleibt.'},
  {t:'5 Im Reinwasserbehälter speichern',m:'Das fertige Trinkwasser wird gesammelt. So können Verbrauchsspitzen am Morgen und Abend ausgeglichen werden.'},
  {t:'6 Durchs Rohrnetz verteilen',m:'Pumpen drücken das Wasser durch das Leitungsnetz. Es wird laufend im Labor kontrolliert.'},
  {t:'7 Hausanschluss und Hahn',m:'Im Haus kann sich das Wasser verändern. In alten Leitungen können zum Beispiel Blei oder Kupfer dazukommen. Deshalb lässt man Stagnationswasser morgens kurz ablaufen.'}
@@ -659,7 +672,7 @@ function g3start(){
         $('#g3chain').insertAdjacentHTML('beforeend',(g3i?'<span class="ar">➜</span>':'')+'<span class="st">'+G3[idx].t+'</span>');
         fb($('#g3fb'),'ok','✔ '+sub(G3[idx].m));b.classList.add('used');g3i++;
         if(g3i===G3.length){$('#g3sum').innerHTML='<b>Was wird entfernt, was bleibt?</b> Eisen, Mangan und Schwebstoffe werden im Wasserwerk entfernt. Die gelösten Salze wie Ca²⁺, Mg²⁺, HCO₃⁻, SO₄²⁻ und Cl⁻ bleiben. Sie sind harmlos und machen das Berliner Wasser hart.'.replace(/Ca²⁺|Mg²⁺|HCO₃⁻|SO₄²⁻|Cl⁻/g,sub);$('#g3sum').style.display='block';award('s3')}
-      }else{b.classList.add('shake');setTimeout(function(){b.classList.remove('shake')},400);fb($('#g3fb'),'bad','✗ Das ist noch nicht dran. Welcher Schritt kommt als Nächstes?')}
+      }else{b.classList.add('shake');setTimeout(function(){b.classList.remove('shake')},400);fb($('#g3fb'),'bad','✗ Das ist noch nicht dran. Schau im Fachtext nach: Was muss vorher passiert sein, damit dieser Schritt funktioniert?')}
     });
     host.appendChild(b);
   });
@@ -694,22 +707,33 @@ var C4=[
   q:'Das Wasser leitet den Strom deutlich (790 µS/cm), ist aber in Ordnung. Warum?',
   o:[{t:'Die Leitfähigkeit stammt von harmlosen gelösten Salzen wie Ca²⁺ und HCO₃⁻.',ok:true,why:'Richtig. Gelöste Ionen sind natürlich. Erst ab 2790 µS/cm wäre die Leitfähigkeit auffällig.'},{t:'Das Wasser ist stark verschmutzt, aber das erlaubt die Verordnung.',ok:false,why:'Nein. Alle Werte liegen unter den Grenzwerten.'},{t:'Trinkwasser sollte gar nicht leiten.',ok:false,why:'Dann wäre es destilliertes Wasser, das nicht gesund und nicht schmackhaft ist.'}]}
 ];
-var c4i=0,c4done=0;
+var c4i=0,c4done=0,c4max=0,c4solved={};
+function c4tabs(){
+  $('#c4tabs').innerHTML=C4.map(function(_,k){return '<button class="chip'+(k===c4i?' sel':'')+(c4solved[k]?' found':'')+'"'+(k>c4max?' disabled style="opacity:.45"':'')+' data-k="'+k+'">Fall '+(k+1)+(c4solved[k]?' ✔':'')+'</button>'}).join('');
+  $$('#c4tabs .chip').forEach(function(b){b.addEventListener('click',function(){if(b.disabled)return;c4i=+b.getAttribute('data-k');c4render()})});
+}
 function c4render(){
-  var host=$('#g4'),c=C4[c4i];
+  var host=$('#g4'),c=C4[c4i];c4tabs();
   var rows=c.v.map(function(r){return '<tr><td>'+sub(r[0])+'</td><td>'+sub(r[1])+'</td></tr>'}).join('');
   host.innerHTML='<h3 style="margin-top:0">'+c.t+' <span class="hint">('+(c4i+1)+' von '+C4.length+')</span></h3><p>'+c.s+'</p><table style="max-width:420px"><tr><th>Parameter</th><th>Messwert</th></tr>'+rows+'</table>'+
-    '<p><b>Sind alle Werte in Ordnung?</b></p><div class="chips"><button class="chip" data-a="y">Ja, alle Werte sind in Ordnung</button><button class="chip" data-a="n">Nein, mindestens ein Wert passt nicht</button></div><div class="fb" id="c4f"></div><div id="c4q"></div><div id="c4n"></div>';
+    '<p><b>Sind alle Werte in Ordnung?</b></p><div class="chips"><button class="chip" data-a="y">Ja, alle Werte sind in Ordnung</button><button class="chip" data-a="n">Nein, mindestens ein Wert passt nicht</button></div><div class="fb" id="c4f"></div><div id="c4q"></div><div id="c4n">'+(c4i>0?'<button class="btn alt" id="c4prev0">← Vorheriger Fall</button>':'')+'</div>';
+  if($('#c4prev0'))$('#c4prev0').addEventListener('click',function(){c4i--;c4render()});
   $$('.chip',host).forEach(function(b){b.addEventListener('click',function(){
     var yes=b.getAttribute('data-a')==='y';
     if(yes===c.ok){
       $$('.chip',host).forEach(function(x){x.disabled=true});b.classList.add('found');
       fb($('#c4f'),'ok','✔ '+sub(c.why));
       mc($('#c4q'),c.q,c.o.map(function(o){return {t:sub(o.t),ok:o.ok,why:sub(o.why)}}),function(){
-        c4done++;
-        var n=$('#c4n');
-        if(c4i<C4.length-1){n.innerHTML='<button class="btn green" id="c4next">Nächster Fall →</button>';$('#c4next').addEventListener('click',function(){c4i++;c4render()})}
-        else{n.innerHTML='<div class="card good"><b>Alle Fälle gelöst!</b> Du kannst Messwerte mit Grenzwerten vergleichen und Ursachen erkennen.</div>';award('s4')}
+        if(!c4solved[c4i]){c4solved[c4i]=1;c4done++}
+        if(c4i<C4.length-1&&c4max<c4i+1)c4max=c4i+1;
+        c4tabs();
+        var n=$('#c4n'),h='';
+        if(c4i>0)h+='<button class="btn alt" id="c4prev">← Vorheriger Fall</button>';
+        if(c4i<C4.length-1)h+='<button class="btn green" id="c4next">Nächster Fall →</button>';
+        else if(c4done===C4.length){h+='<div class="card good"><b>Alle Fälle gelöst!</b> Du kannst Messwerte mit Grenzwerten vergleichen und Ursachen erkennen. Oben kannst du jeden Fall noch einmal ansehen.</div>';award('s4')}
+        n.innerHTML=h;
+        if($('#c4prev'))$('#c4prev').addEventListener('click',function(){c4i--;c4render()});
+        if($('#c4next'))$('#c4next').addEventListener('click',function(){c4i++;c4render()});
       });
     }else{b.classList.add('shake');setTimeout(function(){b.classList.remove('shake')},400);fb($('#c4f'),'bad','✗ Schau noch einmal in die Grenzwert-Tabelle.')}
   })});
