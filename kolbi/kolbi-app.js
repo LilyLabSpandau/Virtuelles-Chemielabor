@@ -54,6 +54,7 @@
     'd-und-f-Orbitale': ['Hier erkundest du die Gestalt der d- und f-Orbitale, Übergangsmetalle und die Farbe von Komplexen.'],
     'Kupfer-Raffination': ['Hier lernst du die Elektrolyse in der Technik kennen: Aus Rohkupfer wird hochreines Kupfer, und die Edelmetalle fallen nebenbei an.'],
     'Farbe-und-Konstitution': ['Hier erarbeitest du in drei Modulen, wie die Struktur eines Stoffes seine Farbe bestimmt: Konjugation, Auxochrome und Antiauxochrome und am Ende der Tintenkiller.'],
+    'Wasserhaerte-Titration': ['Hier bestimmst du die Wasserhärte durch Titration: erst eine Einführung, dann das 3D-Labor mit Tutorial und zum Schluss die Berechnung.'],
     'Trinkwasser-Detektiv': ['Hier gehst du dem Trinkwasser auf die Spur: Was ist gelöst, woher kommt es, welche Grenzwerte gelten und warum setzt sich Kalk ab? Das Modul ist für Wahlpflicht Chemie Klasse 10.']
   };
 
@@ -79,7 +80,7 @@
     'Eigenschaften-des-Wassers': 'wasser', 'Loeslichkeit': 'wasser', 'Aminosaeuren': 'protein', 'Biuretprobe': 'protein', 'Peptidbindung-EPA': 'protein', 'Proteinstrukturen': 'protein',
     'Systeme-und-1-Hauptsatz': 'energie', 'Der-Kohlenstoffdioxid-Carbonat-Kreislauf': 'energie', 'Gleichgewicht': 'energie', 'Haber-Bosch-Verfahren': 'energie', 'Konduktometrie': 'saeure', 'Nukleophile-Substitution': 'organik',
     'Saeure-Base-Titration': 'saeure', 'Saeure-Basen-Konstanten': 'saeure', 'Säure-Base-Konzept-Brönsted': 'saeure', 'Chromatografie-Rf-Werte': 'farbe', 'Indikatoren-Grundlagen': 'saeure', 'Zusammenhang-von-Licht-und-Farbe': 'farbe',
-    'Disproportionierung': 'redox', 'Redoxreihe-Metallgewinnung': 'redox', 'Sulfit-Titration': 'saeure', 'Doppelspaltexperiment': 'atom', 'Elektronenkonfiguration': 'atom', 'Orbitalmodell': 'atom', 'd-und-f-Orbitale': 'atom', 'Kupfer-Raffination': 'redox', 'Trinkwasser-Detektiv': 'wasser', 'Farbe-und-Konstitution': 'farbe'
+    'Disproportionierung': 'redox', 'Redoxreihe-Metallgewinnung': 'redox', 'Sulfit-Titration': 'saeure', 'Doppelspaltexperiment': 'atom', 'Elektronenkonfiguration': 'atom', 'Orbitalmodell': 'atom', 'd-und-f-Orbitale': 'atom', 'Kupfer-Raffination': 'redox', 'Trinkwasser-Detektiv': 'wasser', 'Wasserhaerte-Titration': 'wasser', 'Farbe-und-Konstitution': 'farbe'
   };
 
 
@@ -89,6 +90,10 @@
   // sel = Selektor(en) der Ergebnis-Felder; tips = eigene Tipps (werden bei jedem Fehlversuch der Reihe nach angeboten, ohne die Lösung zu verraten);
   // tipBtn = Selektor eines vorhandenen Tipp-Knopfes der Anwendung: dann verweist Kolbi darauf, statt eigene Tipps zu geben.
   var CHECKS = {
+    'Wasserhaerte-Titration': [
+      { sel: '#fb-read, #tr-fb', when: function () { return !(window.Kolbi && Kolbi.guideActive && Kolbi.guideActive()); }, tips: ['Lies am tiefsten Punkt des Meniskus ab, auf Augenhöhe. Große Striche sind ganze mL, kleine 0,1 mL.', 'Die Skala wächst nach unten. Zähle von der Zahl über dem Flüssigkeitsspiegel nach unten weiter.', 'Schätze die Hundertstel zwischen zwei kleinen Strichen.'] },
+      { sel: '.kfb', when: function () { return !(window.Kolbi && Kolbi.guideActive && Kolbi.guideActive()); }, tips: ['Rechne der Reihe nach: n = c · V, dann c = n ÷ V(Probe), dann mal 5,6.', 'Achte auf die Einheiten: Die Probe muss in Litern eingesetzt werden, 100 mL sind 0,100 L.', 'EDTA und die Härtebildner reagieren im Verhältnis 1 : 1.'] },
+    ],
     // Expertenmodus: Kolbi verrät nichts über die Probe, er reagiert nur auf „Prüfen“ (Meldungen im Textfeld der Anwendung)
     'Nachweise-von-Gasen': [
       { sel: '#instruction-text', when: expertMode, tips: function () {

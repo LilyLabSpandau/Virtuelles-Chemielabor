@@ -1,0 +1,2229 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wasserhärte durch Titration</title>
+<link rel="icon" type="image/png" href="../../../../icons/icon-192.png">
+<link rel="apple-touch-icon" href="../../../../icons/apple-touch-icon.png">
+<style>
+:root{
+  --blue:#1565c0; --blue-d:#0d3c78; --teal:#00838f; --bg1:#e0f7fa; --bg2:#b2ebf2;
+  --ink:#22313f; --ok:#2e7d32; --okbg:#e8f5e9; --bad:#c62828; --badbg:#ffebee; --sun:#f9a825; --wine:#a6173f;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-family:'Comic Sans MS','Segoe UI',Tahoma,Verdana,sans-serif;color:var(--ink);
+  background:linear-gradient(135deg,var(--bg1) 0%,var(--bg2) 100%);background-attachment:fixed;line-height:1.5}
+body.labmode{overflow:hidden;background:#10141a}
+header{background:linear-gradient(120deg,var(--blue) 0%,var(--teal) 100%);color:#fff;padding:8px 14px 8px;box-shadow:0 4px 10px rgba(0,0,0,.15)}
+.hrow{display:flex;align-items:center;justify-content:space-between;gap:10px;max-width:1000px;margin:0 auto}
+header h1{margin:0;font-size:clamp(18px,3.6vw,24px)}
+header a{color:#fff;font-weight:bold;text-decoration:none;font-size:14px;white-space:nowrap}
+.badge{display:inline-block;background:rgba(255,255,255,.2);border:2px solid rgba(255,255,255,.7);border-radius:20px;padding:1px 10px;font-size:12px;font-weight:bold;white-space:nowrap}
+nav.tabs{display:flex;justify-content:center;gap:8px;max-width:1000px;margin:8px auto 2px}
+nav.tabs button{flex:1 1 0;max-width:300px;font:inherit;font-size:15px;font-weight:bold;padding:8px 10px;border-radius:22px;border:3px solid transparent;background:#fff;color:var(--blue-d);cursor:pointer;min-height:44px;box-shadow:0 2px 5px rgba(0,0,0,.12);touch-action:manipulation}
+nav.tabs button.active{background:var(--blue-d);color:#fff;border-color:#82b1ff}
+.tab{display:none}.tab.active{display:block}
+.st{max-width:1000px;margin:14px auto;padding:18px 22px;background:rgba(255,255,255,.96);border-radius:16px;box-shadow:0 10px 20px rgba(0,0,0,.1)}
+.pad{padding-bottom:70px}
+h2{margin:0 0 6px;color:var(--blue-d);font-size:clamp(21px,4.4vw,28px)}
+h3{margin:16px 0 6px;color:var(--teal);font-size:19px}
+.lead{font-size:17px;margin:4px 0 14px}
+.card{background:#f4fbfd;border:3px solid #80deea;border-radius:14px;padding:14px 16px;margin:12px 0}
+.card.warn{background:#fff8e1;border-color:#ffd54f}
+.card.good{background:var(--okbg);border-color:#81c784}
+.btn{font:inherit;font-size:16px;font-weight:bold;padding:11px 18px;margin:4px 6px 4px 0;border-radius:10px;border:none;background:var(--blue);color:#fff;cursor:pointer;min-height:44px;box-shadow:0 3px 0 var(--blue-d);touch-action:manipulation}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--blue-d)}
+.btn.alt{background:#fff;color:var(--blue-d);border:3px solid var(--blue);box-shadow:none}
+.btn.green{background:#2e7d32;box-shadow:0 3px 0 #1b5e20}
+.btn:disabled{opacity:.45;cursor:default}
+.row{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
+.row>*{flex:1 1 300px;min-width:0}
+.kfb{margin-top:8px;padding:9px 13px;border-radius:10px;font-weight:bold;display:none}
+.kfb.show{display:block}
+.kfb.ok{background:var(--okbg);color:#1b5e20;border:2px solid #81c784}
+.kfb.bad{background:var(--badbg);color:#7f1d1d;border:2px solid #e57373}
+.kfb.info{background:#e3f2fd;color:#0d3c78;border:2px solid #90caf9}
+.shake{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+svg text{font-family:inherit}
+.opts button{display:block;width:100%;text-align:left;font:inherit;font-size:16px;padding:11px 14px;margin:7px 0;border-radius:10px;border:3px solid #b0bec5;background:#fff;cursor:pointer;min-height:44px;touch-action:manipulation}
+.opts button.ok{background:var(--okbg);border-color:#66bb6a}
+.opts button.bad{background:var(--badbg);border-color:#e57373}
+.opts button:disabled{cursor:default;color:var(--ink);opacity:1}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.chip{font:inherit;font-size:15px;font-weight:bold;padding:7px 13px;border-radius:18px;border:2px solid #90a4ae;background:#fff;cursor:pointer;min-height:40px;touch-action:manipulation}
+.chip.sel{background:#e3f2fd;border-color:var(--blue)}
+.chip.ok{background:var(--okbg);border-color:#66bb6a}
+.chip.bad{background:var(--badbg);border-color:#e57373}
+.formel{font-weight:bold;font-size:20px;color:var(--blue-d)}
+table.t{border-collapse:collapse;width:100%;margin:8px 0;font-size:15px}
+table.t th,table.t td{border:2px solid #b2dfdb;padding:7px 10px;text-align:left}
+table.t th{background:#e0f2f1;color:var(--blue-d)}
+table.t tr.hl td{background:#fff3b0;font-weight:bold}
+.inp{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0}
+.inp input{font:inherit;font-size:18px;width:130px;padding:9px 10px;border:3px solid #90a4ae;border-radius:10px;min-height:44px;user-select:text;-webkit-user-select:text}
+.inp input:focus{outline:none;border-color:var(--blue)}
+.inp .u{font-weight:bold;color:var(--blue-d)}
+.steps{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 12px}
+.steps .dot{width:34px;height:34px;border-radius:50%;border:3px solid #90a4ae;background:#fff;font-weight:bold;display:flex;align-items:center;justify-content:center;color:#607d8b;cursor:pointer;font-size:15px;touch-action:manipulation}
+.steps .dot.on{border-color:var(--blue);background:var(--blue);color:#fff}
+.steps .dot.done{border-color:#66bb6a;background:var(--okbg);color:#1b5e20}
+.chain{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0}
+.chain span.st2{background:#e3f2fd;border:3px solid var(--blue);border-radius:12px;padding:5px 10px;font-weight:bold}
+.chain span.st2.empty{background:#fafafa;border:3px dashed #b0bec5;color:#90a4ae}
+.chain span.ar{font-size:20px;color:var(--blue)}
+.kbox{display:flex;gap:10px;align-items:flex-start;background:#fffde7;border:3px solid #ffd54f;border-radius:14px;padding:10px 14px;margin:10px 0}
+.kbox .av{font-size:28px;line-height:1}
+.slider{width:100%;max-width:420px;height:44px;accent-color:var(--blue)}
+.imp{position:fixed;bottom:10px;left:10px;background:rgba(0,0,0,.6);color:#fff;padding:5px 10px;text-decoration:none;border-radius:5px;font-family:sans-serif;font-size:12px;z-index:9999}
+.lvl{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0}
+.score{font-weight:bold;color:var(--blue-d)}
+.big{font-size:22px;font-weight:bold;color:var(--blue-d)}
+.beaker{width:100%;max-width:340px;display:block;margin:0 auto}
+
+/* ---------- 3D-Labor (dunkel) ---------- */
+#lab{position:relative;height:calc(100vh - 110px);overflow:hidden;background:#10141a;color:#eceff1;font-family:'Segoe UI',Tahoma,Verdana,sans-serif;line-height:1.4}
+#lab *{box-sizing:border-box}
+    #lab #canvas-container { position: absolute; inset: 0; }
+    #lab #canvas-container canvas { display: block; touch-action: none; }
+
+    
+    #lab #ui-panel {
+      position: absolute; top: 14px; left: 14px; width: 340px; max-height: calc(100vh - 78px); overflow-y: auto;
+      background: rgba(20, 24, 31, 0.92); backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.14); border-radius: 12px;
+      padding: 12px 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    }
+    #lab #ui-panel.collapsed .collapsible { display: none; }
+    #lab .ui-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+    #lab h1 { font-size: 16px; margin: 0 0 3px 0; color: #64b5f6; }
+    #lab p.sub { font-size: 11.5px; color: #b0bec5; margin: 0 0 9px 0; line-height: 1.35; }
+    #lab #btn-collapse { flex: 0 0 auto; width: 28px; height: 28px; padding: 0; background: rgba(255,255,255,0.1); font-size: 13px; }
+    #lab .step-box {
+      background: rgba(255,255,255,0.06); border-left: 3px solid #64b5f6;
+      padding: 7px 10px; border-radius: 4px; font-size: 12px; margin-bottom: 9px; line-height: 1.4;
+    }
+    #lab .step-box.warn { border-left-color: #ffb74d; background: rgba(255,183,77,0.12); }
+    #lab .step-box.ok { border-left-color: #66bb6a; background: rgba(102,187,106,0.12); }
+    #lab .tool-status { font-size: 11.5px; padding: 6px 9px; background: rgba(0,0,0,0.4); border-radius: 6px; margin-bottom: 9px; color: #ffd54f; }
+    #lab .checklist { font-size: 11.5px; display: flex; flex-direction: column; gap: 3px; margin-bottom: 10px; }
+    #lab .chk { display: flex; gap: 7px; align-items: flex-start; background: rgba(255,255,255,0.04); padding: 4px 8px; border-radius: 4px; line-height: 1.3; color: #90a4ae; }
+    #lab .chk .ico { width: 14px; flex: 0 0 14px; text-align: center; }
+    #lab .chk.done { color: #a5d6a7; }
+    #lab .chk.next { color: #fff; background: rgba(100,181,246,0.18); outline: 1px solid rgba(100,181,246,0.55); }
+    #lab .btn-row { display: flex; gap: 8px; }
+    #lab button {
+      flex: 1; padding: 8px 10px; border: none; border-radius: 6px; cursor: pointer;
+      background: #3949ab; color: white; font-weight: 600; font-size: 12px; transition: 0.15s; font-family: inherit;
+    }
+    #lab button:hover { background: #5c6bc0; }
+    #lab button:disabled { opacity: 0.4; cursor: not-allowed; }
+    #lab button.green { background: #2e7d32; } #lab button.green:hover { background: #388e3c; }
+    #lab button.grey { background: #455a64; } #lab button.grey:hover { background: #546e7a; }
+
+    #lab #mode-badge {
+      position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+      background: rgba(20,24,31,0.92); border: 1px solid rgba(255,255,255,0.18); border-radius: 20px;
+      padding: 6px 16px; font-size: 12.5px; font-weight: 700; letter-spacing: 0.3px; color: #90caf9; pointer-events: none; white-space: nowrap;
+    }
+    #lab #mode-badge.titrate { color: #ffcc80; border-color: #ffb74d; }
+    #lab #mode-badge.read { color: #a5d6a7; border-color: #66bb6a; }
+
+    #lab #tooltip {
+      position: absolute; pointer-events: none; display: none;
+      background: rgba(12, 15, 20, 0.94); color: #fff; padding: 6px 10px;
+      border-radius: 6px; font-size: 12px; border: 1px solid rgba(255,255,255,0.22);
+      transform: translate(-50%, -125%); white-space: nowrap; z-index: 10;
+    }
+    #lab #controls-hint {
+      position: absolute; bottom: 12px; right: 14px; background: rgba(20,24,31,0.85); padding: 7px 12px;
+      border-radius: 8px; font-size: 11px; color: #90a4ae; border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    
+    #lab #titr-hud {
+      position: absolute; top: 60px; right: 14px; width: 250px; display: none;
+      background: rgba(20,24,31,0.92); border: 1px solid #ffb74d; border-radius: 12px; padding: 12px 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6); font-size: 12px; line-height: 1.4;
+    }
+    #lab #titr-hud .lbl { font-size: 10.5px; color: #90a4ae; text-transform: uppercase; letter-spacing: 0.5px; }
+    #lab #valve-txt { font-family: ui-monospace, Consolas, monospace; font-size: 18px; font-weight: 800; margin: 2px 0 8px; }
+    #lab #titr-hud .hintline { color: #cfd8dc; margin-bottom: 10px; }
+
+    
+    #lab #read-panel {
+      position: absolute; top: 60px; right: 14px; width: 310px; display: none;
+      background: rgba(20,24,31,0.95); border: 1px solid #66bb6a; border-radius: 12px; padding: 12px 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6); font-size: 12px; max-height: calc(100vh - 130px); overflow-y: auto;
+    }
+    #lab #read-panel h2,
+#lab #eval-card h2,
+#lab #eval-card-lk h2 { font-size: 14px; margin: 0 0 6px; color: #a5d6a7; }
+    #lab #lupe-wrap { background: #0e1217; border: 1px solid #37474f; border-radius: 8px; padding: 4px; margin-bottom: 8px; }
+    #lab #lupe-wrap svg { display: block; width: 100%; height: auto; }
+    #lab .rd-note { font-size: 11px; color: #b0bec5; margin-bottom: 8px; line-height: 1.35; }
+    #lab .inp-row { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
+    #lab .inp-row input {
+      flex: 1; min-width: 0; background: #0e1217; border: 1px solid #475569; border-radius: 8px; color: #fff;
+      padding: 8px; font-family: ui-monospace, Consolas, monospace; font-size: 15px; user-select: text; -webkit-user-select: text;
+    }
+    #lab .inp-row .unit { font-size: 12px; color: #b0bec5; min-width: 38px; }
+    #lab .fb { font-size: 11.5px; font-weight: 700; min-height: 16px; margin-bottom: 8px; line-height: 1.35; }
+
+    
+    #lab #res-overlay, #lab #tr-overlay {
+      position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
+      background: rgba(8,10,14,0.62); padding: 12px; z-index: 20;
+    }
+    #lab #eval-card,
+#lab #eval-card-lk {
+      width: min(470px, 100%); max-height: 100%; overflow-y: auto;
+      background: linear-gradient(145deg, #2e3644, #1b2028); border: 2px solid #434d5e; border-radius: 18px;
+      padding: 14px 16px; box-shadow: 0 16px 40px rgba(0,0,0,0.7);
+    }
+    #lab #eval-card .eq,
+#lab #eval-card-lk .eq { font-size: 12px; color: #b0bec5; margin-bottom: 10px; }
+    #lab .grid4 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: #13171e; padding: 9px; border-radius: 12px; border: 1px solid #334155; margin-bottom: 10px; }
+    #lab .win { background: #1c222d; border: 1px solid #384252; border-radius: 10px; padding: 7px; text-align: center; }
+    #lab .win small { font-size: 10.5px; color: #94a3b8; display: block; }
+    #lab .win strong { font-family: ui-monospace, Consolas, monospace; font-size: 15px; color: #f59e0b; }
+    #lab #eval-card label,
+#lab #eval-card-lk label { font-size: 12.5px; font-weight: 700; display: block; margin: 6px 0 4px; }
+    #lab .sol { display: none; background: rgba(6,95,70,0.25); border-left: 3px solid #34d399; padding: 8px 10px; border-radius: 8px; font-size: 12px; line-height: 1.5; margin-top: 8px; }
+    #lab .acc { display: none; background: rgba(100,181,246,0.12); border-left: 3px solid #64b5f6; padding: 8px 10px; border-radius: 8px; font-size: 12px; line-height: 1.5; margin-top: 8px; }
+
+    #lab .std-only { display: block; } #lab .lk-only { display: none; }
+    #lab body.lk .std-only { display: none; } #lab body.lk .lk-only { display: block; }
+    #lab #mode-switch button { padding: 6px 8px; font-size: 11.5px; }
+    #lab #nb-card { width: min(540px, 100%); max-height: 100%; overflow-y: auto; background: #f4f0e4; color: #1d2a44; border: 2px solid #8a7d5a; border-radius: 14px; padding: 12px 14px; box-shadow: 0 16px 40px rgba(0,0,0,0.7); font-family: 'Segoe Print', 'Bradley Hand', 'Comic Sans MS', cursive; }
+    #lab #nb-card .nb-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 15px; }
+    #lab #nb-card .nb-top button { flex: 0 0 auto; }
+    #lab #nb-card .nb-h { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    #lab #nb-svg { display: block; width: 100%; height: auto; background: #fbf9f1; border: 1px solid #b9ae8c; border-radius: 6px; touch-action: none; }
+    #lab .nb-read { min-height: 20px; font-size: 13px; color: #0b3d91; margin-top: 4px; }
+    #lab .nb-note { font-size: 11.5px; color: #4a4a3a; margin-top: 2px; line-height: 1.35; }
+    #lab .lbl2 { font-size: 10.5px; color: #90a4ae; text-transform: uppercase; letter-spacing: 0.5px; margin: 2px 0 4px; }
+    #lab .phscale { display: flex; border-radius: 6px; overflow: hidden; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.25); }
+    #lab .phscale span { flex: 1; text-align: center; font-size: 10px; font-weight: 800; line-height: 20px; color: #fff; text-shadow: 0 0 3px rgba(0,0,0,0.85); }
+    #lab .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+    #lab .chip { flex: 0 0 auto; padding: 6px 12px; border-radius: 16px; background: #2b3340; border: 2px solid #475569; font-size: 12px; }
+    #lab .chip i { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; border: 1px solid rgba(255,255,255,0.5); }
+    #lab .chip.sel { border-color: #64b5f6; background: #34425a; }
+    @media (max-width: 760px) {
+      #lab #ui-panel { top: 8px; left: 8px; right: 8px; width: auto; max-height: 42vh; padding: 9px 11px; }
+      #lab #mode-badge { top: auto; bottom: 10px; font-size: 11px; padding: 5px 12px; }
+      #lab #controls-hint { display: none; }
+      #lab #titr-hud,
+#lab #read-panel { top: auto; right: 8px; left: 8px; bottom: 48px; width: auto; max-height: 52vh; }
+      #lab #titr-hud .hintline { display: none; }
+      #lab #lupe-wrap svg { max-height: 27vh; }
+      #lab .rd-note { display: none; }
+      #lab .fb { min-height: 0; margin-bottom: 6px; }
+      #lab #read-panel { padding: 9px 11px; }
+      #lab #ui-panel .sub { display: none; }
+      #lab .step-box { font-size: 11.5px; }
+    }
+
+#lab #ui-panel .run{font-size:11.5px;color:#cfd8dc;padding:2px 0}
+#lab #ui-panel .run.dim{color:#78909c}
+#lab .tbtn{display:flex;gap:8px;margin-bottom:8px}
+#lab #coach{position:absolute;left:14px;bottom:14px;max-width:min(430px,calc(100% - 28px));display:none;gap:10px;align-items:flex-start;background:rgba(255,253,231,.97);color:#33290a;border:3px solid #ffd54f;border-radius:14px;padding:10px 12px;z-index:30;box-shadow:0 8px 24px rgba(0,0,0,.5);font-size:13.5px}
+#lab #coach .cc-av{font-size:26px}
+#lab #coach .cc-bad{color:#b71c1c;font-weight:700;margin-top:4px}
+#lab #coach .cc-bt{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+#lab #coach button{flex:0 0 auto}
+#lab #res-card,#lab #tr-card{width:min(440px,100%);max-height:100%;overflow-y:auto;background:linear-gradient(145deg,#2e3644,#1b2028);border:2px solid #434d5e;border-radius:18px;padding:16px 18px;box-shadow:0 16px 40px rgba(0,0,0,.7)}
+#lab #res-card h2,#lab #tr-card h2{font-size:16px;margin:0 0 8px;color:#a5d6a7}
+#lab #res-vol{font-family:ui-monospace,Consolas,monospace;font-size:30px;font-weight:800;color:#f59e0b;margin:2px 0 8px}
+#lab #res-verdict{font-size:13.5px;margin-bottom:8px}
+#lab #res-detail,#lab #res-count{font-size:12px;color:#b0bec5;margin-bottom:6px}
+#lab #tr-score{font-size:11.5px;color:#90a4ae;margin-bottom:6px}
+#lab #tr-fb{min-height:36px;font-size:12.5px;font-weight:700;margin:4px 0 8px}
+#lab #tr-lupe{display:block;width:100%;max-height:44vh;background:#0e1217;border:1px solid #37474f;border-radius:8px}
+#lab .btn-col{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+@media (max-width:760px){#lab #coach{bottom:52px}}
+</style>
+</head>
+<body>
+<header id="hd">
+  <div class="hrow"><a href="../index.html">← Wasser</a><h1>Wasserhärte durch Titration</h1><span class="badge">Wahlpflicht Chemie 10</span></div>
+  <nav class="tabs" id="tabs">
+    <button data-t="1" class="active">① Einführung</button>
+    <button data-t="2">② 3D-Titration</button>
+    <button data-t="3">③ Berechnung</button>
+  </nav>
+</header>
+
+<!-- ======================= TAB 1: EINFÜHRUNG ======================= -->
+<main class="tab active" id="tab1">
+<section class="st" id="e1">
+  <h2>Was bedeutet „hartes Wasser“?</h2>
+  <p class="lead">Wenn du in Berlin ein Glas Leitungswasser trinkst, trinkst du nicht nur H₂O. Im Wasser sind <b>gelöste Salze</b>, darunter Calcium- und Magnesium-Ionen. Sie machen das Wasser „hart“. Zuerst klären wir, wie sie ins Wasser kommen.</p>
+  <h3>Wie entsteht Wasserhärte?</h3>
+  <div class="steps" id="ent-dots"></div>
+  <div class="row">
+    <svg id="ent-svg" viewBox="0 0 420 260" role="img" aria-label="Entstehung der Wasserhärte" style="background:#e8f6fb;border-radius:14px;border:3px solid #80deea"></svg>
+    <div>
+      <div class="card" id="ent-txt" style="min-height:130px"></div>
+      <button class="btn alt" id="ent-prev">← Zurück</button><button class="btn" id="ent-next">Weiter →</button>
+    </div>
+  </div>
+</section>
+
+<section class="st" id="e2">
+  <h2>Was macht hartes Wasser mit uns?</h2>
+  <div class="row">
+    <div>
+      <p><b>Gesamthärte</b> nennt man die Menge aller gelösten <b>Calcium-Ionen (Ca²⁺)</b> und <b>Magnesium-Ionen (Mg²⁺)</b> in einem Liter Wasser.</p>
+      <ul>
+        <li>Beim Erhitzen fällt <b>Kalk</b> (CaCO₃) aus: Wasserkocher und Kaffeemaschine verkalken.</li>
+        <li>Seife und Waschmittel wirken schlechter, Seife bildet „Kalkseife“.</li>
+        <li>Calcium und Magnesium sind aber auch <b>nützlich</b> für den Körper und ungefährlich.</li>
+      </ul>
+      <div class="formel">Ca²⁺ + 2 HCO₃⁻ → CaCO₃↓ + CO₂ + H₂O <small style="font-weight:normal">(beim Erhitzen)</small></div>
+    </div>
+    <div>
+      <p style="margin-top:0"><b>Härtebereiche</b> in Grad deutscher Härte (°dH):</p>
+      <table class="t" id="hbt">
+        <tr><th>Bereich</th><th>°dH</th><th>mmol/L</th></tr>
+        <tr data-b="weich"><td>weich</td><td>unter 8,4</td><td>unter 1,5</td></tr>
+        <tr data-b="mittel"><td>mittel</td><td>8,4 bis 14</td><td>1,5 bis 2,5</td></tr>
+        <tr data-b="hart"><td>hart</td><td>über 14</td><td>über 2,5</td></tr>
+      </table>
+      <p>Berliner Leitungswasser liegt je nach Wasserwerk meist bei etwa <b>15 bis 23 °dH</b>, also im Bereich „hart“.</p>
+    </div>
+  </div>
+</section>
+
+<section class="st" id="e3">
+  <h2>Zwei Einheiten, eine Größe</h2>
+  <p class="lead">Die Härte wird in <b>mmol/L</b> (Stoffmengenkonzentration von Ca²⁺ + Mg²⁺) oder in <b>°dH</b> angegeben. Es gilt:</p>
+  <div class="card good"><div class="formel">1 mmol/L ≙ 5,6 °dH</div></div>
+  <p>Probiere es aus: Verschiebe den Regler.</p>
+  <input type="range" class="slider" id="cv" min="0" max="4" step="0.1" value="2.5" aria-label="Konzentration in mmol/L">
+  <div class="row" style="align-items:center">
+    <div class="big" id="cv-out">2,5 mmol/L = 14,0 °dH</div>
+    <div class="big" id="cv-rng" style="color:var(--teal)"></div>
+  </div>
+</section>
+
+<section class="st" id="e4">
+  <h2>Wie bestimmt man die Härte? Durch Titration!</h2>
+  <p class="lead">Man kann die Ionen nicht einzeln sehen oder zählen. Darum gibt man eine Lösung zu, deren Teilchen sich <b>genau eins zu eins</b> mit den Ca²⁺- und Mg²⁺-Ionen verbinden: die <b>EDTA-Lösung</b> (Maßlösung). Aus der Menge, die man bis zum Farbumschlag braucht, kann man die Ionen „zählen“.</p>
+  <div class="row">
+    <div>
+      <canvas id="sim" width="360" height="300" style="width:100%;max-width:360px;display:block;margin:0 auto;border-radius:14px;border:3px solid #80deea;background:#f1fafc;touch-action:manipulation"></canvas>
+    </div>
+    <div>
+      <div class="card"><b>Modell-Versuch:</b> Im Kolben schwimmen <b>Härtebildner</b> (Ca²⁺ / Mg²⁺, orange). Gib EDTA-Teilchen (blau) zu. Jedes EDTA-Teilchen fängt ein Ion.</div>
+      <button class="btn" id="sim-add">+ 1 EDTA-Teilchen</button><button class="btn alt" id="sim-add5">+ 5</button><button class="btn alt" id="sim-reset">Neu</button>
+      <div class="kfb info show" id="sim-txt" style="font-weight:normal">Der Indikator ist <b>weinrot</b>, solange freie Ionen da sind.</div>
+    </div>
+  </div>
+  <div class="card warn"><b>Der Indikator</b> (Eriochromschwarz T) ist an die Ionen gebunden und dann weinrot. Fängt EDTA alle Ionen weg, wird der Indikator frei und <b>blau</b>. Das zeigt dir das Ende der Titration an. Ein Puffer hält den pH-Wert dabei auf 10.</div>
+</section>
+
+<section class="st" id="e5">
+  <h2>Kleiner Check</h2>
+  <div id="quiz"></div>
+  <div style="margin-top:14px"><button class="btn green" id="to-lab">Weiter zum Labor →</button></div>
+</section>
+</main>
+
+<!-- ======================= TAB 2: 3D-TITRATION ======================= -->
+<main class="tab" id="tab2">
+<div id="lab">
+  <div id="canvas-container"></div>
+  <div id="tooltip"></div>
+  <div id="mode-badge">🔭 Ansicht</div>
+  <div id="controls-hint">Ziehen = drehen · Zwei Finger / Mausrad = zoomen</div>
+
+  <div id="ui-panel">
+    <div class="ui-head">
+      <div><h1>Wasserhärte titrieren</h1><p class="sub">Bestimme die Gesamthärte einer Wasserprobe mit EDTA-Lösung.</p></div>
+      <button id="btn-collapse" title="Panel ein-/ausklappen">▾</button>
+    </div>
+    <div class="step-box" id="instruction-text"></div>
+    <div class="collapsible">
+      <div class="tbtn"><button id="btn-tut" class="green">🎓 Tutorial</button><button id="btn-train" class="grey">🔍 Ablesen üben</button></div>
+      <div class="tool-status" id="tool-status">Aktives Gerät: Keins ausgewählt</div>
+      <div class="checklist" id="checklist"></div>
+      <div class="lbl2">Indikator Eriochromschwarz T</div><div class="phscale" id="ebt-scale-main"></div>
+      <div class="lbl2">Deine Titrationen</div><div id="runs" style="margin-bottom:10px"></div>
+      <div class="btn-row"><button id="btn-reset" class="grey">Neuer Versuch</button></div>
+    </div>
+  </div>
+
+  <div id="titr-hud">
+    <div class="lbl">Hahn-Stellung</div>
+    <div id="valve-txt" style="color:#38bdf8;">Zu (0°)</div>
+    <div class="hintline">
+      ✋ <b>Glasgriff</b> des Hahns anfassen und <b>im Kreis drehen</b>. Griff <b>quer</b> = zu, <b>seitlich</b> = auf.<br>
+      🌀 <b>Kolben antippen</b> = schwenken.<br>
+      🎨 Bleibt die Farbe nach dem Schwenken blau? Dann Hahn <b>sofort schließen</b>.
+    </div>
+    <div class="lbl">Indikator Eriochromschwarz T</div><div class="phscale" id="ebt-scale-hud"></div>
+    <button id="btn-leave-titr" class="green">✔ Zurück zur Ansicht</button>
+  </div>
+
+  <div id="read-panel">
+    <h2>🔍 Bürette ablesen</h2>
+    <div id="lupe-wrap"><svg id="lupe" viewBox="0 0 280 330" xmlns="http://www.w3.org/2000/svg"></svg></div>
+    <div class="rd-note">Auge auf Höhe der Flüssigkeitsoberfläche. Abgelesen wird am <b>tiefsten Punkt</b> des Meniskus. Die Teilung beträgt 0,1 mL, schätze die Hundertstel (z. B. 12,34 mL).</div>
+    <div class="inp-row">
+      <input type="text" id="inp-read" placeholder="Wert eingeben" inputmode="decimal" autocomplete="off">
+      <span class="unit">mL</span>
+      <button id="btn-read-check" class="green" style="flex:0 0 auto;">Prüfen</button>
+    </div>
+    <div class="fb" id="fb-read"></div>
+    <div class="btn-row">
+      <button id="btn-read-commit" class="green" style="flex:2;" disabled>Übernehmen</button>
+      <button id="btn-leave-read" class="grey">↩ Zurück</button>
+    </div>
+  </div>
+
+  <div id="res-overlay">
+    <div id="res-card">
+      <h2>Dein Titrationsergebnis</h2>
+      <div class="lbl2">Verbrauch V(EDTA)</div>
+      <div id="res-vol">–</div>
+      <div id="res-verdict"></div>
+      <div id="res-detail"></div>
+      <div id="res-count"></div>
+      <div class="btn-col">
+        <button id="btn-res-calc" class="green">🧮 Daraus die Härte berechnen (Tab ③)</button>
+        <button id="btn-res-new" class="grey">🧪 Neue Probe titrieren</button>
+        <button id="btn-res-back" class="grey">↩ Zurück zum Labor</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tr-overlay">
+    <div id="tr-card">
+      <div id="tr-main">
+        <h2>🔍 Ablesen üben</h2>
+        <div id="tr-score"></div>
+        <svg id="tr-lupe" viewBox="0 0 280 330" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="inp-row" style="margin-top:8px">
+          <input type="text" id="tr-in" placeholder="Wert in mL" inputmode="decimal" autocomplete="off"><span class="unit">mL</span>
+          <button id="btn-tr-check" class="green" style="flex:0 0 auto">Prüfen</button>
+          <button id="btn-tr-next" class="green" style="flex:0 0 auto;display:none">Nächster Wert</button>
+        </div>
+        <div id="tr-fb"></div>
+        <button id="btn-tr-close" class="grey">Schließen</button>
+      </div>
+      <div id="tr-end" style="display:none">
+        <h2>Geschafft!</h2>
+        <p id="tr-end-txt" style="font-size:14px"></p>
+        <div class="btn-col"><button id="btn-tr-again" class="green">Noch einmal üben</button><button id="btn-tr-close2" class="grey">Zurück zum Labor</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="coach"></div>
+</div>
+</main>
+
+<!-- ======================= TAB 3: BERECHNUNG ======================= -->
+<main class="tab" id="tab3">
+<section class="st" id="b1">
+  <h2>Aus dem Verbrauch die Härte berechnen</h2>
+  <p class="lead">Du hast titriert und den Verbrauch an EDTA-Lösung abgelesen. Jetzt wird daraus die <b>Wasserhärte</b>. Kolbi führt dich Schritt für Schritt durch die Rechnung.</p>
+  <div class="card"><b>Gegeben</b> (bei jedem Versuch im Labor gleich):
+    <ul style="margin:6px 0 0"><li>Wasserprobe: V(Probe) = <b>100 mL</b></li><li>Maßlösung: c(EDTA) = <b>0,010 mol/L</b></li><li>Dein Verbrauch: V(EDTA) = <b id="g-v">–</b></li></ul></div>
+  <div id="src-row" class="chips"></div>
+  <div class="chain" id="chain"></div>
+  <div id="g-steps"></div>
+  <div class="kfb" id="g-fb"></div>
+  <div class="kbox" id="kbox"><div class="av">🧪</div><div id="kbox-t">Wähle oben einen Messwert, dann geht es los.</div></div>
+</section>
+
+<section class="st" id="b2">
+  <h2>Jetzt rechnest du selbst</h2>
+  <p>Wähle ein Niveau. Du bekommst jedes Mal neue Zahlen.</p>
+  <div class="lvl chips" id="lvl">
+    <button class="chip sel" data-l="1">Niveau 1 · Standardversuch</button>
+    <button class="chip" data-l="2">Niveau 2 · andere Probenmenge</button>
+    <button class="chip" data-l="3">Niveau 3 · knifflig</button>
+  </div>
+  <div class="card" id="p-task" style="font-size:17px"></div>
+  <div class="inp" id="p-inp"><input type="text" id="p-in" inputmode="decimal" autocomplete="off" placeholder="Ergebnis"><span class="u" id="p-u"></span>
+    <button class="btn green" id="p-check">Prüfen</button></div>
+  <div class="kfb" id="p-fb"></div>
+  <div id="p-way" class="card good" style="display:none"></div>
+  <div><button class="btn alt" id="p-way-b">💡 Rechenweg zeigen</button><button class="btn" id="p-next">Neue Aufgabe</button></div>
+  <div class="score" id="p-score"></div>
+</section>
+<div style="height:70px"></div>
+</main>
+
+<a class="imp" href="/Virtuelles-Chemielabor/impressum.html">Impressum &amp; Datenschutz</a>
+
+<script src="../../../../vendor/three.min.js"></script>
+<script>
+function initLab() {
+"use strict";
+
+// ============================================================================
+// 0. KONSTANTEN & HILFSFUNKTIONEN
+// ============================================================================
+const $ = id => document.getElementById(id);
+const lerp = (a, b, t) => a + (b - a) * t;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const fmt = (v, d = 2) => v.toFixed(d).replace('.', ',');
+function parseNum(s) {
+  s = String(s == null ? '' : s).trim().replace(',', '.');
+  if (!/^[-+]?(\d+\.?\d*|\.\d+)$/.test(s)) return NaN;
+  return parseFloat(s);
+}
+
+// Chemie: Gesamthärte nach DIN 38409 (komplexometrisch mit EDTA), Indikator Eriochromschwarz T
+const C_EDTA = 0.010;       // mol/L (= mmol/mL) Maßlösung
+const V_PROBE = 100.0;      // mL Wasserprobe im Kolben
+const DH_PER_ML = 0.5608;   // °dH je mL EDTA bei 100 mL Probe: 1 mmol/L (Ca²⁺ + Mg²⁺) = 5,608 °dH
+const WINE = new THREE.Color(0xa6173f), VIOLET = new THREE.Color(0x6b3fa0), BLUE = new THREE.Color(0x2b62d9);
+// Farbe des Indikators: weinrot (Härtebildner noch frei), kurz vor dem Umschlag violett, am Endpunkt blau
+const ebtAmount = (vol, eq) => clamp((vol - (eq - 0.35)) / 0.45, 0, 1);
+function ebtColor(vol, eq, out) { const t = ebtAmount(vol, eq); return t < 0.5 ? out.copy(WINE).lerp(VIOLET, t * 2) : out.copy(VIOLET).lerp(BLUE, (t - 0.5) * 2); }
+const _c = new THREE.Color();
+function renderEbt(el) { el.innerHTML = '<span style="flex:3;background:#a6173f">weinrot</span><span style="flex:1.2;background:linear-gradient(90deg,#a6173f,#6b3fa0)">violett</span><span style="flex:1.2;background:linear-gradient(90deg,#6b3fa0,#2b62d9)"></span><span style="flex:3;background:#2b62d9">blau</span>'; }
+
+// Geometrie (Weltkoordinaten, Tischoberfläche bei y ≈ 0,04)
+const BX = 0.2, BZ = -0.6;                // Achse von Hahn & Spitze (hier steht der Kolben)
+const BTX = BX - 0.9;                     // Achse des Bürettenrohrs (seitlich versetzt, wie im Vorbild-Bild)
+const BUR_ML = 50;                        // Bürette fasst 50 mL
+const Y_ZERO = 9.65, Y_END = 4.65;        // Lage der 0-mL- und 50-mL-Marke
+const ML = (Y_ZERO - Y_END) / BUR_ML;     // 0,10 Einheiten pro mL
+const Y_TOP = 10.05;                       // oberes Rohrende
+const Y_ARM = 4.12;                       // Höhe des waagerechten Verbindungsstücks
+const Y_TIP = 3.0;                        // Unterkante der Spitze
+const Y_TAP = 4.12;                       // Mitte des Hahnkörpers
+const READ_TOL = 0.05;                    // erlaubte Ablese-Abweichung (mL)
+const LEVER_R = 0.3;                     // Bezugslänge des Paddels (Achse bis Mitte der Fläche)
+const MENISCUS_D = 0.07;                  // Höhe des Meniskus (mL): Rand liegt so weit über dem tiefsten Punkt
+const levelY = V => Y_ZERO - ML * V;
+
+// ============================================================================
+// 1. SZENE, KAMERA & STEUERUNG
+// ============================================================================
+const container = $('canvas-container');
+const VW = () => Math.max(1, container.clientWidth), VH = () => Math.max(1, container.clientHeight);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x222832);
+scene.fog = new THREE.Fog(0x222832, 24, 50);
+
+const camera = new THREE.PerspectiveCamera(40, VW() / VH(), 0.1, 100);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(VW(), VH());
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.12;
+container.appendChild(renderer.domElement);
+
+function createStudioEnvMap() {
+  const c = document.createElement('canvas'); c.width = 256; c.height = 128;
+  const ctx = c.getContext('2d');
+  const grad = ctx.createLinearGradient(0, 0, 0, 128);
+  grad.addColorStop(0, '#546e7a'); grad.addColorStop(0.45, '#eceff1');
+  grad.addColorStop(0.55, '#37474f'); grad.addColorStop(1, '#1a2027');
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, 256, 128);
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(35, 16, 65, 20); ctx.fillRect(155, 22, 55, 16);
+  const tex = new THREE.CanvasTexture(c);
+  tex.mapping = THREE.EquirectangularReflectionMapping;
+  return tex;
+}
+scene.environment = createStudioEnvMap();
+
+// Kamera-Zustand (Orbit um ein Ziel)
+const cam = { theta: -0.08, phi: 1.18, radius: 15.5, target: new THREE.Vector3(0.0, 3.7, 0.2) };
+function aspect() { return VW() / VH(); }
+function isNarrow() { return VW() <= 760; }
+const CAM_PRESETS = {
+  view:    () => ({ theta: -0.08, phi: 1.18, radius: Math.max(22.5, 24 / aspect()), tx: 0.0, ty: 5.3 + (isNarrow() ? 0.4 : 0), tz: 0.2 }),
+  titrate: () => ({ theta: 0.0, phi: 1.04, radius: Math.max(7.2, 6.6 / aspect()), tx: BX - 0.2, ty: 3.0, tz: BZ }),
+  read:    () => ({ theta: 0.0, phi: 1.52, radius: Math.max(6.8, 3.9 / aspect()), tx: BTX + (isNarrow() ? 0 : 1.2), ty: levelY(Math.min(state.vol || 0, BUR_ML)) - 0.1, tz: BZ })
+};
+let camLocked = false;
+function updateCamera() {
+  cam.phi = clamp(cam.phi, 0.25, Math.PI / 2 - 0.02);
+  cam.radius = clamp(cam.radius, 4.2, 40);
+  camera.position.x = cam.target.x + cam.radius * Math.sin(cam.phi) * Math.sin(cam.theta);
+  camera.position.y = cam.target.y + cam.radius * Math.cos(cam.phi);
+  camera.position.z = cam.target.z + cam.radius * Math.sin(cam.phi) * Math.cos(cam.theta);
+  camera.lookAt(cam.target);
+}
+updateCamera();
+
+// ============================================================================
+// 2. LICHT & BODEN
+// ============================================================================
+scene.add(new THREE.AmbientLight(0xe3edf7, 0.6));
+const mainLight = new THREE.DirectionalLight(0xfffbf2, 1.0);
+mainLight.position.set(5, 12, 8);
+mainLight.castShadow = true;
+mainLight.shadow.mapSize.set(2048, 2048);
+mainLight.shadow.camera.left = -9.5; mainLight.shadow.camera.right = 9.5;
+mainLight.shadow.camera.top = 10; mainLight.shadow.camera.bottom = -8;
+mainLight.shadow.bias = -0.0005;
+scene.add(mainLight);
+const backLight = new THREE.DirectionalLight(0x90caf9, 0.45);
+backLight.position.set(-6, 6, -7);
+scene.add(backLight);
+
+function createFloorTexture() {
+  const c = document.createElement('canvas'); c.width = 256; c.height = 256;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#2b313b'; ctx.fillRect(0, 0, 256, 256);
+  ctx.strokeStyle = '#1e232b'; ctx.lineWidth = 4; ctx.strokeRect(0, 0, 256, 256);
+  const tex = new THREE.CanvasTexture(c);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(20, 20);
+  return tex;
+}
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(60, 60),
+  new THREE.MeshStandardMaterial({ map: createFloorTexture(), roughness: 0.75 }));
+floor.rotation.x = -Math.PI / 2; floor.position.y = -4.8; floor.receiveShadow = true;
+scene.add(floor);
+
+// ============================================================================
+// 3. MATERIALIEN, TEXTUREN, FLÜSSIGKEITEN
+// ============================================================================
+const glassMat = new THREE.MeshPhysicalMaterial({
+  color: 0xffffff, transparent: true, opacity: 0.26, roughness: 0.04, metalness: 0.05,
+  clearcoat: 1.0, clearcoatRoughness: 0.04, depthWrite: false, side: THREE.DoubleSide
+});
+const tintedGlassMat = new THREE.MeshPhysicalMaterial({
+  color: 0xdff1fb, transparent: true, opacity: 0.32, roughness: 0.1, clearcoat: 1.0, depthWrite: false, side: THREE.DoubleSide
+});
+const plasticMat = new THREE.MeshPhysicalMaterial({
+  color: 0xf0f4f8, transparent: true, opacity: 0.58, roughness: 0.35, clearcoat: 0.4, depthWrite: false
+});
+const whiteCapMat = new THREE.MeshStandardMaterial({ color: 0xf5f5f5, roughness: 0.3 });
+const metalMat = new THREE.MeshStandardMaterial({ color: 0x9aa0a6, roughness: 0.35, metalness: 0.65 });
+const darkMetalMat = new THREE.MeshStandardMaterial({ color: 0x3d4650, roughness: 0.4, metalness: 0.6 });
+
+function createLabelTexture(title, sub, scaleLines = true) {
+  const c = document.createElement('canvas'); c.width = 256; c.height = 128;
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0, 0, 256, 128);
+  ctx.fillStyle = 'rgba(255,255,255,0.95)'; ctx.fillRect(26, 26, 204, 76);
+  ctx.strokeStyle = '#263238'; ctx.lineWidth = 3; ctx.strokeRect(26, 26, 204, 76);
+  ctx.textAlign = 'center';
+  let size = 24;
+  ctx.font = 'bold ' + size + 'px sans-serif';
+  while (ctx.measureText(title).width > 190 && size > 12) { size -= 1; ctx.font = 'bold ' + size + 'px sans-serif'; }
+  ctx.fillStyle = '#111'; ctx.fillText(title, 128, sub ? 59 : 72);
+  if (sub) {
+    let s2 = 16; ctx.font = s2 + 'px sans-serif';
+    while (ctx.measureText(sub).width > 190 && s2 > 10) { s2 -= 1; ctx.font = s2 + 'px sans-serif'; }
+    ctx.fillStyle = '#37474f'; ctx.fillText(sub, 128, 87);
+  }
+  if (scaleLines) {
+    ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 2;
+    for (let y = 20; y <= 108; y += 16) { ctx.beginPath(); ctx.moveTo(6, y); ctx.lineTo(18, y); ctx.stroke(); }
+  }
+  return new THREE.CanvasTexture(c);
+}
+
+function createRealisticLiquid(radius, height, opts) {
+  const group = new THREE.Group();
+  const bodyMat = new THREE.MeshPhysicalMaterial({
+    color: opts.color, emissive: opts.emissive || 0x000000, emissiveIntensity: opts.emissiveIntensity || 0.35,
+    transparent: true, opacity: opts.opacity, roughness: opts.roughness !== undefined ? opts.roughness : 0.08,
+    metalness: 0.02, clearcoat: 1.0, clearcoatRoughness: 0.05
+  });
+  const cyl = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, height, 28), bodyMat);
+  cyl.position.y = height / 2; cyl.renderOrder = 1; group.add(cyl);
+  const topMat = new THREE.MeshPhysicalMaterial({
+    color: opts.color, emissive: opts.emissive || 0x000000, emissiveIntensity: (opts.emissiveIntensity || 0.35) * 1.2,
+    transparent: true, opacity: Math.min(0.99, opts.opacity + 0.08), roughness: 0.04, clearcoat: 1.0
+  });
+  const topDisk = new THREE.Mesh(new THREE.CircleGeometry(radius, 28), topMat);
+  topDisk.rotation.x = -Math.PI / 2; topDisk.position.y = height + 0.001; topDisk.renderOrder = 1; group.add(topDisk);
+  const ring = new THREE.Mesh(new THREE.RingGeometry(radius * 0.84, radius, 28),
+    new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.32, side: THREE.DoubleSide }));
+  ring.rotation.x = -Math.PI / 2; ring.position.y = height + 0.003; group.add(ring);
+  return { group, bodyMat, topMat };
+}
+
+// ============================================================================
+// 4. LABORTISCH (wie in der Biuret-Simulation)
+// ============================================================================
+const tableGroup = new THREE.Group(); scene.add(tableGroup);
+const tableW = 11.2, tableD = 6.2;
+const mortarBed = new THREE.Mesh(new THREE.BoxGeometry(tableW, 0.18, tableD),
+  new THREE.MeshStandardMaterial({ color: 0x9e9e98, roughness: 0.9 }));
+mortarBed.position.y = -0.1; mortarBed.receiveShadow = true; tableGroup.add(mortarBed);
+
+const tileMat = new THREE.MeshStandardMaterial({ color: 0x9b402c, roughness: 0.3, metalness: 0.05 });
+{
+  const cols = 9, rows = 5, innerW = tableW - 0.5, innerD = tableD - 0.5;
+  const tileW = innerW / cols, tileD = innerD / rows;
+  const tileGeo = new THREE.BoxGeometry(tileW - 0.06, 0.08, tileD - 0.06);
+  for (let ix = 0; ix < cols; ix++) for (let iz = 0; iz < rows; iz++) {
+    const tile = new THREE.Mesh(tileGeo, tileMat);
+    tile.position.set(-innerW / 2 + tileW * (ix + 0.5), 0, -innerD / 2 + tileD * (iz + 0.5));
+    tile.receiveShadow = true; tableGroup.add(tile);
+  }
+  const rimH = 0.13, rimThick = 0.22;
+  const rimFB = new THREE.BoxGeometry(tableW, rimH, rimThick);
+  const rimLR = new THREE.BoxGeometry(rimThick, rimH, tableD - rimThick * 2);
+  [-tableD / 2 + rimThick / 2, tableD / 2 - rimThick / 2].forEach(z => {
+    const m = new THREE.Mesh(rimFB, tileMat); m.position.set(0, 0.025, z); m.receiveShadow = true; tableGroup.add(m);
+  });
+  [-tableW / 2 + rimThick / 2, tableW / 2 - rimThick / 2].forEach(x => {
+    const m = new THREE.Mesh(rimLR, tileMat); m.position.set(x, 0.025, 0); m.receiveShadow = true; tableGroup.add(m);
+  });
+}
+const orangeMat = new THREE.MeshStandardMaterial({ color: 0xcf3a1d, roughness: 0.45 });
+const orangeFrame = new THREE.Mesh(new THREE.BoxGeometry(tableW - 0.08, 0.28, tableD - 0.08), orangeMat);
+orangeFrame.position.y = -0.32; tableGroup.add(orangeFrame);
+const greyCorpusMat = new THREE.MeshStandardMaterial({ color: 0x738394, roughness: 0.5 });
+{
+  const rightApron = new THREE.Mesh(new THREE.BoxGeometry(6.3, 1.15, tableD - 0.3), greyCorpusMat);
+  rightApron.position.set(2.3, -1.03, 0); tableGroup.add(rightApron);
+  const backLeftApron = new THREE.Mesh(new THREE.BoxGeometry(4.6, 1.15, tableD - 2.4), greyCorpusMat);
+  backLeftApron.position.set(-3.1, -1.03, -1.05); tableGroup.add(backLeftApron);
+  [-tableW / 2 + 0.3, tableW / 2 - 0.3].forEach(x => {
+    const sideWall = new THREE.Mesh(new THREE.BoxGeometry(0.32, 3.1, tableD - 0.3), greyCorpusMat);
+    sideWall.position.set(x, -2.0, 0); tableGroup.add(sideWall);
+    [-tableD / 2 + 0.55, tableD / 2 - 0.55].forEach(z => {
+      const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.12, 1.4, 20), orangeMat);
+      leg.position.set(x, -4.1, z); tableGroup.add(leg);
+      const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.2, 0.1, 20), new THREE.MeshStandardMaterial({ color: 0x151515 }));
+      foot.position.set(x, -4.75, z); tableGroup.add(foot);
+    });
+  });
+  // geschlossene Schublade (nur Dekoration)
+  const dFront = new THREE.Mesh(new THREE.BoxGeometry(3.1, 1.02, 0.12), new THREE.MeshStandardMaterial({ color: 0xf2f4f7, roughness: 0.3 }));
+  dFront.position.set(-2.9, -1.02, tableD / 2 - 0.14); tableGroup.add(dFront);
+  const dHandle = new THREE.Mesh(new THREE.SphereGeometry(0.22, 20, 12, 0, Math.PI, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0xf2f4f7 }));
+  dHandle.scale.set(1.3, 0.7, 0.8); dHandle.position.set(-2.9, -1.24, tableD / 2 - 0.09); tableGroup.add(dHandle);
+}
+const TABLE_Y = 0.04;
+
+// ============================================================================
+// 5. STATIV + BÜRETTE
+// ============================================================================
+const stand = new THREE.Group(); scene.add(stand);
+{
+  const plate = new THREE.Mesh(new THREE.BoxGeometry(3.7, 0.1, 2.5), new THREE.MeshStandardMaterial({ color: 0x4a5560, roughness: 0.5, metalness: 0.4 }));
+  plate.position.set(-0.15, TABLE_Y + 0.05, BZ); plate.castShadow = true; plate.receiveShadow = true; stand.add(plate);
+  const sheet = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.012, 2.0), new THREE.MeshStandardMaterial({ color: 0xf4f6f8, roughness: 0.6 }));
+  sheet.position.set(BX, TABLE_Y + 0.106, BZ); sheet.receiveShadow = true; stand.add(sheet);
+  const RODX = -1.78;
+  const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.075, 11.5, 18), metalMat);
+  rod.position.set(RODX, TABLE_Y + 5.75, BZ); rod.castShadow = true; stand.add(rod);
+  const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.22, 0.12, 20), darkMetalMat);
+  foot.position.set(RODX, TABLE_Y + 0.16, BZ); stand.add(foot);
+  [9.6, 4.9].forEach(y => {
+    const boss = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 0.3), darkMetalMat);
+    boss.position.set(RODX, y, BZ); stand.add(boss);
+    const len = (BTX - 0.13) - RODX;
+    const arm = new THREE.Mesh(new THREE.BoxGeometry(len, 0.09, 0.14), metalMat);
+    arm.position.set(RODX + len / 2, y, BZ); arm.castShadow = true; stand.add(arm);
+    const clampRing = new THREE.Mesh(new THREE.TorusGeometry(0.18, 0.05, 10, 24), darkMetalMat);
+    clampRing.rotation.x = Math.PI / 2; clampRing.position.set(BTX, y, BZ); stand.add(clampRing);
+    const knob = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.16, 14), new THREE.MeshStandardMaterial({ color: 0x6a1b9a, roughness: 0.4 }));
+    knob.rotation.x = Math.PI / 2; knob.position.set(RODX, y, BZ + 0.23); stand.add(knob);
+  });
+}
+
+const burette = new THREE.Group(); burette.position.set(BTX, 0, BZ); scene.add(burette);
+const tubeLen = Y_TOP - Y_END;
+{
+  const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, tubeLen, 28, 1, true), glassMat);
+  tube.position.y = Y_END + tubeLen / 2; tube.renderOrder = 3; burette.add(tube);
+  const cone = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.07, 0.12, 20, 1, true), glassMat);
+  cone.position.y = Y_END - 0.06; cone.renderOrder = 3; burette.add(cone);
+  // Rohr unter dem Skalenbereich, Knick und waagerechtes Verbindungsstück zum Hahn (Seitenarm)
+  const neckLen = (Y_END - 0.12) - Y_ARM;
+  const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, neckLen, 16, 1, true), glassMat);
+  neck.position.y = Y_ARM + neckLen / 2; neck.renderOrder = 3; burette.add(neck);
+  const armLen = (BX - BTX) - 0.13;
+  const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, armLen, 16, 1, true), glassMat);
+  arm.rotation.z = Math.PI / 2; arm.position.set(armLen / 2, Y_ARM, 0); arm.renderOrder = 3; burette.add(arm);
+  const elbow = new THREE.Mesh(new THREE.SphereGeometry(0.058, 14, 10), glassMat);
+  elbow.position.set(0, Y_ARM, 0); elbow.renderOrder = 3; burette.add(elbow);
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(0.15, 0.016, 10, 28), glassMat);
+  rim.rotation.x = Math.PI / 2; rim.position.y = Y_TOP; burette.add(rim);
+}
+// Skalenstreifen (50 mL, Teilung 0,1 mL)
+function createScaleTexture() {
+  const W = 64, pad = 90, px = 60, H = 2 * pad + BUR_ML * px;   // 60 px je mL
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = 'rgba(255,255,255,0.62)'; ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = '#10203f'; ctx.fillStyle = '#10203f';
+  ctx.font = 'bold 20px sans-serif'; ctx.textBaseline = 'middle';
+  for (let k = 0; k <= BUR_ML * 10; k++) {
+    const y = pad + k * px / 10;
+    const major = k % 10 === 0, mid = k % 5 === 0;
+    ctx.lineWidth = major ? 3 : (mid ? 2 : 1.4);
+    const len = major ? 30 : (mid ? 22 : 14);
+    ctx.beginPath(); ctx.moveTo(3, y); ctx.lineTo(3 + len, y); ctx.stroke();
+    if (major) ctx.fillText(String(k / 10), 36, y);
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.anisotropy = 8;
+  return tex;
+}
+{
+  const scaleH = (Y_ZERO - Y_END) + 0.3;
+  const geo = new THREE.CylinderGeometry(0.157, 0.157, scaleH, 16, 1, true, -0.6, 1.2);
+  const mat = new THREE.MeshBasicMaterial({ map: createScaleTexture(), transparent: true, depthWrite: false });
+  const scaleMesh = new THREE.Mesh(geo, mat);
+  scaleMesh.position.y = (Y_ZERO + Y_END) / 2; scaleMesh.renderOrder = 4; burette.add(scaleMesh);
+}
+// Salzsäure in der Bürette
+const hclMat = new THREE.MeshPhysicalMaterial({
+  color: 0x9fd6f0, emissive: 0x1d4a63, emissiveIntensity: 0.35, transparent: true, opacity: 0.55, roughness: 0.1, clearcoat: 1.0
+});
+const hclTubeGeo = new THREE.CylinderGeometry(0.132, 0.132, 1, 24); hclTubeGeo.translate(0, 0.5, 0);
+const hclTube = new THREE.Mesh(hclTubeGeo, hclMat); hclTube.position.y = Y_END; hclTube.visible = false; hclTube.renderOrder = 1; burette.add(hclTube);
+// Flüssigkeit in Rohr, Seitenarm, Hahn und Spitze (immer gefüllt, sobald die Bürette befüllt ist)
+const hclNeck = new THREE.Group(); hclNeck.visible = false; burette.add(hclNeck);
+{
+  const nl = (Y_END - 0.12) - Y_ARM;
+  const a = new THREE.Mesh(new THREE.CylinderGeometry(0.038, 0.038, nl, 14), hclMat); a.position.set(0, Y_ARM + nl / 2, 0); a.renderOrder = 1;
+  const al = BX - BTX;
+  const b = new THREE.Mesh(new THREE.CylinderGeometry(0.038, 0.038, al, 14), hclMat); b.rotation.z = Math.PI / 2; b.position.set(al / 2, Y_ARM, 0); b.renderOrder = 1;
+  const tl = Y_ARM - Y_TIP;
+  const c = new THREE.Mesh(new THREE.CylinderGeometry(0.038, 0.016, tl, 14), hclMat); c.position.set(al, Y_TIP + tl / 2, 0); c.renderOrder = 1;
+  hclNeck.add(a, b, c);
+}
+const hclMeniscus = new THREE.Mesh(new THREE.TorusGeometry(0.128, 0.014, 8, 24),
+  new THREE.MeshBasicMaterial({ color: 0x8fd0ee, transparent: true, opacity: 0.9 }));
+hclMeniscus.rotation.x = Math.PI / 2; hclMeniscus.visible = false; burette.add(hclMeniscus);
+
+function setBuretteLevel(V) {
+  const ly = levelY(V);
+  if (ly > Y_END) {
+    hclTube.visible = true; hclTube.scale.y = ly - Y_END; hclMeniscus.visible = true; hclMeniscus.position.y = ly;
+  } else { hclTube.visible = false; hclMeniscus.visible = false; }
+}
+
+// Bürettenhahn
+// Glashahn mit senkrechter Achse: flacher Hebel oben, roter Haltering, lange dünne Spitze (wie im Vorbild-Bild)
+const tap = new THREE.Group(); tap.position.set(BX, 0, BZ); scene.add(tap);
+const TAP_H = 0.5, RING_H = 0.12;
+{
+  const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, TAP_H, 28, 1, true), glassMat);
+  barrel.position.y = Y_TAP; barrel.renderOrder = 3; tap.add(barrel);
+  const plug = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.075, TAP_H + 0.04, 20),
+    new THREE.MeshPhysicalMaterial({ color: 0xcfe6f7, transparent: true, opacity: 0.55, roughness: 0.15, clearcoat: 1.0, depthWrite: false }));
+  plug.position.y = Y_TAP + 0.02; plug.renderOrder = 2; tap.add(plug);
+  const bore = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.2, 10), new THREE.MeshBasicMaterial({ color: 0x23394d, transparent: true, opacity: 0.55 }));
+  bore.rotation.z = Math.PI / 2; bore.position.set(-0.06, Y_ARM, 0); tap.add(bore);
+  const ring = new THREE.Mesh(new THREE.CylinderGeometry(0.135, 0.135, RING_H, 22), new THREE.MeshStandardMaterial({ color: 0x6b7fe0, roughness: 0.5 }));
+  ring.position.y = Y_TAP - TAP_H / 2 - RING_H / 2; ring.castShadow = true; tap.add(ring);
+  for (let k = 0; k < 14; k++) { const a = k / 14 * Math.PI * 2; const nub = new THREE.Mesh(new THREE.BoxGeometry(0.02, RING_H * 0.9, 0.03), new THREE.MeshStandardMaterial({ color: 0x5568cc, roughness: 0.5 })); nub.position.set(Math.sin(a) * 0.14, ring.position.y, Math.cos(a) * 0.14); nub.rotation.y = a; tap.add(nub); }
+  const flange = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.09, 24, 1, true), glassMat); flange.position.y = Y_TAP - TAP_H / 2 + 0.045; flange.renderOrder = 3; tap.add(flange);
+  [0.1, -0.1].forEach(dy => { const band = new THREE.Mesh(new THREE.TorusGeometry(0.133, 0.011, 8, 28), glassMat); band.rotation.x = Math.PI / 2; band.position.y = Y_TAP + dy + 0.03; band.renderOrder = 3; tap.add(band); });
+  const tipH = (Y_TAP - TAP_H / 2 - RING_H) - Y_TIP;
+  const tipM = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.02, tipH, 14, 1, true), glassMat);
+  tipM.position.y = Y_TIP + tipH / 2; tipM.renderOrder = 3; tap.add(tipM);
+}
+// Kopf des Glasküken: matter Glas-Paddel auf kurzem Schaft, zeigt einseitig nach vorn (wie im Vorbild-Foto)
+const tapHandleMat = new THREE.MeshPhysicalMaterial({ color: 0xe4ecf1, emissive: 0x2a66c9, emissiveIntensity: 0.1, transparent: true, opacity: 0.86, roughness: 0.55, clearcoat: 0.3 });
+const HANDLE_Y = Y_TAP + TAP_H / 2 + 0.17;
+const tapHandle = new THREE.Group(); tapHandle.position.set(0, HANDLE_Y, 0); tap.add(tapHandle);
+{
+  const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.095, 0.17, 18), tapHandleMat); stem.position.y = -0.085; tapHandle.add(stem);
+  const sh = new THREE.Shape();                              // Umriss des Paddels (u = Breite, v = Länge)
+  sh.moveTo(-0.075, 0);
+  sh.lineTo(-0.085, 0.12);
+  sh.bezierCurveTo(-0.15, 0.24, -0.13, 0.38, 0.0, 0.39);
+  sh.bezierCurveTo(0.13, 0.38, 0.15, 0.24, 0.085, 0.12);
+  sh.lineTo(0.075, 0);
+  sh.absarc(0, 0, 0.075, 0, Math.PI, true);
+  const geo = new THREE.ExtrudeGeometry(sh, { depth: 0.07, bevelEnabled: true, bevelSize: 0.022, bevelThickness: 0.02, bevelSegments: 3, curveSegments: 18 });
+  geo.translate(0, 0, -0.035); geo.rotateX(Math.PI / 2);     // flach legen, Länge zeigt nach +z
+  const paddle = new THREE.Mesh(geo, tapHandleMat); paddle.castShadow = true; paddle.rotation.x = -0.1; tapHandle.add(paddle);
+}
+const tapHit = new THREE.Mesh(new THREE.SphereGeometry(0.52, 12, 12), new THREE.MeshBasicMaterial({ visible: false }));
+tapHit.position.set(0, 0, 0.3);   // sitzt auf dem Paddel und dreht mit
+tapHit.userData = { type: 'valve', name: 'Bürettenhahn – anklicken, um zu titrieren' };
+tapHandle.add(tapHit);
+// Bürettenkörper (zum Ablesen / Befüllen)
+const buretteHit = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 3.5, 12), new THREE.MeshBasicMaterial({ visible: false }));
+buretteHit.position.set(BTX, (Y_END + Y_TOP) / 2 + 0.05, BZ);
+buretteHit.userData = { type: 'burette', name: 'Bürette (50 mL) – oben anklicken zum Ablesen' };
+scene.add(buretteHit);
+
+// Tropfen & Strahl
+const dropMat = new THREE.MeshStandardMaterial({ color: 0xbfe3f5, transparent: true, opacity: 0.8 });
+const dropMesh = new THREE.Mesh(new THREE.SphereGeometry(0.055, 12, 12), dropMat);
+dropMesh.position.set(BX, Y_TIP, BZ); dropMesh.visible = false; scene.add(dropMesh);
+const streamMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 1, 12),
+  new THREE.MeshBasicMaterial({ color: 0xbfe3f5, transparent: true, opacity: 0.7 }));
+streamMesh.visible = false; scene.add(streamMesh);
+
+// ============================================================================
+// 6. ERLENMEYERKOLBEN
+// ============================================================================
+const FLASK_PREP  = new THREE.Vector3(BX, TABLE_Y + 0.01, 1.55);
+const FLASK_UNDER = new THREE.Vector3(BX, TABLE_Y + 0.115, BZ);
+const FLASK_H = 2.3;
+const flask = { group: new THREE.Group(), fill: 0 };
+flask.group.position.copy(FLASK_PREP); scene.add(flask.group);
+{
+  const pts = [[0, 0], [0.85, 0], [0.95, 0.2], [0.32, 1.65], [0.32, 2.25], [0.36, 2.3]].map(p => new THREE.Vector2(p[0], p[1]));
+  const fm = new THREE.Mesh(new THREE.LatheGeometry(pts, 36), glassMat); fm.renderOrder = 3; flask.group.add(fm);
+  const label = new THREE.Mesh(new THREE.CylinderGeometry(0.665, 0.665, 0.55, 20, 1, true, -0.8, 1.6),
+    new THREE.MeshBasicMaterial({ map: createLabelTexture('250 mL', 'Erlenmeyer', false), transparent: true, depthWrite: false }));
+  label.position.y = 1.0; label.rotation.set(0, 0, 0); label.visible = false; flask.group.add(label);
+}
+flask.sampleMat = new THREE.MeshStandardMaterial({
+  color: 0xdfeef7, emissive: 0x2a4a5c, emissiveIntensity: 1.0, roughness: 0.2, transparent: true, opacity: 0.55
+});
+flask.sampleMesh = new THREE.Mesh(new THREE.LatheGeometry(
+  [[0, 0.03], [0.82, 0.03], [0.91, 0.2], [0.68, 0.78], [0, 0.78]].map(p => new THREE.Vector2(p[0], p[1])), 32), flask.sampleMat);
+flask.sampleMesh.renderOrder = 1; flask.sampleMesh.visible = false; flask.group.add(flask.sampleMesh);
+flask.plumeGroup = new THREE.Group(); flask.plumeGroup.position.y = 0.45; flask.group.add(flask.plumeGroup);
+const plumeMat = new THREE.MeshBasicMaterial({ color: 0xf26a21, transparent: true, opacity: 0 });
+{
+  const pCone = new THREE.Mesh(new THREE.ConeGeometry(0.38, 0.62, 20), plumeMat); pCone.rotation.x = Math.PI;
+  const pRing = new THREE.Mesh(new THREE.TorusGeometry(0.22, 0.08, 12, 24), plumeMat); pRing.rotation.x = Math.PI / 2; pRing.position.y = 0.15;
+  flask.plumeGroup.add(pCone, pRing);
+}
+flask.hit = new THREE.Mesh(new THREE.CylinderGeometry(0.95, 0.95, 2.4, 12), new THREE.MeshBasicMaterial({ visible: false }));
+flask.hit.position.y = 1.2; flask.hit.userData = { type: 'flask', name: 'Erlenmeyerkolben (250 mL)' };
+flask.group.add(flask.hit);
+
+// ============================================================================
+// 7. WEIN-BECHERGLÄSER
+// ============================================================================
+const SAMPLES = [
+  { id: 'a', name: 'Probe A', sub: 'Wasser', color: 0xdfeef7, emissive: 0x2a4a5c, x: -4.7, z: -1.45, eq: 0 },
+  { id: 'b', name: 'Probe B', sub: 'Wasser', color: 0xdfeef7, emissive: 0x2a4a5c, x: -3.55, z: -1.45, eq: 0 },
+  { id: 'c', name: 'Probe C', sub: 'Wasser', color: 0xdfeef7, emissive: 0x2a4a5c, x: -2.4, z: -1.45, eq: 0 }
+];
+const bR = 0.46, bH = 1.3;
+SAMPLES.forEach(w => {
+  const g = new THREE.Group(); g.position.set(w.x, TABLE_Y, w.z); scene.add(g);
+  const glass = new THREE.Mesh(new THREE.CylinderGeometry(bR, bR, bH, 32, 1, true), glassMat); glass.position.y = bH / 2; glass.renderOrder = 3; g.add(glass);
+  const bottom = new THREE.Mesh(new THREE.CylinderGeometry(bR, bR, 0.035, 32), glassMat); bottom.position.y = 0.02; g.add(bottom);
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(bR, 0.018, 10, 32), glassMat); rim.rotation.x = Math.PI / 2; rim.position.y = bH; g.add(rim);
+  const liq = createRealisticLiquid(bR - 0.02, bH * 0.66, { color: w.color, emissive: w.emissive, emissiveIntensity: 1.0, opacity: 0.5, roughness: 0.08 });
+  liq.group.position.y = 0.03; g.add(liq.group);
+  const lbl = new THREE.Mesh(new THREE.CylinderGeometry(bR + 0.004, bR + 0.004, bH * 0.68, 28, 1, true, -Math.PI / 3, (Math.PI * 2) / 3),
+    new THREE.MeshBasicMaterial({ map: createLabelTexture(w.name, w.sub), transparent: true }));
+  lbl.position.y = bH * 0.48; g.add(lbl);
+  const hit = new THREE.Mesh(new THREE.CylinderGeometry(bR * 1.15, bR * 1.15, bH, 16), new THREE.MeshBasicMaterial({ visible: false }));
+  hit.position.y = bH / 2; hit.userData = { type: 'beaker', sample: w, name: 'Becherglas: ' + w.name };
+  g.add(hit);
+  w.lbl = lbl; w.group = g; w.threeColor = new THREE.Color(w.color); w.threeEmi = new THREE.Color(w.emissive);
+});
+
+// ============================================================================
+// 8. VOLLPIPETTE 100 mL (liegt vorn links)
+// ============================================================================
+const pip = { rest: new THREE.Vector3(-5.0, TABLE_Y + 0.27, 1.35), restRotZ: -Math.PI / 2, sample: null };
+pip.group = new THREE.Group(); scene.add(pip.group);
+{
+  const prof = [[0.012, 0], [0.025, 0.3], [0.045, 0.55], [0.045, 1.0], [0.09, 1.15], [0.17, 1.45], [0.2, 1.85], [0.17, 2.25],
+    [0.09, 2.55], [0.045, 2.7], [0.045, 3.5], [0.05, 3.55], [0, 3.55]].map(p => new THREE.Vector2(p[0], p[1]));
+  const body = new THREE.Mesh(new THREE.LatheGeometry(prof, 24), plasticMat); body.castShadow = true; body.renderOrder = 3; pip.group.add(body);
+  const ball = new THREE.Mesh(new THREE.SphereGeometry(0.27, 18, 14), new THREE.MeshStandardMaterial({ color: 0xc62828, roughness: 0.5 }));
+  ball.scale.y = 1.3; ball.position.y = 3.95; ball.castShadow = true; pip.group.add(ball);
+  const ballNeck = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.07, 0.3, 14), new THREE.MeshStandardMaterial({ color: 0xc62828, roughness: 0.5 }));
+  ballNeck.position.y = 3.6; pip.group.add(ballNeck);
+  const mark = new THREE.Mesh(new THREE.TorusGeometry(0.05, 0.007, 6, 16), new THREE.MeshBasicMaterial({ color: 0x111111 }));
+  mark.rotation.x = Math.PI / 2; mark.position.y = 3.1; pip.group.add(mark);
+  const lbl = new THREE.Mesh(new THREE.CylinderGeometry(0.205, 0.205, 0.9, 16, 1, true, -Math.PI / 3, (Math.PI * 2) / 3),
+    new THREE.MeshBasicMaterial({ map: createLabelTexture('100 mL', 'Vollpipette', false), transparent: true }));
+  lbl.position.y = 1.85; pip.group.add(lbl);
+  pip.liqMat = new THREE.MeshPhysicalMaterial({ color: 0xdfeef7, emissive: 0x2a4a5c, emissiveIntensity: 1.0, transparent: true, opacity: 0.6, roughness: 0.08 });
+  const lp = [[0, 0], [0.01, 0], [0.02, 0.3], [0.036, 0.55], [0.036, 1.0], [0.07, 1.15], [0.136, 1.45], [0.16, 1.85], [0.136, 2.25],
+    [0.07, 2.55], [0.036, 2.7], [0.036, 3.1], [0, 3.1]].map(p => new THREE.Vector2(p[0], p[1]));
+  pip.liq = new THREE.Mesh(new THREE.LatheGeometry(lp, 20), pip.liqMat); pip.liq.scale.y = 0.001; pip.liq.visible = false; pip.liq.renderOrder = 1;
+  pip.group.add(pip.liq);
+  const hit = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 4.3, 10), new THREE.MeshBasicMaterial({ visible: false }));
+  hit.position.y = 2.1; hit.userData = { type: 'pipette', name: 'Vollpipette 100 mL' };
+  pip.group.add(hit);
+}
+pip.group.position.copy(pip.rest); pip.group.rotation.z = pip.restRotZ;
+
+// ============================================================================
+// 9. TROPFFLASCHE (Universalindikator) & VORRATSFLASCHE (HCl)
+// ============================================================================
+function createDropper(title, sub, hx, hz, liqColor, key, nameTxt) {
+  const s = 0.55, tipLen = 2.24 * s;
+  const pivot = new THREE.Group();                     // Ursprung = Düsenspitze
+  const body = new THREE.Group(); body.position.y = -tipLen; pivot.add(body);
+  const bodyPts = [[0, 0], [0.46 * s, 0], [0.48 * s, 0.12 * s], [0.48 * s, 1.25 * s], [0.38 * s, 1.48 * s], [0.2 * s, 1.56 * s]].map(p => new THREE.Vector2(p[0], p[1]));
+  const bm = new THREE.Mesh(new THREE.LatheGeometry(bodyPts, 24), plasticMat); bm.castShadow = true; bm.renderOrder = 3; body.add(bm);
+  const liq = createRealisticLiquid(0.44 * s, 1.02 * s, { color: liqColor, emissive: 0x000000, emissiveIntensity: 0.1, opacity: 0.7, roughness: 0.05 });
+  liq.group.position.y = 0.04 * s; body.add(liq.group);
+  const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.23 * s, 0.23 * s, 0.26 * s, 20), whiteCapMat); cap.position.y = 1.68 * s; body.add(cap);
+  const nozzle = new THREE.Mesh(new THREE.CylinderGeometry(0.035 * s, 0.13 * s, 0.44 * s, 16), whiteCapMat); nozzle.position.y = 2.02 * s; body.add(nozzle);
+  const lbl = new THREE.Mesh(new THREE.CylinderGeometry(0.486 * s, 0.486 * s, 0.92 * s, 24, 1, true, -Math.PI / 3, (Math.PI * 2) / 3),
+    new THREE.MeshBasicMaterial({ map: createLabelTexture(title, sub, false), transparent: true }));
+  lbl.position.y = 0.72 * s; body.add(lbl);
+  const hit = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 1.5, 12), new THREE.MeshBasicMaterial({ visible: false }));
+  hit.position.y = 0.55 - tipLen + 0.2; hit.userData = { type: 'dropper', key, name: nameTxt };
+  pivot.add(hit); hit.position.y = -tipLen + 0.75;
+  pivot.userData.rest = new THREE.Vector3(hx, TABLE_Y + tipLen, hz);
+  pivot.position.copy(pivot.userData.rest);
+  scene.add(pivot);
+  return { pivot, tipLen, key, lbl, liq, hit };
+}
+const dropBuf = createDropper('NH₃-Puffer', 'pH 10', 2.2, 1.2, 0xdfeef7, 'buf', 'Tropfflasche: Ammoniak-Puffer (pH 10)');
+dropBuf.dropCol = 0xdfeef7;
+const dropInd = createDropper('Eriochromschwarz T', 'Indikator', 3.55, 1.2, 0x34318f, 'ind', 'Tropfflasche: Indikator Eriochromschwarz T');
+dropInd.dropCol = 0x4a3b9a;
+
+const hclBottle = {};
+{
+  const pivot = new THREE.Group();                     // Ursprung = Flaschenhals oben
+  const NECK_Y = 2.35;
+  const body = new THREE.Group(); body.position.y = -NECK_Y; pivot.add(body);
+  const pts = [[0, 0], [0.55, 0], [0.6, 0.15], [0.6, 1.45], [0.36, 1.85], [0.2, 2.0], [0.2, 2.3], [0.235, 2.35]].map(p => new THREE.Vector2(p[0], p[1]));
+  const bm = new THREE.Mesh(new THREE.LatheGeometry(pts, 28), tintedGlassMat); bm.castShadow = false; bm.renderOrder = 3; body.add(bm);
+  const lp = [[0, 0.04], [0.5, 0.04], [0.55, 0.16], [0.55, 1.2], [0.4, 1.5], [0, 1.5]].map(p => new THREE.Vector2(p[0], p[1]));
+  hclBottle.liqMat = new THREE.MeshStandardMaterial({ color: 0x9fd6f0, emissive: 0x1d4a63, emissiveIntensity: 0.35, roughness: 0.2, transparent: true, opacity: 0.55 });
+  const lm = new THREE.Mesh(new THREE.LatheGeometry(lp, 24), hclBottle.liqMat); lm.renderOrder = 1; body.add(lm);
+  const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.26, 0.22, 20), new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.5 }));
+  cap.position.y = 2.42; cap.visible = false; body.add(cap); hclBottle.cap = cap;
+  const lbl = new THREE.Mesh(new THREE.CylinderGeometry(0.605, 0.605, 1.05, 28, 1, true, -Math.PI / 3, (Math.PI * 2) / 3),
+    new THREE.MeshBasicMaterial({ map: createLabelTexture('EDTA-Lösung', '0,010 mol/L', false), transparent: true }));
+  lbl.position.y = 0.85; body.add(lbl); hclBottle.lbl = lbl;
+  const hit = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 2.4, 14), new THREE.MeshBasicMaterial({ visible: false }));
+  hit.position.y = -NECK_Y + 1.2; hit.userData = { type: 'hcl', name: 'Vorratsflasche: EDTA-Lösung c = 0,010 mol/L' }; hclBottle.hit = hit;
+  pivot.add(hit);
+  pivot.userData.rest = new THREE.Vector3(3.9, TABLE_Y + NECK_Y, -1.15);
+  pivot.position.copy(pivot.userData.rest);
+  scene.add(pivot);
+  hclBottle.pivot = pivot; hclBottle.neckY = NECK_Y;
+}
+// Trichter (erscheint nur beim Befüllen)
+const funnel = new THREE.Group();
+{
+  const cone = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.07, 0.62, 24, 1, true), glassMat); cone.position.y = 0.31; cone.renderOrder = 3;
+  const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.3, 14, 1, true), glassMat); stem.position.y = -0.1;
+  funnel.add(cone, stem);
+  funnel.position.set(BTX, Y_TOP + 0.05, BZ); funnel.visible = false; scene.add(funnel);
+}
+const pourStream = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1, 10), new THREE.MeshBasicMaterial({ color: 0xbfe3f5, transparent: true, opacity: 0.8 }));
+pourStream.visible = false; scene.add(pourStream);
+
+// ============================================================================
+// 10. MARKER (Auswahl / Hinweis)
+// ============================================================================
+function makeArrow(color) {
+  const m = new THREE.Mesh(new THREE.ConeGeometry(0.17, 0.42, 14), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.95, depthTest: false }));
+  m.rotation.x = Math.PI; m.renderOrder = 20; m.visible = false; scene.add(m); return m;
+}
+const markSel = makeArrow(0xffd54f);
+const markHint = makeArrow(0x69f0ae);
+
+// ============================================================================
+// 11. ZUSTAND, TWEENS, UI
+// ============================================================================
+const state = {
+  mode: 'view', busy: false, tool: null,
+  filled: false, flaskWine: false, buf: false, ind: false, flaskUnder: false,
+  sample: null, vol: 0, valve: 0, angle: 0, titrated: false,
+  readOk: false, readV: null, finalVol: null, evalDone: false, readTries: 0
+};
+const RUNS = [];          // Übungen dieser Sitzung (nur im Browser, wird nirgends gesendet)
+let plume = 0, swirl = 0, dropProgress = 0, stateEndpointSeen = false;
+
+const tweens = [];
+const easeIO = p => p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+function tween(dur, fn, ease = true) {
+  return new Promise(res => tweens.push({ t: 0, dur: Math.max(dur, 0.0001), fn, res, ease }));
+}
+const sleep = s => tween(s, () => {}, false);
+
+function say(html, kind) {
+  const b = $('instruction-text'); b.innerHTML = html;
+  b.className = 'step-box' + (kind ? ' ' + kind : '');
+}
+const TOOL_NAMES = { pipette: 'Vollpipette 100 mL', buf: 'Tropfflasche Ammoniak-Puffer', ind: 'Tropfflasche Indikator Eriochromschwarz T', hcl: 'Vorratsflasche EDTA-Lösung' };
+const XL = () => 'EDTA-Lösung';       // Maßlösung in der Bürette
+const PR = () => 'Wasserprobe';       // Probe im Kolben
+const IND = () => 'Indikator';
+
+function steps() {
+  return [
+    { done: state.filled,     txt: 'Bürette mit EDTA-Lösung füllen' },
+    { done: state.flaskWine,  txt: '100 mL Wasserprobe in den Kolben pipettieren' },
+    { done: state.buf,        txt: 'Ammoniak-Puffer zugeben' },
+    { done: state.ind,        txt: 'Indikator zugeben (Lösung wird weinrot)' },
+    { done: state.flaskUnder, txt: 'Kolben unter die Bürette stellen (anklicken)' },
+    { done: state.titrated,   txt: 'Titrieren, bis die Farbe von weinrot nach blau umschlägt: Hahn anklicken' },
+    { done: state.readOk,     txt: 'Verbrauch ablesen: Bürette oben anklicken' },
+    { done: state.evalDone,   txt: 'Ergebnis ansehen und weiter zur Berechnung' }
+  ];
+}
+function refreshUI() {
+  const st = steps(); let nextFound = false;
+  $('checklist').innerHTML = st.map((s, i) => {
+    let cls = 'todo', ico = '○';
+    if (s.done) { cls = 'done'; ico = '✔'; }
+    else if (!nextFound) { cls = 'next'; ico = '▶'; nextFound = true; }
+    return `<div class="chk ${cls}"><span class="ico">${ico}</span><span>${i + 1}. ${s.txt}</span></div>`;
+  }).join('');
+  $('tool-status').textContent = 'Aktives Gerät: ' + (state.tool ? TOOL_NAMES[state.tool] : 'Keins ausgewählt');
+  const badge = $('mode-badge');
+  badge.className = state.mode === 'titrate' ? 'titrate' : (state.mode === 'read' ? 'read' : '');
+  badge.textContent = state.mode === 'titrate' ? '🧪 Titriermodus' : (state.mode === 'read' ? '🔍 Ablesemodus' : (state.mode === 'eval' ? '📝 Auswertung' : '🔭 Ansicht'));
+  $('controls-hint').style.display = (state.mode === 'view' && !isNarrow()) ? 'block' : 'none';
+}
+function setupComplete() { return state.filled && state.flaskWine && state.buf && state.ind && state.flaskUnder; }
+function missingSteps() {
+  const m = [];
+  if (!state.filled) m.push('Bürette füllen');
+  if (!state.flaskWine) m.push('Wasserprobe in den Kolben pipettieren');
+  if (!state.buf) m.push('Puffer zugeben');
+  if (!state.ind) m.push('Indikator zugeben');
+  if (!state.flaskUnder) m.push('Kolben unter die Bürette stellen');
+  return m;
+}
+function selectTool(t) { state.tool = t; refreshUI(); }
+
+// ---------------- Kamera-Tween ----------------
+async function tweenCamera(preset, dur = 1.0) {
+  const to = typeof preset === 'string' ? CAM_PRESETS[preset]() : preset;
+  const from = { theta: cam.theta, phi: cam.phi, radius: cam.radius, tx: cam.target.x, ty: cam.target.y, tz: cam.target.z };
+  camLocked = true;
+  await tween(dur, e => {
+    cam.theta = lerp(from.theta, to.theta, e); cam.phi = lerp(from.phi, to.phi, e); cam.radius = lerp(from.radius, to.radius, e);
+    cam.target.set(lerp(from.tx, to.tx, e), lerp(from.ty, to.ty, e), lerp(from.tz, to.tz, e));
+  });
+  camLocked = false;
+}
+
+// ============================================================================
+// 12. AKTIONEN (Aufbau per Klick)
+// ============================================================================
+function setBusy(b) { state.busy = b; document.body.style.cursor = b ? 'progress' : 'default'; if (b) { markSel.visible = false; markHint.visible = false; } }
+
+async function moveFlask(toUnder) {
+  const from = flask.group.position.clone(), to = (toUnder ? FLASK_UNDER : FLASK_PREP).clone();
+  await tween(1.1, e => {
+    flask.group.position.lerpVectors(from, to, e);
+    flask.group.position.y += 0.55 * Math.sin(Math.PI * e);
+  });
+  flask.group.position.copy(to);
+  state.flaskUnder = toUnder;
+}
+
+async function fillBurette() {
+  setBusy(true); selectTool(null);
+  const b = hclBottle.pivot, rest = b.userData.rest.clone();
+  const above = new THREE.Vector3(BTX + 0.35, Y_TOP + 1.05, BZ);
+  funnel.visible = true; funnel.scale.setScalar(0.01);
+  await tween(0.7, e => funnel.scale.setScalar(Math.max(0.01, e)));
+  await tween(1.2, e => { b.position.lerpVectors(rest, above, e); b.rotation.z = lerp(0, 2.0, e); });
+  hclNeck.visible = true;
+  pourStream.visible = true;
+  await tween(2.4, e => {
+    const top = Y_TOP + 0.85, bottom = lerp(Y_TOP + 0.0, levelY(0) + 0.0, 0);
+    pourStream.position.set(BTX + 0.1, (top + (Y_TOP + 0.05)) / 2, BZ);
+    pourStream.scale.y = Math.max(0.01, top - (Y_TOP + 0.05));
+    hclTube.visible = true; hclMeniscus.visible = true;
+    const ly = lerp(Y_END, Y_ZERO, e);
+    hclTube.scale.y = Math.max(0.001, ly - Y_END); hclMeniscus.position.y = ly;
+  });
+  pourStream.visible = false;
+  setBuretteLevel(0);
+  await tween(1.0, e => { b.position.lerpVectors(above, rest, e); b.rotation.z = lerp(2.0, 0, e); });
+  await tween(0.5, e => funnel.scale.setScalar(Math.max(0.01, 1 - e)));
+  funnel.visible = false;
+  state.filled = true; state.vol = 0;
+  setBusy(false); refreshUI();
+  say('✅ <b>Bürette gefüllt</b>: Meniskus bei 0,00 mL, Spitze luftblasenfrei, Hahn zu. Weiter: Wasserprobe in den Kolben pipettieren (<b>Pipette → Becherglas → Kolben</b>).', 'ok');
+}
+
+async function pipetteFromBeaker(sample) {
+  setBusy(true);
+  const tipUp = new THREE.Vector3(sample.x, 2.6, sample.z), tipDown = new THREE.Vector3(sample.x, 0.32, sample.z);
+  const p0 = pip.group.position.clone(), r0 = pip.group.rotation.z;
+  pip.liqMat.color.copy(sample.threeColor); pip.liqMat.emissive.copy(sample.threeEmi);
+  await tween(1.1, e => { pip.group.position.lerpVectors(p0, tipUp, e); pip.group.rotation.z = lerp(r0, 0, e); });
+  await tween(0.7, e => pip.group.position.lerpVectors(tipUp, tipDown, e));
+  pip.liq.visible = true;
+  await tween(1.1, e => { pip.liq.scale.y = Math.max(0.001, e); });
+  await tween(0.7, e => pip.group.position.lerpVectors(tipDown, tipUp, e));
+  pip.sample = sample; state.sample = sample;
+  setBusy(false); refreshUI();
+  say(`Vollpipette mit <b>100 mL Wasser (${sample.name})</b> gefüllt. Klicke jetzt auf den <b>Erlenmeyerkolben</b>, um die Probe abzulassen.`, 'ok');
+}
+
+async function pipetteIntoFlask() {
+  setBusy(true);
+  if (state.flaskUnder) await moveFlask(false);
+  const fx = FLASK_PREP.x, fz = FLASK_PREP.z, mouth = FLASK_PREP.y + FLASK_H;
+  const a = pip.group.position.clone();
+  const above = new THREE.Vector3(fx, mouth + 0.9, fz), inside = new THREE.Vector3(fx, mouth - 0.1, fz);
+  await tween(1.0, e => pip.group.position.lerpVectors(a, above, e));
+  await tween(0.6, e => pip.group.position.lerpVectors(above, inside, e));
+  const col = pip.sample.threeColor, emi = pip.sample.threeEmi;
+  flask.sampleMat.color.copy(col); flask.sampleMat.emissive.copy(emi);
+  flask.baseColor = col.clone(); flask.baseEmissive = emi.clone();
+  flask.sampleMesh.visible = true; flask.sampleMesh.scale.y = 0.001;
+  await tween(1.5, e => { pip.liq.scale.y = Math.max(0.001, 1 - e); flask.fill = e; flask.sampleMesh.scale.y = Math.max(0.001, e); });
+  pip.liq.visible = false;
+  await tween(0.6, e => pip.group.position.lerpVectors(inside, above, e));
+  const rest = pip.rest.clone();
+  await tween(1.2, e => { pip.group.position.lerpVectors(above, rest, e); pip.group.rotation.z = lerp(0, pip.restRotZ, e); });
+  pip.sample = null; state.flaskWine = true; selectTool(null);
+  setBusy(false); refreshUI();
+  say('✅ <b>100 mL Wasserprobe</b> im Kolben. Gib nun den <b>Ammoniak-Puffer</b> aus der Tropfflasche dazu.', 'ok');
+}
+
+async function dripReagent(dr) {
+  setBusy(true);
+  if (state.flaskUnder) await moveFlask(false);
+  const rest = dr.pivot.userData.rest.clone();
+  const target = new THREE.Vector3(FLASK_PREP.x, FLASK_PREP.y + FLASK_H + 0.65, FLASK_PREP.z);
+  await tween(1.3, e => { dr.pivot.position.lerpVectors(rest, target, e); dr.pivot.rotation.z = lerp(0, Math.PI, e); });
+  const surfaceY = FLASK_PREP.y + 0.78 * flask.sampleMesh.scale.y + 0.05;
+  for (let i = 0; i < 4; i++) {
+    const d = new THREE.Mesh(new THREE.SphereGeometry(0.05, 10, 10), new THREE.MeshStandardMaterial({ color: dr.dropCol, transparent: true, opacity: 0.95 }));
+    scene.add(d);
+    await tween(0.4, e => d.position.set(target.x, lerp(target.y - 0.05, surfaceY, e * e), target.z), false);
+    scene.remove(d);
+    if (i === 0) state[dr.key] = true;
+    await sleep(0.1);
+  }
+  await tween(1.2, e => { dr.pivot.position.lerpVectors(target, rest, e); dr.pivot.rotation.z = lerp(Math.PI, 0, e); });
+  state[dr.key] = true;
+  selectTool(null); setBusy(false); refreshUI();
+  if (dr.key === 'buf') say('✅ Puffer zugegeben. Die Probe bleibt <b>klar</b>. Als Nächstes: <b>Indikator</b> aus der Tropfflasche.', 'ok');
+  else say('✅ Der Indikator färbt die Probe <b>weinrot</b>: Es sind Calcium- und Magnesium-Ionen im Wasser. Klicke jetzt auf den <b>Kolben</b> (ohne Gerät), um ihn <b>unter die Bürette</b> zu stellen.', 'ok');
+}
+
+// ============================================================================
+// 13. MODI: ANSICHT · TITRIEREN · ABLESEN · AUSWERTUNG
+// ============================================================================
+async function enterTitrate() {
+  setBusy(true); selectTool(null);
+  await tweenCamera('titrate', 1.1);
+  state.mode = 'titrate'; setBusy(false); tooltip.style.display = 'none';
+  $('titr-hud').style.display = 'block'; $('ui-panel').classList.add('collapsed'); $('btn-collapse').textContent = '▸';
+  say('<b>Titriermodus:</b> Drehe den Glasgriff des Hahns im Kreis (seitlich = offen). Am Anfang darf es schneller gehen, <b>kurz vor dem Umschlag nur noch tropfenweise</b>. Schwenke den Kolben (antippen). Höre auf, sobald die Farbe von weinrot auf <b>blau</b> umgeschlagen ist.');
+  refreshUI(); updateValveText();
+}
+async function leaveTitrate() {
+  if (state.mode !== 'titrate') return;
+  setBusy(true);
+  const a0 = state.angle, a1 = Math.round(a0 / 180) * 180; await tween(0.35, e => { state.angle = lerp(a0, a1, e); state.valve = valveFromAngle(state.angle); updateValveText(); });
+  state.angle = a1; state.valve = 0; updateValveText();
+  $('titr-hud').style.display = 'none';
+  await tweenCamera('view', 1.0);
+  state.mode = 'view'; setBusy(false); refreshUI();
+  say('Zurück in der Ansicht. Klicke <b>oben auf die Bürette</b>, um den Verbrauch abzulesen, oder auf den Hahn, um weiter zu titrieren.');
+}
+const SNAP_DEG = 16, SNAP_S = Math.sin(SNAP_DEG * Math.PI / 180);
+// quer = zu (mit „Rastbereich" ±16°, damit sich der Hahn am Handy sicher schließen lässt), seitlich = auf
+const valveFromAngle = a => 90 * Math.max(0, (Math.abs(Math.sin(a * Math.PI / 180)) - SNAP_S) / (1 - SNAP_S));
+const snapAngle = a => { const c = Math.round(a / 180) * 180; return Math.abs(a - c) < SNAP_DEG ? c : a; };
+function updateValveText() {
+  const deg = Math.round(state.valve), t = $('valve-txt');
+  t.textContent = deg === 0 ? 'Zu (0°)' : (deg < 42 ? `Tropfen (${deg}°)` : `Strahl (${deg}°)`);
+  t.style.color = deg === 0 ? '#38bdf8' : (deg < 42 ? '#fbbf24' : '#f87171');
+}
+
+function buildLupe(V, target) {
+  // Ausschnitt von 2 mL Höhe; Ablesestelle = TIEFSTER Punkt des Meniskus
+  const W = 280, H = 340, span = 2, top = 24, bot = 16;
+  const start = clamp(Math.round((V - 1.0) * 2) / 2, 0, BUR_ML - span);
+  const ppm = (H - top - bot) / span;
+  const Y = v => top + (v - start) * ppm;
+  const x0 = 104, x1 = 196, cx = (x0 + x1) / 2;           // Glasrohr
+  const yLow = Y(V);                                       // tiefster Punkt des Meniskus (= Messwert)
+  const yWall = Y(V - MENISCUS_D);                         // Rand des Meniskus an der Glaswand (höher)
+  let s = `<defs>
+    <linearGradient id="gl" x1="0" x2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.30"/><stop offset="0.18" stop-color="#ffffff" stop-opacity="0.05"/><stop offset="0.82" stop-color="#ffffff" stop-opacity="0.04"/><stop offset="1" stop-color="#ffffff" stop-opacity="0.26"/></linearGradient>
+    <linearGradient id="liq" x1="0" x2="1"><stop offset="0" stop-color="#3f86a8"/><stop offset="0.3" stop-color="#7cc3e3"/><stop offset="0.7" stop-color="#6fb7d8"/><stop offset="1" stop-color="#3b7d9f"/></linearGradient>
+    <clipPath id="clipTube"><rect x="${x0 + 1}" y="0" width="${x1 - x0 - 2}" height="${H}"/></clipPath>
+  </defs>`;
+  s += `<rect x="0" y="0" width="${W}" height="${H}" fill="#161c26"/>`;
+  s += `<rect x="${x0 - 70}" y="0" width="${x0 - (x0 - 70)}" height="${H}" fill="rgba(255,255,255,0.09)"/>`;
+  // Flüssigkeit: Oberfläche = konkave Kurve, tiefster Punkt in der Rohrmitte
+  const cy = 2 * yLow - yWall;                             // Kontrollpunkt der Kurve (Mitte liegt genau bei yLow)
+  const curve = `M ${x0 + 1} ${yWall} Q ${cx} ${cy} ${x1 - 1} ${yWall}`;
+  s += `<path d="${curve} L ${x1 - 1} ${H} L ${x0 + 1} ${H} Z" fill="url(#liq)" opacity="0.8"/>`;
+  s += `<path d="${curve}" fill="none" stroke="#d6f0fb" stroke-width="2" stroke-linecap="round"/>`;
+  // Glasrohr
+  s += `<rect x="${x0}" y="0" width="${x1 - x0}" height="${H}" fill="url(#gl)" stroke="#cfd8dc" stroke-width="2"/>`;
+  // Skala: Ringmarken laufen um das ganze Rohr (im Blick auf Augenhöhe als gerade Linien über die volle Breite)
+  for (let k = Math.round(start * 10); k <= Math.round((start + span) * 10); k++) {
+    const v = k / 10, y = Y(v), major = k % 10 === 0, mid = k % 5 === 0;
+    s += `<line x1="${x0}" y1="${y}" x2="${x1}" y2="${y}" stroke="#ffffff" stroke-opacity="${major ? 0.55 : (mid ? 0.42 : 0.30)}" stroke-width="${major ? 1.6 : 1.1}"/>`;
+    const len = major ? 62 : (mid ? 44 : 28);
+    s += `<line x1="${x0 - len}" y1="${y}" x2="${x0}" y2="${y}" stroke="#ffffff" stroke-width="${major ? 2.6 : (mid ? 2 : 1.4)}"/>`;
+    if (major) s += `<text x="${x0 - 70}" y="${y + 6}" text-anchor="end" font-size="19" font-weight="700" fill="#ffffff" font-family="Segoe UI, sans-serif">${v}</text>`;
+  }
+  s += `<text x="10" y="16" text-anchor="start" font-size="12" fill="#90a4ae" font-family="Segoe UI, sans-serif">mL</text>`;
+  (target || $('lupe')).innerHTML = s;
+}
+
+async function enterRead() {
+  setBusy(true); selectTool(null);
+  await tweenCamera('read', 1.0);
+  state.mode = 'read'; setBusy(false);
+  buildLupe(state.vol);
+  $('inp-read').value = ''; $('fb-read').textContent = ''; $('btn-read-commit').disabled = true; state.readOk = false; state.readTries = 0;
+  $('read-panel').style.display = 'block';
+  if (!isNarrow()) {} else { $('ui-panel').classList.add('collapsed'); $('btn-collapse').textContent = '▸'; }
+  say('<b>Ablesemodus:</b> Lies am <b>tiefsten Punkt des Meniskus</b> ab und schätze zwischen den 0,1-mL-Strichen. Da du bei 0,00 mL gestartet bist, ist der Wert der <b>Verbrauch V(EDTA)</b>.');
+  refreshUI();
+  setTimeout(() => $('inp-read').focus({ preventScroll: true }), 50);
+}
+async function leaveRead() {
+  if (state.mode !== 'read') return;
+  $('read-panel').style.display = 'none';
+  setBusy(true); await tweenCamera('view', 1.0); state.mode = 'view'; setBusy(false);
+  refreshUI();
+  say(state.vol > 0 ? 'Zurück in der Ansicht. Du kannst weiter titrieren (Hahn anklicken) oder erneut ablesen.' : 'Zurück in der Ansicht.');
+}
+
+$('btn-read-check').onclick = () => {
+  const v = parseNum($('inp-read').value), fb = $('fb-read');
+  if (isNaN(v)) { fb.style.color = '#ffb74d'; fb.textContent = 'Bitte eine Zahl eingeben (z. B. 2,35).'; return; }
+  state.readTries++;
+  if (Math.abs(v - state.vol) <= READ_TOL) {
+    fb.style.color = '#69f0ae'; fb.textContent = `✓ Richtig abgelesen: ${fmt(v)} mL`;
+    state.readV = v; state.readOk = true; $('btn-read-commit').disabled = false;
+  } else {
+    state.readOk = false; $('btn-read-commit').disabled = true;
+    fb.style.color = '#ff8a80';
+    let msg = '✗ Das stimmt nicht ganz. ';
+    if (Math.abs(v - (state.vol - MENISCUS_D)) <= READ_TOL) msg += 'Das ist der <b>Rand</b> des Meniskus. Lies am <b>tiefsten Punkt</b> der Kurve ab.';
+    else if (v - state.vol > 0.45) msg += 'Der Wert ist zu groß – die Skala läuft von oben (0) nach unten (50).';
+    else if (state.vol - v > 0.45) msg += 'Der Wert ist zu klein – achte auf die Beschriftung der großen Striche.';
+    else msg += 'Suche den tiefsten Punkt des Meniskus und schätze zwischen den 0,1-mL-Strichen.';
+    if (state.readTries >= 3) msg += ` (Tipp: Der Wert liegt zwischen ${fmt(Math.floor(state.vol * 10) / 10, 1)} und ${fmt(Math.floor(state.vol * 10) / 10 + 0.1, 1)} mL.)`;
+    fb.innerHTML = msg;
+  }
+};
+$('inp-read').addEventListener('keydown', e => { if (e.key === 'Enter') $('btn-read-check').click(); });
+$('btn-leave-read').onclick = leaveRead;
+$('btn-leave-titr').onclick = leaveTitrate;
+$('btn-read-commit').onclick = () => {
+  if (!state.readOk) return;
+  state.finalVol = state.vol;
+  $('read-panel').style.display = 'none';
+  state.mode = 'eval'; openEval();
+};
+
+function verdictFor(dev) {
+  if (dev < -0.16) return { k: 'unter', t: '⚠️ <b>Untertitriert:</b> Der Umschlag war noch nicht erreicht, die Lösung war noch weinrot oder violett. Dein Verbrauch ist zu klein, die berechnete Härte würde zu niedrig.' };
+  if (dev <= 0.16) return { k: 'genau', t: '🎯 <b>Treffer!</b> Du hast genau beim Farbumschlag aufgehört.' };
+  if (dev <= 0.5)  return { k: 'leicht', t: '👍 <b>Fast genau:</b> Du hast ein paar Tropfen über den Umschlag hinaus titriert. Das Ergebnis ist nur etwas zu hoch.' };
+  return { k: 'ueber', t: '⚠️ <b>Übertitriert:</b> Es wurde deutlich mehr EDTA zugegeben als nötig (die Lösung war schon lange blau). Das Ergebnis ist zu hoch.' };
+}
+function openEval() {
+  const eq = state.sample.eq, V = state.readV, dev = V - eq, v = verdictFor(dev);
+  RUNS.push({ name: state.sample.name, V, eq, k: v.k });
+  state.evalDone = true;
+  $('res-vol').textContent = fmt(V) + ' mL';
+  $('res-verdict').innerHTML = v.t;
+  $('res-detail').innerHTML = 'Tatsächlicher Umschlag bei <b>' + fmt(eq) + ' mL</b> · dein abgelesener Verbrauch: <b>' + fmt(V) + ' mL</b> (Abweichung ' + (dev >= 0 ? '+' : '−') + fmt(Math.abs(dev)) + ' mL).';
+  $('res-count').textContent = RUNS.length === 1 ? 'Das war deine erste Titration. 🎉' : 'Das war schon deine ' + RUNS.length + '. Titration.';
+  $('res-overlay').style.display = 'flex';
+  if (window.WH) { WH.last = { V, probe: state.sample.name, k: v.k }; WH.onResult && WH.onResult(); }
+  refreshUI(); renderRuns();
+}
+function closeEval() {
+  $('res-overlay').style.display = 'none';
+  setBusy(true);
+  tweenCamera('view', 1.0).then(() => { state.mode = 'view'; setBusy(false); refreshUI(); say('Zurück im Labor. Mit <b>Neuer Versuch</b> startest du mit neuen Proben.'); });
+}
+function renderRuns() {
+  const el = $('runs'); if (!el) return;
+  const ic = { genau: '🎯', leicht: '👍', unter: '⚠️', ueber: '⚠️' };
+  el.innerHTML = RUNS.length ? RUNS.slice(-5).map((r, i) => '<div class="run">' + ic[r.k] + ' ' + r.name + ': ' + fmt(r.V) + ' mL</div>').join('') : '<div class="run dim">Noch keine Titration abgeschlossen.</div>';
+}
+$('btn-res-back').onclick = closeEval;
+$('btn-res-new').onclick = () => { $('res-overlay').style.display = 'none'; resetAll(); };
+$('btn-res-calc').onclick = () => { $('res-overlay').style.display = 'none'; closeEvalSilent(); window.WH && WH.goCalc && WH.goCalc(); };
+function closeEvalSilent() { setBusy(true); tweenCamera('view', 0.6).then(() => { state.mode = 'view'; setBusy(false); refreshUI(); }); }
+
+// ============================================================================
+// 14. ZEIGER-EINGABE (Maus & Touch)
+// ============================================================================
+const raycaster = new THREE.Raycaster(), mouse = new THREE.Vector2(), tooltip = $('tooltip');
+function getHit(e) {
+  const r = renderer.domElement.getBoundingClientRect();
+  mouse.x = ((e.clientX - r.left) / r.width) * 2 - 1;
+  mouse.y = -((e.clientY - r.top) / r.height) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObjects(scene.children, true);
+  const h = hits.find(x => x.object.userData && x.object.userData.type);
+  return h ? h.object.userData : null;
+}
+const ptrs = new Map();
+let drag = { on: false, mode: null, button: 0, x: 0, y: 0, moved: false, startY: 0, startValve: 0 };
+let pinchDist = 0;
+
+renderer.domElement.addEventListener('contextmenu', e => e.preventDefault());
+renderer.domElement.addEventListener('pointerdown', e => {
+  ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (ptrs.size === 2) {
+    const [a, b] = [...ptrs.values()]; pinchDist = Math.hypot(a.x - b.x, a.y - b.y); drag.on = false; return;
+  }
+  drag = { on: true, mode: 'cam', button: e.button, x: e.clientX, y: e.clientY, moved: false, startY: e.clientY, sx: e.clientX, sy: e.clientY, startValve: state.valve, dx: 1, dy: 0, len: 70 };
+  if (state.mode === 'titrate' && !state.busy) {
+    const ud = getHit(e);
+    if (ud && ud.type === 'valve') { drag.mode = 'valve'; drag.th0 = pointerAngleOnTap(e); }
+    else if (ud && ud.type === 'flask') { drag.mode = 'flask'; swirl = 1.8; }
+  }
+  try { renderer.domElement.setPointerCapture(e.pointerId); } catch (_) {}
+});
+window.addEventListener('pointermove', e => {
+  if (ptrs.has(e.pointerId)) ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (ptrs.size === 2 && !camLocked) {
+    const [a, b] = [...ptrs.values()], d = Math.hypot(a.x - b.x, a.y - b.y);
+    if (pinchDist > 0) { cam.radius *= pinchDist / d; updateCamera(); }
+    pinchDist = d; return;
+  }
+  if (e.pointerType === 'mouse' && !drag.on) hover(e);
+  if (!drag.on) return;
+  const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+  if (Math.abs(e.clientX - drag.x) + Math.abs(e.clientY - drag.y) > 0 && (Math.abs(e.clientY - drag.startY) > 3 || Math.abs(dx) > 3)) drag.moved = true;
+  if (drag.mode === 'valve') {
+    const th = pointerAngleOnTap(e);
+    if (th !== null && drag.th0 !== null) {
+      let d = th - drag.th0; d = Math.atan2(Math.sin(d), Math.cos(d));
+      drag.th0 = th; drag.raw = (drag.raw === undefined ? state.angle : drag.raw) - d * 180 / Math.PI;
+      state.angle = snapAngle(drag.raw);
+      state.valve = valveFromAngle(state.angle); updateValveText();
+    } else if (th !== null) drag.th0 = th;
+  } else if (drag.mode === 'flask') {
+    swirl = 1.8;
+  } else if (!camLocked && !state.busy || (!camLocked && drag.mode === 'cam')) {
+    if (state.mode === 'read' || state.mode === 'eval') { drag.x = e.clientX; drag.y = e.clientY; return; }
+    if (drag.button === 0) { cam.theta -= dx * 0.007; cam.phi -= dy * 0.007; }
+    else if (drag.button === 2) {
+      const right = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 0);
+      cam.target.addScaledVector(right, -dx * 0.012); cam.target.y += dy * 0.012;
+    }
+    updateCamera();
+  }
+  drag.x = e.clientX; drag.y = e.clientY;
+});
+function endPointer(e) {
+  ptrs.delete(e.pointerId); if (ptrs.size < 2) pinchDist = 0;
+  if (drag.on && drag.mode === 'cam' && !drag.moved && drag.button === 0 && e.type === 'pointerup') onSceneClick(e);
+  if (ptrs.size === 0) drag.on = false;
+}
+window.addEventListener('pointerup', endPointer);
+window.addEventListener('pointercancel', endPointer);
+renderer.domElement.addEventListener('wheel', e => {
+  if (camLocked || state.mode === 'read' || state.mode === 'eval') return;
+  cam.radius += e.deltaY * 0.006; updateCamera();
+}, { passive: true });
+
+// Winkel des Mauszeigers um die Hahnachse (in der Waagerechten auf Höhe des Griffs); null, wenn zu nah an der Achse
+const _ray = new THREE.Raycaster(), _pl = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), _pt = new THREE.Vector3();
+function pointerAngleOnTap(e) {
+  const r = renderer.domElement.getBoundingClientRect();
+  _ray.setFromCamera(new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1), camera);
+  _pl.constant = -HANDLE_Y;
+  if (!_ray.ray.intersectPlane(_pl, _pt)) return null;
+  const x = _pt.x - BX, z = _pt.z - BZ;
+  if (Math.hypot(x, z) < 0.08) return null;
+  return Math.atan2(x, z);
+}
+
+function hover(e) {
+  if (state.mode === 'eval' || state.mode === 'titrate') { tooltip.style.display = 'none'; return; }
+  if (e.target !== renderer.domElement) { tooltip.style.display = 'none'; return; }
+  const ud = getHit(e);
+  if (ud && !state.busy) {
+    let t = ud.name || '';
+    if (ud.type === 'beaker') t = `Becherglas: ${ud.sample.name} – Wasser mit der Pipette entnehmen`;
+    if (state.mode === 'titrate') {
+      if (ud.type === 'valve') t = 'Griff drehen: seitlich = auf, quer = zu';
+      else if (ud.type === 'flask') t = 'Kolben antippen = schwenken';
+      else if (ud.type === 'burette') t = 'Zum Ablesen zurück zur Ansicht wechseln';
+    }
+    tooltip.style.display = 'block'; tooltip.style.left = e.clientX + 'px'; tooltip.style.top = e.clientY + 'px'; tooltip.textContent = t;
+    document.body.style.cursor = 'pointer';
+  } else { tooltip.style.display = 'none'; document.body.style.cursor = state.busy ? 'progress' : 'default'; }
+}
+
+function onSceneClick(e) {
+  if (state.busy) return;
+  const ud = getHit(e);
+  if (state.mode === 'titrate') {
+    if (ud && ud.type === 'burette') say('Zum Ablesen zuerst über <b>„Zurück zur Ansicht“</b> den Titriermodus verlassen, dann oben auf die Bürette klicken.', 'warn');
+    return;
+  }
+  if (state.mode !== 'view') return;
+  if (!ud) { if (state.tool) { selectTool(null); say('Gerät abgelegt. Wähle ein Gerät oder einen nächsten Schritt.'); } return; }
+  switch (ud.type) {
+    case 'pipette': clickPipette(); break;
+    case 'beaker': clickBeaker(ud.sample); break;
+    case 'dropper': clickDropper(ud.key); break;
+    case 'hcl': clickHcl(); break;
+    case 'flask': clickFlask(); break;
+    case 'burette': clickBurette(); break;
+    case 'valve': clickValve(); break;
+  }
+}
+
+function clickPipette() {
+  selectTool('pipette');
+  if (pip.sample) say('Pipette ist gefüllt (<b>' + pip.sample.name + '</b>). Klicke auf den <b>Erlenmeyerkolben</b>, um die Probe abzulassen.');
+  else say('<b>Vollpipette</b> ausgewählt. Klicke auf eines der drei <b>Becher mit Wasserprobe</b>, um 100 mL aufzunehmen.');
+}
+function clickBeaker(w) {
+  if (state.flaskWine) { say('Die Probe ist schon im Kolben. Für einen neuen Versuch: <b>„Neuer Versuch“</b>.', 'warn'); return; }
+  if (pip.sample) { say('Die Pipette ist schon gefüllt. Klicke auf den <b>Kolben</b>.', 'warn'); return; }
+  selectTool('pipette'); pipetteFromBeaker(w);
+}
+function clickDropper(key) {
+  selectTool(key);
+  if (!state.flaskWine) { say('Zuerst die Wasserprobe in den Kolben pipettieren. Erst <b>danach</b> kommen Puffer und Indikator dazu.', 'warn'); selectTool(null); return; }
+  if (key === 'ind' && !state.buf) { say('Zuerst der <b>Ammoniak-Puffer</b>: Erst bei pH 10 zeigt der Indikator die Farben richtig.', 'warn'); selectTool(null); return; }
+  if (state[key]) { say(key === 'buf' ? 'Der Puffer wurde schon zugegeben.' : 'Der Indikator wurde schon zugegeben.', 'warn'); selectTool(null); return; }
+  say(`<b>${TOOL_NAMES[key]}</b> ausgewählt. Klicke auf den <b>Erlenmeyerkolben</b>.`);
+}
+function clickHcl() {
+  if (state.filled) { say('Die Bürette ist bereits gefüllt.', 'warn'); return; }
+  selectTool('hcl'); say('<b>' + XL() + '-Vorratsflasche</b> ausgewählt. Klicke auf die <b>Bürette</b>, um sie zu füllen.');
+}
+function clickFlask() {
+  const t = state.tool;
+  if (t === 'pipette') {
+    if (!pip.sample) { say('Die Pipette ist leer. Nimm zuerst Wasser aus einem <b>Becherglas</b> auf.', 'warn'); return; }
+    pipetteIntoFlask(); return;
+  }
+  if (t === 'ind' || t === 'buf') {
+    if (!state.flaskWine) { say('Im Kolben ist noch keine Wasserprobe.', 'warn'); return; }
+    if (t === 'ind' && !state.buf) { say('Zuerst der <b>Puffer</b>, dann der Indikator.', 'warn'); return; }
+    if (state[t]) { say('Das wurde schon zugegeben.', 'warn'); return; }
+    dripReagent(t === 'buf' ? dropBuf : dropInd); return;
+  }
+  if (t === 'hcl') { say('Die EDTA-Lösung gehört in die <b>Bürette</b>, nicht in den Kolben.', 'warn'); return; }
+  // ohne Gerät: Kolben verschieben
+  setBusy(true);
+  moveFlask(!state.flaskUnder).then(() => {
+    setBusy(false); refreshUI();
+    if (state.flaskUnder) say(setupComplete() ? '✅ Kolben steht unter der Bürette. <b>Alles bereit:</b> Klicke auf den <b>Bürettenhahn</b> (Glasgriff oben), um zu titrieren.' : 'Kolben steht unter der Bürette. Es fehlt noch: <b>' + missingSteps().join(', ') + '</b>.', setupComplete() ? 'ok' : 'warn');
+    else say('Kolben steht wieder vorn auf dem Tisch.');
+  });
+}
+function clickBurette() {
+  if (state.tool === 'hcl') { fillBurette(); return; }
+  if (state.tool) { say('Dieses Gerät passt hier nicht. Lege es ab (ins Leere klicken) oder wähle die ' + XL() + '-Vorratsflasche.', 'warn'); return; }
+  if (!state.filled) { say('Die Bürette ist noch leer. Wähle die <b>' + XL() + '-Vorratsflasche</b> und klicke dann auf die Bürette.', 'warn'); return; }
+  enterRead();
+}
+function clickValve() {
+  if (state.tool) selectTool(null);
+  if (!state.filled) { say('Die Bürette ist noch leer – fülle sie zuerst mit der <b>' + XL() + '</b>.', 'warn'); return; }
+  if (!setupComplete()) { say('Noch nicht bereit zum Titrieren. Es fehlt: <b>' + missingSteps().join(', ') + '</b>.', 'warn'); return; }
+  enterTitrate();
+}
+
+$('btn-collapse').onclick = () => {
+  const p = $('ui-panel'); p.classList.toggle('collapsed');
+  $('btn-collapse').textContent = p.classList.contains('collapsed') ? '▸' : '▾';
+};
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape' || state.busy) return;
+  if (state.mode === 'titrate') leaveTitrate(); else if (state.mode === 'read') leaveRead();
+});
+$('btn-reset').onclick = () => { if (!state.busy) resetAll(); };
+
+// ============================================================================
+// 15. ZURÜCKSETZEN
+// ============================================================================
+function randomizeSamples() {
+  const used = [];
+  SAMPLES.forEach(w => {                       // V(EDTA) bis zum Umschlag: 9 … 42 mL, das entspricht etwa 5 … 24 °dH
+    let eq; do { eq = Math.round((9 + Math.random() * 33) / 0.05) * 0.05; } while (used.some(u => Math.abs(u - eq) < 4));
+    used.push(eq); w.eq = Math.round(eq * 100) / 100; w.dh = w.eq * DH_PER_ML;
+  });
+}
+function resetAll() {
+  tweens.length = 0; camLocked = false;
+  randomizeSamples();
+  Object.assign(state, { mode: 'view', busy: false, tool: null, filled: false, flaskWine: false, buf: false, ind: false, flaskUnder: false,
+    sample: null, vol: 0, valve: 0, angle: 0, titrated: false, readOk: false, readV: null, finalVol: null, evalDone: false, readTries: 0 });
+  plume = 0; swirl = 0; dropProgress = 0;
+  flask.group.position.copy(FLASK_PREP); flask.sampleMesh.visible = false; flask.sampleMesh.scale.y = 0.001; flask.fill = 0; flask.baseColor = null;
+  pip.group.position.copy(pip.rest); pip.group.rotation.z = pip.restRotZ; pip.liq.visible = false; pip.liq.scale.y = 0.001; pip.sample = null;
+  [dropBuf, dropInd].forEach(d => { d.pivot.position.copy(d.pivot.userData.rest); d.pivot.rotation.z = 0; });
+  hclBottle.pivot.position.copy(hclBottle.pivot.userData.rest); hclBottle.pivot.rotation.z = 0;
+  hclTube.visible = false; hclNeck.visible = false; hclMeniscus.visible = false; funnel.visible = false; pourStream.visible = false;
+  dropMesh.visible = false; streamMesh.visible = false;
+  setBuretteLevel(99);
+  $('titr-hud').style.display = 'none'; $('read-panel').style.display = 'none'; $('res-overlay').style.display = 'none';
+  $('ui-panel').classList.toggle('collapsed', isNarrow()); $('btn-collapse').textContent = isNarrow() ? '▸' : '▾';
+  const p = CAM_PRESETS.view(); cam.theta = p.theta; cam.phi = p.phi; cam.radius = p.radius; cam.target.set(p.tx, p.ty, p.tz); updateCamera();
+  updateValveText(); refreshUI(); renderRuns();
+  say('<b>Aufbau:</b> Fülle zuerst die Bürette: klicke auf die <b>EDTA-Vorratsflasche</b> und dann auf die <b>Bürette</b>. Danach: Wasserprobe pipettieren, Puffer und Indikator zugeben.');
+}
+
+// ============================================================================
+// 16. RENDER-SCHLEIFE
+// ============================================================================
+renderEbt($('ebt-scale-main')); renderEbt($('ebt-scale-hud'));
+let lastT = performance.now(), timeScale = 1;
+function topOf(obj) { const b = new THREE.Box3().setFromObject(obj); return b.max.y; }
+function toolObject() {
+  return { pipette: pip.group, buf: dropBuf.pivot, ind: dropInd.pivot, hcl: hclBottle.pivot }[state.tool];
+}
+
+let labActive = true;
+function animate(now) {
+  requestAnimationFrame(animate);
+  if (!labActive) { lastT = now; return; }
+  const dt = Math.min((now - lastT) / 1000, 0.1) * timeScale; lastT = now;
+
+  for (let i = tweens.length - 1; i >= 0; i--) {
+    const a = tweens[i]; a.t += dt;
+    const p = Math.min(1, a.t / a.dur);
+    a.fn(a.ease ? easeIO(p) : p);
+    if (p >= 1) { tweens.splice(i, 1); a.res(); }
+  }
+  if (camLocked || tweens.length) updateCamera();
+
+  // ---- Hahn & Titrationsphysik ----
+  tapHandle.rotation.y = -state.angle * Math.PI / 180;
+  const eq = state.sample ? state.sample.eq : 99;
+  const titrating = state.mode === 'titrate' && state.filled;
+  if (state.valve > 2 && titrating && state.vol < BUR_ML) {
+    const open = state.valve / 90;
+    const flaskTopY = flask.group.position.y + 0.78 * flask.sampleMesh.scale.y;
+    if (state.valve < 42) {
+      streamMesh.visible = false; dropMesh.visible = true;
+      dropProgress += dt * (0.6 + open * 4.5);
+      if (dropProgress < 0.55) {
+        const s = 0.4 + (dropProgress / 0.55) * 0.8; dropMesh.scale.setScalar(s); dropMesh.position.set(BX, Y_TIP - 0.04, BZ);
+      } else if (dropProgress < 1.0) {
+        const f = (dropProgress - 0.55) / 0.45; dropMesh.position.set(BX, lerp(Y_TIP - 0.04, flaskTopY, f * f), BZ);
+      } else {
+        dropProgress = 0;
+        state.vol = Math.min(BUR_ML, Math.round((Math.floor(state.vol / 0.05 + 1e-6) + 1) * 0.05 * 1000) / 1000); state.titrated = true;   // Tropfen = 0,05 mL, Raster auf Vielfache von 0,05 mL
+        plume = Math.min(1, plume + 0.75); swirl = Math.max(swirl, 0.45);
+      }
+    } else {
+      dropMesh.visible = false; streamMesh.visible = true;
+      state.vol = Math.min(BUR_ML, state.vol + open * open * 2.4 * dt); state.titrated = true;
+      plume = Math.min(1, plume + dt * 5); swirl = Math.max(swirl, 0.7);
+      const len = Y_TIP - flaskTopY; streamMesh.scale.y = Math.max(0.01, len); streamMesh.position.set(BX, flaskTopY + len / 2, BZ);
+    }
+    if (state.vol >= BUR_ML) { state.angle = Math.round(state.angle / 180) * 180; state.valve = 0; updateValveText(); }
+  } else { dropMesh.visible = false; streamMesh.visible = false; dropProgress = 0; }
+
+  if (state.filled && state.mode !== 'idle') setBuretteLevel(state.vol);
+  flask.sampleMesh.scale.y = Math.max(0.001, flask.fill) * (1 + state.vol * 0.002);
+
+  // ---- Kolben: Schwenken, Schliere, Farbe ----
+  if (swirl > 0.01) {
+    flask.group.rotation.z = Math.sin(now * 0.018) * 0.08 * swirl; flask.group.rotation.x = Math.cos(now * 0.018) * 0.06 * swirl;
+    swirl = Math.max(0, swirl - dt * 1.3);
+  } else { flask.group.rotation.z *= 0.85; flask.group.rotation.x *= 0.85; }
+
+  const dist = Math.max(0.08, Math.min(1, (eq - state.vol) / 1.2));
+  if (typeof tutTick === 'function') tutTick(now);
+  plume = Math.max(0, plume - dt * (0.3 + dist * 0.9) * (1 + swirl * 2.5));
+  flask.plumeGroup.rotation.y += dt * (2.5 + swirl * 5);
+  flask.plumeGroup.scale.setScalar(0.5 + plume * 0.75);
+  plumeMat.color.setHex(0x3a6be0);
+  const plumeGate = clamp((state.vol - (eq - 3)) / 2.6, 0, 1);   // bläuliche Schlieren erst kurz vor dem Umschlag
+  plumeMat.opacity = (state.flaskWine && state.ind) ? plume * 0.85 * plumeGate : 0;
+  if (flask.baseColor) {
+    if (state.ind) {
+      ebtColor(state.vol, eq, _c);
+      flask.sampleMat.color.copy(_c); flask.sampleMat.emissive.copy(_c).multiplyScalar(0.3); flask.sampleMat.emissiveIntensity = 1.0; flask.sampleMat.opacity = 0.9;
+    } else {
+      flask.sampleMat.color.copy(flask.baseColor); flask.sampleMat.emissive.copy(flask.baseEmissive); flask.sampleMat.emissiveIntensity = 1.0; flask.sampleMat.opacity = 0.55;
+    }
+  }
+
+  // ---- Marker ----
+  const tobj = toolObject();
+  if (tobj && !state.busy && state.mode === 'view') {
+    const bx = new THREE.Box3().setFromObject(tobj), c = bx.getCenter(new THREE.Vector3());
+    markSel.visible = true; markSel.position.set(c.x, bx.max.y + 0.5 + Math.sin(now * 0.006) * 0.08, c.z);
+  } else markSel.visible = false;
+  let hint = null;
+  if (!state.busy && state.mode === 'view' && !state.tool) {
+    if (setupComplete() && !state.titrated) hint = new THREE.Vector3(BX, Y_TAP + 1.05, BZ);
+    else if (state.titrated && !state.readOk) hint = new THREE.Vector3(BTX, Y_TOP + 0.55, BZ);
+  }
+  if (typeof tutHintOverride === 'function') { const th = tutHintOverride(); if (th !== undefined) hint = th; }
+  if (hint) { markHint.visible = true; markHint.position.set(hint.x, hint.y + Math.sin(now * 0.006) * 0.08, hint.z); } else markHint.visible = false;
+  tapHandleMat.emissiveIntensity = ((hint && setupComplete() && !state.titrated) || (state.mode === 'titrate' && state.valve < 1 && !state.titrated)) ? 0.38 + 0.26 * Math.sin(now * 0.008) : 0.1;
+
+  renderer.render(scene, camera);
+}
+
+function onResize() {
+  if (!labActive) return;
+  camera.aspect = VW() / VH(); camera.updateProjectionMatrix();
+  renderer.setSize(VW(), VH());
+  if (!camLocked && !state.busy) {
+    const p = CAM_PRESETS[state.mode === 'titrate' ? 'titrate' : (state.mode === 'read' ? 'read' : 'view')]();
+    cam.radius = p.radius; cam.target.set(p.tx, p.ty, p.tz); updateCamera();
+  }
+  refreshUI();
+}
+window.addEventListener('resize', onResize);
+
+// ============================================================================
+// 17. ABLESE-TRAINING (reine Lupe, ohne Titration)
+// ============================================================================
+const TR = { n: 0, hits: 0, first: true, V: 0, done: false };
+function trNew() {
+  TR.V = Math.round((1 + Math.random() * 47) * 100) / 100; TR.first = true; TR.done = false;
+  buildLupe(TR.V, $('tr-lupe'));
+  $('tr-in').value = ''; $('tr-fb').textContent = ''; $('btn-tr-next').style.display = 'none'; $('btn-tr-check').style.display = '';
+  $('tr-score').textContent = 'Aufgabe ' + (TR.n + 1) + ' von 5 · richtig beim ersten Versuch: ' + TR.hits;
+  setTimeout(() => $('tr-in').focus({ preventScroll: true }), 50);
+}
+function openTrainer() {
+  if (state.busy || state.mode === 'titrate' || state.mode === 'read') return;
+  TR.n = 0; TR.hits = 0; $('tr-overlay').style.display = 'flex'; $('tr-end').style.display = 'none'; $('tr-main').style.display = 'block'; trNew();
+}
+function closeTrainer() { $('tr-overlay').style.display = 'none'; }
+$('btn-tr-check').onclick = () => {
+  const v = parseNum($('tr-in').value), fb = $('tr-fb');
+  if (isNaN(v)) { fb.style.color = '#ffb74d'; fb.textContent = 'Bitte eine Zahl eingeben (z. B. 12,35).'; return; }
+  if (Math.abs(v - TR.V) <= READ_TOL) {
+    fb.style.color = '#69f0ae'; fb.textContent = '✓ Richtig abgelesen: ' + fmt(TR.V) + ' mL'; if (TR.first) TR.hits++;
+    $('btn-tr-check').style.display = 'none'; $('btn-tr-next').style.display = ''; $('btn-tr-next').textContent = TR.n >= 4 ? 'Fertig' : 'Nächster Wert';
+  } else {
+    TR.first = false; fb.style.color = '#ff8a80';
+    let m = '✗ Das stimmt nicht ganz. ';
+    if (Math.abs(v - (TR.V - MENISCUS_D)) <= READ_TOL) m += 'Das ist der <b>Rand</b> des Meniskus. Lies am <b>tiefsten Punkt</b> der Kurve ab.';
+    else if (Math.abs(v - TR.V) > 0.9 && Math.abs(v - TR.V) < 1.1) m += 'Du bist genau einen großen Strich daneben. Schau auf die Beschriftung.';
+    else if (v - TR.V > 0.3) m += 'Der Wert ist zu groß. Die Skala wächst nach <b>unten</b>.';
+    else if (TR.V - v > 0.3) m += 'Der Wert ist zu klein. Zähle von der Zahl über dem Wasserspiegel aus nach unten.';
+    else m += 'Fast! Suche den tiefsten Punkt und schätze zwischen den 0,1-mL-Strichen.';
+    fb.innerHTML = m;
+  }
+};
+$('tr-in').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); ($('btn-tr-check').style.display === 'none' ? $('btn-tr-next') : $('btn-tr-check')).click(); } });
+$('btn-tr-next').onclick = () => {
+  TR.n++;
+  if (TR.n >= 5) {
+    $('tr-main').style.display = 'none'; $('tr-end').style.display = 'block';
+    $('tr-end-txt').innerHTML = '<b>' + TR.hits + ' von 5</b> Werten hast du gleich beim ersten Versuch richtig abgelesen. ' + (TR.hits >= 4 ? 'Sehr sicher!' : (TR.hits >= 2 ? 'Das wird. Noch eine Runde macht dich sicherer.' : 'Übung macht den Meister. Achte auf den tiefsten Punkt des Meniskus.'));
+  } else trNew();
+};
+$('btn-tr-again').onclick = openTrainer;
+$('btn-tr-close').onclick = closeTrainer; $('btn-tr-close2').onclick = closeTrainer;
+$('btn-train').onclick = openTrainer;
+
+// ============================================================================
+// 18. TUTORIAL MIT KOLBI
+// ============================================================================
+const TUT_SEEN = 'wh-tutorial-gesehen';
+const T = { on: false, i: -1, steps: [], adv: false, tour: false, badTxt: '', lastBad: 0, fallback: false };
+const rnd = a => a[Math.floor(Math.random() * a.length)];
+const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
+const camF = o => Object.assign({}, o, { radius: o.radius * Math.max(1, 1.3 / aspect()) });
+function kolbiOk() { return !!(window.Kolbi && Kolbi.guide && Kolbi.guideActive); }
+
+function tutSteps() {
+  const eq = () => state.sample ? state.sample.eq : 99;
+  const CAMS = {
+    view: () => 'view',
+    bur: () => camF({ theta: -0.12, phi: 1.22, radius: 12, tx: BTX + 0.5, ty: 6.6, tz: BZ }),
+    tap: () => camF({ theta: -0.08, phi: 1.12, radius: 7.2, tx: BX - 0.3, ty: 3.9, tz: BZ }),
+    bottle: () => camF({ theta: -0.2, phi: 1.2, radius: 8.5, tx: 3.9, ty: 1.4, tz: -1.1 }),
+    beakers: () => camF({ theta: 0.1, phi: 1.2, radius: 9, tx: -3.55, ty: 0.8, tz: -1.4 }),
+    pipette: () => camF({ theta: -0.15, phi: 1.15, radius: 9.5, tx: -3.2, ty: 0.5, tz: 1.3 }),
+    flask: () => camF({ theta: 0, phi: 1.2, radius: 7.2, tx: 0.2, ty: 1.2, tz: 1.5 }),
+    reag: () => camF({ theta: 0, phi: 1.2, radius: 8.8, tx: 2.9, ty: 1.2, tz: 1.2 })
+  };
+  const flaskTop = () => state.flaskUnder ? V3(BX, FLASK_UNDER.y + FLASK_H + 0.55, BZ) : V3(FLASK_PREP.x, FLASK_PREP.y + FLASK_H + 0.55, FLASK_PREP.z);
+  return [
+    { tour: 1, cam: CAMS.view, mood: 'excited', html: 'Willkommen im Labor! Hier bestimmst du gleich die <b>Wasserhärte</b>. Ich zeige dir zuerst alles, was auf dem Tisch steht. Danach machst du es selbst, und ich helfe dir bei jedem Schritt.', btn: 'Los geht\'s' },
+    { tour: 1, cam: CAMS.bur, mark: () => V3(BTX, Y_TOP + 0.6, BZ), html: 'Das ist die <b>Bürette</b>: ein langes Glasrohr mit Skala. Sie enthält die <b>Maßlösung</b>. Oben ist 0 mL, unten 50 mL. Jeder kleine Strich sind 0,1 mL. Was herausgelaufen ist, liest du später ab.', btn: 'Weiter' },
+    { tour: 1, cam: CAMS.tap, mark: () => V3(BX, Y_TAP + 1.05, BZ), html: 'Der <b>Glashahn</b> steuert den Auslauf. Griff <b>quer</b> = zu, <b>seitlich</b> = auf. Je weiter du aufdrehst, desto schneller läuft es: erst Tropfen, dann Strahl.', btn: 'Weiter' },
+    { tour: 1, cam: CAMS.bottle, mark: () => V3(3.9, 3.15, -1.15), html: 'In dieser Flasche ist die <b>EDTA-Lösung</b> (0,010 mol/L), unsere Maßlösung. EDTA hält Calcium- und Magnesium-Ionen fest, jedes EDTA-Teilchen genau ein Ion. So können wir sie „zählen“.', btn: 'Weiter' },
+    { tour: 1, cam: CAMS.beakers, mark: () => V3(-3.55, 2.0, -1.45), html: 'In diesen drei Bechern sind <b>Wasserproben</b>. Jede hat eine andere Härte. Du bestimmst gleich die Härte einer Probe.', btn: 'Weiter' },
+    { tour: 1, cam: CAMS.pipette, mark: () => V3(-3.2, 1.0, 1.35), html: 'Die <b>Vollpipette</b> nimmt genau <b>100 mL</b> Wasser auf. So hast du bei jedem Versuch dieselbe Menge, das ist wichtig für die Rechnung.', btn: 'Weiter' },
+    { tour: 1, cam: CAMS.flask, mark: () => V3(FLASK_PREP.x, FLASK_PREP.y + FLASK_H + 0.55, FLASK_PREP.z), html: 'Im <b>Erlenmeyerkolben</b> wird titriert. Er ist unten breit und oben schmal. So kannst du kräftig schwenken, ohne dass etwas herausspritzt.', btn: 'Weiter' },
+    { tour: 1, cam: CAMS.reag, mark: () => V3(2.2, 2.75, 1.2), html: 'Die <b>Ammoniak-Pufferlösung</b> hält den pH-Wert bei 10. Nur bei diesem pH-Wert arbeitet der Indikator zuverlässig. Ein paar Tropfen genügen.', btn: 'Weiter' },
+    { tour: 1, cam: CAMS.reag, mark: () => V3(3.55, 2.75, 1.2), html: 'Der <b>Indikator Eriochromschwarz T</b> zeigt das Ende an. Solange Calcium und Magnesium frei im Wasser sind, ist die Lösung <b>weinrot</b>. Sind alle von EDTA eingefangen, wird sie <b>blau</b>.', btn: 'Weiter' },
+    { tour: 1, cam: CAMS.view, mood: 'excited', html: 'Jetzt bist du dran! Ich sage dir bei jedem Schritt, was zu tun ist. Falls du etwas falsch machst, ist das kein Problem: Mit „Neuer Versuch“ fängst du neu an.', btn: 'Auf geht\'s' },
+
+    { cam: CAMS.view, html: '<b>Schritt 1:</b> Fülle die Bürette. Klicke auf die <b>EDTA-Vorratsflasche</b> und danach auf die <b>Bürette</b>.',
+      hint: () => state.filled ? null : (state.tool === 'hcl' ? V3(BTX, Y_TOP + 0.6, BZ) : V3(3.9, 3.15, -1.15)), until: () => state.filled },
+    { html: '<b>Schritt 2:</b> Hol die Wasserprobe. Klicke auf einen der <b>Becher</b>, die Pipette saugt 100 mL auf. Dann klicke auf den <b>Erlenmeyerkolben</b>, um sie abzulassen.',
+      hint: () => state.flaskWine ? null : (pip.sample ? flaskTop() : V3(-3.55, 2.0, -1.45)), until: () => state.flaskWine },
+    { html: '<b>Schritt 3:</b> Jetzt der <b>Puffer</b>. Klicke auf die Tropfflasche „NH₃-Puffer“ und dann auf den Kolben.',
+      hint: () => state.buf ? null : (state.tool === 'buf' ? flaskTop() : V3(2.2, 2.75, 1.2)), until: () => state.buf },
+    { html: '<b>Schritt 4:</b> Nun der <b>Indikator</b>. Tropfflasche anklicken, dann den Kolben. Achte auf die Farbe der Lösung!',
+      hint: () => state.ind ? null : (state.tool === 'ind' ? flaskTop() : V3(3.55, 2.75, 1.2)), until: () => state.ind },
+    { cam: CAMS.flask, mood: 'interested', html: 'Siehst du das <b>Weinrot</b>? Das heißt: Im Wasser sind noch freie Calcium- und Magnesium-Ionen, der Indikator ist an sie gebunden. Beim Titrieren fängt EDTA die Ionen ein, und die Farbe wechselt auf Blau.', btn: 'Verstanden' },
+    { cam: CAMS.view, html: '<b>Schritt 5:</b> Stelle den Kolben unter die Bürette. Klicke dazu einfach auf den <b>Kolben</b>.', hint: () => state.flaskUnder ? null : flaskTop(), until: () => state.flaskUnder },
+    { html: '<b>Schritt 6:</b> Klicke auf den <b>Hahn</b> (Glasgriff oben an der Bürette). Dann beginnt der Titriermodus.', hint: () => state.mode === 'titrate' ? null : V3(BX, Y_TAP + 1.05, BZ), until: () => state.mode === 'titrate' },
+    { mood: 'interested', html: '<b>Titrieren:</b> Dreh den Griff im Kreis. Zu Beginn darf es als <b>Strahl</b> laufen. Schwenke den Kolben (antippen). Sobald es beim Zugeben <b>blau-violett aufblitzt</b>, drehe auf <b>Tropfen</b>. Höre auf, wenn die Farbe von weinrot auf <b>blau</b> umgeschlagen ist. Der letzte Tropfen entscheidet!',
+      hint: () => null, until: () => state.titrated && state.valve < 1 && state.vol >= eq() - 0.05,
+      bad: () => {
+        if (state.vol > eq() + 0.6 && state.valve > 0) return 'Stopp! Die Lösung ist schon eine Weile blau. Drehe den Hahn zu, sonst wird übertitriert.';
+        if (state.titrated && state.valve < 1 && state.vol < eq() - 0.3) return 'Noch nicht fertig: Die Lösung ist noch nicht blau. Drehe den Hahn wieder auf, jetzt aber vorsichtig.';
+        return '';
+      } },
+    { mood: 'excited', praise: 'Blau!', html: 'Der Umschlag ist geschafft. Dreh den Hahn zu und klicke dann rechts auf <b>„Zurück zur Ansicht“</b>.', hint: () => null, until: () => state.mode === 'view' && state.titrated },
+    { html: '<b>Ablesen:</b> Klicke oben auf die <b>Bürette</b>. Dann siehst du die Lupe.', hint: () => state.mode === 'view' ? V3(BTX, Y_TOP + 0.6, BZ) : null, until: () => state.mode === 'read' },
+    { mood: 'interested', html: 'Lies am <b>tiefsten Punkt</b> des gebogenen Flüssigkeitsrands ab (Meniskus), auf Augenhöhe. Große Striche = ganze mL, kleine = 0,1 mL. Die <b>Hundertstel</b> schätzt du. Gib den Wert ein und klicke auf „Prüfen“, dann auf „Übernehmen“.', hint: () => null, until: () => state.evalDone },
+    { mood: 'excited', html: 'Das ist dein Ergebnis: Der <b>Verbrauch V(EDTA)</b> ist der wichtigste Messwert. Daraus berechnest du die Wasserhärte, das machen wir im dritten Tab zusammen.', btn: 'Weiter', hint: () => null },
+    { mood: 'excited', html: '<b>Geschafft!</b> Jetzt kannst du allein üben: Mit „Neuer Versuch“ bekommst du neue Proben, mit „Ablesen üben“ trainierst du die Skala. Ich bin immer da, wenn du mich brauchst.', btn: 'Tutorial beenden', end: 1, hint: () => null }
+  ];
+}
+
+function tutSide(vec) {
+  if (!vec || !window.Kolbi || !Kolbi.place) return;
+  const v = vec.clone().project(camera);
+  Kolbi.place(v.x < 0.1 ? 0.86 : 0.03, 0.78);
+}
+function tutPlaceFor(S) {
+  const m = S.mark ? S.mark() : null;
+  if (m) tutSide(m); else if (window.Kolbi && Kolbi.place) Kolbi.place(0.03, 0.78);
+}
+function coachShow(S) {
+  const c = $('coach');
+  c.innerHTML = '<div class="cc-av">🧪</div><div class="cc-tx"><b>Kolbi:</b> ' + S.html + '<div class="cc-bad" id="cc-bad"></div><div class="cc-bt">' +
+    (S.btn ? '<button class="green" data-a="go">' + S.btn + '</button>' : '') + '<button class="grey" data-a="end">Tutorial beenden</button></div></div>';
+  c.style.display = 'flex';
+}
+function coachHide() { $('coach').style.display = 'none'; }
+$('coach').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.a === 'go') tutGo(); else if (b.dataset.a === 'end') tutEnd();
+});
+
+async function tutShow(i) {
+  const S = T.steps[i]; if (!S) { tutEnd(); return; }
+  T.i = i; T.adv = false; T.badTxt = ''; T.tour = !!S.tour;
+  if (S.cam && !state.busy) { const c = S.cam(); if (c !== 'view') await tweenCamera(c, 1.0); else if (state.mode === 'view') await tweenCamera('view', 0.9); }
+  if (!T.on || T.i !== i) return;
+  tutPlaceFor(S);
+  const prev = T.steps[i - 1], praise = prev && prev.until && i > 11 ? rnd(['Super!', 'Genau so!', 'Prima!', 'Stark!']) : '';
+  const o = { html: S.html, praise: S.praise || (S.until ? '' : '') , btn: S.btn, mood: S.mood || 'interested', onGo: tutGo, onEnd: tutEnd, onHide: () => { T.fallback = true; coachShow(S); } };
+  if (prev && prev.until && !S.praise && i > 11) o.praise = praise;
+  if (kolbiOk() && !T.fallback && Kolbi.guide(o)) coachHide(); else { T.fallback = true; coachShow(S); }
+  say(S.html.replace(/<b>Schritt \d:<\/b>\s*/, ''), '');
+}
+function tutGo() { const S = T.steps[T.i]; if (!S) return; if (S.end) { tutEnd(); return; } tutShow(T.i + 1); }
+function tutStart() {
+  if (state.busy) return;
+  closeTrainer(); $('res-overlay').style.display = 'none';
+  if (state.mode === 'titrate' || state.mode === 'read') { state.mode = 'view'; $('titr-hud').style.display = 'none'; $('read-panel').style.display = 'none'; }
+  resetAll();
+  T.on = true; T.fallback = false; T.steps = tutSteps(); $('ui-panel').classList.add('collapsed'); $('btn-collapse').textContent = '▸';
+  tutShow(0);
+}
+function tutEnd() {
+  if (!T.on) { if (kolbiOk() && Kolbi.guideActive()) Kolbi.guideEnd(); return; }
+  T.on = false; T.tour = false; coachHide(); if (!isNarrow()) { $('ui-panel').classList.remove('collapsed'); $('btn-collapse').textContent = '▾'; }
+  if (kolbiOk()) { Kolbi.guideEnd(); Kolbi.react('excited', 'Das Tutorial ist vorbei. Tippe auf mich oder auf „🎓 Tutorial“, wenn du es noch einmal sehen willst.'); }
+  try { localStorage.setItem(TUT_SEEN, '1'); } catch (e) {}
+  say('Tutorial beendet. Mit <b>🎓 Tutorial</b> im Menü kannst du es jederzeit noch einmal ansehen.');
+}
+function tutTick(now) {
+  if (!T.on) return; const S = T.steps[T.i]; if (!S) return;
+  if (S.until && !T.adv && !state.busy && S.until()) { T.adv = true; const i = T.i; setTimeout(() => { if (T.on && T.i === i) tutShow(i + 1); }, 650); }
+  if (S.bad && now - T.lastBad > 350) {
+    T.lastBad = now; const b = S.bad();
+    if (b !== T.badTxt) { T.badTxt = b; if (kolbiOk() && !T.fallback) Kolbi.guideBad(b); else { const e = $('cc-bad'); if (e) e.textContent = b; } }
+  }
+}
+function tutHintOverride() {
+  if (!T.on || state.busy) return undefined;
+  const S = T.steps[T.i]; if (!S) return undefined;
+  if (S.hint) { const h = S.hint(); return h || null; }
+  if (S.mark) return S.mark();
+  return null;
+}
+$('btn-tut').onclick = () => tutStart();
+
+function offerTutorial() {
+  let seen = false; try { seen = !!localStorage.getItem(TUT_SEEN); } catch (e) {}
+  const text = seen ? 'Schön, dass du wieder da bist! Möchtest du das Tutorial noch einmal sehen?' : 'Hallo! Titrieren ist neu für dich, deshalb zeige ich dir zuerst, wie alles funktioniert. Das dauert nur ein paar Minuten. Du kannst es auch überspringen und später mit „🎓 Tutorial“ nachholen.';
+  let tries = 0;
+  (function go() {
+    if (T.on) return;
+    if (kolbiOk() && Kolbi.guide({ html: text, btn: 'Tutorial starten', mood: 'excited', skip: true, onGo: () => { Kolbi.guideEnd(); tutStart(); }, onSkip: skipTut, onEnd: skipTut })) {
+      if (Kolbi.place) Kolbi.place(0.03, 0.78); return;
+    }
+    if (++tries < 60) setTimeout(go, 500);
+    else { T.fallback = true; $('coach').innerHTML = '<div class="cc-av">🧪</div><div class="cc-tx"><b>Kolbi:</b> ' + text + '<div class="cc-bt"><button class="green" data-a="start">Tutorial starten</button><button class="grey" data-a="skip">Überspringen</button></div></div>'; $('coach').style.display = 'flex';
+      $('coach').querySelector('[data-a=start]').onclick = () => { coachHide(); tutStart(); }; $('coach').querySelector('[data-a=skip]').onclick = () => { coachHide(); skipTut(); }; }
+  })();
+}
+function skipTut() {
+  if (kolbiOk() && Kolbi.guideActive()) Kolbi.guideEnd();
+  try { localStorage.setItem(TUT_SEEN, '1'); } catch (e) {}
+  say('Du kannst direkt loslegen. Das Tutorial findest du jederzeit unter <b>🎓 Tutorial</b>. <b>Aufbau:</b> Fülle zuerst die Bürette mit EDTA-Lösung.');
+}
+
+// ============================================================================
+// 19. START UND SCHNITTSTELLE ZUM REST DER SEITE
+// ============================================================================
+renderRuns();
+resetAll();
+requestAnimationFrame(animate);
+let offered = false;
+window.WH = window.WH || {};
+WH.lab = {
+  show() {
+    labActive = true; lastT = performance.now(); onResize();
+    if (!offered) { offered = true; setTimeout(offerTutorial, 500); }
+  },
+  hide() { labActive = false; if (T.on) tutEnd(); else if (kolbiOk() && Kolbi.guideActive()) Kolbi.guideEnd(); closeTrainer(); },
+  state, resetAll, tutStart
+};
+if (location.hash === '#debug') window.__sim = { clickPipette, clickDropper, clickHcl, clickFlask, clickBurette, clickValve, pipetteFromBeaker, state, SAMPLES, resetAll, tutStart, tutEnd, T, cam, camera, scene, fillBurette, pipetteFromBeaker, pipetteIntoFlask, dripReagent, moveFlask, enterTitrate, enterRead, openEval, openTrainer, dropBuf, dropInd, flask, pip, hclBottle, THREE, setScale: s => { timeScale = s; }, RUNS };
+
+}
+
+</script>
+<script>
+(function(){
+'use strict';
+const $ = id => document.getElementById(id);
+const fmt = (v, d) => { d = d == null ? 2 : d; return v.toFixed(d).replace('.', ','); };
+const fmtN = (v) => { let s = (Math.round(v * 1000) / 1000).toString(); return s.replace('.', ','); };
+function parseNum(s){ s = String(s == null ? '' : s).trim().replace(',', '.'); if (!/^[-+]?(\d+\.?\d*|\.\d+)$/.test(s)) return NaN; return parseFloat(s); }
+const rnd = a => a[Math.floor(Math.random() * a.length)];
+const ri = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+function kolbiOk(){ return !!(window.Kolbi && Kolbi.guide && Kolbi.guideActive); }
+const FAK = 5.6;
+function range(dH){ return dH < 8.4 ? 'weich' : (dH <= 14 ? 'mittel' : 'hart'); }
+window.WH = window.WH || {};
+
+/* ---------------- Tabs ---------------- */
+let cur = 1, labInit = false;
+function resizeLab(){ const h = $('hd').offsetHeight; $('lab').style.height = (window.innerHeight - h) + 'px'; }
+function goTab(n){
+  if (cur === 2 && n !== 2 && WH.lab) WH.lab.hide();
+  if (cur === 3 && n !== 3) k3End();
+  cur = n;
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('active', +b.dataset.t === n));
+  [1,2,3].forEach(i => $('tab' + i).classList.toggle('active', i === n));
+  document.body.classList.toggle('labmode', n === 2);
+  document.querySelector('.imp').style.display = n === 2 ? 'none' : '';
+  if (n === 2) {
+    resizeLab();
+    if (!labInit) { labInit = true; initLab(); }
+    WH.lab.show();
+  } else window.scrollTo(0, 0);
+  if (n === 3) b1Enter();
+  try { sessionStorage.setItem('wh-tab', n); } catch (e) {}
+}
+document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => goTab(+b.dataset.t));
+window.addEventListener('resize', resizeLab);
+WH.goCalc = () => goTab(3);
+$('to-lab').onclick = () => goTab(2);
+
+/* ---------------- Tab 1: Entstehung ---------------- */
+const ENT = [
+  { t: '<b>1. Regen fällt.</b> Regenwasser ist fast reines Wasser. Es enthält noch kaum gelöste Stoffe.' },
+  { t: '<b>2. Kohlenstoffdioxid.</b> Auf dem Weg durch Luft und Boden löst das Wasser CO₂. Es entsteht <b>Kohlensäure</b>: CO₂ + H₂O ⇌ H₂CO₃. Das Wasser wird schwach sauer.' },
+  { t: '<b>3. Kalkgestein löst sich.</b> Im Boden trifft das Wasser auf Kalk (CaCO₃) und Dolomit (auch Magnesium). Die Kohlensäure löst sie auf: <div class="formel" style="font-size:17px">CaCO₃ + CO₂ + H₂O → Ca²⁺ + 2 HCO₃⁻</div> Jetzt sind <b>Ca²⁺ (orange)</b> und <b>Mg²⁺ (violett)</b> im Wasser gelöst.' },
+  { t: '<b>4. Aus dem Hahn.</b> Das Grundwasser wird zu Trinkwasser aufbereitet, die Ionen bleiben. Je mehr Kalkgestein auf dem Weg lag, desto <b>härter</b> das Wasser.' }
+];
+let entI = 0;
+function entDraw(){
+  const s = $('ent-svg'); let h = '';
+  h += '<rect x="0" y="150" width="420" height="110" fill="#c9b48a"/>';
+  h += '<path d="M0 150 Q70 135 140 150 T280 150 T420 150 V160 H0Z" fill="#8bc34a" opacity=".9"/>';
+  for (let i = 0; i < 7; i++) h += '<rect x="' + (40 + i * 55) + '" y="' + (185 + (i % 3) * 20) + '" width="38" height="22" rx="6" fill="#efe9dc" stroke="#b7ab8e"/>';
+  h += '<text x="14" y="248" font-size="12" fill="#5d4e2a">Kalkgestein (CaCO₃)</text>';
+  // Wolke
+  h += '<g fill="#cfd8dc"><ellipse cx="90" cy="38" rx="48" ry="20"/><ellipse cx="130" cy="30" rx="36" ry="18"/><ellipse cx="55" cy="45" rx="30" ry="15"/></g>';
+  // Regentropfen
+  const drops = [[60,70],[85,80],[110,68],[135,82],[100,100],[70,110]];
+  drops.forEach(d => h += '<path d="M' + d[0] + ' ' + d[1] + ' q-5 9 0 12 q5 -3 0 -12z" fill="#42a5f5"/>');
+  if (entI >= 1) { for (let i = 0; i < 5; i++) h += '<text x="' + (170 + i * 18) + '" y="' + (50 + (i % 2) * 14) + '" font-size="13" fill="#455a64" font-weight="bold">CO₂</text>'; }
+  // Wasserweg
+  h += '<path d="M100 120 Q130 150 160 175 T250 205 T330 215" stroke="#42a5f5" stroke-width="7" fill="none" opacity=".75"/>';
+  if (entI >= 2) {
+    const ions = [[170,180,'#ff9800','Ca²⁺'],[205,192,'#ff9800','Ca²⁺'],[240,203,'#7e57c2','Mg²⁺'],[275,208,'#ff9800','Ca²⁺'],[310,214,'#7e57c2','Mg²⁺']];
+    ions.forEach(i => h += '<circle cx="' + i[0] + '" cy="' + (i[1] - 10) + '" r="12" fill="' + i[2] + '"/><text x="' + i[0] + '" y="' + (i[1] - 6) + '" font-size="9" fill="#fff" text-anchor="middle" font-weight="bold">' + i[3] + '</text>');
+  }
+  if (entI >= 3) {
+    h += '<rect x="340" y="110" width="12" height="60" fill="#78909c"/><rect x="330" y="104" width="50" height="10" rx="4" fill="#90a4ae"/><rect x="372" y="104" width="8" height="30" fill="#90a4ae"/>';
+    h += '<path d="M376 136 q-4 8 0 11 q4 -3 0 -11z" fill="#42a5f5"/>';
+    h += '<rect x="360" y="190" width="50" height="62" rx="6" fill="#e3f2fd" stroke="#64b5f6" stroke-width="3"/><rect x="363" y="205" width="44" height="44" fill="#90caf9"/>';
+    h += '<circle cx="375" cy="222" r="5" fill="#ff9800"/><circle cx="393" cy="232" r="5" fill="#7e57c2"/><circle cx="383" cy="241" r="5" fill="#ff9800"/>';
+  }
+  s.innerHTML = h;
+  $('ent-txt').innerHTML = ENT[entI].t;
+  $('ent-dots').innerHTML = ENT.map((e, i) => '<div class="dot ' + (i === entI ? 'on' : (i < entI ? 'done' : '')) + '" data-i="' + i + '">' + (i + 1) + '</div>').join('');
+  $('ent-prev').disabled = entI === 0; $('ent-next').disabled = entI === ENT.length - 1;
+}
+$('ent-prev').onclick = () => { entI = Math.max(0, entI - 1); entDraw(); };
+$('ent-next').onclick = () => { entI = Math.min(ENT.length - 1, entI + 1); entDraw(); };
+$('ent-dots').onclick = e => { const d = e.target.closest('.dot'); if (d) { entI = +d.dataset.i; entDraw(); } };
+entDraw();
+
+/* ---------------- Tab 1: Einheiten ---------------- */
+function cvUpd(){
+  const c = parseFloat($('cv').value), d = c * FAK;
+  $('cv-out').textContent = fmt(c, 1) + ' mmol/L = ' + fmt(d, 1) + ' °dH';
+  const r = range(d); $('cv-rng').textContent = 'Bereich: ' + r;
+  document.querySelectorAll('#hbt tr[data-b]').forEach(tr => tr.classList.toggle('hl', tr.dataset.b === r));
+}
+$('cv').oninput = cvUpd; cvUpd();
+
+/* ---------------- Tab 1: Teilchenmodell ---------------- */
+(function(){
+  const cv = $('sim'), g = cv.getContext('2d'), W = cv.width, H = cv.height, N = 12;
+  let ions, edta, bound;
+  function reset(){
+    ions = []; edta = []; bound = 0;
+    for (let i = 0; i < N; i++) ions.push({ x: 70 + Math.random() * 220, y: 120 + Math.random() * 130, vx: (Math.random() - .5) * 1.2, vy: (Math.random() - .5) * 1.2, mg: i % 3 === 2, b: false });
+    txt();
+  }
+  function txt(){
+    const left = N - bound, el = $('sim-txt');
+    if (left > 0) el.innerHTML = 'Freie Ionen: <b>' + left + '</b> · zugegebene EDTA-Teilchen: <b>' + bound + '</b>. Der Indikator ist <b>' + (left > 3 ? 'weinrot' : 'violett') + '</b>.';
+    else el.innerHTML = '<b>Umschlag!</b> Alle Ionen sind gebunden, der Indikator ist <b>blau</b>. Es wurden genau <b>' + N + '</b> EDTA-Teilchen gebraucht, so viele wie Ionen da waren.';
+  }
+  function add(n){
+    for (let k = 0; k < n; k++) {
+      const free = ions.filter(i => !i.b && !i.target);
+      if (!free.length) return;
+      const ion = free[0]; ion.target = { x: 160, y: 40 }; ion.b = false;
+      ion.e = { x: 60 + Math.random() * 240, y: 35 };
+      bound++;
+    }
+    txt();
+  }
+  $('sim-add').onclick = () => add(1); $('sim-add5').onclick = () => add(5); $('sim-reset').onclick = reset;
+  function draw(){
+    g.clearRect(0, 0, W, H);
+    const left = ions.filter(i => !i.b).length;
+    const fr = N - bound, t = Math.min(1, Math.max(0, (N - 4 - fr + 4 - 4 + 1) / 1));
+    // Farbe: wein -> violett -> blau abhängig von gebundenen
+    const f = bound / N, col = f < .66 ? mix([166, 23, 63], [107, 63, 160], f / .66) : mix([107, 63, 160], [43, 98, 217], (f - .66) / .34);
+    g.beginPath(); g.moveTo(130, 20); g.lineTo(230, 20); g.lineTo(230, 90); g.lineTo(330, 270); g.quadraticCurveTo(335, 285, 315, 285); g.lineTo(45, 285); g.quadraticCurveTo(25, 285, 30, 270); g.lineTo(130, 90); g.closePath();
+    g.fillStyle = 'rgba(' + col.join(',') + ',.55)'; g.fill(); g.lineWidth = 4; g.strokeStyle = '#78909c'; g.stroke();
+    g.fillStyle = '#fff'; g.font = 'bold 12px sans-serif'; g.textAlign = 'center';
+    ions.forEach(i => {
+      if (i.target) { i.x += (i.target.x + (i.x - 160) * 0 - i.x) * 0 ; }
+      if (!i.b) {
+        if (i.target) { // EDTA-Teilchen kommt von oben, Ion zieht hin
+          i.ey = (i.ey == null ? 35 : i.ey); i.ex = (i.ex == null ? i.e.x : i.ex);
+          i.ex += (i.x - i.ex) * .08; i.ey += (i.y - i.ey) * .08;
+          if (Math.abs(i.ex - i.x) < 2 && Math.abs(i.ey - i.y) < 2) i.b = true;
+        } else {
+          i.x += i.vx; i.y += i.vy;
+          if (i.x < 70 || i.x > 290) i.vx *= -1; if (i.y < 125 || i.y > 262) i.vy *= -1;
+          if (i.y < 150 && (i.x < 140 || i.x > 220)) i.vy = Math.abs(i.vy);
+        }
+      } else { i.x += i.vx * .3; i.y += i.vy * .3; if (i.x < 70 || i.x > 290) i.vx *= -1; if (i.y < 125 || i.y > 262) i.vy *= -1; }
+      // Ion
+      g.beginPath(); g.arc(i.x, i.y, 11, 0, 7); g.fillStyle = i.mg ? '#7e57c2' : '#ff9800'; g.fill(); g.fillStyle = '#fff'; g.fillText(i.mg ? 'Mg²⁺' : 'Ca²⁺', i.x, i.y + 4);
+      if (i.target) { // EDTA-Klammer
+        const ex = i.b ? i.x : i.ex, ey = i.b ? i.y : i.ey;
+        g.beginPath(); g.arc(ex, ey, 16, 0.4, 5.9); g.lineWidth = 5; g.strokeStyle = '#1e88e5'; g.stroke();
+      }
+    });
+    requestAnimationFrame(draw);
+  }
+  function mix(a, b, t){ return a.map((v, k) => Math.round(v + (b[k] - v) * t)); }
+  reset(); requestAnimationFrame(draw);
+})();
+
+/* ---------------- Tab 1: Quiz ---------------- */
+(function(){
+  const Q = [
+    { q: 'Welche Ionen sind für die Gesamthärte des Wassers verantwortlich?', o: ['Natrium- und Chlorid-Ionen', 'Calcium- und Magnesium-Ionen', 'Eisen- und Kupfer-Ionen'], a: 1, e: 'Ca²⁺ und Mg²⁺ stammen aus Kalk- und Dolomitgestein.' },
+    { q: 'Wie kommen die Ionen ins Wasser?', o: ['Kohlensäure im Wasser löst Kalkgestein auf.', 'Sie werden im Wasserwerk zugesetzt.', 'Sie entstehen beim Kochen.'], a: 0, e: 'CaCO₃ + CO₂ + H₂O → Ca²⁺ + 2 HCO₃⁻' },
+    { q: 'Ein Wasser hat 2 mmol/L. Wie hart ist es ungefähr?', o: ['etwa 2,8 °dH', 'etwa 11 °dH', 'etwa 20 °dH'], a: 1, e: '2 · 5,6 °dH = 11,2 °dH, also „mittel“.' },
+    { q: 'Woran erkennst du das Ende der Titration?', o: ['Die Lösung wird farblos.', 'Der Indikator schlägt von weinrot auf blau um.', 'Es bilden sich Gasblasen.'], a: 1, e: 'Sind alle Ionen von EDTA gebunden, wird der Indikator frei und ist blau.' }
+  ];
+  const el = $('quiz'); let done = 0;
+  Q.forEach((q, qi) => {
+    const d = document.createElement('div'); d.className = 'card';
+    d.innerHTML = '<b>' + (qi + 1) + '. ' + q.q + '</b><div class="opts">' + q.o.map((o, i) => '<button data-i="' + i + '">' + o + '</button>').join('') + '</div><div class="kfb"></div>';
+    d.querySelector('.opts').onclick = e => {
+      const b = e.target.closest('button'); if (!b || b.disabled) return;
+      const fb = d.querySelector('.kfb'), i = +b.dataset.i; fb.classList.add('show');
+      if (i === q.a) { b.classList.add('ok'); fb.className = 'kfb show ok'; fb.textContent = '✓ Richtig! ' + q.e; d.querySelectorAll('button').forEach(x => x.disabled = true); }
+      else { b.classList.add('bad'); b.disabled = true; fb.className = 'kfb show bad'; fb.textContent = '✗ Das stimmt nicht. Lies noch einmal in den Abschnitten oben nach und versuch es erneut.'; }
+    };
+    el.appendChild(d);
+  });
+})();
+
+/* ---------------- Tab 3: geführte Rechnung ---------------- */
+const B = { V: null, name: '', step: 0, done: false };
+function k3Say(html, mood){
+  $('kbox-t').innerHTML = html;
+  if (cur === 3 && kolbiOk()) Kolbi.guide({ html: html, mood: mood || 'interested', onEnd: () => {} });
+}
+function k3Bad(msg){ if (cur === 3 && kolbiOk() && Kolbi.guideActive()) Kolbi.guideBad(msg); const f = $('g-fb'); f.className = 'kfb show bad'; f.textContent = '✗ ' + msg; }
+function k3End(){ if (kolbiOk() && Kolbi.guideActive()) Kolbi.guideEnd(); }
+function srcRow(){
+  const r = $('src-row'); let h = '';
+  if (WH.last) h += '<button class="chip" data-s="mine">📋 Mein Messwert: ' + fmt(WH.last.V) + ' mL</button>';
+  h += '<button class="chip" data-s="ex">Beispiel: 23,40 mL</button>';
+  h += '<button class="chip" data-s="rand">🎲 Zufälliger Wert</button>';
+  r.innerHTML = h;
+}
+$('src-row').onclick = e => {
+  const b = e.target.closest('.chip'); if (!b) return;
+  const s = b.dataset.s;
+  if (s === 'mine') begin(WH.last.V, 'dein Messwert');
+  else if (s === 'ex') begin(23.4, 'Beispiel');
+  else begin(Math.round((8 + Math.random() * 32) * 10) / 10, 'Zufallswert');
+};
+const G = [
+  { id: 'n', label: 'n(EDTA) = c(EDTA) · V(EDTA)', ask: v => 'Wie viel <b>EDTA</b> hast du verbraucht? Rechne die Stoffmenge aus: <b>n = c · V</b>. Tipp: 0,010 mol/L sind dasselbe wie <b>0,010 mmol/mL</b>.', unit: 'mmol', ans: v => 0.010 * v, tol: .02,
+    ok: v => 'Genau: ' + fmtN(0.010 * v) + ' mmol EDTA. Jetzt kommt der Trick der Titration.', hint: v => 'Multipliziere 0,010 mmol/mL mit ' + fmt(v) + ' mL. Die Einheit mL kürzt sich, es bleiben mmol.' },
+  { id: 'v', label: 'n(Ca²⁺ + Mg²⁺) = n(EDTA)', ask: v => 'EDTA verbindet sich im Verhältnis <b>1 : 1</b> mit den Ionen. Wie viele Härtebildner (Ca²⁺ und Mg²⁺ zusammen) waren dann in der Probe?', choice: ['halb so viele wie EDTA-Teilchen', 'genau so viele wie EDTA-Teilchen', 'doppelt so viele wie EDTA-Teilchen'], good: 1,
+    ok: v => 'Ja: n(Ca²⁺ + Mg²⁺) = n(EDTA) = ' + fmtN(0.010 * v) + ' mmol.', hint: v => 'Ein EDTA-Teilchen fängt ein Ion. Wie viele Ionen sind dann gefangen, wenn alle EDTA-Teilchen im Einsatz waren?' },
+  { id: 'c', label: 'c = n / V(Probe)', ask: v => 'Die Probe hatte <b>100 mL = 0,100 L</b>. Wie groß ist die <b>Konzentration</b> der Härtebildner? <b>c = n / V</b> (in mmol pro Liter).', unit: 'mmol/L', ans: v => 0.010 * v / 0.1, tol: .02,
+    ok: v => 'Das ist die Härte in mmol/L: ' + fmtN(0.1 * v) + ' mmol/L.', hint: v => 'Teile ' + fmtN(0.010 * v) + ' mmol durch 0,100 L. Achte darauf, durch Liter (nicht mL) zu teilen.' },
+  { id: 'd', label: '°dH = c · 5,6', ask: v => 'Jetzt in <b>Grad deutscher Härte</b>: 1 mmol/L entspricht <b>5,6 °dH</b>. Rechne um.', unit: '°dH', ans: v => 0.1 * v * FAK, tol: .025,
+    ok: v => 'Die Gesamthärte beträgt ' + fmt(0.1 * v * FAK, 1) + ' °dH.', hint: v => 'Multipliziere ' + fmtN(0.1 * v) + ' mmol/L mit 5,6.' },
+  { id: 'r', label: 'Härtebereich', ask: v => 'Zuletzt: In welchen <b>Härtebereich</b> gehört die Probe? (weich unter 8,4 °dH · mittel 8,4 bis 14 °dH · hart über 14 °dH)', choice: ['weich', 'mittel', 'hart'], good: v => ['weich', 'mittel', 'hart'].indexOf(range(0.1 * v * FAK)),
+    ok: v => 'Die Probe ist <b>' + range(0.1 * v * FAK) + '</b>. Fertig, du hast die Wasserhärte bestimmt!', hint: v => 'Vergleiche ' + fmt(0.1 * v * FAK, 1) + ' °dH mit den Grenzen 8,4 und 14.' }
+];
+function chainDraw(){
+  $('chain').innerHTML = G.map((s, i) => '<span class="st2' + (i >= B.step ? ' empty' : '') + '">' + (i >= B.step ? '?' : resultText(i)) + '</span>' + (i < G.length - 1 ? '<span class="ar">→</span>' : '')).join('');
+}
+function resultText(i){
+  const v = B.V; return [fmtN(0.010 * v) + ' mmol EDTA', fmtN(0.010 * v) + ' mmol Ca²⁺ + Mg²⁺', fmtN(0.1 * v) + ' mmol/L', fmt(0.1 * v * FAK, 1) + ' °dH', range(0.1 * v * FAK)][i];
+}
+function begin(V, name){
+  B.V = V; B.name = name; B.step = 0; B.done = false;
+  $('g-v').textContent = fmt(V) + ' mL (' + name + ')';
+  $('g-fb').className = 'kfb';
+  document.querySelectorAll('#src-row .chip').forEach(c => c.classList.remove('sel'));
+  stepDraw();
+  const first = 'Los geht\'s mit <b>' + fmt(V) + ' mL</b>. Wir rechnen in vier kleinen Schritten von der Stoffmenge bis zur Härte. ';
+  k3Say(first + G[0].ask(V), 'excited');
+}
+function stepDraw(){
+  chainDraw();
+  const st = $('g-steps');
+  if (B.step >= G.length) { st.innerHTML = '<div class="card good"><b>Ergebnis:</b> ' + fmt(0.1 * B.V * FAK, 1) + ' °dH, Härtebereich <b>' + range(0.1 * B.V * FAK) + '</b>.<br>Alles auf einmal: <span class="formel" style="font-size:17px">°dH = V(EDTA) · 0,010 mol/L ÷ 0,100 L · 5,6 ≈ V(EDTA) · 0,56</span></div>'; B.done = true; return; }
+  const s = G[B.step];
+  let h = '<div class="card"><b>Schritt ' + (B.step + 1) + ' von ' + G.length + ':</b> <span class="formel" style="font-size:17px">' + s.label + '</span><div style="margin-top:6px">' + s.ask(B.V) + '</div>';
+  if (s.choice) h += '<div class="opts" id="g-opts">' + s.choice.map((c, i) => '<button data-i="' + i + '">' + c + '</button>').join('') + '</div>';
+  else h += '<div class="inp"><input type="text" id="g-in" inputmode="decimal" autocomplete="off" placeholder="Ergebnis"><span class="u">' + s.unit + '</span><button class="btn green" id="g-chk">Prüfen</button></div>';
+  h += '</div>';
+  st.innerHTML = h;
+  const inp = $('g-in'); if (inp) { inp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); gCheck(); } }; $('g-chk').onclick = gCheck; }
+  const op = $('g-opts'); if (op) op.onclick = gChoice;
+}
+function advance(s){
+  const f = $('g-fb'); f.className = 'kfb show ok'; f.textContent = '✓ Richtig! ' + s.ok(B.V).replace(/<[^>]+>/g, '');
+  B.step++;
+  const next = G[B.step];
+  setTimeout(() => {
+    if (cur !== 3) return;
+    stepDraw();
+    if (next) k3Say('<b>Richtig!</b> ' + s.ok(B.V) + ' ' + next.ask(B.V));
+    else { $('kbox-t').innerHTML = '<b>Geschafft!</b> ' + s.ok(B.V) + ' Jetzt kannst du unten selbst rechnen.'; if (kolbiOk()) { Kolbi.guideEnd(); Kolbi.react('excited', 'Geschafft! Du hast die Wasserhärte berechnet. Unten kannst du selbst üben.'); } }
+  }, 900);
+}
+function gCheck(){
+  const s = G[B.step], v = parseNum($('g-in').value);
+  if (isNaN(v)) { k3Bad('Bitte eine Zahl eingeben (zum Beispiel 0,234).'); return; }
+  const a = s.ans(B.V);
+  if (Math.abs(v - a) <= Math.max(a * s.tol, 1e-9)) advance(s);
+  else {
+    let m = 'Das stimmt noch nicht. ' + s.hint(B.V);
+    if (s.id === 'c' && Math.abs(v - a / 1000) < a * .03) m = 'Du hast durch mL statt durch Liter geteilt. 100 mL sind 0,100 L.';
+    if (s.id === 'c' && Math.abs(v - a * 0.1) < a * .03) m = 'Du hast mit dem falschen Faktor gerechnet: durch 0,100 L teilen heißt mal 10.';
+    if (s.id === 'd' && Math.abs(v - a / FAK) < a / FAK * .03) m = 'Das ist noch der mmol/L-Wert. Jetzt noch mit 5,6 multiplizieren.';
+    $('g-in').classList.add('shake'); setTimeout(() => $('g-in').classList.remove('shake'), 400);
+    k3Bad(m);
+  }
+}
+function gChoice(e){
+  const b = e.target.closest('button'); if (!b || b.disabled) return;
+  const s = G[B.step], i = +b.dataset.i, good = typeof s.good === 'function' ? s.good(B.V) : s.good;
+  if (i === good) { b.classList.add('ok'); document.querySelectorAll('#g-opts button').forEach(x => x.disabled = true); advance(s); }
+  else { b.classList.add('bad'); b.disabled = true; k3Bad(s.hint(B.V)); }
+}
+function b1Enter(){
+  srcRow();
+  if (B.V == null) {
+    if (WH.last) begin(WH.last.V, 'dein Messwert');
+    else { $('g-steps').innerHTML = ''; chainDraw(); k3Say('Hallo! Hier rechnest du aus deinem Verbrauch die Wasserhärte aus. Du hast noch keine Titration gemacht, deshalb starten wir mit einem <b>Beispielwert</b>. Tippe oben auf „Beispiel“.'); }
+  } else if (WH.last && WH.last.fresh) { WH.last.fresh = false; begin(WH.last.V, 'dein Messwert'); }
+  else if (!B.done) k3Say($('kbox-t').innerHTML);
+  pNew();
+}
+WH.onResult = () => { if (WH.last) WH.last.fresh = true; };
+G.forEach(() => {}); chainDraw();
+
+/* ---------------- Tab 3: Übungen ---------------- */
+const P = { lvl: 1, t: null, solved: 0, streak: 0, tries: 0 };
+function mkTask(l){
+  if (l === 1) {
+    const V = ri(60, 380) / 10; return { q: 'Bei einer Titration von <b>100 mL</b> Wasserprobe mit EDTA-Lösung (c = <b>0,010 mol/L</b>) werden <b>' + fmt(V) + ' mL</b> verbraucht. Berechne die Gesamthärte in °dH.', a: V * 0.010 / 0.1 * FAK, u: '°dH', w: 'n(EDTA) = 0,010 mmol/mL · ' + fmt(V) + ' mL = ' + fmtN(V * 0.01) + ' mmol<br>c = ' + fmtN(V * 0.01) + ' mmol ÷ 0,100 L = ' + fmtN(V * 0.1) + ' mmol/L<br>Härte = ' + fmtN(V * 0.1) + ' · 5,6 = <b>' + fmt(V * 0.1 * FAK, 1) + ' °dH</b> (' + range(V * 0.1 * FAK) + ')', ex: V * 0.1 };
+  }
+  if (l === 2) {
+    const Vp = rnd([25, 50, 50, 20]), V = ri(40, 220) / 10, h = V * 0.010 / (Vp / 1000);
+    return { q: 'Weil das Wasser sehr hart ist, wird nur eine Probe von <b>' + Vp + ' mL</b> titriert. Verbrauch an EDTA-Lösung (0,010 mol/L): <b>' + fmt(V) + ' mL</b>. Berechne die Gesamthärte in <b>mmol/L</b>.', a: h, u: 'mmol/L', w: 'n(EDTA) = 0,010 mmol/mL · ' + fmt(V) + ' mL = ' + fmtN(V * 0.01) + ' mmol = n(Ca²⁺ + Mg²⁺)<br>c = ' + fmtN(V * 0.01) + ' mmol ÷ ' + fmtN(Vp / 1000) + ' L = <b>' + fmtN(h) + ' mmol/L</b><br>(das sind ' + fmt(h * FAK, 1) + ' °dH)' };
+  }
+  const kind = rnd(['a', 'b', 'c']);
+  if (kind === 'a') {
+    const Vp = rnd([50, 100]), cE = rnd([0.020, 0.050, 0.005]), V = ri(30, 200) / 10, h = cE * V / (Vp / 1000) * FAK;
+    return { q: 'Eine Probe von <b>' + Vp + ' mL</b> wird mit EDTA-Lösung der Konzentration <b>' + fmtN(cE) + ' mol/L</b> titriert. Verbrauch: <b>' + fmt(V) + ' mL</b>. Wie groß ist die Gesamthärte in <b>°dH</b>?', a: h, u: '°dH', w: 'n(EDTA) = ' + fmtN(cE) + ' mmol/mL · ' + fmt(V) + ' mL = ' + fmtN(cE * V) + ' mmol<br>c = ' + fmtN(cE * V) + ' mmol ÷ ' + fmtN(Vp / 1000) + ' L = ' + fmtN(cE * V / (Vp / 1000)) + ' mmol/L<br>Härte = ' + fmtN(cE * V / (Vp / 1000)) + ' · 5,6 = <b>' + fmt(h, 1) + ' °dH</b>' };
+  }
+  if (kind === 'b') {
+    const H = ri(60, 220) / 10, V = H / FAK * 0.1 / 0.010;
+    return { q: 'Ein Wasserwerk gibt für Berliner Leitungswasser <b>' + fmt(H, 1) + ' °dH</b> an. Du titrierst <b>100 mL</b> mit EDTA-Lösung (0,010 mol/L). Wie viel mL EDTA-Lösung musst du <b>erwarten</b>?', a: V, u: 'mL', w: 'c = ' + fmt(H, 1) + ' °dH ÷ 5,6 = ' + fmtN(H / FAK) + ' mmol/L<br>n in 100 mL: ' + fmtN(H / FAK) + ' · 0,100 = ' + fmtN(H / FAK * 0.1) + ' mmol<br>V(EDTA) = n ÷ c = ' + fmtN(H / FAK * 0.1) + ' mmol ÷ 0,010 mmol/mL = <b>' + fmt(V, 1) + ' mL</b>', ex: H / FAK * 0.1 / 0.010 };
+  }
+  const Vp = 100, V = ri(30, 300) / 10, h = V * 0.1 * FAK;
+  const rg = range(h);
+  return { q: 'Bei der Titration von <b>100 mL</b> Wasser (c(EDTA) = 0,010 mol/L) werden <b>' + fmt(V) + ' mL</b> verbraucht. Ist das Wasser weich, mittel oder hart? Gib zur Kontrolle die Härte in <b>°dH</b> an, bestimme den Bereich dann selbst.', a: h, u: '°dH', w: 'Härte = ' + fmt(V, 1) + ' · 0,56 = <b>' + fmt(h, 1) + ' °dH</b> → <b>' + rg + '</b> (weich &lt; 8,4 · mittel 8,4–14 · hart &gt; 14)' };
+}
+function pNew(){
+  P.t = mkTask(P.lvl); P.tries = 0;
+  $('p-task').innerHTML = P.t.q; $('p-u').textContent = P.t.u; $('p-in').value = ''; $('p-fb').className = 'kfb'; $('p-way').style.display = 'none';
+  $('p-check').disabled = false; scoreDraw();
+}
+function scoreDraw(){ $('p-score').textContent = 'Gelöst: ' + P.solved + ' · Serie ohne Fehlversuch: ' + P.streak; }
+$('lvl').onclick = e => { const b = e.target.closest('.chip'); if (!b) return; P.lvl = +b.dataset.l; document.querySelectorAll('#lvl .chip').forEach(c => c.classList.toggle('sel', c === b)); pNew(); };
+function pCheck(){
+  const v = parseNum($('p-in').value), f = $('p-fb'); f.classList.add('show');
+  if (isNaN(v)) { f.className = 'kfb show bad'; f.textContent = '✗ Bitte eine Zahl eingeben.'; return; }
+  const a = P.t.a;
+  if (Math.abs(v - a) <= Math.max(a * 0.025, 0.051)) {
+    f.className = 'kfb show ok'; f.innerHTML = '✓ Richtig! ' + fmt(a, a < 5 ? 2 : 1) + ' ' + P.t.u + (P.t.u === '°dH' ? ' (' + range(a) + ')' : '');
+    $('p-check').disabled = true; P.solved++; if (P.tries === 0) P.streak++; else P.streak = 0; scoreDraw();
+  } else {
+    P.tries++; P.streak = 0; scoreDraw(); f.className = 'kfb show bad';
+    let m = '✗ Das stimmt noch nicht.';
+    if (P.t.ex && Math.abs(v - P.t.ex) <= P.t.ex * .03) m += ' Das ist ein Zwischenergebnis. Rechne den letzten Schritt noch aus.';
+    else if (Math.abs(v - a / FAK) <= a / FAK * .03 && P.t.u === '°dH') m += ' Das ist noch in mmol/L. Mit 5,6 multiplizieren.';
+    else if (Math.abs(v * 1000 - a) <= a * .03 || Math.abs(v / 1000 - a) <= a * .03) m += ' Prüfe die Einheit: mL und L nicht verwechseln.';
+    else m += ' Gehe die Schritte noch einmal durch: n = c · V, dann c = n ÷ V(Probe), dann ggf. · 5,6.';
+    if (P.tries >= 2) m += ' Tipp: Mit „Rechenweg zeigen“ siehst du die Lösung.';
+    f.textContent = m;
+  }
+}
+$('p-check').onclick = pCheck;
+$('p-in').onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); pCheck(); } };
+$('p-way-b').onclick = () => { const w = $('p-way'); w.innerHTML = '<b>Rechenweg:</b><br>' + P.t.w; w.style.display = 'block'; P.streak = 0; scoreDraw(); };
+$('p-next').onclick = pNew;
+
+/* ---------------- Start ---------------- */
+let t0 = 1; try { t0 = +sessionStorage.getItem('wh-tab') || 1; } catch (e) {}
+resizeLab();
+if (t0 === 3) goTab(3); else if (t0 === 2) goTab(2);
+})();
+
+</script>
+<script src="../../../../kolbi/kolbi-app.js"></script>
+</body>
+</html>
