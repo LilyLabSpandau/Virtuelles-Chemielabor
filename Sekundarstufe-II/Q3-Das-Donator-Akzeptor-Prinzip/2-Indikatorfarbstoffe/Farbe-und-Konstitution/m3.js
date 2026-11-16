@@ -57,7 +57,7 @@
   }
   function race(p) { return Promise.race([p, new Promise(function (res, rej) { S.rej.push(rej); })]); }
   var hasK = function () { return !!(window.Kolbi && Kolbi.lock && Kolbi.line); };
-  function readMs(html) { return Math.max(2400, 1300 + html.replace(/<[^>]*>/g, '').length * 52); }
+  function readMs(html) { return Math.max(2200, 1100 + html.replace(/<[^>]*>/g, '').length * 44); }
   function K(text, mood) {            // Kolbi spricht
     Gaeste.hush();
     var ms = readMs(text);
