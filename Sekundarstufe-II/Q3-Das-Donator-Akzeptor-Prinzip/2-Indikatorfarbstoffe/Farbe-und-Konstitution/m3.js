@@ -124,7 +124,7 @@
       await Tt(T, 'Huch! Mir wird ganz anders … meine Farbe! Ich bin ja durchsichtig!', 'dizzy');
       await K('Ganz ruhig, Tinto, atme tief durch. Bei dir läuft dieselbe Reaktion ab wie im Becherglas: Der Farbstoff reagiert mit dem Sulfit zu einer farblosen Verbindung. Du bist nicht kaputt.', 'love');
       await Tt(T, 'Wirklich? Ich fühle mich so leer …', 'sad');
-      await K('Wirklich. Und die Reaktion ist umkehrbar: Ein Spritzer Säure verbraucht das Sulfit, und der Farbstoff kommt zurück.', 'interested');
+      await K('Wirklich. Und die Reaktion ist umkehrbar: Ein Spritzer Säure wandelt die Sulfit-Ionen um, und der Farbstoff kommt zurück. Warum, klären wir gleich genauer.', 'interested');
       if (hasK()) Kolbi.hush();
       await pipette('acid');
       var back = bg(tween(3600, function (k) { setLiq(k); }));
@@ -178,19 +178,27 @@
     var N = [v[3][0] + u[0] * 24, v[3][1] + u[1] * 24], m1a = (th + 60) * Math.PI / 180, m2a = (th - 60) * Math.PI / 180;
     return { u: u, c: c, v: v, N: N, m1: [N[0] + 21 * Math.cos(m1a), N[1] + 21 * Math.sin(m1a)], m2: [N[0] + 21 * Math.cos(m2a), N[1] + 21 * Math.sin(m2a)] };
   }
+  function mlab(N, m, bondEnd) {   // Methylgruppe: das C-Atom steht immer am Stickstoff
+    var dx = m[0] - N[0], vert = Math.abs(dx) < 4, t, x = m[0], y = m[1] + 4, an;
+    if (vert) { t = 'CH₃'; an = 'middle'; y = m[1] + (m[1] > N[1] ? 13 : -4); }
+    else if (dx < 0) { t = 'H₃C'; an = 'end'; x = m[0] + 1; }
+    else { t = 'CH₃'; an = 'start'; x = m[0] - 1; }
+    return '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" font-size="12" text-anchor="' + an + '" fill="' + INKC + '">' + t + '</text>';
+  }
+  function shorten(a, b, d) { var vx = b[0] - a[0], vy = b[1] - a[1], L = Math.sqrt(vx * vx + vy * vy); return [b[0] - vx / L * d, b[1] - vy / L * d]; }
   function armSVG(th, quin) {
     var g = geo(th), s = '', v = g.v, c = g.c, ctr = [0, 0];
-    // Bindung Zentrum–ipso
     s += quin ? para(ctr, v[0], 2.3) : ln(ctr, v[0]);
-    // Ring
     var dbls = quin ? [[1, 2], [4, 5]] : [[0, 1], [2, 3], [4, 5]];
     for (var k = 0; k < 6; k++) s += ln(v[k], v[(k + 1) % 6]);
     dbls.forEach(function (p) { s += inner(v[p[0]], v[p[1]], c, 4.6, 0.16); });
-    // Bindung zum N und Methylgruppen
     s += quin ? para(v[3], g.N, 2.3) : ln(v[3], g.N);
-    s += ln(g.N, g.m1) + ln(g.N, g.m2);
-    s += '<text x="' + (g.m1[0] + (g.m1[0] - g.N[0]) * 0.35).toFixed(1) + '" y="' + (g.m1[1] + (g.m1[1] - g.N[1]) * 0.35 + 4).toFixed(1) + '" font-size="11.5" text-anchor="middle" fill="' + INKC + '">CH₃</text>';
-    s += '<text x="' + (g.m2[0] + (g.m2[0] - g.N[0]) * 0.35).toFixed(1) + '" y="' + (g.m2[1] + (g.m2[1] - g.N[1]) * 0.35 + 4).toFixed(1) + '" font-size="11.5" text-anchor="middle" fill="' + INKC + '">CH₃</text>';
+    var e1 = Math.abs(g.m1[0] - g.N[0]) < 4 ? shorten(g.N, g.m1, 8) : shorten(g.N, g.m1, 4), e2 = Math.abs(g.m2[0] - g.N[0]) < 4 ? shorten(g.N, g.m2, 8) : shorten(g.N, g.m2, 4);
+    s += ln(g.N, e1) + ln(g.N, e2) + mlab(g.N, g.m1) + mlab(g.N, g.m2);
+    if (!quin) {   // freies Elektronenpaar am Stickstoff (zeigt in die Lücke zwischen den Methylgruppen)
+      var px = -g.u[1], py = g.u[0], cx = g.N[0] + g.u[0] * 13, cy = g.N[1] + g.u[1] * 13;
+      s += '<circle cx="' + (cx + px * 3.4).toFixed(1) + '" cy="' + (cy + py * 3.4).toFixed(1) + '" r="2" fill="#dc2626"/><circle cx="' + (cx - px * 3.4).toFixed(1) + '" cy="' + (cy - py * 3.4).toFixed(1) + '" r="2" fill="#dc2626"/>';
+    }
     return s;
   }
   function atomLab(p, t) { return '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="9" fill="#fff"/><text x="' + p[0].toFixed(1) + '" y="' + (p[1] + 5).toFixed(1) + '" font-size="14" font-weight="700" text-anchor="middle" fill="' + INKC + '">' + t + '</text>'; }
@@ -275,7 +283,7 @@
     b.innerHTML = '<b class="t">Musterlösung:</b> Im blauen Farbstoff-Kation sind die drei Ringe über das sp²-hybridisierte zentrale C-Atom konjugiert, und die freien Elektronenpaare der N-Atome (Auxochrome, +M) erweitern das System noch. Das große delokalisierte π-System hat ein kleines ΔE zwischen HOMO und LUMO und absorbiert deshalb gelb-oranges Licht, die Tinte erscheint blau. Das Sulfit-Ion des Tintenkillers greift als Nucleophil am elektrophilen zentralen C-Atom an. Es entsteht eine C–S-Bindung, das C-Atom wird sp³-hybridisiert und die Konjugation ist unterbrochen. Aus dem großen System werden drei kleine, ΔE steigt stark und die Absorption verschiebt sich ins UV (extrem hypsochromer Effekt). Im sichtbaren Bereich wird nichts mehr absorbiert, die Lösung ist farblos.';
   });
   mc($('m3q4'), { q: '<b>Transfer 1:</b> Kristallviolett wird auch von Natronlauge entfärbt. Welches Teilchen greift dort wohl am zentralen C-Atom an?', opts: ['Das Hydroxid-Ion OH⁻ als Nucleophil.', 'Das Natrium-Ion Na⁺, weil es positiv ist.', 'Das Wasserstoff-Ion H⁺ als Elektrophil.', 'Kein Teilchen, die Lauge zerstört den Farbstoff vollständig.'], ok: 0, why: 'Dasselbe Prinzip: Ein Nucleophil greift am elektrophilen C-Atom an, es entsteht ein sp³-Kohlenstoff (Carbinol), die Konjugation ist unterbrochen und die Lösung farblos.', hints: { 1: 'Das Zentrum ist positiv, ein weiteres Kation wird abgestoßen.', 2: 'Ein positives Teilchen greift keine positive Stelle an.', 3: 'Der Farbstoff wird nicht zerstört, es entsteht eine farblose Verbindung.' }, mod: 'm3', after: q4 });
-  mc($('m3q4'), { q: '<b>Transfer 2:</b> Warum kommt die Farbe zurück, wenn man Säure zugibt?', opts: ['Die Säure verbraucht das Sulfit-Ion. Das Gleichgewicht verschiebt sich auf die Seite des farbigen Kations, die C–S-Bindung wird wieder gelöst.', 'Die Säure färbt die Lösung blau.', 'Die Säure baut das Sulfonat zu einem neuen Farbstoff auf.', 'Die Säure macht das Wasser zum Nucleophil.'], ok: 0, why: 'Die Addition des Sulfit-Ions ist umkehrbar. Wird das Sulfit aus dem Gleichgewicht entfernt, kehrt sich die Reaktion um (Prinzip von Le Chatelier).', hints: { 1: 'Säure selbst ist nicht blau. Die Farbe stammt vom Farbstoff-Kation.', 2: 'Es entsteht derselbe Farbstoff wie vorher, nichts Neues.', 3: 'Dann würde die Lösung nicht wieder farbig.' }, mod: 'm3', after: q4 });
+  mc($('m3q4'), { q: '<b>Transfer 2:</b> Warum kommt die Farbe zurück, wenn man Säure zugibt?', opts: ['Die H⁺-Ionen der Säure lagern sich an die Sulfit-Ionen an (SO₃²⁻ + H⁺ → HSO₃⁻, schließlich SO₂ + H₂O). Es gibt weniger freie Nucleophile, das Gleichgewicht verschiebt sich zum farbigen Kation, die C–S-Bindung wird wieder gelöst.', 'Die Säure färbt die Lösung blau.', 'Die Säure baut das Sulfonat zu einem neuen Farbstoff auf.', 'Die Säure macht das Wasser zum Nucleophil.'], ok: 0, why: 'Die Addition des Sulfit-Ions ist umkehrbar. Sinkt die Konzentration der freien SO₃²⁻-Ionen, weicht das Gleichgewicht aus und bildet Kation und Sulfit nach (Prinzip von Le Chatelier).', hints: { 1: 'Säure selbst ist nicht blau. Die Farbe stammt vom Farbstoff-Kation.', 2: 'Es entsteht derselbe Farbstoff wie vorher, nichts Neues.', 3: 'Dann würde die Lösung nicht wieder farbig.' }, mod: 'm3', after: q4 });
   mech(0);
 
   // =============================================================== Kolbi-Zusatzoption (nur in diesem Modul)

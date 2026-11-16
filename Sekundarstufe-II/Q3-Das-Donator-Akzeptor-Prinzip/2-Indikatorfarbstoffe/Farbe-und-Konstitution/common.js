@@ -3,7 +3,11 @@
   'use strict';
   window.$ = function (id) { return document.getElementById(id); };
   window.NS = 'http://www.w3.org/2000/svg';
-  function esc(s) { return String(s); }   // Texte stammen von uns, enthalten bewusst einfaches HTML
+  function note(html) {   // Kolbi sagt bei einer richtigen Antwort die wichtigste Erkenntnis dazu
+    var t = String(html || '').replace(/<[^>]*>/g, '').trim();
+    if (t.length > 230) { var cut = t.lastIndexOf('. ', 230); t = t.slice(0, cut > 60 ? cut + 1 : 230); }
+    window.KolbiNote = t;
+  }
 
   // ------------------------------------------------------------ Reiter
   var tabs = Array.prototype.slice.call(document.querySelectorAll('.tab'));
@@ -42,7 +46,7 @@
       fb.hidden = false;
       if (i === o.ok) {
         done = true; b.classList.add('ok'); d.classList.add('done'); fb.className = 'fb ok';
-        fb.innerHTML = '✔ Richtig. ' + (o.why || '');
+        note(o.why); fb.innerHTML = '✔ Richtig. ' + (o.why || '');
         Array.prototype.forEach.call(d.querySelectorAll('.opt'), function (x) { x.disabled = true; });
         if (o.mod) Prog.done(o.mod);
         if (o.after) o.after();
@@ -77,7 +81,7 @@
       fb.hidden = false;
       if (empty) { fb.className = 'fb bad'; fb.innerHTML = '✗ Es fehlen noch Auswahlfelder. Fülle alle aus und prüfe dann noch einmal.'; return; }
       if (bad) { fb.className = 'fb bad'; fb.innerHTML = '✗ ' + (bad === 1 ? 'Eine Stelle ist' : bad + ' Stellen sind') + ' noch nicht richtig (rot markiert). Überlege, was du in den Modulen 1 und 2 und bei den Formeln gesehen hast.'; return; }
-      done = true; fb.className = 'fb ok'; fb.innerHTML = '✔ Alles richtig! ' + (o.why || '');
+      done = true; note(o.why); fb.className = 'fb ok'; fb.innerHTML = '✔ Alles richtig! ' + (o.why || '');
       Array.prototype.forEach.call(d.querySelectorAll('select'), function (s) { s.disabled = true; });
       if (o.mod) Prog.done(o.mod);
       if (o.after) o.after();

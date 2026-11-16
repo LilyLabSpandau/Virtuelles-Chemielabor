@@ -32,7 +32,7 @@
       if (row.getAttribute('data-ok')) return; fb.hidden = false;
       if (b.getAttribute('data-a') === g.kind) {
         row.setAttribute('data-ok', '1'); fb.className = 'fb ok';
-        fb.innerHTML = '✔ Richtig. ' + (g.kind === 'aux' ? 'Elektronendonator (' + g.eff + ').' : 'Elektronenakzeptor (' + g.eff + ').');
+        note(g.lab + ': ' + (g.kind === 'aux' ? 'Elektronendonator (' + g.eff + '), also ein Auxochrom.' : 'Elektronenakzeptor (' + g.eff + '), also ein Antiauxochrom.')); fb.innerHTML = '✔ Richtig. ' + (g.kind === 'aux' ? 'Elektronendonator (' + g.eff + ').' : 'Elektronenakzeptor (' + g.eff + ').');
         Array.prototype.forEach.call(row.querySelectorAll('button'), function (x) { x.disabled = true; });
         b.classList.remove('sec'); if (++done === total) Prog.done('m2');
       } else {

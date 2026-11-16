@@ -83,7 +83,7 @@
     svg.innerHTML =
       '<defs><linearGradient id="fp-sp-' + svg.id + '" x1="0" x2="1" y1="0" y2="0">' + stops + '</linearGradient></defs>' +
       '<rect x="' + X0 + '" y="' + ytop + '" width="' + (px(400) - X0) + '" height="' + h + '" fill="#e2e8f0" opacity=".75"/>' +
-      '<text x="' + ((X0 + px(400)) / 2) + '" y="' + (ytop + 11) + '" font-size="9.5" text-anchor="middle" fill="#64748b" font-weight="700">UV</text>' +
+      '<text x="' + ((X0 + px(400)) / 2) + '" y="' + (yb - 6) + '" font-size="9.5" text-anchor="middle" fill="#64748b" font-weight="700">UV</text>' +
       '<rect x="' + px(400) + '" y="' + yb + '" width="' + (px(700) - px(400)) + '" height="10" fill="url(#fp-sp-' + svg.id + ')" rx="2"/>' +
       '<rect x="' + px(400) + '" y="' + ytop + '" width="' + (px(700) - px(400)) + '" height="' + h + '" fill="url(#fp-sp-' + svg.id + ')" opacity=".13"/>' +
       '<line x1="' + X0 + '" x2="' + X1 + '" y1="' + yb + '" y2="' + yb + '" stroke="#475569" stroke-width="1.4"/><line x1="' + X0 + '" x2="' + X0 + '" y1="' + ytop + '" y2="' + yb + '" stroke="#475569" stroke-width="1.4"/>' +

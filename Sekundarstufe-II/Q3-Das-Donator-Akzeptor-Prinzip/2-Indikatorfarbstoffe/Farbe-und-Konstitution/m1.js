@@ -74,7 +74,7 @@
     var fb = ch.querySelector('.fb'), nm = visited[n] ? visited[n].name : '', lm = Farbe.LAM[n - 1]; fb.hidden = false;
     if (nm === 'orange') {
       if (!cdone) { cdone = true; ch.classList.add('done'); Prog.done('m1'); }
-      fb.className = 'fb ok'; fb.innerHTML = '✔ Richtig. Bei ' + n + ' konjugierten C=C liegt das Maximum bei etwa ' + lm + ' nm. Die Lösung absorbiert blaues Licht und sieht orange aus.';
+      note('Bei ' + n + ' konjugierten C=C liegt das Maximum bei etwa ' + lm + ' nm. Die Lösung absorbiert blaues Licht und sieht orange aus.'); fb.className = 'fb ok'; fb.innerHTML = '✔ Richtig. Bei ' + n + ' konjugierten C=C liegt das Maximum bei etwa ' + lm + ' nm. Die Lösung absorbiert blaues Licht und sieht orange aus.';
     } else {
       fb.className = 'fb bad'; var dir = Farbe.hsv(visited[n].col).h > 40 || nm === 'farblos' ? 'länger' : 'kürzer';
       fb.innerHTML = '✗ Im Moment ist die Lösung ' + nm + ', nicht orange. ' + (nm === 'farblos' || nm.indexOf('gelb') >= 0 || nm === 'gelb' ? 'Die Kette muss noch länger werden.' : 'Die Kette ist schon etwas zu lang geraten. Gehe einen Schritt zurück.');

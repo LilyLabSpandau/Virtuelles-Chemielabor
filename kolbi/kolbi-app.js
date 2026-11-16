@@ -188,7 +188,8 @@
       touched.clear();
       if (!ok && !bad) return;
       okEntries.forEach(function (k) { if (!bad) fails[k] = 0; });
-      if (!bad) return void Kolbi.tell(ok > 1 ? 'Alle ' + ok + ' Aufgaben stimmen. Starke Arbeit! 🎉' : pickR(OKS), 'excited');
+      var nt = window.KolbiNote; window.KolbiNote = null;   // Module können eine inhaltliche Notiz zur richtigen Antwort mitgeben
+      if (!bad) return void Kolbi.tell(ok > 1 ? 'Alle ' + ok + ' Aufgaben stimmen. Starke Arbeit! 🎉' : (nt ? pickR(['Richtig!', 'Genau!', 'Stark!', 'Volltreffer!']) + ' ' + nt : pickR(OKS)), 'excited');
       var head = ok ? ok + ' von ' + (ok + bad) + ' stimmen schon. Du bist nah dran! Schau dir die roten Rückmeldungen an.' : pickR(BADS);
       var e = badEntry >= 0 ? entries[badEntry] : null, n = e ? (fails[badEntry] = (fails[badEntry] || 0) + 1) : 0;
       if (e && e.tipBtn && document.querySelector(e.tipBtn)) return void Kolbi.tell(head + ' Der Tipp-Knopf bei der Aufgabe hilft dir weiter.', ok ? 'interested' : 'oops');
