@@ -64,6 +64,7 @@
     clearTimeout(bubT);
     bub.className = 'hbub on ' + w; bub.innerHTML = html + (buttons ? '<div class="bb">' + buttons + '</div>' : '');
     bub.setAttribute('data-who', w);
+    placeBub(w);
     S.last = w; hop(w);
     if (ms) bubT = setTimeout(hideBub, ms);
   }
@@ -81,9 +82,6 @@
     });
     bub = document.createElement('div'); bub.id = 'hbub'; bub.className = 'hbub'; bub.setAttribute('role', 'status'); bub.setAttribute('aria-live', 'polite');
     dock.appendChild(bub);
-    var opt = document.createElement('div'); opt.className = 'hopt';
-    opt.innerHTML = '<button type="button" data-a="quiet">' + (st.quiet ? '🔔 Helfer dürfen wieder reden' : '🔕 Leise stellen') + '</button><button type="button" data-a="hide">✖ Ausblenden</button>';
-    dock.appendChild(opt);
     document.body.appendChild(dock);
     var back = document.createElement('button'); back.type = 'button'; back.id = 'hback'; back.textContent = '🧪⚛️ Helfer holen'; back.hidden = true;
     back.setAttribute('data-html2canvas-ignore', 'true'); document.body.appendChild(back);
@@ -92,7 +90,7 @@
       var b = e.target.closest('[data-a]');
       if (b) {
         var a = b.getAttribute('data-a');
-        if (a === 'quiet') { st.quiet = !st.quiet; saveSt(); b.textContent = st.quiet ? '🔔 Helfer dürfen wieder reden' : '🔕 Leise stellen'; hideBub(); }
+        if (a === 'quiet') { st.quiet = !st.quiet; saveSt(); hideBub(); }
         if (a === 'hide') { st.hidden = true; saveSt(); applyHidden(); }
         if (a === 'help') helpMenu(b.getAttribute('data-w'));
         if (a === 'joke') joke(b.getAttribute('data-w'));
@@ -102,12 +100,86 @@
         if (a === 'bubx') hideBub();
         return;
       }
-      var p = e.target.closest('.hp'); if (p) poke(p.getAttribute('data-w') || p.getAttribute('data-who'));
+      var p = e.target.closest('.hp'); if (p && Date.now() < noClick) return; if (p) poke(p.getAttribute('data-w') || p.getAttribute('data-who'));
     });
     applyHidden();
     setFace('k', 'happy'); setFace('h', 'happy');
-    dock.addEventListener('mouseenter', function () { dock.classList.add('showopt'); });
-    dock.addEventListener('mouseleave', function () { dock.classList.remove('showopt'); });
+    initMove();
+  }
+
+  /* ---------------------------------------------------------------- Bewegung: ziehen und selbst herumlaufen */
+  var noClick = 0, dragging = false, pos = {}, wanderT = 0;
+  function vw() { return document.documentElement.clientWidth; }
+  function vh() { return window.innerHeight; }
+  function sizeOf(w) { var e = dock.querySelector('.hp-' + w); return { w: e.offsetWidth || 58, h: e.offsetHeight || 78 }; }
+  function clampPos(w, x, y) { var z = sizeOf(w); return { x: Math.max(6, Math.min(vw() - z.w - 6, x)), y: Math.max(70, Math.min(vh() - z.h - 40, y)) }; }
+  function putPos(w, x, y, secs) {
+    var e = dock.querySelector('.hp-' + w), c = clampPos(w, x, y); pos[w] = c;
+    e.style.transition = secs ? 'translate ' + secs + 's ease-in-out, transform .3s, opacity .3s' : 'transform .3s, opacity .3s';
+    e.style.translate = c.x + 'px ' + c.y + 'px';
+    if (bub.classList.contains('on') && bub.getAttribute('data-who') === w) placeBub(w);
+    return c;
+  }
+  function defaults() {
+    var z = sizeOf('h'), y = vh() - z.h - 90;
+    if (st.pos) { pos = { k: { x: st.pos.k.x * vw(), y: st.pos.k.y * vh() }, h: { x: st.pos.h.x * vw(), y: st.pos.h.y * vh() } }; }
+    else pos = { k: { x: vw() - 2 * z.w - 18, y: y }, h: { x: vw() - z.w - 10, y: y } };
+    putPos('k', pos.k.x, pos.k.y); putPos('h', pos.h.x, pos.h.y);
+  }
+  function savePos() { st.pos = { k: { x: pos.k.x / vw(), y: pos.k.y / vh() }, h: { x: pos.h.x / vw(), y: pos.h.y / vh() } }; saveSt(); }
+  function placeBub(w) {
+    var e = dock.querySelector('.hp-' + w); if (!e) return;
+    var r = e.getBoundingClientRect(), bw = Math.min(300, vw() - 24), bh = bub.offsetHeight || 90;
+    var cx = r.left + r.width / 2, left = Math.max(12, Math.min(vw() - bw - 12, cx - bw / 2));
+    var above = r.top > bh + 20;
+    bub.style.width = bw + 'px'; bub.style.left = left + 'px';
+    bub.style.top = (above ? r.top - bh - 12 : r.bottom + 12) + 'px';
+    bub.style.setProperty('--ax', Math.max(14, Math.min(bw - 28, cx - left - 7)) + 'px');
+    bub.classList.toggle('below', !above);
+  }
+  function initMove() {
+    defaults();
+    window.addEventListener('resize', function () { ['k', 'h'].forEach(function (w) { putPos(w, pos[w].x, pos[w].y); }); });
+    ['k', 'h'].forEach(function (w) {
+      var e = dock.querySelector('.hp-' + w), sx, sy, ox, oy, id = null, moved = false;
+      e.addEventListener('pointerdown', function (ev) {
+        if (ev.button > 0) return;
+        var r = e.getBoundingClientRect(); sx = ev.clientX; sy = ev.clientY; ox = r.left; oy = r.top; id = ev.pointerId; moved = false;
+        try { e.setPointerCapture(id); } catch (x) {}
+      });
+      e.addEventListener('pointermove', function (ev) {
+        if (id === null || ev.pointerId !== id) return;
+        var dx = ev.clientX - sx, dy = ev.clientY - sy;
+        if (!moved && Math.abs(dx) + Math.abs(dy) < 9) return;
+        if (!moved) { moved = true; dragging = true; e.classList.add('drag'); setMood(w, 'surprised', 0); hideBub(); wake(); }
+        putPos(w, ox + dx, oy + dy, 0);
+      });
+      function end(ev) {
+        if (id === null || (ev && ev.pointerId !== id)) return;
+        try { e.releasePointerCapture(id); } catch (x) {}
+        id = null; e.classList.remove('drag');
+        if (moved) { dragging = false; noClick = Date.now() + 350; savePos(); setMood(w, 'happy'); setFace(w, 'happy'); if (!st.quiet && Math.random() < .5) say(w, rnd(MOVEQ[w]), 3500); }
+      }
+      e.addEventListener('pointerup', end); e.addEventListener('pointercancel', end);
+      e.addEventListener('transitionend', function (ev) { if (ev.propertyName === 'translate') e.classList.remove('walk'); });
+    });
+    scheduleWander();
+  }
+  var MOVEQ = {
+    k: ['Wheee, neue Aussicht! Von hier sieht die Liste ganz anders aus.', 'Hier steh ich gut. Danke fürs Tragen!', 'Huch! Ich war gerade noch mit dem Rühren beschäftigt.'],
+    h: ['Interessant, ein Ortswechsel! Die Energie bleibt dabei erhalten.', 'Bewegung! Hier ist die potenzielle Energie genau richtig.', 'Danke. Ich hätte gleich selbst laufen können, aber so geht es schneller.']
+  };
+  function scheduleWander() { clearTimeout(wanderT); wanderT = setTimeout(wander, 9000 + Math.random() * 14000); }
+  function wander() {
+    scheduleWander();
+    if (reduce || st.hidden || dragging || sleeping || S.view !== 'none' || !pauseEl.hidden || bub.classList.contains('on') || document.visibilityState !== 'visible') return;
+    var w = Math.random() < .5 ? 'k' : 'h', o = w === 'k' ? 'h' : 'k', e = dock.querySelector('.hp-' + w), tx, ty, visit = Math.random() < .3;
+    if (visit) { tx = pos[o].x + (pos[w].x < pos[o].x ? -62 : 62); ty = pos[o].y; }
+    else { var a = Math.random() * 6.283, d = 90 + Math.random() * 190; tx = pos[w].x + Math.cos(a) * d; ty = pos[w].y + Math.sin(a) * d * .6; }
+    var from = pos[w], c = clampPos(w, tx, ty), dist = Math.hypot(c.x - from.x, c.y - from.y);
+    if (dist < 40) return;
+    e.classList.add('walk'); putPos(w, c.x, c.y, Math.max(1.6, dist / 55));
+    if (visit) { setTimeout(function () { if (!dragging && !sleeping) { setMood(w, 'giggle', 1800); setMood(o, 'wink', 1800); hop(o); } }, dist / 55 * 1000 + 200); }
   }
   function saveSt() { lsSet(KEYS, JSON.stringify(st)); }
   function applyHidden() { dock.hidden = st.hidden; $('hback').hidden = !st.hidden; }
@@ -124,7 +196,7 @@
     setMood(w, 'interested', 3000);
     var who = w === 'k' ? 'Chemie' : 'Physik';
     say(w, '<b>' + NAME[w] + ':</b> Ich helfe dir bei <b>' + who + '</b>. Tippe in der Liste einen Punkt an, dann zeige ich dir die passenden Fachbegriffe mit Bildern. Das Kästchen kreuzt du erst an, wenn du ein Thema wirklich kannst.',
-      0, '<button type="button" data-a="joke" data-w="' + w + '">😄 Witz</button>' + (S.item ? '<button type="button" data-a="last">🔁 Letztes Thema</button>' : '') + '<button type="button" data-a="pause">☕ Pause</button><button type="button" data-a="bubx">OK</button>');
+      0, '<button type="button" data-a="joke" data-w="' + w + '">😄 Witz</button>' + (S.item ? '<button type="button" data-a="last">🔁 Letztes Thema</button>' : '') + '<button type="button" data-a="pause">☕ Pause</button><button type="button" data-a="quiet">' + (st.quiet ? '🔔 Wieder reden' : '🔕 Leise') + '</button><button type="button" data-a="hide">✖ Ausblenden</button><button type="button" data-a="bubx">OK</button>');
     clearTimeout(bubT); bubT = setTimeout(hideBub, 16000);
   }
   function joke(w) {
@@ -433,10 +505,10 @@
   function css() {
     var s = document.createElement('style');
     s.textContent = [
-      '#hdock{position:fixed;right:10px;bottom:calc(40px + env(safe-area-inset-bottom));z-index:40;display:flex;gap:2px;align-items:flex-end}',
+      '#hdock{position:fixed;left:0;top:0;width:100%;height:100%;z-index:40;pointer-events:none}',
       '#hdock[hidden]{display:none}',
-      '.hp{border:0;background:none;padding:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;-webkit-tap-highlight-color:transparent;transition:transform .3s,opacity .3s;color:#cfd6f6;font-size:.68rem;font-weight:700}',
-      '.hp.away{opacity:.25;transform:translateY(6px) scale(.92)}',
+      '.hp{position:absolute;left:0;top:0;pointer-events:auto;touch-action:none;user-select:none;-webkit-user-select:none;border:0;background:none;padding:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;-webkit-tap-highlight-color:transparent;transition:transform .3s,opacity .3s;color:#cfd6f6;font-size:.68rem;font-weight:700}',
+      '.hp.away{opacity:.25;transform:translateY(6px) scale(.92)}.hp.drag{cursor:grabbing;transform:scale(1.12);z-index:3}.hp.walk .hv{animation-duration:.5s}',
       '.hv{width:58px;height:62px;animation:hbob 3.4s ease-in-out infinite;filter:drop-shadow(0 4px 6px rgba(0,0,0,.45));pointer-events:none}',
       '.hp-h .hv{animation-delay:-1.7s;width:58px;height:58px}',
       '.hv svg{width:100%;height:100%;overflow:visible}',
@@ -452,14 +524,14 @@
       '@keyframes hzzz{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(-6px);opacity:1}}',
       '@keyframes hspin{to{transform:rotate(360deg)}}',
       '.hn{margin-top:-2px;text-shadow:0 1px 3px #000}',
-      '.hbub{position:absolute;right:0;bottom:92px;width:min(300px,calc(100vw - 24px));background:#fff;color:#1e293b;border-radius:16px;padding:11px 14px;font-size:.88rem;line-height:1.45;box-shadow:0 8px 28px rgba(0,0,0,.5);opacity:0;pointer-events:none;transform:translateY(8px) scale(.96);transform-origin:bottom right;transition:.22s}',
+      '.hbub{position:absolute;left:0;top:0;width:min(300px,calc(100vw - 24px));background:#fff;color:#1e293b;border-radius:16px;padding:11px 14px;font-size:.88rem;line-height:1.45;box-shadow:0 8px 28px rgba(0,0,0,.5);opacity:0;pointer-events:none;transform:translateY(8px) scale(.96);transform-origin:bottom right;transition:.22s}',
       '.hbub.on{opacity:1;pointer-events:auto;transform:none}',
-      '.hbub::after{content:"";position:absolute;bottom:-7px;right:30px;width:14px;height:14px;background:#fff;transform:rotate(45deg)}',
-      '.hbub.h::after{right:30px}.hbub.k::after{right:84px}',
+      '.hbub::after{content:"";position:absolute;bottom:-7px;left:var(--ax,40px);width:14px;height:14px;background:#fff;transform:rotate(45deg)}',
+      '.hbub.below::after{bottom:auto;top:-7px}',
       '.hbub .bb{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}',
       '.hbub .bb button,.bt{border:0;border-radius:10px;background:#3b4fd8;color:#fff;font-size:.82rem;font-weight:700;padding:8px 12px;min-height:40px;cursor:pointer}',
       '.hbub .bb button{background:#e8ecff;color:#26308f;min-height:36px}',
-      '.hopt{position:absolute;right:0;bottom:-2px;display:none;transform:translateY(100%)}',
+      
       '#hback{position:fixed;right:10px;bottom:calc(44px + env(safe-area-inset-bottom));z-index:40;border:1px solid var(--line);background:#232c63;color:#e9edff;border-radius:99px;padding:9px 14px;font-size:.85rem;font-weight:700;cursor:pointer;min-height:42px}',
       '#hback[hidden]{display:none}',
       /* Sheet */
@@ -524,7 +596,7 @@
     init: function (fields) {
       FIELDS = fields;
       fields.forEach(function (f) { FIELDBY[f.id] = f; f.items.forEach(function (it) { ITEMBY[it[0]] = { id: it[0], field: f.id, lvl: it[1], title: it[2] }; }); });
-      try { var o = JSON.parse(lsGet(KEYS) || '{}'); st.quiet = !!o.quiet; st.hidden = !!o.hidden; } catch (e) {}
+      try { var o = JSON.parse(lsGet(KEYS) || '{}'); st.quiet = !!o.quiet; st.hidden = !!o.hidden; if (o.pos && o.pos.k && o.pos.h) st.pos = o.pos; } catch (e) {}
       css();
       pauseEl = document.createElement('div'); pauseEl.id = 'hpause'; pauseEl.hidden = true; document.body.appendChild(pauseEl);
       nudge = document.createElement('div'); nudge.id = 'hnudge'; nudge.setAttribute('role', 'alertdialog'); document.body.appendChild(nudge);
