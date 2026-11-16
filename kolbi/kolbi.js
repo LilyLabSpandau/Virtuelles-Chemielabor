@@ -488,6 +488,7 @@
     }
   };
   window.KolbiSkins = window.KolbiSkins || {};
+  window.KolbiSkins.kolbi = DEFAULT_SKIN;
   var API = {
     init: function (c) {
       for (var k in c) cfg[k] = c[k];

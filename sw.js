@@ -11,7 +11,7 @@ self.addEventListener('fetch', e => {
   const r = e.request;
   if (r.method !== 'GET' || !r.url.startsWith('http')) return;
   // Bilder, Stile und Skripte: sofort aus dem Zwischenspeicher, im Hintergrund aktualisieren (schnelleres Laden)
-  const path = new URL(r.url).pathname, live = /\/kolbi\/|pinnwand\.js$/.test(path); // Maskottchen-Skripte immer frisch (netzwerk zuerst)
+  const path = new URL(r.url).pathname, live = /\/kolbi\/|\/helfer\/|pinnwand\.js$/.test(path); // Maskottchen-Skripte immer frisch (netzwerk zuerst)
   if (!live && /\.(jpe?g|png|webp|svg|css|js)$/i.test(path) && new URL(r.url).origin === location.origin) {
     e.respondWith(caches.open(CACHE).then(ch => ch.match(r).then(m => {
       const net = fetch(r).then(res => { if (res.ok) ch.put(r, res.clone()); return res; }).catch(() => m);
