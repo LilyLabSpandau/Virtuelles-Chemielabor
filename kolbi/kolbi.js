@@ -605,6 +605,17 @@
     moveTo: function (fx, fy) { if (!el.char) return; var a = { x: fx * vw(), y: fy * vh() }; walkTo(a); },
     setExtra: function (a) { cfg.extraOpts = a || null; },
     // Moderierte Szenen sollen auch bei „Bewegung reduzieren“ lebendig sein (Kolbi läuft und bewegt sich nur, solange eine Szene läuft)
+    // Dekoration für Szenen: 'stopper' (Korken oben), 'jacket' (Schutzjacke); deco(null) entfernt alles
+    deco: function (list) {
+      var svgEl0 = el.root && el.root.querySelector('#kolbi-body svg'); if (!svgEl0) return;
+      var old = svgEl0.querySelector('#kk-deco'); if (old) old.parentNode.removeChild(old);
+      if (!list || !list.length) return;
+      var h = '';
+      if (list.indexOf('jacket') >= 0) h += '<g clip-path="url(#kk-c)"><rect x="-2" y="52" width="106" height="70" fill="#f97316" opacity=".93"/><rect x="-2" y="52" width="106" height="5" fill="#c2410c" opacity=".55"/><path d="M51 58 V120" stroke="#7c2d12" stroke-width="2.4"/><rect x="20" y="88" width="20" height="3" rx="1.5" fill="#7c2d12" opacity=".55"/><rect x="62" y="88" width="20" height="3" rx="1.5" fill="#7c2d12" opacity=".55"/></g><path d="M38 46 L51 62 L64 46 L58 42 L51 52 L44 42 Z" fill="#fdba74" stroke="#c2410c" stroke-width="1.6" stroke-linejoin="round"/>';
+      if (list.indexOf('stopper') >= 0) h += '<path d="M41 10 L37 -6 H65 L61 10 Z" fill="#c8883f" stroke="#7a4a1a" stroke-width="2.2" stroke-linejoin="round"/><path d="M42 -2 H60" stroke="#e2b078" stroke-width="2" stroke-linecap="round"/>';
+      var g = document.createElementNS(svgEl0.namespaceURI, 'g'); g.setAttribute('id', 'kk-deco'); g.innerHTML = h;
+      var face = svgEl0.querySelector('#kk-face'); svgEl0.insertBefore(g, face);
+    },
     motion: function (on) { reduce = on ? false : reduce0; if (el.root) el.root.classList.toggle('k-motion', !!on); },
     show: function () { st.off = false; save(); applyOff(); }
   };

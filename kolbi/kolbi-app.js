@@ -229,7 +229,7 @@
       var TX = {
         h: ['Die Elektronegativität sagt, wie stark ein Atom an gemeinsamen Elektronen zieht. Sauerstoff zieht stärker als Wasserstoff.', 'Gleiche Teilladungen stoßen sich ab, ungleiche ziehen sich an. Probiere im Experiment verschiedene Lagen aus.', 'Die Regel: H an O, N oder F, und im anderen Molekül ein freies Elektronenpaar.'],
         d: ['Wasser ist bei 4 °C am dichtesten. Denke immer daran, wohin dichteres Wasser sich bewegt.', 'Im Eis halten Wasserstoffbrücken die Moleküle auf Abstand, es entstehen Hohlräume.'],
-        l: ['Strom braucht frei bewegliche Ladungsträger. In Lösungen sind das Ionen.', 'Zucker löst sich in Molekülen, Salz in Ionen. Das erklärt den Unterschied.'],
+        l: ['Strom braucht frei bewegliche geladene Teilchen. Salz besteht aus solchen Teilchen.', 'Zucker löst sich als neutrale Moleküle, Salz in geladenen Teilchen. Das erklärt den Unterschied.'],
         o: ['Denke an die Teilchen an der Oberfläche: Welche Nachbarn fehlen ihnen?', 'Die Oberfläche verhält sich wie eine Haut. Spülmittel macht sie schwächer.']
       };
       function nextTip(t) { var a = TX[t] || []; return a.length ? a[Math.floor(Math.random() * a.length)] : base.tip; }

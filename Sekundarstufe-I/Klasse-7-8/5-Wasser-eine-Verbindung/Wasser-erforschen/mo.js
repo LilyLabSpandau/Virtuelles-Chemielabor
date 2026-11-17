@@ -27,9 +27,7 @@
   }
   $('ostart').addEventListener('click', playPro);
   $('oepibtn').addEventListener('click', function () { Szene.play(Szene.EPI); });
-  var wantExtra = false;
-  function applyExtra() { if (!(window.Kolbi && Kolbi.setExtra)) return false; Kolbi.setExtra(wantExtra ? [{ label: 'Szene mit Wally noch einmal ansehen', fn: function () { if (!Szene.running()) { showTab('o'); step(1); playPro(); } } }] : null); return true; }
-  document.addEventListener('tabchange', function (e) { wantExtra = e.detail === 'o'; if (!applyExtra()) { var n = 0, t = setInterval(function () { if (applyExtra() || ++n > 30) clearInterval(t); }, 300); } });
+  Szene.register('o', 'Szene mit Wally noch einmal ansehen', function () { showTab('o'); step(1); playPro(); });
 
   // ---------------------------------------------------------- Schritt 2: Kräfte
   (function () {

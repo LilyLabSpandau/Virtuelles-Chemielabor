@@ -1,12 +1,12 @@
 /* Modul 2: Dichteanomalie. Wiegen, See im Jahreslauf, Eis-Gitter zählen, Anwenden. */
 (function () {
   'use strict';
-  Prog.add('d', 8);
+  Prog.add('d', 9);
   Prog.onFinish('d', function () { $('dmerke').hidden = false; });
-  var reached = 1;
+  var reached = 0;
   function step(n) {
     Array.prototype.forEach.call(document.querySelectorAll('#dsteps .stp'), function (b) { b.classList.toggle('on', +b.getAttribute('data-s') === n); });
-    for (var i = 1; i <= 4; i++) $('ds' + i).classList.toggle('on', i === n);
+    for (var i = 0; i <= 4; i++) $('ds' + i).classList.toggle('on', i === n);
     document.dispatchEvent(new CustomEvent('dstep', { detail: n }));
   }
   function refresh() { Array.prototype.forEach.call(document.querySelectorAll('#dsteps .stp'), function (b) { b.disabled = +b.getAttribute('data-s') > reached; }); }
@@ -15,7 +15,19 @@
   $('dsteps').addEventListener('click', function (e) { var b = e.target.closest ? e.target.closest('.stp') : null; if (b && !b.disabled) step(+b.getAttribute('data-s')); });
   Array.prototype.forEach.call(document.querySelectorAll('[data-dgo]'), function (b) { b.addEventListener('click', function () { var n = +b.getAttribute('data-dgo'); reach(n); step(n); try { window.scrollTo({ top: 0 }); } catch (e) {} }); });
 
-  // ---------------------------------------------------------- Schritt 1: Messen
+  // ---------------------------------------------------------- Schritt 1: Szene mit Neumo
+  var sceneSeen = false;
+  function playScene() {
+    $('dstart').disabled = true; $('dhint').textContent = 'Die Szene läuft …';
+    Szene.play(Szene.DICHTE, function () {
+      $('dstart').disabled = false; $('dstart').textContent = '▶ Szene noch einmal'; $('dhint').textContent = 'Du kannst die Szene auch über Kolbis Menü noch einmal ansehen.';
+      if (!sceneSeen) { sceneSeen = true; Prog.done('d'); $('dgo1').hidden = false; reach(1); }
+    });
+  }
+  $('dstart').addEventListener('click', playScene);
+  Szene.register('d', 'Szene mit Neumo noch einmal ansehen', function () { showTab('d'); step(0); playScene(); });
+
+  // ---------------------------------------------------------- Schritt 2: Messen
   var TAB = [[0, 0.99984], [1, 0.99990], [2, 0.99994], [3, 0.99996], [4, 0.99997], [5, 0.99996], [6, 0.99994], [7, 0.99990], [8, 0.99985], [9, 0.99978], [10, 0.99970], [12, 0.99950], [14, 0.99924], [15, 0.99910], [16, 0.99894], [18, 0.99860], [20, 0.99821], [22, 0.99777], [24, 0.99730], [25, 0.99705], [26, 0.99679], [28, 0.99623], [30, 0.99565]];
   function rho(T) { for (var i = 0; i < TAB.length - 1; i++) if (T >= TAB[i][0] && T <= TAB[i + 1][0]) { var a = TAB[i], b = TAB[i + 1], k = (T - a[0]) / (b[0] - a[0]); return a[1] + (b[1] - a[1]) * k; } return TAB[TAB.length - 1][1]; }
   function fmtM(T) { return (rho(T) * 1000).toFixed(2).replace('.', ',') + ' g'; }
@@ -46,8 +58,10 @@
   function cnt() { return Object.keys(rec).length; }
   $('dadd').addEventListener('click', function () {
     if (rec[sel] === undefined) { rec[sel] = 1; svgEl('circle', { cx: X(sel), cy: Y(rho(sel)), r: 5, fill: '#0e7490', stroke: '#fff', 'stroke-width': 1.5 }, dots); }
-    var n = cnt(); $('dcnt').textContent = n + (n === 1 ? ' Messwert' : ' Messwerte');
-    if (n >= 7) { var low = Object.keys(rec).filter(function (t) { return +t <= 5; }).length; if (low >= 3) openQ1(); else $('dcnt').textContent += ' (miss auch bei 0 bis 5 °C)'; }
+    var n = cnt(), low = Object.keys(rec).filter(function (t) { return +t <= 5; }).length; $('dcnt').textContent = n + (n === 1 ? ' Messwert' : ' Messwerte') + ', davon ' + low + ' zwischen 0 und 5 °C';
+    if (n >= 7 && low >= 3) openQ1();
+    else if (n >= 7) $('dcnt').textContent += '. Es fehlen noch ' + (3 - low) + ' zwischen 0 und 5 °C.';
+    else if (low >= 3) $('dcnt').textContent += '. Noch ' + (7 - n) + ' weitere Temperaturen.';
   });
   var q1 = false;
   function openQ1() { if (q1) return; q1 = true; var pts = []; for (var t = 0; t <= 30; t += 0.5) pts.push(X(t) + ',' + Y(rho(t))); curve.setAttribute('points', pts.join(' ')); curve.setAttribute('opacity', 1);

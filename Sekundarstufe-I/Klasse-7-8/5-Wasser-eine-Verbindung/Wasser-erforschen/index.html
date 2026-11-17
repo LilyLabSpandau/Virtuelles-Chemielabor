@@ -137,12 +137,20 @@
     <h2>Modul 2: Die Dichteanomalie, der See im Sommer und im Winter</h2>
     <div class="lead"><p><b>Frage:</b> Im Winter ist ein See oft von einer Eisschicht bedeckt, und unter dem Eis schwimmen Fische. Das ist ungewöhnlich: Bei fast allen anderen Stoffen sinkt der feste Stoff in der eigenen Flüssigkeit nach unten. Warum bleibt das Eis oben, und warum frieren tiefe Seen nicht bis zum Grund zu?</p></div>
     <div class="steps" id="dsteps">
-      <button class="stp on" data-s="1">1 Messen</button><button class="stp" data-s="2">2 Der See</button><button class="stp" data-s="3">3 Warum?</button><button class="stp" data-s="4">4 Anwenden</button>
+      <button class="stp on" data-s="0">1 Am See</button><button class="stp" data-s="1">2 Messen</button><button class="stp" data-s="2">3 Der See</button><button class="stp" data-s="3">4 Warum?</button><button class="stp" data-s="4">5 Anwenden</button>
     </div>
 
-    <div class="stagepane on" id="ds1">
-      <h3>Schritt 1: Wann ist Wasser am dichtesten?</h3>
-      <p>Du wiegst jeweils <b>einen Liter Wasser</b> bei verschiedenen Temperaturen. Stelle mit dem Regler eine Temperatur ein und trage den Messwert ein. Miss mindestens <b>sieben</b> verschiedene Temperaturen, auch nahe 0 °C.</p>
+    <div class="stagepane on" id="ds0">
+      <h3>Schritt 1: Kolbi trifft Neumo</h3>
+      <div class="card"><h4>Die Szene</h4>
+        <p style="margin:0 0 8px">Kolbi taucht in einem See ab und trifft dort einen Fisch. Du siehst zu und tippst auf den Bildschirm, um zum nächsten Satz zu kommen. Kolbi lässt sich währenddessen nicht bedienen. Du kannst die Szene jederzeit überspringen und später noch einmal ansehen.</p>
+        <div class="mrow"><button class="btn" id="dstart">▶ Szene starten</button><span class="small" id="dhint"></span></div></div>
+      <div class="row" style="margin-top:12px"><button class="btn" data-dgo="1" id="dgo1" hidden>Weiter zu Schritt 2 →</button></div>
+    </div>
+
+    <div class="stagepane" id="ds1">
+      <h3>Schritt 2: Wann ist Wasser am dichtesten?</h3>
+      <p>Du wiegst jeweils <b>einen Liter Wasser</b> bei verschiedenen Temperaturen. Stelle mit dem Regler eine Temperatur ein und trage den Messwert ein. Miss mindestens <b>sieben</b> verschiedene Temperaturen, davon mindestens <b>drei zwischen 0 und 5 °C</b>. Erst dann geht es weiter.</p>
       <div class="two">
         <div class="card"><h4>Waage</h4>
           <svg id="dscale" viewBox="0 0 260 150" role="img" aria-label="Waage mit einem Liter Wasser"></svg>
@@ -153,21 +161,21 @@
           <p class="small" style="margin:4px 0 0">Jeder eingetragene Messwert erscheint als Punkt.</p></div>
       </div>
       <div id="dq1"></div>
-      <div class="row" style="margin-top:12px"><button class="btn" data-dgo="2" id="dgo2" hidden>Weiter zu Schritt 2 →</button></div>
+      <div class="row" style="margin-top:12px"><button class="btn" data-dgo="2" id="dgo2" hidden>Weiter zu Schritt 3 →</button></div>
     </div>
 
     <div class="stagepane" id="ds2">
-      <h3>Schritt 2: Der See im Jahreslauf</h3>
+      <h3>Schritt 3: Der See im Jahreslauf</h3>
       <p>Wasser ist bei <b>4 °C</b> am dichtesten, also am schwersten. Was bedeutet das für einen See? Überlege jeweils zuerst, was passiert, und sieh dir dann den See an.</p>
       <div class="sel" id="dseason"></div>
       <div class="sim"><svg id="dlake" viewBox="0 0 360 250" role="img" aria-label="Querschnitt durch einen See"></svg></div>
       <p class="small" id="dlakeinfo" style="margin:6px 0"></p>
       <div id="dq2"></div>
-      <div class="row" style="margin-top:12px"><button class="btn" data-dgo="3" id="dgo3" hidden>Weiter zu Schritt 3 →</button></div>
+      <div class="row" style="margin-top:12px"><button class="btn" data-dgo="3" id="dgo3" hidden>Weiter zu Schritt 4 →</button></div>
     </div>
 
     <div class="stagepane" id="ds3">
-      <h3>Schritt 3: Was passiert zwischen den Molekülen?</h3>
+      <h3>Schritt 4: Was passiert zwischen den Molekülen?</h3>
       <p>Eis und flüssiges Wasser bestehen aus denselben Molekülen. Vergleiche, wie sie angeordnet sind. Beide Kästen sind gleich groß. <b>Tippe jedes Molekül an, um es zu zählen.</b></p>
       <div class="two">
         <div class="card"><h4>Eis (0 °C)</h4><svg id="dice" viewBox="0 0 200 180" role="img" aria-label="Eis: Wasser-Moleküle im Sechsring-Gitter"></svg><div class="chip" style="margin-top:6px"><b>Gezählt</b><span class="val" id="dcI">0</span></div></div>
@@ -178,11 +186,11 @@
         <p style="margin:0 0 6px">Im <b>Eis</b> ist jedes Molekül über Wasserstoffbrücken mit vier Nachbarn verbunden. So entsteht ein starres Gitter aus Sechsringen mit <b>Hohlräumen</b>. Die Moleküle halten Abstand.</p>
         <p style="margin:0 0 6px">Beim <b>Schmelzen</b> brechen viele Wasserstoffbrücken. Die Moleküle rücken zusammen und füllen die Hohlräume teilweise. Deshalb ist flüssiges Wasser dichter als Eis.</p>
         <p style="margin:0">Zwischen 0 °C und 4 °C brechen weitere Brücken, das Wasser wird noch dichter. Über 4 °C überwiegt die Wärmebewegung: Die Moleküle bewegen sich stärker und brauchen mehr Platz, das Wasser dehnt sich wieder aus.</p></div>
-      <div class="row" style="margin-top:12px"><button class="btn" data-dgo="4" id="dgo4" hidden>Weiter zu Schritt 4 →</button></div>
+      <div class="row" style="margin-top:12px"><button class="btn" data-dgo="4" id="dgo4" hidden>Weiter zu Schritt 5 →</button></div>
     </div>
 
     <div class="stagepane" id="ds4">
-      <h3>Schritt 4: Wende es an</h3>
+      <h3>Schritt 5: Wende es an</h3>
       <div id="dq4"></div>
       <div class="merke" id="dmerke" hidden><b class="t">Merke:</b> Wasser hat bei <b>4 °C</b> seine größte Dichte (<b>Dichteanomalie</b>). Eis ist mit 0,92 g/cm³ weniger dicht als flüssiges Wasser und schwimmt. Ursache sind die Wasserstoffbrücken: Im Eis bilden sie ein Gitter mit Hohlräumen. Deshalb frieren Seen von oben zu, und am Grund bleibt es etwa 4 °C warm.</div>
     </div>
@@ -192,11 +200,19 @@
     <h2>Modul 3: Leitfähigkeit, der Föhn und die Badewanne</h2>
     <div class="lead"><p><b>Der Fall:</b> Ein eingeschalteter Föhn fällt in eine gefüllte Badewanne. Das ist lebensgefährlich. Im Chemieunterricht heißt es aber: <b>Reines Wasser leitet den elektrischen Strom nicht.</b> Wie passt das zusammen? Du gehst der Sache mit einem Leitfähigkeitsprüfer auf den Grund.</p></div>
     <div class="steps" id="lsteps">
-      <button class="stp on" data-s="1">1 Prüfen</button><button class="stp" data-s="2">2 Teilchen</button><button class="stp" data-s="3">3 Der Fall</button>
+      <button class="stp on" data-s="0">1 Im Bad</button><button class="stp" data-s="1">2 Prüfen</button><button class="stp" data-s="2">3 Teilchen</button><button class="stp" data-s="3">4 Der Fall</button>
     </div>
 
-    <div class="stagepane on" id="ls1">
-      <h3>Schritt 1: Welche Flüssigkeit leitet?</h3>
+    <div class="stagepane on" id="ls0">
+      <h3>Schritt 1: Kolbi trifft Bernd</h3>
+      <div class="card"><h4>Die Szene</h4>
+        <p style="margin:0 0 8px">Kolbi landet im Badezimmer und trifft dort jemanden, der ihn um etwas Gefährliches bittet. Du siehst zu und tippst auf den Bildschirm, um zum nächsten Satz zu kommen. Kolbi lässt sich währenddessen nicht bedienen. Du kannst die Szene jederzeit überspringen und später noch einmal ansehen.</p>
+        <div class="mrow"><button class="btn" id="lstart">▶ Szene starten</button><span class="small" id="lhint"></span></div></div>
+      <div class="row" style="margin-top:12px"><button class="btn" data-lgo="1" id="lgo1" hidden>Weiter zu Schritt 2 →</button></div>
+    </div>
+
+    <div class="stagepane" id="ls1">
+      <h3>Schritt 2: Welche Flüssigkeit leitet?</h3>
       <p>Tauche den Prüfer in jede Flüssigkeit ein und lies die Anzeige ab. <b>Vermute vorher</b>, was passiert. Teste alle fünf Flüssigkeiten.</p>
       <div class="two">
         <div class="card"><h4>Leitfähigkeitsprüfer</h4>
@@ -207,11 +223,11 @@
           <table class="t"><thead><tr><th>Flüssigkeit</th><th>Lampe</th></tr></thead><tbody id="ltab"></tbody></table></div>
       </div>
       <div id="lq1"></div>
-      <div class="row" style="margin-top:12px"><button class="btn" data-lgo="2" id="lgo2" hidden>Weiter zu Schritt 2 →</button></div>
+      <div class="row" style="margin-top:12px"><button class="btn" data-lgo="2" id="lgo2" hidden>Weiter zu Schritt 3 →</button></div>
     </div>
 
     <div class="stagepane" id="ls2">
-      <h3>Schritt 2: Ein Blick auf die Teilchen</h3>
+      <h3>Schritt 3: Ein Blick auf die Teilchen</h3>
       <p>Strom ist <b>bewegte Ladung</b>. In einer Flüssigkeit braucht man dafür frei bewegliche geladene Teilchen. Wähle eine Flüssigkeit, schalte die Spannung ein und beobachte.</p>
       <div class="two">
         <div class="card"><h4>Modell</h4>
@@ -219,21 +235,21 @@
           <div class="sel" id="lpsel"></div>
           <div class="mrow"><button class="btn" id="lvolt">⚡ Spannung einschalten</button></div>
           <p class="small" id="lpinfo" style="margin:6px 0 0"></p></div>
-        <div class="card"><h4>Wie kommen Ionen ins Wasser?</h4>
+        <div class="card"><h4>Wie kommen geladene Teilchen ins Wasser?</h4>
           <div class="sim"><svg id="ldis" viewBox="0 0 300 200" role="img" aria-label="Kochsalz löst sich in Wasser"></svg></div>
           <div class="mrow"><button class="btn" id="ldisbtn">💧 Wasser dazugeben</button><button class="btn sec" id="ldisrst" hidden>Zurück</button></div>
-          <p class="small" id="ldistxt" style="margin:6px 0 0">Ein Salzkristall besteht aus Ionen, die sich anziehen.</p></div>
+          <p class="small" id="ldistxt" style="margin:6px 0 0">Ein Salzkristall besteht aus positiv und negativ geladenen Teilchen, die sich anziehen.</p></div>
       </div>
       <div id="lq2"></div>
-      <div class="row" style="margin-top:12px"><button class="btn" data-lgo="3" id="lgo3" hidden>Weiter zu Schritt 3 →</button></div>
+      <div class="row" style="margin-top:12px"><button class="btn" data-lgo="3" id="lgo3" hidden>Weiter zu Schritt 4 →</button></div>
     </div>
 
     <div class="stagepane" id="ls3">
-      <h3>Schritt 3: Zurück zum Fall</h3>
+      <h3>Schritt 4: Zurück zum Fall</h3>
       <div class="card"><h4>Was enthält Badewasser?</h4>
-        <p style="margin:0">Badewasser ist <b>nie reines Wasser</b>. Es besteht aus Leitungswasser mit gelösten Salzen (zum Beispiel Calcium- und Hydrogencarbonat-Ionen). Dazu kommen Seife oder Badezusatz und Salze von der Haut. Alles das liefert <b>Ionen</b>. Auch der Körper enthält Salzlösungen und leitet. Fällt ein Elektrogerät ins Wasser, kann deshalb Strom durch das Wasser und durch den Körper fließen.</p></div>
+        <p style="margin:0">Badewasser ist <b>nie reines Wasser</b>. Es besteht aus Leitungswasser mit gelösten Salzen (zum Beispiel Kalk). Dazu kommen Seife oder Badezusatz und Salze von der Haut. Alles das liefert <b>geladene Teilchen</b>. Auch der Körper enthält Salzlösungen und leitet. Fällt ein Elektrogerät ins Wasser, kann deshalb Strom durch das Wasser und durch den Körper fließen.</p></div>
       <div id="lq3"></div>
-      <div class="merke" id="lmerke" hidden><b class="t">Merke:</b> Strom in Flüssigkeiten wird von <b>frei beweglichen Ionen</b> transportiert. Reines Wasser enthält praktisch keine Ionen und leitet deshalb nicht. Leitungs-, Bade- und Salzwasser enthalten gelöste Salze und leiten gut. Zuckerwasser leitet nicht, denn Zucker löst sich in Molekülen und nicht in Ionen. Elektrogeräte gehören nie in die Nähe von Wasser.</div>
+      <div class="merke" id="lmerke" hidden><b class="t">Merke:</b> Strom in Flüssigkeiten wird von <b>frei beweglichen geladenen Teilchen</b> transportiert. Reines Wasser enthält praktisch keine geladenen Teilchen und leitet deshalb nicht. Leitungs-, Bade- und Salzwasser enthalten gelöste Salze und leiten gut. Zuckerwasser leitet nicht, denn Zucker löst sich als neutrale Moleküle und nicht in geladenen Teilchen. Elektrogeräte gehören nie in die Nähe von Wasser.</div>
     </div>
   </section>
 
@@ -299,10 +315,10 @@
 </div>
 <script>window.PW_HASH = 'x97kzngm0c';</script>
 <script src="wc.js"></script>
+<script src="scene.js"></script>
 <script src="mh.js"></script>
 <script src="md.js"></script>
 <script src="ml.js"></script>
-<script src="scene.js"></script>
 <script src="mo.js"></script>
 <script src="../../../../kolbi/kolbi-app.js"></script>
 <script src="app.js"></script>

@@ -1,12 +1,12 @@
 /* Modul 3: Leitfähigkeit. Prüfer, Teilchenmodell, Lösen von Salz, Badeunfall-Fall. */
 (function () {
   'use strict';
-  Prog.add('l', 8);
+  Prog.add('l', 9);
   Prog.onFinish('l', function () { $('lmerke').hidden = false; });
-  var reached = 1;
+  var reached = 0;
   function step(n) {
     Array.prototype.forEach.call(document.querySelectorAll('#lsteps .stp'), function (b) { b.classList.toggle('on', +b.getAttribute('data-s') === n); });
-    for (var i = 1; i <= 3; i++) $('ls' + i).classList.toggle('on', i === n);
+    for (var i = 0; i <= 3; i++) $('ls' + i).classList.toggle('on', i === n);
     document.dispatchEvent(new CustomEvent('lstep', { detail: n }));
   }
   function refresh() { Array.prototype.forEach.call(document.querySelectorAll('#lsteps .stp'), function (b) { b.disabled = +b.getAttribute('data-s') > reached; }); }
@@ -15,6 +15,18 @@
   $('lsteps').addEventListener('click', function (e) { var b = e.target.closest ? e.target.closest('.stp') : null; if (b && !b.disabled) step(+b.getAttribute('data-s')); });
   Array.prototype.forEach.call(document.querySelectorAll('[data-lgo]'), function (b) { b.addEventListener('click', function () { var n = +b.getAttribute('data-lgo'); reach(n); step(n); try { window.scrollTo({ top: 0 }); } catch (e) {} }); });
 
+  // ---------------------------------------------------------- Schritt 1: Szene mit Bernd
+  var sceneSeen = false;
+  function playScene() {
+    $('lstart').disabled = true; $('lhint').textContent = 'Die Szene läuft …';
+    Szene.play(Szene.BAD, function () {
+      $('lstart').disabled = false; $('lstart').textContent = '▶ Szene noch einmal'; $('lhint').textContent = 'Du kannst die Szene auch über Kolbis Menü noch einmal ansehen.';
+      if (!sceneSeen) { sceneSeen = true; Prog.done('l'); $('lgo1').hidden = false; reach(1); }
+    });
+  }
+  $('lstart').addEventListener('click', playScene);
+  Szene.register('l', 'Szene mit Bernd noch einmal ansehen', function () { showTab('l'); step(0); playScene(); });
+
   var LIQ = [
     { id: 'dest', lab: 'Destilliertes Wasser', lamp: 0, read: 'Lampe dunkel, praktisch kein Strom', ions: 0, mol: 0 },
     { id: 'zuck', lab: 'Zuckerwasser', lamp: 0, read: 'Lampe dunkel, kein Strom', ions: 0, mol: 8 },
@@ -22,7 +34,7 @@
     { id: 'bad', lab: 'Badewasser (Leitungswasser mit Seife)', lamp: 0.6, read: 'Lampe leuchtet, deutlich Strom', ions: 10, mol: 0 },
     { id: 'salz', lab: 'Salzwasser', lamp: 1, read: 'Lampe leuchtet hell, viel Strom', ions: 20, mol: 0 }
   ];
-  var BODY = { dest: 'enthält praktisch keine Ionen', zuck: 'enthält nur neutrale Zucker-Moleküle', leit: 'enthält wenige gelöste Ionen', bad: 'enthält mehr gelöste Ionen', salz: 'enthält sehr viele gelöste Ionen' };
+  var BODY = { dest: 'enthält praktisch keine geladenen Teilchen', zuck: 'enthält nur neutrale Zucker-Moleküle', leit: 'enthält wenige gelöste geladene Teilchen', bad: 'enthält mehr gelöste geladene Teilchen', salz: 'enthält sehr viele gelöste geladene Teilchen' };
 
   // ---------------------------------------------------------- Schritt 1: Prüfer
   var rig = $('lrig'), lampC, lampRays, liqRect, tested = {}, curL = null;
@@ -64,7 +76,7 @@
     var m = svgEl('text', { x: 26, y: 12, 'text-anchor': 'middle', 'font-size': 14, 'font-weight': 800, fill: '#2563eb' }, P); m.textContent = '−'; var pl = svgEl('text', { x: 274, y: 12, 'text-anchor': 'middle', 'font-size': 14, 'font-weight': 800, fill: '#dc2626' }, P); pl.textContent = '+';
     pg = svgEl('g', {}, P); parts = [];
     function add(kind) {
-      var o = { kind: kind, x: 50 + Math.random() * 200, y: 26 + Math.random() * 148, vx: (Math.random() - .5) * 1.2, vy: (Math.random() - .5) * 1.2 };
+      var o = { kind: kind, x: 54 + Math.random() * 192, y: 30 + Math.random() * 140, vx: (Math.random() - .5) * 1.2, vy: (Math.random() - .5) * 1.2 };
       o.g = svgEl('g', {}, pg);
       if (kind === 'w') { svgEl('circle', { cx: 0, cy: 0, r: 4.5, fill: '#fca5a5', opacity: .9 }, o.g); }
       else if (kind === 's') { svgEl('polygon', { points: '0,-7 6,-3.5 6,3.5 0,7 -6,3.5 -6,-3.5', fill: '#fde68a', stroke: '#b45309', 'stroke-width': 1 }, o.g); }
@@ -74,15 +86,15 @@
     for (var i = 0; i < 22; i++) add('w');
     for (var j = 0; j < cp.mol; j++) add('s');
     for (var k = 0; k < cp.ions; k++) add(k % 2 ? 'p' : 'n');
-    $('lpinfo').innerHTML = '<b>' + cp.lab + '</b> ' + BODY[cp.id] + '. Rote Punkte sind Wasser-Moleküle.' + (cp.id === 'dest' ? ' Winzige Spuren von Ionen gibt es immer, sie sind hier so wenige, dass der Strom praktisch nicht fließt.' : '');
+    $('lpinfo').innerHTML = '<b>' + cp.lab + '</b> ' + BODY[cp.id] + '. Kleine rosa Punkte sind Wasser-Moleküle, Kreise mit + oder − sind geladene Teilchen.' + (cp.id === 'dest' ? ' Winzige Spuren geladener Teilchen gibt es immer, sie sind hier so wenige, dass der Strom praktisch nicht fließt.' : '');
     tick();
   }
   function tick() {
     parts.forEach(function (o) {
-      var drift = on && (o.kind === 'p' || o.kind === 'n') ? (o.kind === 'p' ? -1 : 1) * 1.1 : 0;   // + Ionen zum Minuspol (links), − Ionen zum Pluspol (rechts)
+      var drift = on && (o.kind === 'p' || o.kind === 'n') ? (o.kind === 'p' ? -1 : 1) * 0.45 : 0;   // + Teilchen zum Minuspol (links), − Teilchen zum Pluspol (rechts); sie bleiben immer zwischen den Elektroden
       o.x += o.vx + drift; o.y += o.vy; o.vx += (Math.random() - .5) * .25; o.vy += (Math.random() - .5) * .25; o.vx = Math.max(-1.4, Math.min(1.4, o.vx)); o.vy = Math.max(-1.4, Math.min(1.4, o.vy));
-      if (o.y < 20 || o.y > 180) o.vy *= -1; if (o.x < 40 && on && (o.kind === 'p')) { o.x = 255; } if (o.x > 260 && on && (o.kind === 'n')) { o.x = 45; }
-      o.x = Math.max(38, Math.min(262, o.x)); o.y = Math.max(20, Math.min(180, o.y));
+      if (o.y < 24 || o.y > 176) o.vy *= -1; if (o.x < 46 || o.x > 254) o.vx *= -1;
+      o.x = Math.max(44, Math.min(256, o.x)); o.y = Math.max(24, Math.min(176, o.y));
       o.g.setAttribute('transform', 'translate(' + o.x.toFixed(1) + ' ' + o.y.toFixed(1) + ')');
     });
   }
@@ -118,25 +130,25 @@
   function runDis(to) { var t0 = performance.now(), from = to ? 0 : 1; (function st(now) { var k = Math.min(1, (now - t0) / 1800), v = to ? k : 1 - k; setDis(v); if (k < 1) requestAnimationFrame(st); })(t0); }
   $('ldisbtn').addEventListener('click', function () {
     if (dis) return; dis = true; this.disabled = true; $('ldisrst').hidden = false; runDis(true);
-    $('ldistxt').innerHTML = 'Die Wasser-Moleküle sind Dipole: Mit ihrem <b>δ−</b>-Ende (O) umgeben sie die positiven Ionen, mit ihrem <b>δ+</b>-Ende (H) die negativen. So reißen sie die Ionen aus dem Kristall heraus. Die Ionen sind jetzt <b>frei beweglich</b>.';
+    $('ldistxt').innerHTML = 'Die Wasser-Moleküle sind Dipole: Mit ihrem <b>δ−</b>-Ende (O) umgeben sie die positiv geladenen Teilchen, mit ihrem <b>δ+</b>-Ende (H) die negativ geladenen. So lösen sie die Teilchen aus dem Kristall heraus. Die geladenen Teilchen sind jetzt <b>frei beweglich</b>.';
     if (!dq) { dq = true; Prog.done('l'); }
-    note('Wasser-Moleküle lösen die Ionen aus dem Salzkristall. Die Ionen sind dann frei beweglich und können Strom leiten.');
+    note('Wasser-Moleküle lösen die geladenen Teilchen aus dem Salzkristall. Sie sind dann frei beweglich und können Strom leiten.');
   });
-  $('ldisrst').addEventListener('click', function () { dis = false; $('ldisbtn').disabled = false; this.hidden = true; runDis(false); $('ldistxt').textContent = 'Ein Salzkristall besteht aus Ionen, die sich anziehen.'; });
+  $('ldisrst').addEventListener('click', function () { dis = false; $('ldisbtn').disabled = false; this.hidden = true; runDis(false); $('ldistxt').textContent = 'Ein Salzkristall besteht aus positiv und negativ geladenen Teilchen, die sich anziehen.'; });
   drawDis();
   mc($('lq2'), { mod: 'l', q: '<b>a)</b> Warum leitet Zuckerwasser den Strom nicht, Salzwasser aber schon?',
-    opts: ['Salz zerfällt im Wasser in frei bewegliche Ionen. Zucker bleibt als neutrale Moleküle und transportiert keine Ladung.', 'Zucker löst sich schlechter als Salz, deshalb sind im Zuckerwasser zu wenige Teilchen vorhanden.', 'Zucker-Moleküle sind zu groß, um sich zwischen den Wasser-Molekülen zu bewegen.', 'Salz ist ein Metall und leitet den Strom deshalb auch gelöst.'], ok: 0,
-    why: 'Strom braucht frei bewegliche Ladungsträger. Ionen sind geladen, Zucker-Moleküle nicht. Deshalb leitet Salzwasser, Zuckerwasser nicht.',
-    hints: { 1: 'Zucker löst sich sogar sehr gut. Es kommt auf die Ladung der gelösten Teilchen an.', 2: 'Die Größe spielt keine Rolle. Neutrale Teilchen transportieren keine Ladung, egal wie sie sich bewegen.', 3: 'Kochsalz besteht aus Natrium-Ionen und Chlorid-Ionen und ist kein Metall.' }, after: function () { $('lgo3').hidden = false; reach(3); } });
+    opts: ['Salz besteht aus geladenen Teilchen, die sich im Wasser frei bewegen. Zucker bleibt als neutrale Moleküle und transportiert keine Ladung.', 'Zucker löst sich schlechter als Salz, deshalb sind im Zuckerwasser zu wenige Teilchen vorhanden.', 'Zucker-Moleküle sind zu groß, um sich zwischen den Wasser-Molekülen zu bewegen.', 'Salz ist ein Metall und leitet den Strom deshalb auch gelöst.'], ok: 0,
+    why: 'Strom braucht frei bewegliche geladene Teilchen. Salz besteht aus solchen Teilchen, Zucker-Moleküle sind neutral. Deshalb leitet Salzwasser, Zuckerwasser nicht.',
+    hints: { 1: 'Zucker löst sich sogar sehr gut. Es kommt auf die Ladung der gelösten Teilchen an.', 2: 'Die Größe spielt keine Rolle. Neutrale Teilchen transportieren keine Ladung, egal wie sie sich bewegen.', 3: 'Kochsalz besteht aus positiv und negativ geladenen Teilchen und ist kein Metall.' }, after: function () { $('lgo3').hidden = false; reach(3); } });
 
   // ---------------------------------------------------------- Schritt 3: Der Fall
   mc($('lq3'), { mod: 'l', q: '<b>a)</b> „Wasser leitet den Strom nicht.“ Warum ist dieser Satz im Badezimmer ein gefährlicher Irrtum?',
-    opts: ['Gemeint ist reines Wasser. Badewasser enthält gelöste Salze, also frei bewegliche Ionen, und leitet deshalb.', 'Wasser leitet immer, auch das destillierte. Man kann es nur nicht an der Lampe sehen.', 'Der Satz stimmt, aber der Föhn erzeugt im Wasser selbst die Ionen.', 'Der Satz stimmt nur bei kaltem Wasser, warmes Badewasser leitet.'], ok: 0,
-    why: 'Der Satz gilt nur für <b>reines</b> Wasser. Leitungs- und Badewasser sind Salzlösungen mit vielen Ionen, und auch der Körper leitet.',
-    hints: { 1: 'Destilliertes Wasser leitet praktisch nicht. Das hast du selbst gemessen.', 2: 'Die Ionen sind schon vorher da: aus Leitungswasser, Seife und Hautsalz.', 3: 'Die Temperatur ist hier nicht entscheidend, sondern was im Wasser gelöst ist.' } });
+    opts: ['Gemeint ist reines Wasser. Badewasser enthält gelöste Salze, also frei bewegliche geladene Teilchen, und leitet deshalb.', 'Wasser leitet immer, auch das destillierte. Man kann es nur nicht an der Lampe sehen.', 'Der Satz stimmt, aber der Föhn erzeugt im Wasser selbst die Ionen.', 'Der Satz stimmt nur bei kaltem Wasser, warmes Badewasser leitet.'], ok: 0,
+    why: 'Der Satz gilt nur für <b>reines</b> Wasser. Leitungs- und Badewasser sind Salzlösungen mit vielen geladenen Teilchen, und auch der Körper leitet.',
+    hints: { 1: 'Destilliertes Wasser leitet praktisch nicht. Das hast du selbst gemessen.', 2: 'Die geladenen Teilchen sind schon vorher da: aus Leitungswasser, Seife und Hautsalz.', 3: 'Die Temperatur ist hier nicht entscheidend, sondern was im Wasser gelöst ist.' } });
   mc($('lq3'), { mod: 'l', q: '<b>b)</b> Wer oder was transportiert den Strom in der Badewanne durch das Wasser?',
-    opts: ['Gelöste Ionen, die zu den Polen wandern.', 'Freie Elektronen, die durch das Wasser fließen wie in einem Kupferkabel.', 'Wasser-Moleküle, die vom Föhn weggeschleudert werden.', 'Die Wasserstoffbrücken, die elektrische Ladung weiterreichen.'], ok: 0,
-    why: 'In Metallen fließen Elektronen, in Lösungen wandern <b>Ionen</b>. Genau das hast du im Teilchenmodell gesehen.',
+    opts: ['Gelöste geladene Teilchen, die zu den Polen wandern.', 'Freie Elektronen, die durch das Wasser fließen wie in einem Kupferkabel.', 'Wasser-Moleküle, die vom Föhn weggeschleudert werden.', 'Die Wasserstoffbrücken, die elektrische Ladung weiterreichen.'], ok: 0,
+    why: 'In Metallen fließen Elektronen, in Lösungen wandern <b>geladene Teilchen</b>. Genau das hast du im Teilchenmodell gesehen.',
     hints: { 1: 'Im Metalldraht fließen Elektronen. In einer Lösung sind es andere Teilchen.', 2: 'Wasser-Moleküle sind neutral und tragen keine Ladung weiter.', 3: 'Wasserstoffbrücken sind Anziehungskräfte zwischen Molekülen, keine Ladungsträger.' } });
   sortq($('lq3'), { mod: 'l', intro: '<b>c)</b> Sicher oder gefährlich? Entscheide für jede Situation.', btn: ['Sicher', 'Gefährlich'],
     items: [
@@ -146,6 +158,6 @@
       { lab: 'Ein Elektrogerät mit nassen Händen anfassen', ok: 1, why: 'Wasser mit gelösten Salzen auf der Haut leitet den Strom.', hint: 'Nasse Haut ist keine gute Isolierung.' },
       { lab: 'Ist ein Elektrogerät ins Wasser gefallen: erst die Sicherung ausschalten, dann das Gerät herausholen', ok: 0, why: 'Erst die Stromzufuhr unterbrechen, nie ins Wasser greifen, solange Strom fließen kann. Im Notfall 112 rufen.', hint: 'Zuerst muss der Strom weg.' }
     ] });
-  gap($('lq3'), { mod: 'l', parts: ['<p class="qt"><b>d)</b> Ergänze die Erklärung.</p>Reines Wasser enthält praktisch keine ', { o: ['Ionen', 'Moleküle', 'Atome'], ok: 0 }, ' und leitet deshalb ', { o: ['nicht', 'gut'], ok: 0 }, '. Badewasser enthält gelöste ', { o: ['Salze', 'Gase'], ok: 0 }, '. Deren ', { o: ['Ionen', 'Elektronen'], ok: 0 }, ' sind frei beweglich und transportieren den ', { o: ['Strom', 'Zucker'], ok: 0 }, '.'],
+  gap($('lq3'), { mod: 'l', parts: ['<p class="qt"><b>d)</b> Ergänze die Erklärung.</p>Reines Wasser enthält praktisch keine ', { o: ['geladenen Teilchen', 'Moleküle', 'Atome'], ok: 0 }, ' und leitet deshalb ', { o: ['nicht', 'gut'], ok: 0 }, '. Badewasser enthält gelöste ', { o: ['Salze', 'Gase'], ok: 0 }, '. Deren ', { o: ['geladene Teilchen', 'Elektronen'], ok: 0 }, ' sind frei beweglich und transportieren den ', { o: ['Strom', 'Zucker'], ok: 0 }, '.'],
     why: 'So passt alles zusammen: Reines Wasser leitet nicht, Badewasser schon.' });
 })();
