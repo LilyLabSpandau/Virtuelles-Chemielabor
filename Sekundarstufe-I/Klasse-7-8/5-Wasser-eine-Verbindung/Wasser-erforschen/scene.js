@@ -62,10 +62,10 @@
   ];
   BAD.theme = 'bath';
 
-  var veil, svgR, actor, flip, icon, bub, hint, dots, lines, idx, busy, running, cb, gen = 0, ax = 0, ay = 0, wdir = -1, T = null, S = {};
+  var fast = false, solo = false, veil, svgR, actor, flip, icon, bub, hint, dots, lines, idx, busy, running, cb, gen = 0, ax = 0, ay = 0, wdir = -1, T = null, S = {};
   function hasK() { return !!(window.Kolbi && Kolbi.lock && Kolbi.line); }
-  function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
-  function tween(ms, fn) { return new Promise(function (res) { var t0 = performance.now(); (function s(n) { var k = Math.min(1, (n - t0) / ms); fn(k * k * (3 - 2 * k)); if (k < 1) requestAnimationFrame(s); else res(); })(t0); }); }
+  function wait(ms) { return new Promise(function (r) { if (fast) r(); else setTimeout(r, ms); }); }
+  function tween(ms, fn) { var g0 = gen; if (fast) ms = 1; return new Promise(function (res) { var t0 = performance.now(); (function s(n) { if (g0 !== gen) return res(); var k = Math.min(1, (n - t0) / ms); fn(k * k * (3 - 2 * k)); if (k < 1) requestAnimationFrame(s); else res(); })(t0); }); }
   var NS = 'http://www.w3.org/2000/svg';
   function E(t, a, p) { var e = document.createElementNS(NS, t); for (var k in a) e.setAttribute(k, a[k]); (p || svgR).appendChild(e); return e; }
   function grad(df, id, c1, c2) { var g = E('linearGradient', { id: id, x1: 0, y1: 0, x2: 0, y2: 1 }, df); E('stop', { offset: 0, 'stop-color': c1 }, g); E('stop', { offset: 1, 'stop-color': c2 }, g); }
@@ -181,13 +181,9 @@
     bath: { id: 'bath', draw: drawBath, aria: 'Badezimmer mit Badewanne und Waschbecken' }
   };
 
-  function build(theme) {
-    T = THEMES[theme] || THEMES.pond; S = {};
-    veil = document.createElement('div'); veil.id = 'sceneVeil'; veil.style.display = 'flex';
-    veil.innerHTML = '<div class="dots" id="sDots"></div><button id="sceneSkip">Überspringen ⏭</button>' +
-      '<svg id="sceneSvg" viewBox="0 0 400 560" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + T.aria + '"></svg><div id="sceneBub"></div><div id="sceneHint">Tippe, um weiterzulesen ▸</div>';
-    document.body.appendChild(veil);
-    svgR = veil.querySelector('svg'); bub = veil.querySelector('#sceneBub'); hint = veil.querySelector('#sceneHint'); dots = veil.querySelector('#sDots');
+  function layout() {
+    while (svgR.firstChild) svgR.removeChild(svgR.firstChild);
+    S = {};
     var ratio = Math.max(0.8, Math.min(2.4, innerHeight / innerWidth)), VH = 400 * ratio, VY = 300 - VH * 0.52;
     svgR.setAttribute('viewBox', '0 ' + VY.toFixed(1) + ' 400 ' + VH.toFixed(1));
     var df = E('defs', {});
@@ -199,6 +195,37 @@
     }
     flip.setAttribute('transform', 'scale(' + g.dir + ' 1)'); wdir = g.dir;
     if (T.id !== 'bath') place(g.offX, g.ay());
+    solo = !lines.some(function (l) { return l.w === 'W'; });
+    if (solo) actor.setAttribute('opacity', 0);
+  }
+  function build(theme) {
+    T = THEMES[theme] || THEMES.pond;
+    veil = document.createElement('div'); veil.id = 'sceneVeil'; veil.style.display = 'flex';
+    veil.innerHTML = '<div class="dots" id="sDots"></div><button id="sceneSkip">Überspringen ⏭</button>' +
+      '<svg id="sceneSvg" viewBox="0 0 400 560" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + T.aria + '"></svg><div id="sceneBub"></div><div id="sceneHint">Tippe, um weiterzulesen ▸</div>';
+    document.body.appendChild(veil);
+    svgR = veil.querySelector('svg'); bub = veil.querySelector('#sceneBub'); hint = veil.querySelector('#sceneHint'); dots = veil.querySelector('#sDots');
+    layout();
+    window.addEventListener('resize', onResize); window.addEventListener('orientationchange', onResize);
+  }
+  // Bildschirm gedreht oder Fenstergröße geändert: Szene neu zeichnen und bis zur aktuellen Zeile schnell nachspielen
+  var rt = 0;
+  function onResize() { clearTimeout(rt); rt = setTimeout(relayout, 350); }
+  async function relayout() {
+    if (!running || !veil || idx < 0) return;
+    var g = ++gen, i = idx, lv = leaving; busy = true; bub.style.display = 'none'; if (hasK()) Kolbi.hush();
+    layout(); placeK(); fast = true;
+    for (var j = 0; j <= i; j++) {
+      var l = lines[j];
+      if (l.icon !== undefined && icon) { icon.textContent = l.icon; icon.setAttribute('opacity', l.icon ? 1 : 0); }
+      if (l.act === 'enter') { var G = T.g; place(G.offX, G.ay()); await actorTo(G.stopX, G.ay(), 1); }
+      else if (l.act && ACTS[l.act]) await ACTS[l.act]();
+      if (g !== gen) return;
+    }
+    fast = false; placeK(); bob(!solo && T.id !== 'bath');
+    sayLine(lines[i], i, g);
+    if (lv) { hint.textContent = 'Tippe, um die Szene zu beenden ▸'; leaving = true; }
+    busy = false;
   }
   function placeK() {
     if (!hasK()) return; var el = svgR.querySelector('#sKrect'), sh = el.getBoundingClientRect(), kh = innerWidth <= 700 ? 77 : 96;
@@ -232,11 +259,11 @@
     wish: async function () { var f = svgR.querySelector('#sFdi'); f.style.transformBox = 'fill-box'; f.style.transformOrigin = 'center'; f.style.animation = 'spulse .9s ease-in-out 4'; await wait(300); },
     sink: async function () { moveKrect(64, undefined); await wait(1500); },
     drop: async function () {             // derselbe Föhn: vom Boden über das Waschbecken, dann hinein
-      var d = S.fd, F = S.F, H = S.fdHome; svgR.querySelector('#sFdi').style.animation = 'none';
+      var d = S.fd, F = S.F, H = S.fdHome, fl = S.fl, fo = S.flash; svgR.querySelector('#sFdi').style.animation = 'none';
       await tween(900, function (k) { d.setAttribute('transform', 'translate(' + (H.x + (60 - H.x) * k).toFixed(1) + ' ' + (H.y + (F - 214 - H.y) * k - Math.sin(k * Math.PI) * 30).toFixed(1) + ') rotate(' + (H.r - 8 * k) + ')'); });
       await tween(520, function (k) { d.setAttribute('transform', 'translate(60 ' + (F - 214 + k * 116) + ') rotate(' + (-12 + 50 * k) + ')'); });
-      S.fl.setAttribute('opacity', 1); if (hasK()) Kolbi.mood('dizzy', 1800);
-      await tween(300, function (k) { S.flash.setAttribute('opacity', 0.85 * (1 - k)); }); await wait(900); S.fl.setAttribute('opacity', 0);
+      fl.setAttribute('opacity', 1); if (hasK()) Kolbi.mood('dizzy', 1800);
+      await tween(300, function (k) { fo.setAttribute('opacity', 0.85 * (1 - k)); }); await wait(900); fl.setAttribute('opacity', 0);
     },
     back: async function () {             // Kolbi legt den Föhn wieder auf den Boden
       var d = S.fd, H = S.fdHome, F = S.F; moveKrect(118, undefined);
@@ -251,12 +278,14 @@
     if (l.act === 'enter') { var G = T.g; place(G.offX, G.ay()); await actorTo(G.stopX, G.ay(), 2200); if (g !== gen) return; if (!l.t) { busy = false; return next(); } }
     else if (l.act && ACTS[l.act]) { await ACTS[l.act](); if (g !== gen) return; }
     if (g !== gen) return;
-    if (l.t) {
-      if (l.w === 'K') { if (hasK()) { Kolbi.line(l.t, 600000, l.m || 'happy'); if (i === 0) setTimeout(function () { if (g === gen && running && idx === 0) Kolbi.line(l.t, 600000, l.m || 'happy'); }, 2300); } else showBub('<b>Kolbi:</b> ' + l.t); }
-      else showBub('<b>' + (T.id === 'lake' ? 'Neumo' : T.id === 'bath' ? 'Bernd' : 'Wally') + ':</b> ' + l.t);
-    }
+    sayLine(l, i, g);
     if (l.act === 'leave') { busy = false; hint.textContent = 'Tippe, um die Szene zu beenden ▸'; leaving = true; return; }
     busy = false;
+  }
+  function sayLine(l, i, g) {
+    if (!l.t) return;
+    if (l.w === 'K') { if (hasK()) { Kolbi.line(l.t, 600000, l.m || 'happy'); if (i === 0) setTimeout(function () { if (g === gen && running && idx === 0) Kolbi.line(l.t, 600000, l.m || 'happy'); }, 2300); } else showBub('<b>Kolbi:</b> ' + l.t); }
+    else showBub('<b>' + (T.id === 'lake' ? 'Neumo' : T.id === 'bath' ? 'Bernd' : 'Wally') + ':</b> ' + l.t);
   }
   var leaving = false;
   async function next() {
@@ -266,7 +295,7 @@
     show(idx + 1);
   }
   function end() {
-    if (!running) return; running = false; gen++;
+    if (!running) return; running = false; gen++; fast = false; clearTimeout(rt); window.removeEventListener('resize', onResize); window.removeEventListener('orientationchange', onResize);
     if (hasK()) { if (T && T.done) T.done(); if (Kolbi.motion) Kolbi.motion(false); Kolbi.hush(); Kolbi.lock(false); Kolbi._idle(0); Kolbi.mood('happy', 1500); }
     if (veil && veil.parentNode) veil.parentNode.removeChild(veil); veil = null; busy = false; leaving = false;
     var f = cb; cb = null; if (f) f();
@@ -278,8 +307,6 @@
     veil.addEventListener('click', function (e) { if (e.target.id === 'sceneSkip') return; next(); });
     veil.querySelector('#sceneSkip').addEventListener('click', function (e) { e.stopPropagation(); end(); });
     if (hasK()) { Kolbi.show(); Kolbi.hush(); if (Kolbi.motion) Kolbi.motion(true); Kolbi.lock(true); if (T.init) T.init(); placeK(); }
-    var solo = !arr.some(function (l) { return l.w === 'W'; });
-    if (solo) { var a0 = svgR.querySelector('#sWally'); if (a0) a0.setAttribute('opacity', 0); }
     bob(!solo && T.id === 'bath' ? false : !solo); await wait(solo ? 700 : 1300); busy = false; show(0);
   }
 
