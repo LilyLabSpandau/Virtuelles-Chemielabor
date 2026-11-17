@@ -116,7 +116,7 @@
   function levels(svg, n) {
     var N = 2 * n, ks = [], k, y0 = 12, y1 = 148, i;
     for (k = 1; k <= N; k++) ks.push(2 * Math.cos(k * Math.PI / (N + 1)));   // positiv = energiearm
-    function py(x) { return y0 + (2.1 - x) / 4.2 * (y1 - y0); }
+    function py(x) { return y0 + (x + 2.1) / 4.2 * (y1 - y0); }   // energiearm (positiv) unten, energiereich oben
     var s = '<line x1="20" x2="20" y1="10" y2="150" stroke="#475569" stroke-width="1.4"/><text x="8" y="80" font-size="10" fill="#334155" transform="rotate(-90 8 80)" text-anchor="middle">Energie der π-Orbitale</text>';
     for (i = 0; i < N; i++) {
       var occ = i < n, y = py(ks[i]), homo = i === n - 1, lumo = i === n, col = homo ? '#2563eb' : lumo ? '#dc2626' : '#64748b';

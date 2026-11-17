@@ -10,7 +10,7 @@
     var s = halbzelle(30, 'Zn', '#cbd5e1', '#e2e8f0', 'Zn in ZnSO₄-Lösung') + halbzelle(240, 'Cu', '#fdba74', '#bfdbfe', 'Cu in CuSO₄-Lösung');
     s += G.p('M75 30 V10 H285 V30', { s: I, w: 2.4 }) + G.c(180, 10, 14, { f: '#fff', s: I }) + T(180, 15, 'V', { b: 1, s: 14 });
     s += G.p('M100 80 V56 H260 V80', { s: '#94a3b8', w: 9 }) + T(180, 78, 'Salzbrücke', { s: 10, c: '#475569' });
-    if (sig) s += G.ar(95, 26, 150, 26, { c: '#ca8a04', w: 2.4 }) + T(122, 34, 'e⁻', { s: 11, b: 1, c: '#a16207' }) + T(95, 192, 'Zn → Zn²⁺ + 2e⁻', { s: 10, c: R, b: 1 }) + T(285, 192, 'Cu²⁺ + 2e⁻ → Cu', { s: 10, c: B, b: 1 });
+    if (sig) s += G.ar(90, 26, 134, 26, { c: '#ca8a04', w: 2.4 }) + T(112, 42, 'e⁻', { s: 11, b: 1, c: '#a16207' }) + T(95, 192, 'Zn → Zn²⁺ + 2e⁻', { s: 10, c: R, b: 1 }) + T(285, 192, 'Cu²⁺ + 2e⁻ → Cu', { s: 10, c: B, b: 1 });
     return G.svg(W, 200, s);
   }
   A('e', 'gk', 'elektrochemische Doppelschicht', 'h', ['e1', 'e2'], [

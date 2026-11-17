@@ -311,6 +311,7 @@
     var t = S.term; if (!t) return;
     S.idx = Math.max(0, Math.min(t.s.length - 1, n)); drawSlide(); setMood(S.who, S.idx === t.s.length - 1 ? 'happy' : 'interested', 2500);
   }
+  function us(h) { return String(h).replace(/(Δ|E|U|λ)_(max|[A-Za-z])/g, '$1<sub>$2</sub>'); }
   function drawSlide(forcedLine) {
     var t = S.term, n = t.s.length, i = S.idx, sl = t.s[i], w = t.who;
     var lead = forcedLine || ('<b>' + NAME[w] + ':</b> ' + (sl.say ? esc(sl.say) : rnd(i === 0 ? LEAD.first : i === n - 1 ? LEAD.last : LEAD.mid)));
@@ -319,8 +320,8 @@
     var dots = ''; for (var k = 0; k < n; k++) dots += '<button type="button" class="dt' + (k === i ? ' on' : '') + '" data-n="' + k + '" aria-label="Folie ' + (k + 1) + '"></button>';
     var html = '<div class="sl-top"><span class="sl-term">' + EMO[w] + ' ' + esc(t.chip) + '</span><span class="sl-count">' + (i + 1) + ' / ' + n + '</span></div>';
     html += '<div class="sl-fig">' + fig + '</div>';
-    html += '<h3 class="sl-h">' + esc(sl.h) + '</h3><div class="sl-t">' + sl.t + '</div>';
-    if (i === n - 1 && t.m) html += '<div class="sl-m"><b>Merke:</b> ' + t.m + '</div>';
+    html += '<h3 class="sl-h">' + us(esc(sl.h)) + '</h3><div class="sl-t">' + us(sl.t) + '</div>';
+    if (i === n - 1 && t.m) html += '<div class="sl-m"><b>Merke:</b> ' + us(t.m) + '</div>';
     html += '<div class="sh-nav"><button type="button" class="bt ghost" data-n="' + (i - 1) + '"' + (i === 0 ? ' disabled' : '') + '>◀ Zurück</button><span class="dts">' + dots + '</span>';
     if (i < n - 1) html += '<button type="button" class="bt" data-n="' + (i + 1) + '">Weiter ▶</button>';
     else html += '<button type="button" class="bt" data-a="back">Weitere Begriffe</button>';

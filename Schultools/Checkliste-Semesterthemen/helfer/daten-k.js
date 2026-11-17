@@ -24,7 +24,7 @@
 
   A('k', 'gk', 'Polarisierung', 'k', ['k3'], [
     { h: 'Ungleich verteilte Elektronen', t: 'Bindet sich Wasserstoff an Chlor, zieht Cl die Bindungselektronen stärker an (höhere <b>Elektronegativität</b>). Die Bindung ist <b>polarisiert</b>: H trägt eine Teilladung <span class="bl">δ⁺</span>, Cl eine Teilladung <span class="r">δ⁻</span>.',
-      f: G.svg(W, 140, G.c(110, 70, 30, { f: '#dbeafe', s: B }) + T(110, 76, 'H', { s: 20, b: 1 }) + G.c(210, 70, 40, { f: '#fee2e2', s: R }) + T(210, 76, 'Cl', { s: 22, b: 1 }) + T(110, 40, 'δ⁺', { c: B, b: 1, s: 16 }) + T(210, 34, 'δ⁻', { c: R, b: 1, s: 16 }) + G.ar(130, 70, 170, 70, { c: O, w: 3 }) + T(245, 120, 'Elektronen wandern zum Cl', { c: O, s: 11, a: 'middle' })) },
+      f: G.svg(W, 140, G.c(110, 70, 30, { f: '#dbeafe', s: B }) + T(110, 76, 'H', { s: 20, b: 1 }) + G.c(210, 70, 40, { f: '#fee2e2', s: R }) + T(210, 76, 'Cl', { s: 22, b: 1 }) + T(110, 26, 'δ⁺', { c: B, b: 1, s: 16 }) + T(210, 20, 'δ⁻', { c: R, b: 1, s: 16 }) + G.ar(130, 70, 170, 70, { c: O, w: 3 }) + T(245, 120, 'Elektronen wandern zum Cl', { c: O, s: 11, a: 'middle' })) },
     { h: 'Warum ist das wichtig?', t: 'Polarisierte Bindungen machen Moleküle <b>reaktiv</b>: das H⁺-Ende ist ein Elektrophil. So kann HCl eine Doppel- oder Dreifachbindung <b>angreifen</b>.',
       f: G.svg(W, 120, T(180, 50, 'H–Cl  ⟶  H⁺ + Cl⁻', { s: 22, b: 1 }) + T(180, 86, 'die polare Bindung bricht „ungleichmäßig“', { s: 12, c: '#475569' })) }
   ], 'Polarisierung: Elektronen sind in einer Bindung zum elektronegativeren Atom verschoben (δ⁺/δ⁻).');
@@ -106,7 +106,7 @@
     { h: 'Kern-Liebhaber', t: 'Ein <b>Nucleophil</b> (griech. „kernliebend“) hat ein <b>freies Elektronenpaar</b> oder ist negativ geladen. Es greift eine Stelle mit <b>Elektronenmangel</b> an (positiv polarisiertes C-Atom). Beispiele: OH⁻, NH₃, Cl⁻, R–OH.',
       f: G.svg(W, 150, T(70, 70, 'Nu⁻', { s: 26, b: 1, c: B }) + T(70, 96, 'Nucleophil', { s: 11, c: B, b: 1 }) + G.ar(110, 66, 190, 66, { c: B, w: 3 }) + T(250, 70, 'Cδ⁺', { s: 24, b: 1 }) + T(250, 96, '(Elektronenmangel)', { s: 11 }) + T(180, 130, 'Elektronenpaar → Bindung', { s: 12, c: B })) },
     { h: 'Beim Polyester', t: 'Das O-Atom des Alkohols (Diol) hat freie Elektronenpaare. Es greift das <b>positiv polarisierte Carbonyl-C</b> der Carbonsäure an (C=O: C ist δ⁺). Nach Abspaltung von Wasser ist die <b>Esterbindung</b> geknüpft.',
-      f: G.svg(W, 150, T(70, 70, 'R–O–H', { s: 18, b: 1, c: B }) + T(70, 52, '··', { c: R, b: 1 }) + G.ar(105, 66, 182, 66, { c: B, w: 2.6 }) + T(220, 70, 'R′–C(=O)–OH', { s: 18, b: 1 }) + T(172, 90, 'δ⁺', { c: B, s: 11 }) + T(180, 130, '→ Ester + H₂O', { s: 14, b: 1, c: N })) }
+      f: G.svg(W, 150, T(70, 70, 'R–O–H', { s: 18, b: 1, c: B }) + T(70, 52, '··', { c: R, b: 1 }) + G.ar(105, 66, 192, 66, { c: B, w: 2.6 }) + T(262, 70, 'R′–C(=O)–OH', { s: 18, b: 1 }) + T(233, 48, 'δ⁺', { c: B, b: 1, s: 12 }) + T(180, 130, '→ Ester + H₂O', { s: 14, b: 1, c: N })) }
   ], 'Nucleophil: Teilchen mit freiem Elektronenpaar, das ein positiv polarisiertes Atom angreift.');
   A('k', 'lk', 'Amid-Gruppe', 'k', ['k14'], [
     { h: 'Die Gruppe –CO–NH–', t: 'Die <b>Amid-Gruppe</b> verknüpft bei <b>Polyamiden</b> die Monomere: Aus einer <b>Carbonsäure</b> und einem <b>Amin</b> entsteht –CO–NH– und Wasser. Sie ist dieselbe Bindung wie die Peptidbindung im Protein!',

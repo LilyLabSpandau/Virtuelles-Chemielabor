@@ -11,7 +11,7 @@
   };
   var AH = { '#1e293b': 'ah', '#dc2626': 'ahr', '#2563eb': 'ahb', '#16a34a': 'ahg', '#ea580c': 'aho', '#7c3aed': 'ahv' };
   G.t = function (x, y, s, o) {
-    return '<text x="' + x + '" y="' + y + '" font-size="' + a(o, 's', 13) + '" fill="' + a(o, 'c', INK) + '" text-anchor="' + a(o, 'a', 'middle') + '"' + (a(o, 'b', 0) ? ' font-weight="700"' : '') + (a(o, 'i', 0) ? ' font-style="italic"' : '') + (o && o.rot ? ' transform="rotate(' + o.rot + ' ' + x + ' ' + y + ')"' : '') + '>' + s + '</text>';
+    return '<text x="' + x + '" y="' + y + '" font-size="' + a(o, 's', 13) + '" fill="' + a(o, 'c', INK) + '" text-anchor="' + a(o, 'a', 'middle') + '"' + (a(o, 'b', 0) ? ' font-weight="700"' : '') + (a(o, 'i', 0) ? ' font-style="italic"' : '') + (o && o.rot ? ' transform="rotate(' + o.rot + ' ' + x + ' ' + y + ')"' : '') + '>' + String(s).replace(/(Δ|E|U|λ)_(max|[A-Za-z])/g, '$1<tspan dy="3" font-size="70%">$2</tspan><tspan dy="-3">\u200b</tspan>') + '</text>';
   };
   G.l = function (x1, y1, x2, y2, o) {
     return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + a(o, 'c', INK) + '" stroke-width="' + a(o, 'w', 2) + '" stroke-linecap="round"' + (o && o.d ? ' stroke-dasharray="' + o.d + '"' : '') + '/>';
