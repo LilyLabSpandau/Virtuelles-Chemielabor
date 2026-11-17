@@ -76,7 +76,7 @@
     var m = svgEl('text', { x: 26, y: 12, 'text-anchor': 'middle', 'font-size': 14, 'font-weight': 800, fill: '#2563eb' }, P); m.textContent = '−'; var pl = svgEl('text', { x: 274, y: 12, 'text-anchor': 'middle', 'font-size': 14, 'font-weight': 800, fill: '#dc2626' }, P); pl.textContent = '+';
     pg = svgEl('g', {}, P); parts = [];
     function add(kind) {
-      var o = { kind: kind, x: 54 + Math.random() * 192, y: 30 + Math.random() * 140, vx: (Math.random() - .5) * 1.2, vy: (Math.random() - .5) * 1.2 };
+      var o = { kind: kind, stop: Math.random() * 46, x: 54 + Math.random() * 192, y: 30 + Math.random() * 140, vx: (Math.random() - .5) * 1.2, vy: (Math.random() - .5) * 1.2 };
       o.g = svgEl('g', {}, pg);
       if (kind === 'w') { svgEl('circle', { cx: 0, cy: 0, r: 4.5, fill: '#fca5a5', opacity: .9 }, o.g); }
       else if (kind === 's') { svgEl('polygon', { points: '0,-7 6,-3.5 6,3.5 0,7 -6,3.5 -6,-3.5', fill: '#fde68a', stroke: '#b45309', 'stroke-width': 1 }, o.g); }
@@ -91,17 +91,20 @@
   }
   function tick() {
     parts.forEach(function (o) {
-      var drift = on && (o.kind === 'p' || o.kind === 'n') ? (o.kind === 'p' ? -1 : 1) * 0.45 : 0;   // + Teilchen zum Minuspol (links), − Teilchen zum Pluspol (rechts); sie bleiben immer zwischen den Elektroden
-      o.x += o.vx + drift; o.y += o.vy; o.vx += (Math.random() - .5) * .25; o.vy += (Math.random() - .5) * .25; o.vx = Math.max(-1.4, Math.min(1.4, o.vx)); o.vy = Math.max(-1.4, Math.min(1.4, o.vy));
+      var chg = o.kind === 'p' || o.kind === 'n', dir = o.kind === 'p' ? -1 : 1;   // + Teilchen zum Minuspol (links), − Teilchen zum Pluspol (rechts)
+      o.x += o.vx + (on && chg ? dir * 1.6 : 0); o.y += o.vy;
+      o.vx += (Math.random() - .5) * .25; o.vy += (Math.random() - .5) * .25; o.vx = Math.max(-1.4, Math.min(1.4, o.vx)); o.vy = Math.max(-1.4, Math.min(1.4, o.vy));
       if (o.y < 24 || o.y > 176) o.vy *= -1; if (o.x < 46 || o.x > 254) o.vx *= -1;
-      o.x = Math.max(44, Math.min(256, o.x)); o.y = Math.max(24, Math.min(176, o.y));
+      var lo = 44, hi = 256;
+      if (on && chg) { if (dir < 0) lo = 44 + o.stop; else hi = 256 - o.stop; }   // Mit Spannung sammeln sich die Teilchen vor dem Gegenpol, sie bleiben immer zwischen den Elektroden
+      o.x = Math.max(lo, Math.min(hi, o.x)); o.y = Math.max(24, Math.min(176, o.y));
       o.g.setAttribute('transform', 'translate(' + o.x.toFixed(1) + ' ' + o.y.toFixed(1) + ')');
     });
   }
   timer = setInterval(function () { if ($('ls2').classList.contains('on') && $('l').classList.contains('on')) tick(); }, 50);
   LIQ.forEach(function (l, i) { var b = document.createElement('button'); b.textContent = l.lab.replace(' (Leitungswasser mit Seife)', ''); b.setAttribute('data-id', l.id); if (!i) b.classList.add('on'); $('lpsel').appendChild(b); });
   $('lpsel').addEventListener('click', function (e) { var b = e.target.closest ? e.target.closest('button') : null; if (!b) return; cp = LIQ.filter(function (x) { return x.id === b.getAttribute('data-id'); })[0]; Array.prototype.forEach.call($('lpsel').querySelectorAll('button'), function (x) { x.classList.toggle('on', x === b); }); pbuild(); });
-  $('lvolt').addEventListener('click', function () { on = !on; this.textContent = on ? '⏹ Spannung ausschalten' : '⚡ Spannung einschalten'; });
+  $('lvolt').addEventListener('click', function () { on = !on; this.textContent = on ? '⏹ Spannung ausschalten' : '⚡ Spannung einschalten'; $('lvstate').textContent = on ? 'Spannung an: Die + Teilchen wandern zum Minuspol, die − Teilchen zum Pluspol. So wird Ladung durch die Flüssigkeit transportiert.' : 'Spannung aus: Alle Teilchen bewegen sich ungeordnet.'; });
   pbuild();
 
   // Salz löst sich

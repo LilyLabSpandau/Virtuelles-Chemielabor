@@ -40,8 +40,8 @@
     { w: 'W', m: 'happy', t: 'Ich bin Neumo. Im Sommer schwimme ich meistens im oberen Wasser. Dort ist es schön warm.' },
     { w: 'K', m: 'happy', t: 'Das merke ich auch. Ich komme im Winter wieder vorbei und besuche dich.' },
     { w: 'K', m: 'oops', act: 'winter', t: 'Brr, ist das kalt! Gut, dass ich meine Schutzjacke anhabe. Der See ist zugefroren, und Neumo ist nirgends zu sehen. Ob er weiter unten ist?' },
-    { w: 'W', m: 'happy', act: 'dive', t: 'Hallo Kolbi! Hier unten bin ich!' },
-    { w: 'K', m: 'surprised', t: 'Du bist ganz unten am Grund! Im Sommer warst du doch oben. Und warum ist der See nicht bis zum Grund zugefroren?' },
+    { w: 'W', m: 'happy', act: 'fishdown', t: 'Hallo Kolbi! Hier unten bin ich!' },
+    { w: 'K', m: 'surprised', act: 'dive', t: 'Du bist ja ganz unten am Grund! Im Sommer warst du doch oben. Und warum ist der See nicht bis zum Grund zugefroren?' },
     { w: 'W', m: 'interested', t: 'Das liegt an einer Besonderheit des Wassers. Hier unten ist es im Winter am wärmsten, nämlich 4 °C. Es hat mit der Dichte des Wassers zu tun.' },
     { w: 'K', m: 'excited', t: 'Die Dichte des Wassers! Das sehen wir uns jetzt genauer an. Kommst du mit, Neumo?' },
     { w: 'W', m: 'wink', act: 'leave', t: 'Ich schwimme lieber noch eine Runde. Viel Erfolg beim Forschen!' }
@@ -57,7 +57,7 @@
     { w: 'K', m: 'interested', act: 'sink', t: 'Dann zeige ich dir mal, was passieren kann. Schau her, hier am Waschbecken.' },
     { w: 'K', m: 'oops', act: 'drop', t: 'Siehst du? Fällt ein eingeschalteter Föhn ins Wasser, kann Strom durch das Wasser fließen. Und das ist lebensgefährlich!' },
     { w: 'W', m: 'surprised', t: 'Hoppla! Aber in der Schule hieß es doch immer, Wasser leitet gar keinen Strom …' },
-    { w: 'K', m: 'interested', act: 'back', t: 'Das stimmt nur bei reinem Wasser. Warum, das finden wir jetzt heraus. Und du, Bernd, lässt den Föhn bitte hängen!' },
+    { w: 'K', m: 'interested', act: 'back', t: 'Das stimmt nur bei reinem Wasser. Warum, das finden wir jetzt heraus. Und du, Bernd, lässt den Föhn bitte liegen!' },
     { w: 'W', m: 'wink', t: 'Na gut, na gut. Aber nur, weil du es bist.' }
   ];
   BAD.theme = 'bath';
@@ -168,11 +168,9 @@
     E('rect', { x: bx + 6, y: F - 82, width: 206, height: 58, rx: 8, fill: '#8fd3f4', opacity: .72 });
     [[218, F - 84, 9], [236, F - 88, 7], [330, F - 86, 10], [348, F - 90, 8], [250, F - 82, 6], [312, F - 82, 7]].forEach(function (c) { E('circle', { cx: c[0], cy: c[1], r: c[2], fill: '#fff', opacity: .92 }); });
     var du = E('g', {}); E('ellipse', { cx: 372, cy: F - 88, rx: 12, ry: 8, fill: '#facc15' }, du); E('circle', { cx: 380, cy: F - 98, r: 6.5, fill: '#facc15' }, du); E('path', { d: 'M385 ' + (F - 98) + ' l7 2 l-7 3 Z', fill: '#f97316' }, du); E('circle', { cx: 382, cy: F - 99, r: 1.3, fill: '#111' }, du);
-    // Föhn an der Wand (Haken)
-    var fh = E('g', { id: 'sFh', transform: 'translate(238 ' + (F - 232) + ')' }); S.fh = fh;
+    // Der Föhn: nur eine Darstellung, er liegt von Anfang an auf dem Boden vor der Badewanne
     function foehn(g) { E('path', { d: 'M-4 18 Q-4 40 -2 48', fill: 'none', stroke: '#1f2937', 'stroke-width': 2.4, 'stroke-linecap': 'round' }, g); E('rect', { x: -2, y: 8, width: 12, height: 28, rx: 5, fill: '#7e22ce' }, g); E('rect', { x: -26, y: -6, width: 50, height: 24, rx: 11, fill: '#a855f7', stroke: '#6b21a8', 'stroke-width': 2 }, g); E('rect', { x: -34, y: -3, width: 12, height: 18, rx: 4, fill: '#d8b4fe', stroke: '#6b21a8', 'stroke-width': 2 }, g); E('circle', { cx: 14, cy: 6, r: 3, fill: '#fde047' }, g); }
-    var fhi = E('g', { id: 'sFhi' }, fh); foehn(fhi);
-    var dm = E('g', { id: 'sFd', opacity: 0, transform: 'translate(60 ' + (F - 200) + ')' }); foehn(dm); S.fd = dm;
+    var dm = E('g', { id: 'sFd', transform: 'translate(290 ' + (F + 16) + ') rotate(-4)' }); var fi = E('g', { id: 'sFdi' }, dm); foehn(fi); S.fd = dm; S.fdHome = { x: 290, y: F + 16, r: -4 };
     var fl = E('g', { id: 'sFl', opacity: 0 }); E('text', { x: 60, y: F - 78, 'text-anchor': 'middle', 'font-size': 72 }, fl).textContent = '⚡'; var zt = E('text', { x: 60, y: F - 138, 'text-anchor': 'middle', 'font-size': 28, 'font-weight': 800, fill: '#dc2626' }, fl); zt.textContent = 'ZZZAP!'; S.fl = fl;
     S.flash = E('rect', { x: -1500, y: -1500, width: 3400, height: 3000, fill: '#fff', opacity: 0 });
     return { stopX: 0, offX: 0, ay: function () { return 0; }, dir: 1, still: true };
@@ -223,20 +221,27 @@
       S.season = 'w'; await tween(1800, function (k) { S.W.setAttribute('opacity', k); });
       if (hasK()) { Kolbi.deco(['stopper', 'jacket']); Kolbi.mood('oops', 3000); }
     },
-    dive: async function () {             // Kolbi taucht zum Grund, Neumo kommt dort an
-      moveKrect(26, S.feetW); await wait(1700); place(470, S.fishW); await turn(-1); await actorTo(250, S.fishW, 1800);
+    fishdown: async function () {         // Neumo schwimmt unten am Grund herein, Kolbi bleibt oben
+      place(470, S.fishW); await turn(-1); await actorTo(250, S.fishW, 2000);
+    },
+    dive: async function () {             // erst jetzt taucht Kolbi zum Grund
+      moveKrect(26, S.feetW); await wait(2000);
     },
     shy: async function () { moveKrect(-30, undefined); await wait(1400); },
     call: async function () { moveKrect(118, undefined); await wait(1300); },
-    wish: async function () { var f = svgR.querySelector('#sFhi'); f.style.transformBox = 'fill-box'; f.style.transformOrigin = 'center'; f.style.animation = 'spulse .9s ease-in-out 4'; await wait(300); },
+    wish: async function () { var f = svgR.querySelector('#sFdi'); f.style.transformBox = 'fill-box'; f.style.transformOrigin = 'center'; f.style.animation = 'spulse .9s ease-in-out 4'; await wait(300); },
     sink: async function () { moveKrect(64, undefined); await wait(1500); },
-    drop: async function () {
-      var d = S.fd, F = S.F; d.setAttribute('opacity', 1); d.setAttribute('transform', 'translate(60 ' + (F - 210) + ') rotate(-12)');
-      await tween(520, function (k) { d.setAttribute('transform', 'translate(60 ' + (F - 210 + k * 112) + ') rotate(' + (-12 + 50 * k) + ')'); });
+    drop: async function () {             // derselbe Föhn: vom Boden über das Waschbecken, dann hinein
+      var d = S.fd, F = S.F, H = S.fdHome; svgR.querySelector('#sFdi').style.animation = 'none';
+      await tween(900, function (k) { d.setAttribute('transform', 'translate(' + (H.x + (60 - H.x) * k).toFixed(1) + ' ' + (H.y + (F - 214 - H.y) * k - Math.sin(k * Math.PI) * 30).toFixed(1) + ') rotate(' + (H.r - 8 * k) + ')'); });
+      await tween(520, function (k) { d.setAttribute('transform', 'translate(60 ' + (F - 214 + k * 116) + ') rotate(' + (-12 + 50 * k) + ')'); });
       S.fl.setAttribute('opacity', 1); if (hasK()) Kolbi.mood('dizzy', 1800);
       await tween(300, function (k) { S.flash.setAttribute('opacity', 0.85 * (1 - k)); }); await wait(900); S.fl.setAttribute('opacity', 0);
     },
-    back: async function () { moveKrect(118, undefined); await wait(1000); }
+    back: async function () {             // Kolbi legt den Föhn wieder auf den Boden
+      var d = S.fd, H = S.fdHome, F = S.F; moveKrect(118, undefined);
+      await tween(1000, function (k) { d.setAttribute('transform', 'translate(' + (60 + (H.x - 60) * k).toFixed(1) + ' ' + ((F - 98) + (H.y - (F - 98)) * k - Math.sin(k * Math.PI) * 40).toFixed(1) + ') rotate(' + (38 + (H.r - 38) * k) + ')'); });
+    }
   };
 
   async function show(i) {

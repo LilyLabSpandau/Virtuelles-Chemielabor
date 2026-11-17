@@ -74,7 +74,7 @@
   // ---------------------------------------------------------- Schritt 2: See im Jahreslauf
   var S = [
     { id: 'so', lab: '☀️ Sommer', t: [22, 18, 12, 7, 4], ice: false, arrows: false, info: 'Das warme, leichtere Wasser schwimmt oben. Unten liegt das schwere, kalte Wasser (4 °C). Die Schichten vermischen sich kaum.' },
-    { id: 'he', lab: '🍂 Herbst', t: [8, 8, 8, 7, 6], ice: false, arrows: true, info: 'Die Oberfläche kühlt ab. Das kältere Wasser ist dichter und sinkt. Warmes Wasser steigt von unten auf: Der See durchmischt sich, bis alles etwa 4 °C hat.' },
+    { id: 'he', lab: '🍂 Herbst', t: [8, 8, 8, 8, 8], ice: false, arrows: true, info: 'Die Oberfläche kühlt ab. Das kältere Wasser ist dichter und sinkt. Warmes Wasser steigt von unten auf: Der See durchmischt sich, bis die Temperatur in allen Schichten fast gleich ist.' },
     { id: 'wi', lab: '❄️ Winter', t: [0, 1, 2, 3, 4], ice: true, arrows: false, info: 'Unter 4 °C wird Wasser wieder leichter. Das kälteste Wasser bleibt oben und gefriert zuerst. Das Eis schwimmt. Am Grund bleibt es bei etwa 4 °C, dort überleben die Fische.' },
     { id: 'fr', lab: '🌱 Frühling', t: [3, 4, 4, 4, 4], ice: false, arrows: true, info: 'Das Eis schmilzt und die Oberfläche erwärmt sich. Sobald sie 4 °C erreicht, ist sie am dichtesten und sinkt. Der See durchmischt sich noch einmal.' }
   ];
@@ -92,8 +92,13 @@
     });
     if (s.ice) { svgEl('rect', { x: 34, y: 36, width: 292, height: 16, fill: '#f0f9ff', stroke: '#bae6fd' }, lake); var e = svgEl('text', { x: 60, y: 49, 'font-size': 12, 'font-weight': 700, fill: '#0369a1' }, lake); e.textContent = 'Eis'; }
     // Fisch
-    var f = svgEl('g', { transform: 'translate(70 ' + (L0 + 4 * LH + 8) + ')' }, lake);
-    svgEl('ellipse', { cx: 0, cy: 0, rx: 18, ry: 9, fill: '#f59e0b' }, f); svgEl('polygon', { points: '16,0 30,-9 30,9', fill: '#f59e0b' }, f); svgEl('circle', { cx: -9, cy: -2, r: 2, fill: '#1e293b' }, f);
+    // Sommer: oben im warmen Wasser, Herbst: mittendrin, Frühling: weiter unten, Winter: am Grund (4 °C)
+    var depth = { so: 1, he: 2, wi: 4, fr: 3 }[id];
+    var f = svgEl('g', { transform: 'translate(60 ' + (L0 + depth * LH + 15) + ')' }, lake);
+    var sw = svgEl('animateTransform', { attributeName: 'transform', type: 'translate', values: '60 ' + (L0 + depth * LH + 15) + ';210 ' + (L0 + depth * LH + 15) + ';60 ' + (L0 + depth * LH + 15), dur: '9s', repeatCount: 'indefinite' }, f);
+    var fi = svgEl('g', {}, f);
+    svgEl('animateTransform', { attributeName: 'transform', type: 'scale', values: '-1 1;1 1', keyTimes: '0;0.5', calcMode: 'discrete', dur: '9s', repeatCount: 'indefinite' }, fi);
+    svgEl('ellipse', { cx: 0, cy: 0, rx: 18, ry: 9, fill: '#f59e0b' }, fi); svgEl('polygon', { points: '16,0 30,-9 30,9', fill: '#f59e0b' }, fi); svgEl('circle', { cx: -9, cy: -2, r: 2, fill: '#1e293b' }, fi);
     if (s.arrows) [90, 170, 250].forEach(function (x, i) {
       var up = id === 'fr' ? (i % 2 === 0) : (i % 2 === 1);
       svgEl('path', { d: 'M' + x + ' ' + (up ? 178 : 70) + ' L' + x + ' ' + (up ? 78 : 170), stroke: '#0f172a', 'stroke-width': 3, 'marker-end': 'url(#dar)', fill: 'none', opacity: .75 }, lake);
