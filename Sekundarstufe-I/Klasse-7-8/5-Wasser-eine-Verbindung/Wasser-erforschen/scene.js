@@ -88,7 +88,7 @@
     if (l.act === 'enter') { await wallyTo(290, 2200); if (g !== gen) return; if (!l.t) { busy = false; return next(); } }
     if (g !== gen) return;
     if (l.t) {
-      if (l.w === 'K') { if (hasK()) Kolbi.line(l.t, 600000, l.m || 'happy'); else showBub('<b>Kolbi:</b> ' + l.t); }
+      if (l.w === 'K') { if (hasK()) { Kolbi.line(l.t, 600000, l.m || 'happy'); if (i === 0) setTimeout(function () { if (g === gen && running && idx === 0) Kolbi.line(l.t, 600000, l.m || 'happy'); }, 2300); } else showBub('<b>Kolbi:</b> ' + l.t); }
       else showBub('<b>Wally:</b> ' + l.t);
     }
     if (l.act === 'leave') { busy = false; hint.textContent = 'Tippe, um die Szene zu beenden ▸'; leaving = true; return; }

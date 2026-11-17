@@ -402,6 +402,6 @@
       else if (++tries < 5) setTimeout(go, 6000);
     }, 2200);
   }
-  function start() { if (window.Kolbi) return run(); var s = document.createElement('script'); s.src = base + 'kolbi.js'; s.onload = run; document.head.appendChild(s); }
+  function start() { if (window.Kolbi) return run(); var s = document.createElement('script'); s.src = base + 'kolbi.js?v=20261117'; s.onload = run; document.head.appendChild(s); }
   if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
 })();
