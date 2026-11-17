@@ -3,8 +3,14 @@
   'use strict';
   if (Store('open')) unlock('restore');
   $('lockhint').hidden = true;
+  $('wipebtn').addEventListener('click', function () { $('wipebtn').hidden = true; $('wipeask').hidden = false; });
+  $('wipeno').addEventListener('click', function () { $('wipeask').hidden = true; $('wipebtn').hidden = false; });
+  $('wipeyes').addEventListener('click', function () {
+    try { localStorage.removeItem('wasser8-v1'); } catch (e) {}
+    location.reload();
+  });
   $('introbtn').addEventListener('click', function () { Szene.play(Szene.INTRO); });
-  if (!Store('intro') && !isUnlocked()) setTimeout(function () { if (!Szene.running()) { Store('intro', 1); Szene.play(Szene.INTRO); } }, 900);
+  setTimeout(function () { if (!Szene.running()) Szene.play(Szene.INTRO); }, 900);   // Die Einführung startet bei jedem Öffnen; mit „Überspringen“ lässt sie sich beenden
   document.addEventListener('unlocked', function (e) { $('lockbox').hidden = true; $('lockhint').hidden = true; });
   if (isUnlocked()) $('lockbox').hidden = true;
   function go() {
