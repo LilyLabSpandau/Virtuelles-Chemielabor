@@ -248,7 +248,7 @@ function l1draw(dt) {
   c.fillStyle = rgba(fin); c.fillRect(bx, top, bw, bh);
   var sh = c.createLinearGradient(0, top, 0, top + 40); sh.addColorStop(0, 'rgba(255,255,255,.22)'); sh.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = sh; c.fillRect(bx, top, bw, 40);
   /* Blasen bei Magnesium (reagiert zusätzlich leicht mit Wasser) */
-  if (T && m === 0 && d > .9 && T.t < dipT + reactT + 1) { var q; for (q = 0; q < 9; q++) { var ph = (S.t * .6 + q * .37) % 1; c.fillStyle = 'rgba(255,255,255,.55)'; c.beginPath(); c.arc(sx + Math.sin(q * 5.1 + S.t * 2) * 22, top + 170 - ph * 160, 2 + (q % 3), 0, 6.283); c.fill(); } }
+  if (T && T.react && m === 0 && d > .9 && T.t < dipT + reactT + 1) { var q; for (q = 0; q < 9; q++) { var ph = (S.t * .6 + q * .37) % 1; c.fillStyle = 'rgba(255,255,255,.55)'; c.beginPath(); c.arc(sx + Math.sin(q * 5.1 + S.t * 2) * 22, top + 170 - ph * 160, 2 + (q % 3), 0, 6.283); c.fill(); } }
   c.restore();
   /* Glas */
   c.strokeStyle = 'rgba(255,255,255,.6)'; c.lineWidth = 3; c.beginPath(); c.moveTo(bx, by); c.lineTo(bx, by + bh - 22); c.quadraticCurveTo(bx, by + bh, bx + 22, by + bh); c.lineTo(bx + bw - 22, by + bh); c.quadraticCurveTo(bx + bw, by + bh, bx + bw, by + bh - 22); c.lineTo(bx + bw, by); c.stroke();
