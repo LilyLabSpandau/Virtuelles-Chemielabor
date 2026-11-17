@@ -18,7 +18,7 @@
     function clean(t) { return (t || '').replace(/\u00ad/g, '').replace(/\s+/g, ' ').trim(); }
     function names(l) { return l.length < 2 ? l.join('') : l.slice(0, -1).join(', ') + ' und ' + l[l.length - 1]; }
     function explain() {
-      if (isRoot) return 'Das ist dein virtuelles Chemielabor. Die Sekundarstufe I und II enthalten Lernmodule und Simulationen zu den Klassenstufen, die Schultools praktische Werkzeuge für den Schulalltag und die Lewis-Werkstatt eine Werkstatt für Moleküle und Lewis-Formeln.';
+      if (isRoot) return 'Das ist dein virtuelles Chemielabor. Die Sekundarstufe I und II enthalten Lernmodule und Simulationen zu den Klassenstufen, die Schultools praktische Werkzeuge für den Schulalltag, die Lewis-Werkstatt eine Werkstatt für Moleküle und Lewis-Formeln und die Physikalischen Grundlagen Simulationen zur Physik.';
       if (onBoard) {
         var notes = [].slice.call(document.querySelectorAll('a.note')).filter(function (n) { return !n.hidden && n.offsetParent !== null; });
         if (!notes.length) return 'Das ist die Pinnwand zu „' + title + '“. Hier hängt noch nichts. Schau später wieder vorbei!';

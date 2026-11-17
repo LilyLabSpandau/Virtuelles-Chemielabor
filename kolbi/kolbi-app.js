@@ -55,7 +55,8 @@
     'Kupfer-Raffination': ['Hier lernst du die Elektrolyse in der Technik kennen: Aus Rohkupfer wird hochreines Kupfer, und die Edelmetalle fallen nebenbei an.'],
     'Farbe-und-Konstitution': ['Hier erarbeitest du in drei Modulen, wie die Struktur eines Stoffes seine Farbe bestimmt: Konjugation, Auxochrome und Antiauxochrome und am Ende der Tintenkiller.'],
     'Wasserhaerte-Titration': ['Hier bestimmst du die Wasserhärte durch Titration: erst eine Einführung, dann das 3D-Labor mit Tutorial und zum Schluss die Berechnung.'],
-    'Trinkwasser-Detektiv': ['Hier gehst du dem Trinkwasser auf die Spur: Was ist gelöst, woher kommt es, welche Grenzwerte gelten und warum setzt sich Kalk ab? Das Modul ist für Wahlpflicht Chemie Klasse 10.']
+    'Trinkwasser-Detektiv': ['Hier gehst du dem Trinkwasser auf die Spur: Was ist gelöst, woher kommt es, welche Grenzwerte gelten und warum setzt sich Kalk ab? Das Modul ist für Wahlpflicht Chemie Klasse 10.'],
+    'Kunststoffklassen': ['Hier erkundest du an einem 3D-Modell, wie sich Thermoplaste, Duromere und Elastomere unterscheiden. Wähle oben eine Klasse und probiere Regler und Knöpfe aus.', 'Du kannst das Modell mit dem Finger drehen und mit zwei Fingern zoomen. Mit „Zurücksetzen“ startest du die Klasse neu.']
   };
 
 
@@ -71,6 +72,7 @@
     redox: ['Redox heißt: Elektronen wandern. Wer sie abgibt, wird oxidiert, wer sie aufnimmt, reduziert.', 'Je unedler ein Metall, desto lieber gibt es Elektronen ab.', 'Oxidationszahlen sind Buchführung für Elektronen. Mach die Rechnung immer vollständig.'],
     wasser: ['Wasser ist ein Dipol: Das macht es zum Lösungsmittel für so viele Stoffe.', 'Wasserstoffbrücken sind der Grund, warum Wasser erst bei 100 °C kocht. Ohne sie wäre es bei Raumtemperatur ein Gas!', 'Eis ist leichter als flüssiges Wasser. Gut für die Fische im Winter!'],
     farbe: ['Ein Stoff sieht grün aus, wenn er das rote Licht schluckt. Seine Farbe ist die Ergänzung zur absorbierten.', 'Im Prisma spaltet sich weißes Licht in alle Spektralfarben auf. Der Regenbogen macht das mit Wassertröpfchen.', 'Bei der Chromatografie wandern die Stoffe unterschiedlich weit. Der Rf-Wert hilft beim Vergleichen.'],
+    kunststoff: ['Zwischen den Ketten der Thermoplaste wirken nur zwischenmolekulare Kräfte, keine Atombindungen. Deshalb kann man sie erwärmen und neu formen.', 'Duromere sind engmaschig vernetzt: hart und hitzebeständig, aber spröde.', 'Elastomere sind weitmaschig vernetzt. Dehnst du sie, federn sie zurück wie ein Gummiband.', 'Thermoplaste lassen sich wieder einschmelzen. Das ist ein Grund, warum sie sich gut recyceln lassen.', 'Je enger das Netz aus Querverbindungen, desto härter und unbeweglicher das Material.'],
     salz: ['Salze bestehen aus Ionen. Die starke Anziehung zwischen ihnen sorgt für hohe Schmelzpunkte.', 'Flammenfarben verraten Metalle: Natrium leuchtet gelb, Kupfer grünlich.', 'In der Ionen-Parkscheibe gehen Plus und Minus immer zu null auf.']
   };
   var MAP = {
@@ -80,7 +82,7 @@
     'Eigenschaften-des-Wassers': 'wasser', 'Loeslichkeit': 'wasser', 'Aminosaeuren': 'protein', 'Biuretprobe': 'protein', 'Peptidbindung-EPA': 'protein', 'Proteinstrukturen': 'protein',
     'Systeme-und-1-Hauptsatz': 'energie', 'Der-Kohlenstoffdioxid-Carbonat-Kreislauf': 'energie', 'Gleichgewicht': 'energie', 'Haber-Bosch-Verfahren': 'energie', 'Konduktometrie': 'saeure', 'Nukleophile-Substitution': 'organik',
     'Saeure-Base-Titration': 'saeure', 'Saeure-Basen-Konstanten': 'saeure', 'Säure-Base-Konzept-Brönsted': 'saeure', 'Chromatografie-Rf-Werte': 'farbe', 'Indikatoren-Grundlagen': 'saeure', 'Zusammenhang-von-Licht-und-Farbe': 'farbe',
-    'Disproportionierung': 'redox', 'Redoxreihe-Metallgewinnung': 'redox', 'Sulfit-Titration': 'saeure', 'Doppelspaltexperiment': 'atom', 'Elektronenkonfiguration': 'atom', 'Orbitalmodell': 'atom', 'd-und-f-Orbitale': 'atom', 'Kupfer-Raffination': 'redox', 'Trinkwasser-Detektiv': 'wasser', 'Wasserhaerte-Titration': 'wasser', 'Farbe-und-Konstitution': 'farbe'
+    'Disproportionierung': 'redox', 'Redoxreihe-Metallgewinnung': 'redox', 'Sulfit-Titration': 'saeure', 'Doppelspaltexperiment': 'atom', 'Elektronenkonfiguration': 'atom', 'Orbitalmodell': 'atom', 'd-und-f-Orbitale': 'atom', 'Kupfer-Raffination': 'redox', 'Trinkwasser-Detektiv': 'wasser', 'Wasserhaerte-Titration': 'wasser', 'Farbe-und-Konstitution': 'farbe', 'Kunststoffklassen': 'kunststoff'
   };
 
 
@@ -218,6 +220,100 @@
     mo.observe(document.body, { childList: true, characterData: true, subtree: true });   // nur Textänderungen, keine Animations-Attribute
   }
 
+  // Anwendungsspezifische Begleitung (Tipps, Reaktionen auf Bedienung). Jede Funktion bekommt ctx.pick und kann Kolbi.init erneut aufrufen (ergänzt nur die Einstellungen).
+  var HOOKS = {
+    'Kunststoffklassen': function () {
+      var $ = function (id) { return document.getElementById(id); };
+      var kind = function () { var t = document.querySelector('[role=tab][aria-selected=true]'); return t ? t.dataset.kind : 'thermoplaste'; };
+      var seen = { thermoplaste: 0, duromere: 0, elastomere: 0 };      // Klasse wurde besucht
+      var did = { cold: 0, hot: 0, weak: 0, strong: 0, stretch: 0, back: 0, broke: 0 };
+      var said = {}, wasBroken = false, allDone = false;
+      var BASIS = {
+        thermoplaste: 'Thermoplaste bestehen aus Ketten, die nur durch schwache Kräfte zusammenhalten. Es gibt keine chemischen Querverbindungen.',
+        duromere: 'Duromere sind engmaschig vernetzt. Die Querverbindungen sind chemische Bindungen zwischen den Ketten.',
+        elastomere: 'Elastomere sind weitmaschig vernetzt. Die Ketten sind durch wenige Querverbindungen verbunden.'
+      };
+      function nextTip() {
+        var k = kind();
+        if (k === 'thermoplaste') return !did.cold && !did.hot ? 'Halte „Verformen“ gedrückt, zuerst bei niedriger und dann bei hoher Temperatur. Vergleiche, was sich ändert.'
+          : did.cold && !did.hot ? 'Schiebe den Temperaturregler nach rechts und halte „Verformen“ noch einmal gedrückt.'
+          : !did.cold ? 'Probiere „Verformen“ auch einmal bei niedriger Temperatur und vergleiche.'
+          : 'Wechsle jetzt zu den Duromeren und Elastomeren und vergleiche, wie die Ketten dort verbunden sind.';
+        if (k === 'duromere') return !did.weak ? 'Teste zuerst den schwachen Schlag und beobachte das Netz.'
+          : !did.strong && !did.broke ? 'Und jetzt der starke Schlag. Achte auf die Querverbindungen.'
+          : 'Schau dir an, was mit den Querverbindungen beim Bruch passiert. Mit „Zurücksetzen“ kannst du neu testen.';
+        return !did.stretch ? 'Ziehe den Regler „Zugbelastung“ langsam nach rechts und beobachte die Ketten.'
+          : !did.back ? 'Drücke jetzt „Entlasten“ und schau, was das Netz macht.'
+          : 'Wie weit kannst du ziehen, bevor etwas reißt? Mit „Zurücksetzen“ startest du neu.';
+      }
+      Kolbi.init({
+        tapHelp: function () { return { text: BASIS[kind()], tip: nextTip() }; },
+        idleHelp: function () { return { text: ['Kommst du gut voran?', 'Alles klar bei dir? Ich helfe gern.', 'Hängst du irgendwo fest?'][Math.floor(Math.random() * 3)], tip: nextTip() }; }
+      });
+      function once(id, text, mood, delay) {
+        if (said[id]) return; said[id] = 1;
+        setTimeout(function () { Kolbi.tell(text, mood || 'interested'); }, delay || 0);
+      }
+      function checkAll() {
+        if (allDone || !(seen.thermoplaste && seen.duromere && seen.elastomere)) return;
+        if (!((did.cold || did.hot) && (did.weak || did.strong || did.broke) && (did.stretch || did.back))) return;
+        allDone = true;
+        setTimeout(function () { Kolbi.tell('Du hast alle drei Klassen untersucht. Vergleiche: Wo gibt es chemische Querverbindungen zwischen den Ketten, und wie eng ist das Netz? Daraus folgt das Verhalten des Materials.', 'excited'); }, 2600);
+      }
+      function onKind() {
+        var k = kind(); seen[k] = 1; wasBroken = false;
+        var T = {
+          thermoplaste: 'Bei den Thermoplasten gibt es keine chemischen Querverbindungen zwischen den Ketten. Was passiert wohl, wenn du die Temperatur änderst? Probiere es aus und halte „Verformen“ gedrückt.',
+          duromere: 'Bei den Duromeren sind die Ketten eng vernetzt. Teste, wie das Material auf einen schwachen und einen starken Schlag reagiert.',
+          elastomere: 'Bei den Elastomeren ist das Netz weitmaschig. Erhöhe die Zugbelastung langsam und drücke dann „Entlasten“. Was fällt dir auf?'
+        };
+        once('tab-' + k, T[k], 'interested', 400);
+        checkAll();
+      }
+      document.addEventListener('click', function (e) {
+        var t = e.target.closest && e.target.closest('[role=tab], #reset, #release, #weak-hit, #strong-hit');
+        if (!t) return;
+        if (t.id === 'reset') { wasBroken = false; Kolbi.react('happy', 'Alles zurück auf Anfang. Probiere es noch einmal.'); return; }
+        if (t.getAttribute('role') === 'tab') return void setTimeout(onKind, 60);
+        if (t.id === 'release') {
+          if ($('tension-value').textContent !== 'keine' || !did.back) { did.back = 1; if (did.stretch) once('back', 'Das Netz federt zurück: Die Querverbindungen ziehen die gestreckten Ketten wieder in ihre alte Lage. Das ist elastisch.', 'excited', 500); }
+          checkAll(); return;
+        }
+        var strong = t.id === 'strong-hit'; did[strong ? 'strong' : 'weak'] = 1;
+        setTimeout(function () {
+          if ($('status').textContent.indexOf('Bruch') < 0 && !wasBroken) Kolbi.tell(strong ? 'Hier ist (noch) nichts gebrochen. Probiere es noch einmal.' : 'Der schwache Schlag richtet nichts aus. Probiere auch den starken Schlag.', 'interested');
+        }, 2800);
+        checkAll();
+      }, true);
+      var deform = $('deform');
+      if (deform) deform.addEventListener('pointerdown', function () {
+        var t = $('temperature-value').textContent;
+        if (t === 'niedrig') { did.cold = 1; once('cold', 'Bei niedriger Temperatur passiert kaum etwas: Die Kräfte zwischen den Ketten halten sie fest. Erwärme das Material und probiere es noch einmal.', 'interested', 900); }
+        else { did.hot = 1; once('hot', 'Wärme macht die Ketten beweglich: Sie gleiten aneinander vorbei, und das Material lässt sich verformen. Weil keine chemischen Querverbindungen da sind, geht das immer wieder. Darum kann man Thermoplaste einschmelzen und recyceln.', 'excited', 1500); }
+        checkAll();
+      });
+      var tension = $('tension');
+      if (tension) tension.addEventListener('input', function () {
+        var l = $('tension-value').textContent;
+        if (l !== 'keine') did.stretch = 1;
+        if (l === 'hoch' || l === 'sehr hoch') once('stretch', 'Die Ketten strecken sich, und die Querverbindungen halten das Netz zusammen. Drücke jetzt „Entlasten“ und beobachte.', 'interested', 400);
+      });
+      var st = $('status');
+      if (st) new MutationObserver(function () {
+        var b = st.textContent.indexOf('Bruch') >= 0;
+        if (b && !wasBroken) {
+          did.broke = 1;
+          var k = kind();
+          Kolbi.tell(k === 'duromere' ? 'Es ist gebrochen. Die Querverbindungen sind Atombindungen: Sie können nicht nachgeben oder gleiten, sie reißen. Duromere sind hart, aber spröde. Mit „Zurücksetzen“ testest du neu.'
+            : 'Zu viel Zug: Bei sehr hoher Last reißen sogar chemische Bindungen. Mit „Zurücksetzen“ startest du neu.', 'oops');
+          checkAll();
+        }
+        wasBroken = b;
+      }).observe(st, { childList: true, characterData: true, subtree: true });
+      seen[kind()] = 1;
+    }
+  };
+
   var parts = decodeURIComponent(location.pathname).split('/').filter(Boolean);
   var key = parts[parts.length - 1] || '';
   if (key === 'index.html') key = parts[parts.length - 2]; else if (/\.html?$/i.test(key)) key = key.replace(/\.html?$/i, '');
@@ -239,6 +335,7 @@
       var want = expertMode() ? NEUTRAL : (G[MAP[key]] || []);
       if (cm.length !== want.length || cm[0] !== want[0]) { cm.length = 0; want.forEach(function (x) { cm.push(x); }); }
     }, 800);
+    if (HOOKS[key]) { try { HOOKS[key](); } catch (e) {} }
     var chk = CHECKS[key] || (AUTO.indexOf(key) >= 0 ? [{ sel: AUTO_SEL, tips: TIPS[MAP[key]] || GENERIC_TIPS }] : null);
     if (chk) watchChecks(chk);
     // Wer fleißig klickt, bekommt ab und zu ein Lob

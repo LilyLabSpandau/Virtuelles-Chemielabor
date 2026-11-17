@@ -5,9 +5,9 @@
   Bei jedem anderen Ergebnis (auch beim lokalen Öffnen der Datei ohne Server) wird er angezeigt.
 */
 (function () {
-  // Kolbi (Maskottchen) auf allen Pinnwänden
+  // Kolbi (Maskottchen) auf allen Pinnwänden, außer wo <meta name="kolbi" content="aus"> steht
   var me = document.currentScript;
-  if (me && me.src) { var k = document.createElement('script'); k.src = me.src.replace(/pinnwand\.js.*$/, 'kolbi/kolbi-auto.js'); document.head.appendChild(k); }
+  if (me && me.src && !document.querySelector('meta[name="kolbi"][content="aus"]')) { var k = document.createElement('script'); k.src = me.src.replace(/pinnwand\.js.*$/, 'kolbi/kolbi-auto.js'); document.head.appendChild(k); }
 
   var optional = document.querySelectorAll('a.note[data-optional]');
   var leer = document.querySelector('.leer');
