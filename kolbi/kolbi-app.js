@@ -53,6 +53,7 @@
     'Orbitalmodell': ['Hier gehst du vom Bohr-Modell zur Orbitalwolke und erkundest, wie Elektronen im Atom beschrieben werden.'],
     'd-und-f-Orbitale': ['Hier erkundest du die Gestalt der d- und f-Orbitale, Übergangsmetalle und die Farbe von Komplexen.'],
     'Kupfer-Raffination': ['Hier lernst du die Elektrolyse in der Technik kennen: Aus Rohkupfer wird hochreines Kupfer, und die Edelmetalle fallen nebenbei an.'],
+    'Wasser-erforschen': ['Hier erforschst du, warum Wasser sich so besonders verhält. Beginne mit Modul 1, danach kannst du die anderen drei in beliebiger Reihenfolge bearbeiten.'],
     'Farbe-und-Konstitution': ['Hier erarbeitest du in vier Modulen, wie die Struktur eines Stoffes seine Farbe bestimmt: Konjugation, I- und M-Effekte, Auxochrome und Antiauxochrome und am Ende der Tintenkiller.'],
     'Wasserhaerte-Titration': ['Hier bestimmst du die Wasserhärte durch Titration: erst eine Einführung, dann das 3D-Labor mit Tutorial und zum Schluss die Berechnung.'],
     'Trinkwasser-Detektiv': ['Hier gehst du dem Trinkwasser auf die Spur: Was ist gelöst, woher kommt es, welche Grenzwerte gelten und warum setzt sich Kalk ab? Das Modul ist für Wahlpflicht Chemie Klasse 10.'],
@@ -82,7 +83,7 @@
     'Eigenschaften-des-Wassers': 'wasser', 'Loeslichkeit': 'wasser', 'Aminosaeuren': 'protein', 'Biuretprobe': 'protein', 'Peptidbindung-EPA': 'protein', 'Proteinstrukturen': 'protein',
     'Systeme-und-1-Hauptsatz': 'energie', 'Der-Kohlenstoffdioxid-Carbonat-Kreislauf': 'energie', 'Gleichgewicht': 'energie', 'Haber-Bosch-Verfahren': 'energie', 'Konduktometrie': 'saeure', 'Nukleophile-Substitution': 'organik',
     'Saeure-Base-Titration': 'saeure', 'Saeure-Basen-Konstanten': 'saeure', 'Säure-Base-Konzept-Brönsted': 'saeure', 'Chromatografie-Rf-Werte': 'farbe', 'Indikatoren-Grundlagen': 'saeure', 'Zusammenhang-von-Licht-und-Farbe': 'farbe',
-    'Disproportionierung': 'redox', 'Redoxreihe-Metallgewinnung': 'redox', 'Sulfit-Titration': 'saeure', 'Doppelspaltexperiment': 'atom', 'Elektronenkonfiguration': 'atom', 'Orbitalmodell': 'atom', 'd-und-f-Orbitale': 'atom', 'Kupfer-Raffination': 'redox', 'Trinkwasser-Detektiv': 'wasser', 'Wasserhaerte-Titration': 'wasser', 'Farbe-und-Konstitution': 'farbe', 'Kunststoffklassen': 'kunststoff'
+    'Disproportionierung': 'redox', 'Redoxreihe-Metallgewinnung': 'redox', 'Sulfit-Titration': 'saeure', 'Doppelspaltexperiment': 'atom', 'Elektronenkonfiguration': 'atom', 'Orbitalmodell': 'atom', 'd-und-f-Orbitale': 'atom', 'Kupfer-Raffination': 'redox', 'Trinkwasser-Detektiv': 'wasser', 'Wasserhaerte-Titration': 'wasser', 'Farbe-und-Konstitution': 'farbe', 'Wasser-erforschen': 'wasser', 'Kunststoffklassen': 'kunststoff'
   };
 
 
@@ -158,7 +159,7 @@
 
   // Standard für Anwendungen mit Rückmeldefeldern (.fb, .feedback, *-fb, *feedback*): themenbezogene Tipps. Für gezielte Tipps pro Aufgabe oben in CHECKS eintragen.
   var AUTO_SEL = '.fb, .res, .feedback, [id$="-fb"], [id^="fb-"], [id$="fb"], [id*="feedback"], [id$="Fb"]';
-  var AUTO = ['Trinkwasser-Detektiv', 'Farbe-und-Konstitution', 'Elektronenkonfiguration', 'Zusammenhang-von-Licht-und-Farbe', 'Molekuelbau-und-Dipol', 'Ueberblick-Alkene-Alkine-Cycloalkane', 'Ueberblick-Alkohole', 'Ueberblick-Alkanale-Alkanone-Alkansaeuren', 'Ueberblick-Ester', 'Brandbekämpfung', 'Laborgeräte', 'simulation-pse', '4-Hochofen-Eisen-und-Stahl', 'Eigenschaften-des-Wassers', 'Loeslichkeit', 'Aminosaeuren', 'Peptidbindung-EPA', 'Proteinstrukturen', 'Systeme-und-1-Hauptsatz', 'Gleichgewicht', 'Saeure-Basen-Konstanten', 'Chromatografie-Rf-Werte', 'Disproportionierung', 'Redoxreihe-Metallgewinnung', 'Doppelspaltexperiment', 'Orbitalmodell', 'd-und-f-Orbitale', 'Kupfer-Raffination'];
+  var AUTO = ['Trinkwasser-Detektiv', 'Wasser-erforschen', 'Farbe-und-Konstitution', 'Elektronenkonfiguration', 'Zusammenhang-von-Licht-und-Farbe', 'Molekuelbau-und-Dipol', 'Ueberblick-Alkene-Alkine-Cycloalkane', 'Ueberblick-Alkohole', 'Ueberblick-Alkanale-Alkanone-Alkansaeuren', 'Ueberblick-Ester', 'Brandbekämpfung', 'Laborgeräte', 'simulation-pse', '4-Hochofen-Eisen-und-Stahl', 'Eigenschaften-des-Wassers', 'Loeslichkeit', 'Aminosaeuren', 'Peptidbindung-EPA', 'Proteinstrukturen', 'Systeme-und-1-Hauptsatz', 'Gleichgewicht', 'Saeure-Basen-Konstanten', 'Chromatografie-Rf-Werte', 'Disproportionierung', 'Redoxreihe-Metallgewinnung', 'Doppelspaltexperiment', 'Orbitalmodell', 'd-und-f-Orbitale', 'Kupfer-Raffination'];
   var TIPS = {
     sicher: ['Lies die Aufgabe noch einmal in Ruhe und denk an die Grundregeln im Labor: erst überlegen, dann handeln.', 'Gehe die Antwortmöglichkeiten der Reihe nach durch und streiche gedanklich aus, was sicher nicht passt.'],
     saeure: ['Lies die Aufgabe noch einmal genau und achte auf Einheiten, Vorzeichen und Größenordnungen.', 'Überlege dir zuerst, wer das Proton abgibt und wer es aufnimmt. Danach setzt du die Werte ein.', 'Schreibe die Reaktionsgleichung auf, bevor du rechnest. Sie zeigt dir die Stoffmengenverhältnisse.'],
@@ -222,6 +223,27 @@
 
   // Anwendungsspezifische Begleitung (Tipps, Reaktionen auf Bedienung). Jede Funktion bekommt ctx.pick und kann Kolbi.init erneut aufrufen (ergänzt nur die Einstellungen).
   var HOOKS = {
+    'Wasser-erforschen': function () {
+      var tab = function () { var t = document.querySelector('.tab.on'); return t ? t.getAttribute('data-t') : 'h'; };
+      var base = { text: app[0], tip: app[1] || TIP }, said = {};
+      var TX = {
+        h: ['Die Elektronegativität sagt, wie stark ein Atom an gemeinsamen Elektronen zieht. Sauerstoff zieht stärker als Wasserstoff.', 'Gleiche Teilladungen stoßen sich ab, ungleiche ziehen sich an. Probiere im Experiment verschiedene Lagen aus.', 'Die Regel: H an O, N oder F, und im anderen Molekül ein freies Elektronenpaar.'],
+        d: ['Wasser ist bei 4 °C am dichtesten. Denke immer daran, wohin dichteres Wasser sich bewegt.', 'Im Eis halten Wasserstoffbrücken die Moleküle auf Abstand, es entstehen Hohlräume.'],
+        l: ['Strom braucht frei bewegliche Ladungsträger. In Lösungen sind das Ionen.', 'Zucker löst sich in Molekülen, Salz in Ionen. Das erklärt den Unterschied.'],
+        o: ['Denke an die Teilchen an der Oberfläche: Welche Nachbarn fehlen ihnen?', 'Die Oberfläche verhält sich wie eine Haut. Spülmittel macht sie schwächer.']
+      };
+      function nextTip(t) { var a = TX[t] || []; return a.length ? a[Math.floor(Math.random() * a.length)] : base.tip; }
+      Kolbi.init({
+        tapHelp: function () { var t = tab(); return { text: TX[t] ? TX[t][0] : base.text, tip: nextTip(t) }; },
+        idleHelp: function () { var t = tab(); return { text: ['Kommst du gut voran?', 'Hängst du irgendwo fest? Ich helfe gern.'][Math.floor(Math.random() * 2)], tip: nextTip(t) }; }
+      });
+      document.addEventListener('tabchange', function (e) {
+        var t = e.detail; if (said[t]) return; said[t] = 1;
+        var M = { d: 'Der See im Sommer und im Winter. Miss zuerst, wann Wasser am dichtesten ist.', l: 'Mal sehen, warum ein Föhn in der Badewanne so gefährlich ist, obwohl reines Wasser nicht leitet.', o: 'Hier erwartet dich eine Szene am Teich. Ich bin schon gespannt, wer dort wohnt.' };
+        if (M[t]) setTimeout(function () { Kolbi.tell(M[t], 'interested'); }, 600);
+      });
+      document.addEventListener('unlocked', function (e) { if (e.detail === 'done') setTimeout(function () { Kolbi.tell('Modul 1 ist geschafft! Jetzt sind die anderen Module frei. Such dir aus, womit du anfangen willst.', 'excited'); }, 800); });
+    },
     'Farbe-und-Konstitution': function () {
       var $ = function (id) { return document.getElementById(id); };
       var tab = function () { var t = document.querySelector('.tab.on'); return t ? t.getAttribute('data-t') : 'm1'; };

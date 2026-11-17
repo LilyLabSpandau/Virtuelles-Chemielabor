@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wasser erforschen</title>
+<link rel="icon" type="image/png" href="../../../../icons/icon-192.png">
+<link rel="apple-touch-icon" href="../../../../icons/apple-touch-icon.png">
+<link rel="stylesheet" href="base.css">
+<style>
+  :root{--pri:#2563eb;--pri2:#1d4ed8}
+  body{background:linear-gradient(160deg,#d6ecff 0%,#dff7f1 45%,#e8f0ff 100%) fixed}
+  .hero{background:linear-gradient(120deg,#0369a1 0%,#0891b2 55%,#14b8a6 100%);box-shadow:0 8px 22px rgba(3,105,161,.3)}
+  .sub{color:#e0f7ff}
+  #tab-h{--tt:#bfdbfe;--tc:#2563eb}#tab-d{--tt:#a5f3fc;--tc:#0e7490}#tab-l{--tt:#fed7aa;--tc:#c2410c}#tab-o{--tt:#bbf7d0;--tc:#15803d}
+  #h{--pri:#2563eb;--pri2:#1d4ed8;--tint:#e5efff;--acl:#3b82f6}
+  #d{--pri:#0e7490;--pri2:#155e75;--tint:#dcf7fb;--acl:#06b6d4}
+  #l{--pri:#c2410c;--pri2:#9a3412;--tint:#ffecd9;--acl:#f97316}
+  #o{--pri:#15803d;--pri2:#166534;--tint:#e0f7e6;--acl:#22c55e}
+  .tab.locked{opacity:.6;cursor:not-allowed}
+  .tab.locked::before{content:"🔒 "}
+  .tabs{margin-top:10px}
+  @media (max-width:600px){.tab{flex:1 1 calc(50% - 6px);padding:8px 10px;font-size:13.5px;min-height:40px}.tab small{display:none}.hero{padding:12px 14px}.sub{font-size:15px}}
+  .lockhint{background:#fff4e0;border-left:4px solid #f59e0b;border-radius:8px;padding:8px 12px;margin:8px 0;font-size:15px}
+  .lockbox{margin:8px 0 0}.lockbox summary{font-weight:600;font-size:14px;color:#475569}
+  .lockbox input{font:inherit;padding:8px 10px;border-radius:8px;border:1.5px solid #94a3b8;min-height:42px;width:min(240px,60vw)}
+  .lockbox .msg{font-size:14px;margin-top:4px}
+  .sim{background:#f8fbff;border:1px solid var(--line);border-radius:12px;padding:8px}
+  .sim svg{width:100%;height:auto;touch-action:none;user-select:none;-webkit-user-select:none}
+  .meter{height:16px;border-radius:9px;background:#e2e8f0;overflow:hidden;margin:4px 0}
+  .meter i{display:block;height:100%;width:0;background:#22c55e;transition:width .12s,background .12s}
+  .mrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px}
+  .mrow .btn{padding:8px 12px;min-height:44px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+  @media (max-width:780px){.two{grid-template-columns:1fr}}
+  .val{font-size:22px;font-weight:800;color:var(--pri2)}
+  .qt{margin:14px 0 6px;font-weight:600}
+  table.t{width:100%;border-collapse:collapse;font-size:15px}
+  table.t th,table.t td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+  table.t th{background:var(--tint)}
+  .grp{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;border-bottom:1px solid #eef2f6;padding:7px 0}
+  .grp .nm{font-weight:700;font-size:17px}.grp .ef{font-size:13.5px;color:#475569}
+  .grp .bt{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.grp .bt .btn{padding:7px 10px;min-height:40px;font-size:14px}
+  .grp .fb{grid-column:1/-1;margin:0}
+  .pill{display:inline-block;border-radius:999px;padding:2px 10px;font-weight:700;font-size:14px;background:var(--tint);color:var(--pri2)}
+  #sceneVeil{position:fixed;left:0;top:0;right:0;bottom:0;z-index:8000;background:linear-gradient(#cfeaff 0,#e8f6ff 55%,#bfe3f5 100%);display:none;flex-direction:column;touch-action:manipulation;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  #sceneVeil svg{width:100%;flex:1;min-height:0}
+  #sceneHint{position:absolute;left:0;right:0;bottom:48px;text-align:center;font-weight:700;color:#0c4a6e;font-size:15px;pointer-events:none}
+  #sceneBub{position:absolute;max-width:min(300px,72vw);background:#fff;border:2px solid #15803d;border-radius:14px;padding:10px 12px;font-size:15.5px;line-height:1.4;box-shadow:0 6px 16px rgba(0,0,0,.18);display:none;pointer-events:none}
+  #sceneSkip{position:absolute;right:10px;top:10px;z-index:2;background:rgba(255,255,255,.9);border:1.5px solid #64748b;border-radius:10px;padding:7px 11px;font:inherit;font-size:14px;font-weight:700;cursor:pointer;min-height:40px}
+  .dots{position:absolute;left:0;right:0;top:14px;text-align:center;pointer-events:none}
+  .dots i{display:inline-block;width:8px;height:8px;border-radius:50%;background:#94a3b8;margin:0 3px}.dots i.on{background:#15803d}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><a class="back" href="../index.html">← Zurück zu „Wasser – eine Verbindung“</a></div>
+  <div class="hero"><h1>Wasser erforschen</h1>
+  <p class="sub">Warum schwimmt Eis, warum leitet Badewasser Strom und wie läuft ein Insekt über den Teich? Du findest es selbst heraus. Beginne mit Modul 1.</p></div>
+
+  <div class="tabs" role="tablist">
+    <button class="tab on" role="tab" data-t="h" id="tab-h">1 · Wasserstoffbrücken<span class="done">✔</span><small>Pflicht: Wie entstehen sie?</small></button>
+    <button class="tab locked" role="tab" data-t="d" id="tab-d">2 · Dichteanomalie<span class="done">✔</span><small>Der See im Sommer und Winter</small></button>
+    <button class="tab locked" role="tab" data-t="l" id="tab-l">3 · Leitfähigkeit<span class="done">✔</span><small>Der Föhn und die Badewanne</small></button>
+    <button class="tab locked" role="tab" data-t="o" id="tab-o">4 · Oberflächenspannung<span class="done">✔</span><small>Der Wasserläufer</small></button>
+  </div>
+  <div class="lockhint" id="lockhint" hidden>🔒 Die Module 2 bis 4 schalten sich frei, sobald du Modul 1 ganz geschafft hast.</div>
+  <details class="lockbox" id="lockbox"><summary>Du hast ein Passwort?</summary>
+    <div class="row" style="margin-top:6px"><input id="pw" type="password" placeholder="Passwort" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Passwort"><button class="btn" id="pwgo">OK</button></div><div class="msg" id="pwmsg"></div></details>
+
+  <section class="mod on" id="h" role="tabpanel">
+    <h2>Modul 1: Wie entstehen Wasserstoffbrücken?</h2>
+    <div class="lead"><p><b>Auftrag:</b> Wasser hat erstaunliche Eigenschaften: Es siedet erst bei 100 °C, Eis schwimmt und Insekten laufen über Wasser. Alles geht auf eine Sorte Bindung zwischen den Molekülen zurück: die <b>Wasserstoffbrückenbindung</b>. Du findest heraus, wie sie entsteht. Dieses Modul ist Pflicht, danach schalten sich die anderen drei frei.</p></div>
+
+    <div class="steps" id="hsteps">
+      <button class="stp on" data-s="1">1 Das Molekül</button><button class="stp" data-s="2">2 Zwei Moleküle</button><button class="stp" data-s="3">3 Die Regel</button><button class="stp" data-s="4">4 Anwenden</button>
+    </div>
+
+    <div class="stagepane on" id="hs1">
+      <h3>Schritt 1: Wer zieht stärker an den Elektronen?</h3>
+      <p>Im Wasser-Molekül hält jedes H-Atom mit dem O-Atom ein gemeinsames Elektronenpaar. Wie gleichmäßig ist es verteilt? Das hängt davon ab, wie stark die Atome an den Elektronen ziehen. Dieses „Zugvermögen“ nennt man <b>Elektronegativität (EN)</b>.</p>
+      <div class="two">
+        <div class="card"><h4>Elektronegativität</h4>
+          <table class="t"><tr><th>Atom</th><th>EN</th></tr><tr><td>Wasserstoff (H)</td><td><b>2,2</b></td></tr><tr><td>Sauerstoff (O)</td><td><b>3,5</b></td></tr></table>
+          <div id="hq1"></div></div>
+        <div class="card"><h4>Das Wasser-Molekül</h4>
+          <div class="sim"><svg id="hmol1" viewBox="0 0 260 190" role="img" aria-label="Wasser-Molekül zum Beschriften"></svg></div>
+          <p class="small" style="margin:6px 0">Tippe ein Atom an, um die Teilladung festzulegen: erst <b>δ+</b> (leicht positiv), dann <b>δ−</b> (leicht negativ), dann wieder leer.</p>
+          <div class="mrow"><button class="btn" id="hchk1">Prüfen</button></div><div class="fb" id="hfb1" hidden></div></div>
+      </div>
+      <div class="row" style="margin-top:12px"><button class="btn" data-hgo="2" id="hgo2" hidden>Weiter zu Schritt 2 →</button></div>
+    </div>
+
+    <div class="stagepane" id="hs2">
+      <h3>Schritt 2: Zwei Moleküle begegnen sich</h3>
+      <div class="lead"><p><b>Experiment:</b> Das linke Molekül ist festgehalten. Ziehe das andere mit dem Finger oder der Maus und drehe es mit den Pfeilknöpfen. <b>Finde heraus, in welcher Lage sich die Moleküle am stärksten anziehen.</b> Beobachte die Anzeige.</p></div>
+      <div class="sim"><svg id="hmol2" viewBox="0 0 230 165" role="img" aria-label="Zwei Wasser-Moleküle, eines ist beweglich"></svg></div>
+      <div class="chips" style="grid-template-columns:1fr"><div class="chip"><b>Anziehung zwischen den Molekülen</b>
+        <div class="meter"><i id="hmeter"></i></div><span id="hmtxt" style="font-weight:700">noch weit auseinander</span></div></div>
+      <div class="mrow"><button class="btn sec" id="hrotL" aria-label="Nach links drehen">↺ drehen</button><button class="btn sec" id="hrotR" aria-label="Nach rechts drehen">↻ drehen</button><button class="btn sec" id="hreset">Zurücksetzen</button>
+        <label class="small" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="hcharge" checked style="width:20px;height:20px"> Teilladungen zeigen</label></div>
+      <p class="small" id="hfound" hidden></p>
+      <div id="hq2"></div>
+      <div class="row" style="margin-top:12px"><button class="btn" data-hgo="3" id="hgo3" hidden>Weiter zu Schritt 3 →</button></div>
+    </div>
+
+    <div class="stagepane" id="hs3">
+      <h3>Schritt 3: Die Regel</h3>
+      <div class="card"><h4>So entsteht eine Wasserstoffbrückenbindung</h4>
+        <ol style="margin:4px 0 0;padding-left:20px">
+          <li>Ein H-Atom ist an ein Atom mit <b>hoher Elektronegativität</b> gebunden: <b>O, N oder F</b>. Das Atom zieht die Bindungselektronen zu sich, das H-Atom wird <b>δ+</b>.</li>
+          <li>Ein anderes Molekül besitzt ein Atom (O, N oder F) mit <b>freiem Elektronenpaar</b> und deshalb mit <b>δ−</b>.</li>
+          <li>Das δ+ des H-Atoms und das δ− des anderen Atoms ziehen sich an: Es entsteht die <b>Wasserstoffbrücke</b>. Sie ist eine <b>Anziehung zwischen Molekülen</b>, keine Atombindung.</li>
+        </ol></div>
+      <div class="two" style="margin-top:12px">
+        <div class="card"><h4>Wie stark ist sie?</h4><p style="margin:0">Eine Wasserstoffbrücke ist <b>viel schwächer als eine Atombindung</b> im Molekül. Aber es sind sehr viele. Ein Wasser-Molekül kann bis zu <b>vier</b> Brücken bilden: zwei über seine H-Atome und zwei über die freien Elektronenpaare am Sauerstoff.</p></div>
+        <div class="card"><h4>Siedetemperaturen im Vergleich</h4>
+          <table class="t"><tr><th>Stoff</th><th>Siedetemperatur</th></tr><tr><td>Schwefelwasserstoff H₂S</td><td>−60 °C</td></tr><tr><td>Wasser H₂O</td><td>+100 °C</td></tr></table>
+          <p class="small" style="margin:6px 0 0">H₂S ist fast genauso gebaut wie H₂O, aber ohne Wasserstoffbrücken.</p></div>
+      </div>
+      <div id="hq3"></div>
+      <div class="row" style="margin-top:12px"><button class="btn" data-hgo="4" id="hgo4" hidden>Weiter zu Schritt 4 →</button></div>
+    </div>
+
+    <div class="stagepane" id="hs4">
+      <h3>Schritt 4: Wende die Regel an</h3>
+      <div id="hq4"></div>
+      <div class="merke" id="hmerke" hidden><b class="t">Merke:</b> Wasserstoffbrücken entstehen zwischen Molekülen, wenn ein <b>H-Atom an O, N oder F gebunden</b> ist (δ+) und ein anderes Molekül ein Atom mit <b>freiem Elektronenpaar</b> (δ−) besitzt. Sie sind schwächer als Atombindungen, halten die Wasser-Moleküle aber zusammen. Deshalb siedet Wasser erst bei 100 °C.</div>
+      <div class="lockhint" id="hdone" hidden style="background:#e8f6ec;border-color:#16a34a">🔓 <b>Geschafft!</b> Die Module 2, 3 und 4 sind jetzt frei. Du kannst sie in beliebiger Reihenfolge bearbeiten.</div>
+      <div class="row" style="margin-top:12px" id="hnext" hidden><button class="btn" data-go="d">2 · Dichteanomalie</button><button class="btn" data-go="l">3 · Leitfähigkeit</button><button class="btn" data-go="o">4 · Oberflächenspannung</button></div>
+    </div>
+  </section>
+
+  <section class="mod" id="d" role="tabpanel">
+    <h2>Modul 2: Die Dichteanomalie, der See im Sommer und im Winter</h2>
+    <div class="lead"><p><b>Frage:</b> Im Winter ist ein See oft von einer Eisschicht bedeckt, und unter dem Eis schwimmen Fische. Das ist ungewöhnlich: Bei fast allen anderen Stoffen sinkt der feste Stoff in der eigenen Flüssigkeit nach unten. Warum bleibt das Eis oben, und warum frieren tiefe Seen nicht bis zum Grund zu?</p></div>
+    <div class="steps" id="dsteps">
+      <button class="stp on" data-s="1">1 Messen</button><button class="stp" data-s="2">2 Der See</button><button class="stp" data-s="3">3 Warum?</button><button class="stp" data-s="4">4 Anwenden</button>
+    </div>
+
+    <div class="stagepane on" id="ds1">
+      <h3>Schritt 1: Wann ist Wasser am dichtesten?</h3>
+      <p>Du wiegst jeweils <b>einen Liter Wasser</b> bei verschiedenen Temperaturen. Stelle mit dem Regler eine Temperatur ein und trage den Messwert ein. Miss mindestens <b>sieben</b> verschiedene Temperaturen, auch nahe 0 °C.</p>
+      <div class="two">
+        <div class="card"><h4>Waage</h4>
+          <svg id="dscale" viewBox="0 0 260 150" role="img" aria-label="Waage mit einem Liter Wasser"></svg>
+          <div class="chips" style="grid-template-columns:1fr 1fr"><div class="chip"><b>Temperatur</b><span class="val" id="dT">20 °C</span></div><div class="chip"><b>Masse von 1 Liter</b><span class="val" id="dM"></span></div></div>
+          <input type="range" id="dtemp" min="0" max="30" step="1" value="20" aria-label="Temperatur in Grad Celsius">
+          <div class="mrow"><button class="btn" id="dadd">Messwert eintragen</button><span class="small" id="dcnt">0 Messwerte</span></div></div>
+        <div class="card"><h4>Dichte-Diagramm</h4><svg id="dplot" viewBox="0 0 300 220" role="img" aria-label="Dichte von Wasser in Abhängigkeit von der Temperatur"></svg>
+          <p class="small" style="margin:4px 0 0">Jeder eingetragene Messwert erscheint als Punkt.</p></div>
+      </div>
+      <div id="dq1"></div>
+      <div class="row" style="margin-top:12px"><button class="btn" data-dgo="2" id="dgo2" hidden>Weiter zu Schritt 2 →</button></div>
+    </div>
+
+    <div class="stagepane" id="ds2">
+      <h3>Schritt 2: Der See im Jahreslauf</h3>
+      <p>Wasser ist bei <b>4 °C</b> am dichtesten, also am schwersten. Was bedeutet das für einen See? Überlege jeweils zuerst, was passiert, und sieh dir dann den See an.</p>
+      <div class="sel" id="dseason"></div>
+      <div class="sim"><svg id="dlake" viewBox="0 0 360 250" role="img" aria-label="Querschnitt durch einen See"></svg></div>
+      <p class="small" id="dlakeinfo" style="margin:6px 0"></p>
+      <div id="dq2"></div>
+      <div class="row" style="margin-top:12px"><button class="btn" data-dgo="3" id="dgo3" hidden>Weiter zu Schritt 3 →</button></div>
+    </div>
+
+    <div class="stagepane" id="ds3">
+      <h3>Schritt 3: Was passiert zwischen den Molekülen?</h3>
+      <p>Eis und flüssiges Wasser bestehen aus denselben Molekülen. Vergleiche, wie sie angeordnet sind. Beide Kästen sind gleich groß. <b>Tippe jedes Molekül an, um es zu zählen.</b></p>
+      <div class="two">
+        <div class="card"><h4>Eis (0 °C)</h4><svg id="dice" viewBox="0 0 200 180" role="img" aria-label="Eis: Wasser-Moleküle im Sechsring-Gitter"></svg><div class="chip" style="margin-top:6px"><b>Gezählt</b><span class="val" id="dcI">0</span></div></div>
+        <div class="card"><h4>Flüssiges Wasser (0 °C)</h4><svg id="dliq" viewBox="0 0 200 180" role="img" aria-label="Flüssiges Wasser: dichter gepackte Moleküle"></svg><div class="chip" style="margin-top:6px"><b>Gezählt</b><span class="val" id="dcL">0</span></div></div>
+      </div>
+      <div id="dq3"></div>
+      <div class="card" style="margin-top:12px"><h4>Die Erklärung</h4>
+        <p style="margin:0 0 6px">Im <b>Eis</b> ist jedes Molekül über Wasserstoffbrücken mit vier Nachbarn verbunden. So entsteht ein starres Gitter aus Sechsringen mit <b>Hohlräumen</b>. Die Moleküle halten Abstand.</p>
+        <p style="margin:0 0 6px">Beim <b>Schmelzen</b> brechen viele Wasserstoffbrücken. Die Moleküle rücken zusammen und füllen die Hohlräume teilweise. Deshalb ist flüssiges Wasser dichter als Eis.</p>
+        <p style="margin:0">Zwischen 0 °C und 4 °C brechen weitere Brücken, das Wasser wird noch dichter. Über 4 °C überwiegt die Wärmebewegung: Die Moleküle bewegen sich stärker und brauchen mehr Platz, das Wasser dehnt sich wieder aus.</p></div>
+      <div class="row" style="margin-top:12px"><button class="btn" data-dgo="4" id="dgo4" hidden>Weiter zu Schritt 4 →</button></div>
+    </div>
+
+    <div class="stagepane" id="ds4">
+      <h3>Schritt 4: Wende es an</h3>
+      <div id="dq4"></div>
+      <div class="merke" id="dmerke" hidden><b class="t">Merke:</b> Wasser hat bei <b>4 °C</b> seine größte Dichte (<b>Dichteanomalie</b>). Eis ist mit 0,92 g/cm³ weniger dicht als flüssiges Wasser und schwimmt. Ursache sind die Wasserstoffbrücken: Im Eis bilden sie ein Gitter mit Hohlräumen. Deshalb frieren Seen von oben zu, und am Grund bleibt es etwa 4 °C warm.</div>
+    </div>
+  </section>
+
+  <section class="mod" id="l" role="tabpanel">
+    <h2>Modul 3: Leitfähigkeit, der Föhn und die Badewanne</h2>
+    <div class="lead"><p><b>Der Fall:</b> Ein eingeschalteter Föhn fällt in eine gefüllte Badewanne. Das ist lebensgefährlich. Im Chemieunterricht heißt es aber: <b>Reines Wasser leitet den elektrischen Strom nicht.</b> Wie passt das zusammen? Du gehst der Sache mit einem Leitfähigkeitsprüfer auf den Grund.</p></div>
+    <div class="steps" id="lsteps">
+      <button class="stp on" data-s="1">1 Prüfen</button><button class="stp" data-s="2">2 Teilchen</button><button class="stp" data-s="3">3 Der Fall</button>
+    </div>
+
+    <div class="stagepane on" id="ls1">
+      <h3>Schritt 1: Welche Flüssigkeit leitet?</h3>
+      <p>Tauche den Prüfer in jede Flüssigkeit ein und lies die Anzeige ab. <b>Vermute vorher</b>, was passiert. Teste alle fünf Flüssigkeiten.</p>
+      <div class="two">
+        <div class="card"><h4>Leitfähigkeitsprüfer</h4>
+          <svg id="lrig" viewBox="0 0 280 200" role="img" aria-label="Becherglas mit zwei Elektroden, Batterie und Lampe"></svg>
+          <div class="sel" id="lliq"></div>
+          <div class="chip"><b>Anzeige</b><span id="lread" style="font-weight:700">Wähle eine Flüssigkeit</span></div></div>
+        <div class="card"><h4>Dein Messprotokoll</h4>
+          <table class="t"><thead><tr><th>Flüssigkeit</th><th>Lampe</th></tr></thead><tbody id="ltab"></tbody></table></div>
+      </div>
+      <div id="lq1"></div>
+      <div class="row" style="margin-top:12px"><button class="btn" data-lgo="2" id="lgo2" hidden>Weiter zu Schritt 2 →</button></div>
+    </div>
+
+    <div class="stagepane" id="ls2">
+      <h3>Schritt 2: Ein Blick auf die Teilchen</h3>
+      <p>Strom ist <b>bewegte Ladung</b>. In einer Flüssigkeit braucht man dafür frei bewegliche geladene Teilchen. Wähle eine Flüssigkeit, schalte die Spannung ein und beobachte.</p>
+      <div class="two">
+        <div class="card"><h4>Modell</h4>
+          <div class="sim"><svg id="lpart" viewBox="0 0 300 200" role="img" aria-label="Teilchenmodell mit zwei Elektroden"></svg></div>
+          <div class="sel" id="lpsel"></div>
+          <div class="mrow"><button class="btn" id="lvolt">⚡ Spannung einschalten</button></div>
+          <p class="small" id="lpinfo" style="margin:6px 0 0"></p></div>
+        <div class="card"><h4>Wie kommen Ionen ins Wasser?</h4>
+          <div class="sim"><svg id="ldis" viewBox="0 0 300 200" role="img" aria-label="Kochsalz löst sich in Wasser"></svg></div>
+          <div class="mrow"><button class="btn" id="ldisbtn">💧 Wasser dazugeben</button><button class="btn sec" id="ldisrst" hidden>Zurück</button></div>
+          <p class="small" id="ldistxt" style="margin:6px 0 0">Ein Salzkristall besteht aus Ionen, die sich anziehen.</p></div>
+      </div>
+      <div id="lq2"></div>
+      <div class="row" style="margin-top:12px"><button class="btn" data-lgo="3" id="lgo3" hidden>Weiter zu Schritt 3 →</button></div>
+    </div>
+
+    <div class="stagepane" id="ls3">
+      <h3>Schritt 3: Zurück zum Fall</h3>
+      <div class="card"><h4>Was enthält Badewasser?</h4>
+        <p style="margin:0">Badewasser ist <b>nie reines Wasser</b>. Es besteht aus Leitungswasser mit gelösten Salzen (zum Beispiel Calcium- und Hydrogencarbonat-Ionen). Dazu kommen Seife oder Badezusatz und Salze von der Haut. Alles das liefert <b>Ionen</b>. Auch der Körper enthält Salzlösungen und leitet. Fällt ein Elektrogerät ins Wasser, kann deshalb Strom durch das Wasser und durch den Körper fließen.</p></div>
+      <div id="lq3"></div>
+      <div class="merke" id="lmerke" hidden><b class="t">Merke:</b> Strom in Flüssigkeiten wird von <b>frei beweglichen Ionen</b> transportiert. Reines Wasser enthält praktisch keine Ionen und leitet deshalb nicht. Leitungs-, Bade- und Salzwasser enthalten gelöste Salze und leiten gut. Zuckerwasser leitet nicht, denn Zucker löst sich in Molekülen und nicht in Ionen. Elektrogeräte gehören nie in die Nähe von Wasser.</div>
+    </div>
+  </section>
+
+  <section class="mod" id="o" role="tabpanel">
+    <h2>Modul 4: Oberflächenspannung, der Wasserläufer</h2>
+    <div class="lead"><p><b>Frage:</b> Ein Wasserläufer läuft über den Teich, ohne einzusinken, obwohl er schwerer ist als die Luft, die er verdrängt. Und eine Büroklammer aus Stahl kann auf Wasser schwimmen, obwohl Stahl viel dichter ist als Wasser. Was hält sie oben? Kolbi geht der Sache am Teich nach.</p></div>
+    <div class="steps" id="osteps">
+      <button class="stp on" data-s="1">1 Am Teich</button><button class="stp" data-s="2">2 Kräfte</button><button class="stp" data-s="3">3 Versuch</button><button class="stp" data-s="4">4 Anwenden</button>
+    </div>
+
+    <div class="stagepane on" id="os1">
+      <h3>Schritt 1: Kolbi trifft Wally</h3>
+      <div class="card"><h4>Die Szene</h4>
+        <p style="margin:0 0 8px">Kolbi macht Pause an einem Teich und trifft dort jemanden, der über das Wasser läuft. Du siehst zu und tippst auf den Bildschirm, um zum nächsten Satz zu kommen. Kolbi lässt sich währenddessen nicht bedienen. Du kannst die Szene jederzeit noch einmal ansehen.</p>
+        <div class="mrow"><button class="btn" id="ostart">▶ Szene starten</button><span class="small" id="ohint"></span></div></div>
+      <div class="row" style="margin-top:12px"><button class="btn" data-ogo="2" id="ogo2" hidden>Weiter zu Schritt 2 →</button></div>
+    </div>
+
+    <div class="stagepane" id="os2">
+      <h3>Schritt 2: Was passiert im Wasser?</h3>
+      <p>Wasser-Moleküle ziehen sich über <b>Wasserstoffbrücken</b> gegenseitig an. <b>Tippe ein Teilchen an</b>: Die Pfeile zeigen, wohin seine Nachbarn es ziehen. Probiere ein Teilchen <b>im Inneren</b> und eines <b>an der Oberfläche</b> aus.</p>
+      <div class="two">
+        <div class="card"><h4>Teilchen im Wasser (Schnitt)</h4><div class="sim"><svg id="ofrc" viewBox="0 0 300 250" role="img" aria-label="Wasser-Moleküle mit Anziehungspfeilen"></svg></div></div>
+        <div class="card"><h4>Deine Beobachtung</h4>
+          <div class="chip"><b>Ausgewähltes Teilchen</b><span id="osel" style="font-weight:700">noch keines</span></div>
+          <div class="chip" style="margin-top:8px"><b>Gesamtzug aller Nachbarn</b><span id="onet" style="font-weight:700">?</span></div>
+          <p class="small" id="otry" style="margin:8px 0 0">Teste mindestens ein inneres und ein oberes Teilchen.</p></div>
+      </div>
+      <div id="oq2"></div>
+      <div class="row" style="margin-top:12px"><button class="btn" data-ogo="3" id="ogo3" hidden>Weiter zu Schritt 3 →</button></div>
+    </div>
+
+    <div class="stagepane" id="os3">
+      <h3>Schritt 3: Die Büroklammer-Probe</h3>
+      <div id="oq3a"></div>
+      <div class="card" style="margin-top:10px"><h4>Versuch</h4>
+        <div class="sim"><svg id="oexp" viewBox="0 0 300 220" role="img" aria-label="Becherglas mit Büroklammer auf der Wasseroberfläche"></svg></div>
+        <div class="mrow"><button class="btn" id="oclip">Büroklammer vorsichtig auflegen</button><button class="btn sec" id="osoap">Spülmittel zugeben</button><button class="btn sec" id="oreset">Neu starten</button></div>
+        <div class="fb" id="ofb3" hidden></div>
+        <table class="t" style="margin-top:10px"><thead><tr><th>Flüssigkeit</th><th>Oberflächenspannung</th></tr></thead><tbody>
+          <tr><td>Ethanol</td><td>etwa 22 mN/m</td></tr><tr><td>Wasser mit Spülmittel</td><td>etwa 30 mN/m</td></tr><tr><td>Wasser</td><td><b>etwa 73 mN/m</b></td></tr><tr><td>Quecksilber</td><td>etwa 485 mN/m</td></tr></tbody></table>
+        <p class="small" style="margin:6px 0 0">Je größer die Oberflächenspannung, desto kräftiger ist die „Haut“. Wasser hat unter den gewöhnlichen Flüssigkeiten einen sehr hohen Wert.</p></div>
+      <div class="row" style="margin-top:12px"><button class="btn" data-ogo="4" id="ogo4" hidden>Weiter zu Schritt 4 →</button></div>
+    </div>
+
+    <div class="stagepane" id="os4">
+      <h3>Schritt 4: Erkläre den Wasserläufer</h3>
+      <div class="card"><h4>Fachtext: die „Haut“ des Wassers</h4>
+        <p style="margin:0 0 6px">Ein Teilchen im Inneren wird von allen Seiten gleich stark angezogen. Die Kräfte heben sich auf. An der <b>Oberfläche</b> fehlen die Nachbarn oberhalb. Die Teilchen werden deshalb nach <b>innen und zur Seite</b> gezogen. Die Oberfläche versucht, möglichst klein zu bleiben, und verhält sich wie eine gespannte Haut: die <b>Oberflächenspannung</b>.</p>
+        <p style="margin:0">Der <b>Wasserläufer</b> ist leicht, und seine Beine sind mit wasserabweisenden Härchen bedeckt. Sein Gewicht verteilt sich auf sechs Beine. Die Beine dellen die Haut nur ein, durchbrechen sie aber nicht. Spülmittel schwächt die Haut: Dann sinkt er ein.</p></div>
+      <div id="oq4"></div>
+      <div class="merke" id="omerke" hidden><b class="t">Merke:</b> An der Oberfläche von Wasser werden die Moleküle durch Wasserstoffbrücken nach innen und zur Seite gezogen. Dadurch entsteht die <b>Oberflächenspannung</b>, eine „Haut“, die leichte Dinge wie Wasserläufer oder Büroklammern trägt. Wegen dieser Kräfte sind Tropfen rund. Spülmittel verringert die Oberflächenspannung.</div>
+      <div class="card" id="oepi" hidden style="margin-top:12px"><h4>Zum Abschluss</h4><p style="margin:0 0 8px">Du hast es verstanden. Kolbi und Wally möchten das noch zusammenfassen.</p><button class="btn" id="oepibtn">▶ Abschlussszene</button></div>
+    </div>
+  </section>
+
+</div>
+<script>window.PW_HASH = '2ajkneu6x3i';</script>
+<script src="wc.js"></script>
+<script src="mh.js"></script>
+<script src="md.js"></script>
+<script src="ml.js"></script>
+<script src="scene.js"></script>
+<script src="mo.js"></script>
+<script src="../../../../kolbi/kolbi-app.js"></script>
+<script src="app.js"></script>
+<a href="/Virtuelles-Chemielabor/impressum.html" style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-family: sans-serif; font-size: 12px; z-index: 9999">Impressum &amp; Datenschutz</a>
+</body>
+</html>
