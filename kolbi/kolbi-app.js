@@ -53,7 +53,7 @@
     'Orbitalmodell': ['Hier gehst du vom Bohr-Modell zur Orbitalwolke und erkundest, wie Elektronen im Atom beschrieben werden.'],
     'd-und-f-Orbitale': ['Hier erkundest du die Gestalt der d- und f-Orbitale, Übergangsmetalle und die Farbe von Komplexen.'],
     'Kupfer-Raffination': ['Hier lernst du die Elektrolyse in der Technik kennen: Aus Rohkupfer wird hochreines Kupfer, und die Edelmetalle fallen nebenbei an.'],
-    'Farbe-und-Konstitution': ['Hier erarbeitest du in drei Modulen, wie die Struktur eines Stoffes seine Farbe bestimmt: Konjugation, Auxochrome und Antiauxochrome und am Ende der Tintenkiller.'],
+    'Farbe-und-Konstitution': ['Hier erarbeitest du in vier Modulen, wie die Struktur eines Stoffes seine Farbe bestimmt: Konjugation, I- und M-Effekte, Auxochrome und Antiauxochrome und am Ende der Tintenkiller.'],
     'Wasserhaerte-Titration': ['Hier bestimmst du die Wasserhärte durch Titration: erst eine Einführung, dann das 3D-Labor mit Tutorial und zum Schluss die Berechnung.'],
     'Trinkwasser-Detektiv': ['Hier gehst du dem Trinkwasser auf die Spur: Was ist gelöst, woher kommt es, welche Grenzwerte gelten und warum setzt sich Kalk ab? Das Modul ist für Wahlpflicht Chemie Klasse 10.'],
     'Kunststoffklassen': ['Hier erkundest du an einem 3D-Modell, wie sich Thermoplaste, Duromere und Elastomere unterscheiden. Wähle oben eine Klasse und probiere Regler und Knöpfe aus.', 'Du kannst das Modell mit dem Finger drehen und mit zwei Fingern zoomen. Mit „Zurücksetzen“ startest du die Klasse neu.']
@@ -222,6 +222,33 @@
 
   // Anwendungsspezifische Begleitung (Tipps, Reaktionen auf Bedienung). Jede Funktion bekommt ctx.pick und kann Kolbi.init erneut aufrufen (ergänzt nur die Einstellungen).
   var HOOKS = {
+    'Farbe-und-Konstitution': function () {
+      var $ = function (id) { return document.getElementById(id); };
+      var tab = function () { var t = document.querySelector('.tab.on'); return t ? t.getAttribute('data-t') : 'm1'; };
+      var welcomed = false;
+      function nextTip() {                                              // Tipp für Modul 2 (I- und M-Effekte), je nach Stand im Effekt-Detektiv
+        var fin = document.querySelectorAll('#mesel button.fin').length;
+        var iDone = !!document.querySelector('#mei button.on'), mDone = !!document.querySelector('#mem button.on');
+        if (!iDone) return 'Frage 1: Schau auf die Atome der Gruppe. Sind sie elektronegativer als Kohlenstoff (EN 2,5)? Dann ziehen sie die Elektronen der Bindung zu sich: −I.';
+        if (!mDone) return 'Frage 2: Schau nur auf das erste Atom der Gruppe. Hat es ein freies Elektronenpaar (+M) oder eine Mehrfachbindung zu einem elektronegativeren Atom (−M)?';
+        if (fin < 8) return 'Wähle die nächste Gruppe. Vergleiche, woran du den M-Effekt jeweils erkennst: freies Paar oder Mehrfachbindung.';
+        return 'Du hast alle Gruppen bestimmt. Löse noch die Aufgaben unten, dann geht es zu Modul 3.';
+      }
+      var base = { text: app[0], tip: app[1] || TIP };
+      Kolbi.init({
+        tapHelp: function () { return tab() === 'me' ? { text: 'Der I-Effekt wirkt über die σ-Bindung, der M-Effekt nur über das π-System. Frage dich immer: Was hängt direkt an der Kette?', tip: nextTip() } : base; },
+        idleHelp: function () { return tab() === 'me' ? { text: ['Kommst du mit dem Detektiv zurecht?', 'Hängst du bei einer Gruppe fest? Ich helfe gern.'][Math.floor(Math.random() * 2)], tip: nextTip() } : { text: 'Alles klar bei dir? Ich helfe gern.', tip: base.tip }; }
+      });
+      document.addEventListener('tabchange', function (e) {
+        if (e.detail === 'me' && !welcomed) { welcomed = true; setTimeout(function () { Kolbi.tell('Hier lernst du, I- und M-Effekte direkt an der Formel abzulesen. Zwei Fragen genügen: Was zieht an der σ-Bindung, und was passiert mit dem π-System?', 'interested'); }, 500); }
+      });
+      var fin = $('mefin');
+      if (fin) new MutationObserver(function () {
+        if (fin.hidden) return;
+        var n = document.querySelectorAll('#mesel button.fin').length;
+        if (n === 8) Kolbi.tell('Alle acht Gruppen sind bestimmt. Du erkennst jetzt, woran man Donatoren und Akzeptoren unterscheidet. Das brauchst du gleich in Modul 3!', 'excited');
+      }).observe(fin, { attributes: true, attributeFilter: ['hidden'] });
+    },
     'Kunststoffklassen': function () {
       var $ = function (id) { return document.getElementById(id); };
       var kind = function () { var t = document.querySelector('[role=tab][aria-selected=true]'); return t ? t.dataset.kind : 'thermoplaste'; };

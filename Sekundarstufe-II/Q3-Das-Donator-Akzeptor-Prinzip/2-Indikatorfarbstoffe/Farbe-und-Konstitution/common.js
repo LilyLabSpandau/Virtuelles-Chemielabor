@@ -8,6 +8,7 @@
     if (t.length > 230) { var cut = t.lastIndexOf('. ', 230); t = t.slice(0, cut > 60 ? cut + 1 : 230); }
     window.KolbiNote = t;
   }
+  window.note = note;   // auch für m1.js, me.js und m2.js
 
   // ------------------------------------------------------------ Reiter
   var tabs = Array.prototype.slice.call(document.querySelectorAll('.tab'));
@@ -33,10 +34,16 @@
 
   // ------------------------------------------------------------ Multiple Choice
   // o = { q, opts:[…], ok: Index, why: 'Erklärung', hints: {Index: 'Hinweis'}, mod: 'm1', after: fn }
+  // Reihenfolge der Antworten wird bei jedem Laden gemischt (o.fix = true lässt sie stehen, z. B. bei Zahlen)
+  function shuffled(n, keep) {
+    var a = []; for (var i = 0; i < n; i++) a.push(i);
+    if (!keep) for (var j = n - 1; j > 0; j--) { var k = Math.floor(Math.random() * (j + 1)), t = a[j]; a[j] = a[k]; a[k] = t; }
+    return a;
+  }
   window.mc = function (box, o) {
     var d = document.createElement('div'); d.className = 'q';
     var h = '<p class="qt">' + o.q + '</p><div class="opts">';
-    o.opts.forEach(function (t, i) { h += '<button class="opt" data-i="' + i + '">' + t + '</button>'; });
+    shuffled(o.opts.length, o.fix).forEach(function (i) { h += '<button class="opt" data-i="' + i + '">' + o.opts[i] + '</button>'; });
     h += '</div><div class="fb" hidden></div>';
     d.innerHTML = h; box.appendChild(d);
     var fb = d.querySelector('.fb'), done = false, tries = 0;
@@ -64,7 +71,7 @@
     var d = document.createElement('div'), h = '';
     o.parts.forEach(function (p, i) {
       if (typeof p === 'string') h += p;
-      else { h += '<select data-k="' + i + '"><option value="-1">… wähle …</option>'; p.o.forEach(function (t, j) { h += '<option value="' + j + '">' + t + '</option>'; }); h += '</select>'; }
+      else { h += '<select data-k="' + i + '"><option value="-1">… wähle …</option>'; shuffled(p.o.length).forEach(function (j) { h += '<option value="' + j + '">' + p.o[j] + '</option>'; }); h += '</select>'; }
     });
     h += '<div style="margin-top:8px"><button class="btn gchk">Prüfen</button></div><div class="fb" hidden></div>';
     d.innerHTML = h; box.appendChild(d);

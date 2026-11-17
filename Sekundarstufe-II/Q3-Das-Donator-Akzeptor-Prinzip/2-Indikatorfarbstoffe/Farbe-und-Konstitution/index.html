@@ -24,12 +24,12 @@
   .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 0}
   .tab{flex:1 1 200px;border:0;background:var(--tt);color:#1e293b;font:inherit;font-weight:700;font-size:15px;padding:11px 12px;border-radius:10px 10px 0 0;cursor:pointer;min-height:46px;text-align:left}
   .tab small{display:block;font-weight:500;font-size:12.5px;opacity:.8}
-  #tab-m1{--tt:#b7ece6;--tc:#0d9488}#tab-m2{--tt:#fde0b0;--tc:#d97706}#tab-m3{--tt:#dcd0ff;--tc:#7c3aed}
+  #tab-m1{--tt:#b7ece6;--tc:#0d9488}#tab-m2{--tt:#fde0b0;--tc:#d97706}#tab-m3{--tt:#dcd0ff;--tc:#7c3aed}#tab-me{--tt:#fbd0e3;--tc:#db2777}
   .tab.on{background:var(--tc);color:#fff}
   .tab .done{display:none;margin-left:6px}.tab.fin .done{display:inline}
   .mod{display:none;background:var(--card);border:1px solid var(--line);border-radius:0 0 14px 14px;padding:clamp(14px,3vw,26px);box-shadow:0 4px 14px rgba(15,23,42,.06)}
   .mod.on{display:block}
-  #m1{--pri:#0d9488;--pri2:#0f766e;--tint:#e3f7f4;--acl:#14b8a6}#m2{--pri:#d97706;--pri2:#b45309;--tint:#fff3de;--acl:#f59e0b}#m3{--pri:#7c3aed;--pri2:#6d28d9;--tint:#efe8ff;--acl:#a78bfa}
+  #m1{--pri:#0d9488;--pri2:#0f766e;--tint:#e3f7f4;--acl:#14b8a6}#m2{--pri:#d97706;--pri2:#b45309;--tint:#fff3de;--acl:#f59e0b}#m3{--pri:#7c3aed;--pri2:#6d28d9;--tint:#efe8ff;--acl:#a78bfa}#me{--pri:#db2777;--pri2:#be185d;--tint:#fde7f1;--acl:#ec4899}
   .mod{background:linear-gradient(var(--tint) 0,#fff 220px);border-top:5px solid var(--pri)}
   .mod h2{color:var(--pri2)}
   .lead{background:var(--tint);border-left:5px solid var(--pri);padding:10px 13px;border-radius:8px;margin:8px 0 14px}
@@ -78,6 +78,9 @@
   .sel{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0}
   .sel button{border:1.5px solid #cbd5e1;background:#fff;border-radius:10px;padding:8px 11px;font:inherit;font-weight:700;cursor:pointer;min-height:44px;touch-action:manipulation}
   .sel button.on{border-color:var(--pri);background:var(--pri);color:#fff}
+  .sel button.fin{border-color:#16a34a;background:#e8f7ee}.sel button.on.fin{background:var(--pri);border-color:var(--pri);color:#fff}
+  .sel button.wrong{border-color:#e08a8a;background:var(--badbg);color:#7f1d1d}.sel button:disabled:not(.on):not(.wrong){opacity:.55}.sel button.on:disabled{opacity:1}
+  .gf{margin-top:8px;font-size:17px;font-weight:600;letter-spacing:.2px;overflow-wrap:anywhere}
   .sel button.aux{border-left:5px solid #16a34a}.sel button.anti{border-left:5px solid #dc2626}
   .steps{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 12px}
   .stp{flex:1 1 120px;border:1.5px solid #cbd5e1;background:#f8fafc;border-radius:10px;padding:7px 9px;font:inherit;font-weight:700;font-size:14px;text-align:left;cursor:pointer;min-height:44px}
@@ -100,12 +103,13 @@
 <div class="wrap">
   <div class="top"><a class="back" href="../index.html">← Zurück zu den Indikatorfarbstoffen</a></div>
   <div class="hero"><h1>Farbe und Konstitution</h1>
-  <p class="sub">Lerneinheit für die Oberstufe: Wie hängt die Farbe eines Stoffes von seiner Struktur ab? Drei Module, die aufeinander aufbauen.</p></div>
+  <p class="sub">Lerneinheit für die Oberstufe: Wie hängt die Farbe eines Stoffes von seiner Struktur ab? Vier Module, die aufeinander aufbauen.</p></div>
 
   <div class="tabs" role="tablist">
     <button class="tab on" role="tab" data-t="m1" id="tab-m1">1 · Konjugation und Farbe<span class="done">✔</span><small>Kette verlängern, Farbe beobachten</small></button>
-    <button class="tab" role="tab" data-t="m2" id="tab-m2">2 · Auxochrome &amp; Antiauxochrome<span class="done">✔</span><small>Bathochrom oder hypsochrom?</small></button>
-    <button class="tab" role="tab" data-t="m3" id="tab-m3">3 · Der Tintenkiller<span class="done">✔</span><small>Triphenylmethanfarbstoff erklären</small></button>
+    <button class="tab" role="tab" data-t="me" id="tab-me">2 · I- und M-Effekte erkennen<span class="done">✔</span><small>Elektronenverschiebung bestimmen</small></button>
+    <button class="tab" role="tab" data-t="m2" id="tab-m2">3 · Auxochrome &amp; Antiauxochrome<span class="done">✔</span><small>Bathochrom oder hypsochrom?</small></button>
+    <button class="tab" role="tab" data-t="m3" id="tab-m3">4 · Der Tintenkiller<span class="done">✔</span><small>Triphenylmethanfarbstoff erklären</small></button>
   </div>
 
   <!-- ================================================= MODUL 1 -->
@@ -143,12 +147,42 @@
     <h3>Aufgaben</h3>
     <div id="m1q"></div>
     <div class="merke" id="m1merke" hidden><b class="t">Merke:</b> Mit jeder weiteren konjugierten C=C-Doppelbindung wird das π-Elektronensystem größer und stärker delokalisiert. Der Abstand zwischen HOMO und LUMO sinkt, deshalb genügt energieärmeres, also langwelligeres Licht zur Anregung: Das Absorptionsmaximum wandert aus dem UV in den sichtbaren Bereich. Der Stoff erscheint in der Komplementärfarbe zum absorbierten Licht.</div>
-    <div class="row" style="margin-top:12px"><button class="btn" data-go="m2">Weiter zu Modul 2 →</button></div>
+    <div class="row" style="margin-top:12px"><button class="btn" data-go="me">Weiter zu Modul 2 →</button></div>
   </section>
 
   <!-- ================================================= MODUL 2 -->
+  <section class="mod" id="me" role="tabpanel">
+    <h2>Modul 2: I- und M-Effekte erkennen</h2>
+    <div class="lead"><p><b>Auftrag:</b> Ob eine Gruppe die Farbe nach Rot oder nach Blau verschiebt, hängt davon ab, ob sie Elektronen abgibt oder anzieht. Hier lernst du, das an der Strukturformel selbst zu erkennen: Stelle zwei Fragen an die Gruppe und bestimme ihren <b>I-</b> und ihren <b>M-Effekt</b>.</p></div>
+
+    <div class="card"><h4>Der Spickzettel: zwei Fragen an das erste Atom</h4>
+      <table><tbody>
+        <tr><th>Frage 1<br><small>I-Effekt</small></th><td>Zieht die Gruppe die Elektronen der σ-Bindung zur Kette zu sich, weil sie elektronegative Atome enthält (N, O, F)? Dann <b>−I</b>. Besteht sie nur aus C und H (Alkylgruppe)? Dann gibt sie Elektronen ab: <b>+I</b>. Der I-Effekt nimmt mit dem Abstand schnell ab.</td></tr>
+        <tr><th>Frage 2<br><small>M-Effekt</small></th><td>Sitzt die Gruppe an einem π-System? Dann schau auf das <b>erste Atom</b>, das an der Kette hängt:<br>• Es trägt ein <b>freies Elektronenpaar</b> (O, N)? Das Paar wird in das π-System geschoben: <b>+M</b>.<br>• Es hat eine <b>Doppel- oder Dreifachbindung zu einem elektronegativeren Atom</b> (C=O, N=O, C≡N)? Die π-Elektronen der Kette werden dorthin gezogen: <b>−M</b>.<br>• Beides nicht? Dann gibt es <b>keinen M-Effekt</b>.</td></tr>
+      </tbody></table>
+      <p class="small" style="margin:8px 0 0">Elektronegativität (EN): H 2,2 · C 2,5 · N 3,0 · O 3,5 · F 4,0. Ein Atom mit höherer EN als C zieht Bindungselektronen zu sich.</p></div>
+
+    <h3>Der Effekt-Detektiv</h3>
+    <p class="small" style="margin:0 0 6px">Wähle eine Gruppe. Sie sitzt an einer C=C-Bindung (Vinylgruppe), freie Elektronenpaare sind als Punkte eingezeichnet. Bestimme I- und M-Effekt. Wenn beides stimmt, zeichnet das Programm die Elektronenverschiebung ein.</p>
+    <div class="sel" id="mesel"></div>
+    <div class="grid" id="mebox">
+      <div class="card"><h4 id="mename">Gruppe</h4><svg id="mesvg" role="img" aria-label="Strukturformel der Gruppe an einer C=C-Bindung"></svg></div>
+      <div class="card" id="mestep"><h4>Deine Bestimmung</h4>
+        <p style="margin:0 0 4px"><b>Frage 1:</b> Welchen I-Effekt hat die Gruppe?</p>
+        <div class="sel" id="mei"></div><div class="fb" id="mefi" hidden></div>
+        <p style="margin:12px 0 4px"><b>Frage 2:</b> Welchen M-Effekt hat die Gruppe?</p>
+        <div class="sel" id="mem"></div><div class="fb" id="mefm" hidden></div>
+        <div class="fb ok" id="mefin" hidden></div></div>
+    </div>
+
+    <h3>Aufgaben</h3>
+    <div id="meq"></div>
+    <div class="merke" id="mmerke" hidden><b class="t">Merke:</b> Der <b>I-Effekt</b> wirkt über σ-Bindungen und kommt von elektronegativen Atomen (−I) oder Alkylresten (+I). Er nimmt mit dem Abstand schnell ab. Der <b>M-Effekt</b> wirkt nur an einem π-System und hängt vom ersten Atom der Gruppe ab: freies Elektronenpaar → <b>+M</b> (Donator), Mehrfachbindung zu einem elektronegativeren Atom → <b>−M</b> (Akzeptor), sonst kein M-Effekt. Bei –OH und –NH₂ wirken −I und +M gleichzeitig, der +M-Effekt überwiegt.</div>
+    <div class="row" style="margin-top:12px"><button class="btn" data-go="m2">Weiter zu Modul 3 →</button></div>
+  </section>
+
   <section class="mod" id="m2" role="tabpanel">
-    <h2>Modul 2: Gruppen, die die Farbe verschieben</h2>
+    <h2>Modul 3: Gruppen, die die Farbe verschieben</h2>
     <div class="lead"><p><b>Auftrag:</b> Du kennst jetzt den Zusammenhang zwischen Kettenlänge und Farbe. Nun bleibt die Kette gleich lang, und du setzt an ein Ende verschiedene Gruppen. Finde heraus, welche die Absorption zu längeren Wellenlängen (<b>bathochrom</b>) und welche zu kürzeren (<b>hypsochrom</b>) verschieben.</p></div>
 
     <div class="card"><h4>Erst die Werkzeuge: vier Effekte</h4>
@@ -184,12 +218,12 @@
     <h3>Aufgaben</h3>
     <div id="m2q"></div>
     <div class="merke" id="m2merke" hidden><b class="t">Merke:</b> <b>Auxochrome</b> (+M, +I, Elektronendonatoren) vergrößern die Delokalisierung der Elektronen und verkleinern ΔE: <b>bathochromer Effekt</b>, die Absorption wandert nach Rot, die Farbe wird tiefer. <b>Antiauxochrome</b> (−M, −I, Elektronenakzeptoren) halten die Elektronen stärker fest: <b>hypsochromer Effekt</b>, die Absorption wandert nach Blau, die Farbe wird heller. Mesomere Effekte wirken deutlich stärker als induktive.</div>
-    <div class="row" style="margin-top:12px"><button class="btn" data-go="m3">Weiter zu Modul 3 →</button></div>
+    <div class="row" style="margin-top:12px"><button class="btn" data-go="m3">Weiter zu Modul 4 →</button></div>
   </section>
 
   <!-- ================================================= MODUL 3 -->
   <section class="mod" id="m3" role="tabpanel">
-    <h2>Modul 3: Wie funktioniert ein Tintenkiller?</h2>
+    <h2>Modul 4: Wie funktioniert ein Tintenkiller?</h2>
     <div class="lead"><p>Blaue Tinte enthält Triphenylmethanfarbstoffe. Ein Tintenkiller enthält Sulfit-Ionen und löscht die Farbe, ohne dass der Farbstoff „verschwindet“. Du erklärst es mit dem Wissen aus den Modulen 1 und 2.</p></div>
     <div class="steps" id="m3steps">
       <button class="stp on" data-s="s1">1 · Der Versuch</button>
@@ -264,6 +298,7 @@
 <script src="farbe.js"></script>
 <script src="common.js"></script>
 <script src="m1.js"></script>
+<script src="me.js"></script>
 <script src="m2.js"></script>
 <script src="../../../../kolbi/gaeste.js"></script>
 <script src="m3.js"></script>
