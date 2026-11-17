@@ -78,7 +78,7 @@
     await tween(400, function (k) { pip.setAttribute('opacity', 1 - k); pip.setAttribute('transform', 'translate(0,' + (-30 * k) + ')'); });
   }
   function cleanup() {
-    Gaeste.clear(); if (hasK()) { Kolbi.hush(); Kolbi.lock(false); Kolbi._idle(0); Kolbi.mood('happy', 1500); }
+    Gaeste.clear(); if (hasK()) { if (Kolbi.motion) Kolbi.motion(false); Kolbi.hush(); Kolbi.lock(false); Kolbi._idle(0); Kolbi.mood('happy', 1500); }
     var v = $('sceneVeil'); if (v) v.style.display = 'none';
     $('skipBtn').style.display = 'none'; $('m3start').disabled = false; running = false;
     var pip = $('pip'); pip.setAttribute('opacity', 0); setLiq(1);
@@ -94,7 +94,7 @@
     $('m3start').disabled = true; $('m3hint').textContent = 'Die Szene läuft …';
     // Kolbi bereitstellen (wartet kurz, falls das Skript noch lädt)
     for (var w = 0; w < 20 && !hasK(); w++) await new Promise(function (r) { setTimeout(r, 150); });
-    if (hasK()) { Kolbi.show(); Kolbi.hush(); }
+    if (hasK()) { Kolbi.show(); Kolbi.hush(); if (Kolbi.motion) Kolbi.motion(true); }
     $('benchBox').scrollIntoView({ block: 'center' }); await new Promise(function (r) { setTimeout(r, 450); });
     veil(); $('skipBtn').style.display = 'inline-block';
     var fl = $('floor').getBoundingClientRect(), sz = Gaeste.size(), vw = innerWidth;

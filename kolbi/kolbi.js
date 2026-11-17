@@ -14,7 +14,7 @@
   var el = {}, pos = { x: 0, y: 0 };
   var wanderT = null, quietUntil = 0, bubbleOpen = false, curAsk = null, shownIds = {}, queue = [], closeT = null, introActive = false, locked = false;
   var lastAct = Date.now(), nextRemark = 45, base = 'happy', curMood = 'happy', moodT = null, wasSleeping = false, yawned = false;
-  var eyeT = '', lastPtr = 0, taps = [], lastDizzy = 0, microT = null, reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var reduce0 = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches, eyeT = '', lastPtr = 0, taps = [], lastDizzy = 0, microT = null, reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   function load() { try { var o = JSON.parse(localStorage.getItem(KEY) || '{}'); if (o && typeof o === 'object') { st.off = !!o.off; st.mute = o.mute || {}; st.met = !!o.met; st.quiet = !!o.quiet; } } catch (e) {} }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
@@ -191,7 +191,7 @@
   '@media (max-width:520px){#kolbi-back .kb-hol{display:none}}' +
   '@media (max-width:700px){#kolbi-char{width:var(--kwm,62px);height:var(--khm,77px)}#kolbi-shadow{width:calc(var(--kwm,62px) * .8);margin-left:calc(var(--kwm,62px) * -.4)}}' +
   '@media print{#kolbi-root{display:none!important}}' +
-  '@media (prefers-reduced-motion:reduce){#kolbi-body,#kolbi-char.walk #kolbi-body,#kolbi-char[data-mood=excited] #kolbi-body{animation:none}#kolbi-body .k-lid,#kolbi-body .k-bub,#kolbi-body .k-zzz{animation:none}}';
+  '@media (prefers-reduced-motion:reduce){#kolbi-root:not(.k-motion) #kolbi-body,#kolbi-root:not(.k-motion) #kolbi-char.walk #kolbi-body,#kolbi-root:not(.k-motion) #kolbi-char[data-mood=excited] #kolbi-body{animation:none}#kolbi-root:not(.k-motion) #kolbi-body .k-lid,#kolbi-root:not(.k-motion) #kolbi-body .k-bub,#kolbi-root:not(.k-motion) #kolbi-body .k-zzz{animation:none}}';
 
   function svg(col) {
     var body = 'M40 12 V42 L11 98 Q5 112 19 112 H83 Q97 112 91 98 L62 42 V12 Z';
@@ -351,6 +351,7 @@
     }, 3400);
   }
   function showIntro() {
+    if (locked) return;
     introActive = true; mood('excited', 2800);
     openBubble(X + '<p class="kb-text"><b>' + SK.t.intro[0] + '</b><br>' + SK.t.intro[1] + '</p>' +
       (cfg.introExtra ? '<p class="kb-text">' + cfg.introExtra + '</p>' : '') + '<p class="kb-text" style="font-size:13px;color:#4b5563;margin-top:-4px">Du kannst mich ziehen, antippen oder ausblenden.</p><button class="kb-ok" data-k="hello">Hallo, ' + SK.name + '! 👋</button>', 0);
@@ -436,10 +437,10 @@
     if (idle >= 240 && curMood !== 'sleep') { wasSleeping = true; if (!bubbleOpen) { clearTimeout(moodT); moodT = null; base = 'sleep'; setFace('sleep'); } }
     else if (idle >= 120 && base === 'happy') { base = 'bored'; if (!moodT) setFace('bored'); }
     if (idle >= 150 && !yawned && base === 'bored' && !bubbleOpen) { yawned = true; mood('yawn', 3200); }
-    if (idle >= nextRemark && !bubbleOpen && !introActive && !st.quiet && base !== 'sleep' && talkOk() && !typing()) {
+    if (!locked && idle >= nextRemark && !bubbleOpen && !introActive && !st.quiet && base !== 'sleep' && talkOk() && !typing()) {
       if (base === 'bored') { showRemark(rnd(SK.t.BORED), 'bored'); nextRemark = idle + 45 + Math.random() * 35; }
       else { remark(); nextRemark = idle + 32 + Math.random() * 28; }
-    } else if (!bubbleOpen && !introActive && !st.quiet && base !== 'sleep' && idle >= 4 && Date.now() - lastSpoke > chatInt * 1000 && talkOk() && !typing()) {
+    } else if (!locked && !bubbleOpen && !introActive && !st.quiet && base !== 'sleep' && idle >= 4 && Date.now() - lastSpoke > chatInt * 1000 && talkOk() && !typing()) {
       remark(); chatInt = 70 + Math.random() * 60;   // meldet sich auch, während jemand arbeitet
     }
   }
@@ -461,7 +462,7 @@
   function breakCheck() {
     var t0 = +sget(SK.key + '-t0'); if (!t0) { sset(SK.key + '-t0', String(Date.now())); return; }
     var min = (Date.now() - t0) / 60000, done = +sget(SK.key + '-brk') || 0, th = [40, 90, 140];
-    if (done < th.length && min >= th[done] && !bubbleOpen && !introActive && !st.quiet) { sset(SK.key + '-brk', String(done + 1)); showRemark(rnd(SK.t.BREAK), 'interested'); }
+    if (!locked && done < th.length && min >= th[done] && !bubbleOpen && !introActive && !st.quiet) { sset(SK.key + '-brk', String(done + 1)); showRemark(rnd(SK.t.BREAK), 'interested'); }
   }
   function today() { var d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
   function greetText() {
@@ -551,7 +552,7 @@
     ask: function (o) {
       if (!el.char || st.off || !talkOk()) return;
       if (o.id && (st.mute[o.id] || (shownIds[o.id] && !o.repeat))) return;
-      if (bubbleOpen || introActive || (cfg.intro && !st.met)) { if (o.id && !shownIds['q' + o.id]) { shownIds['q' + o.id] = 1; queue.push(o); } return; }
+      if (locked) return; if (bubbleOpen || introActive || (cfg.intro && !st.met)) { if (o.id && !shownIds['q' + o.id]) { shownIds['q' + o.id] = 1; queue.push(o); } return; }
       if (o.id) shownIds[o.id] = 1;
       showAsk(o);
     },
@@ -563,15 +564,15 @@
     greetHome: function (o) {
       o = o || {}; if (!el.char || st.off) return;
       var t = o.text || greetText();
-      if (bubbleOpen || introActive || (cfg.intro && !st.met)) return;
+      if (locked || bubbleOpen || introActive || (cfg.intro && !st.met)) return;
       showRemark(t, 'excited', null, o.hint || '');
     },
     arrive: function () { if (!el.char || st.off) return; el.char.classList.add('walk'); setTimeout(function () { if (el.char) el.char.classList.remove('walk'); }, 800); mood('excited', 1500); },
     _break: function (min) { sset(SK.key + '-t0', String(Date.now() - min * 60000)); },
-    say: function (text, m) { if (!el.char || st.off || introActive || (cfg.intro && !st.met)) return false; curAsk = null; showRemark(text, m || 'happy'); return true; },
-    react: function (m, text) { if (!el.char || st.off) return; if (text && !bubbleOpen && !introActive && !st.quiet) showRemark(text, m); else mood(m, 2600); lastAct = Date.now(); },
-    tell: function (text, m) { if (!el.char || st.off || introActive) return false; lastAct = Date.now(); if (st.quiet) { mood(m || 'happy', 2600); return false; } curAsk = null; showRemark(text, m || 'happy'); return true; },
-    tellTip: function (text, tip, m) { if (!el.char || st.off || introActive) return false; lastAct = Date.now(); if (st.quiet) { mood(m || 'oops', 2600); return false; } showAsk({ id: '', text: text, tip: tip }); mood(m || 'oops', 3000); return true; },
+    say: function (text, m) { if (!el.char || st.off || locked || introActive || (cfg.intro && !st.met)) return false; curAsk = null; showRemark(text, m || 'happy'); return true; },
+    react: function (m, text) { if (!el.char || st.off || locked) return; if (text && !bubbleOpen && !introActive && !st.quiet) showRemark(text, m); else mood(m, 2600); lastAct = Date.now(); },
+    tell: function (text, m) { if (!el.char || st.off || locked || introActive) return false; lastAct = Date.now(); if (st.quiet) { mood(m || 'happy', 2600); return false; } curAsk = null; showRemark(text, m || 'happy'); return true; },
+    tellTip: function (text, tip, m) { if (!el.char || st.off || locked || introActive) return false; lastAct = Date.now(); if (st.quiet) { mood(m || 'oops', 2600); return false; } showAsk({ id: '', text: text, tip: tip }); mood(m || 'oops', 3000); return true; },
     // Anleitung (Tutorial): Hugo/Kolbi spricht Schritt für Schritt. o = { html, praise, btn, skip, bad, mood, onGo, onSkip, onEnd, onHide }
     guide: function (o) {
       if (!el.char || st.off) return false;
@@ -594,7 +595,7 @@
     _idle: function (sec) { lastAct = Date.now() - sec * 1000; }, // nur zum Testen
     hide: function () { st.off = true; save(); var g = guide; guide = null; closeBubble(); applyOff(); if (g && g.o.onHide) g.o.onHide(); },
     // Moderator-Modus: Kolbi ist nicht bedienbar (kein Ziehen, kein Antippen, kein Plaudern) und wird vom Modul gesteuert
-    lock: function (on) { locked = !!on; if (el.char) { el.char.style.pointerEvents = locked ? 'none' : ''; el.char.classList.remove('drag'); } if (locked) { clearTimeout(closeT); } },
+    lock: function (on) { locked = !!on; if (locked && !st.met) { st.met = true; save(); introActive = false; } if (el.char) { el.char.style.pointerEvents = locked ? 'none' : ''; el.char.classList.remove('drag'); } if (locked) { clearTimeout(closeT); } },
     isLocked: function () { return locked; },
     line: function (html, ms, m) {   // Sprechblase ohne Schließen-Knopf; Text ist bereits sicherer HTML-Text des Moduls
       if (!el.char || st.off) return false; curAsk = null; introActive = false; mood(m || 'happy', ms || 3000);
@@ -603,6 +604,8 @@
     hush: function () { clearTimeout(closeT); bubbleOpen = false; if (!el.bubble) return; el.bubble.classList.remove('show'); el.char.classList.remove('talk'); setTimeout(function () { if (!bubbleOpen) el.bubble.classList.remove('on'); }, 200); },
     moveTo: function (fx, fy) { if (!el.char) return; var a = { x: fx * vw(), y: fy * vh() }; walkTo(a); },
     setExtra: function (a) { cfg.extraOpts = a || null; },
+    // Moderierte Szenen sollen auch bei „Bewegung reduzieren“ lebendig sein (Kolbi läuft und bewegt sich nur, solange eine Szene läuft)
+    motion: function (on) { reduce = on ? false : reduce0; if (el.root) el.root.classList.toggle('k-motion', !!on); },
     show: function () { st.off = false; save(); applyOff(); }
   };
   function applyOff() {

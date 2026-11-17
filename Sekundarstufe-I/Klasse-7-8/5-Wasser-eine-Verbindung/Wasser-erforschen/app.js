@@ -3,6 +3,8 @@
   'use strict';
   if (Store('open')) unlock('restore');
   $('lockhint').hidden = true;
+  $('introbtn').addEventListener('click', function () { Szene.play(Szene.INTRO); });
+  if (!Store('intro') && !isUnlocked()) setTimeout(function () { if (!Szene.running()) { Store('intro', 1); Szene.play(Szene.INTRO); } }, 900);
   document.addEventListener('unlocked', function (e) { $('lockbox').hidden = true; $('lockhint').hidden = true; });
   if (isUnlocked()) $('lockbox').hidden = true;
   function go() {

@@ -80,8 +80,8 @@
     soapG = svgEl('g', { opacity: 0 }, svg);
     for (var i = 0; i < 9; i++) { svgEl('rect', { x: 70 + i * 20, y: Y - 4, width: 7, height: 4, rx: 2, fill: '#f97316' }, soapG); }
     clip = svgEl('g', {}, svg); svgEl('rect', { x: -24, y: -5, width: 48, height: 8, rx: 4, fill: '#9ca3af', stroke: '#4b5563', 'stroke-width': 1.5 }, clip); var ct = svgEl('text', { x: 0, y: 2, 'text-anchor': 'middle', 'font-size': 7, 'font-weight': 700, fill: '#1f2937' }, clip); ct.textContent = 'Stahl';
-    var info = svgEl('text', { x: 150, y: 24, 'text-anchor': 'middle', 'font-size': 12, 'font-weight': 700, fill: '#0c4a6e' }, svg);
-    var dep = 0, cy = 20, soap = 0;
+    var info = svgEl('text', { x: 150, y: 217, 'text-anchor': 'middle', 'font-size': 12, 'font-weight': 700, fill: '#0c4a6e' }, svg);
+    var dep = 0, cy = 28, soap = 0;
     function surface() {   // Wasserlinie mit Delle unter der Klammer
       var d = 'M62 ' + Y; for (var x = 62; x <= 238; x += 4) { var k = Math.exp(-Math.pow((x - 150) / 26, 2)); d += ' L' + x + ' ' + (Y + dep * k); }
       d += ' L238 204 L62 204 Z'; wat.setAttribute('d', d);
@@ -94,7 +94,7 @@
     var placed = false, soaped = false;
     $('oclip').addEventListener('click', async function () {
       if (st !== 'idle') return; st = 'busy'; this.disabled = true;
-      await tw8(900, function (k) { cy = 20 + (Y - 3 - 20) * k; pos(); });
+      await tw8(900, function (k) { cy = 28 + (Y - 3 - 28) * k; pos(); });
       await tw8(700, function (k) { dep = 14 * k; cy = Y - 3 + dep; surface(); pos(); });
       lab('Die Klammer schwimmt auf der gedellten Oberfläche'); st = 'float';
       fb('✔ Die Büroklammer schwimmt, obwohl Stahl viel dichter ist als Wasser. Die Oberfläche ist unter ihr eingedellt, aber sie reißt nicht: Die Wasserstoffbrücken halten die „Haut“ zusammen.', true); note('Die Büroklammer schwimmt, weil die Oberfläche des Wassers wie eine Haut trägt. Die Wasserstoffbrücken halten sie zusammen.');
@@ -112,7 +112,7 @@
       if (!soaped) { soaped = true; Prog.done('o'); $('ogo4').hidden = false; reach(4); }
       $('oreset').disabled = false;
     });
-    $('oreset').addEventListener('click', function () { st = 'idle'; cy = 20; dep = 0; soap = 0; surface(); pos(); wat.setAttribute('fill', '#7dd3fc'); lab('Wasser'); $('ofb3').hidden = true; $('oclip').disabled = false; this.disabled = true; $('osoap').disabled = true; });
+    $('oreset').addEventListener('click', function () { st = 'idle'; cy = 28; dep = 0; soap = 0; surface(); pos(); wat.setAttribute('fill', '#7dd3fc'); lab('Wasser'); $('ofb3').hidden = true; $('oclip').disabled = false; this.disabled = true; $('osoap').disabled = true; });
     function tw8(ms, fn) { return new Promise(function (res) { var t0 = performance.now(); (function s(n) { var k = Math.min(1, (n - t0) / ms); fn(k); if (k < 1) requestAnimationFrame(s); else res(); })(t0); }); }
     mc($('oq3a'), { mod: 'o', q: '<b>Vermutung:</b> Eine Büroklammer aus Stahl (Dichte 7,8 g/cm³) wird vorsichtig auf Wasser gelegt. Was erwartest du?', fix: true,
       opts: ['Sie sinkt sofort, weil Stahl viel dichter ist als Wasser.', 'Sie schwimmt, weil die Oberfläche des Wassers sie trägt.', 'Sie schwimmt, weil Stahl leichter ist als Wasser.'], ok: 1,

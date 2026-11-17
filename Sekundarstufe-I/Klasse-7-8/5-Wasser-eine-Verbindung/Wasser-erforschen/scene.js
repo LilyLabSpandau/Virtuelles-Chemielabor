@@ -24,7 +24,15 @@
     { w: 'K', m: 'love', t: 'Dann bleib am besten in einem sauberen Teich. Danke, Wally!' },
     { w: 'W', m: 'wink', act: 'leave', t: 'Tschüss, Kolbi! Und tschüss an dich!' }
   ];
-  var veil, svgR, wally, bub, hint, dots, lines, idx, busy, running, cb, gen = 0, wx = 0;
+  var INTRO = [
+    { w: 'K', m: 'happy', icon: '👋', t: 'Hallo und herzlich willkommen im Labor! Ich bin Kolbi.' },
+    { w: 'K', m: 'interested', icon: '💧', t: 'Über Wasser habt ihr schon viel gelernt. Aber bei dieser spannenden Chemikalie sind wir noch lange nicht am Ende!' },
+    { w: 'K', m: 'surprised', icon: '🧊', t: 'Warum schwimmt Eis oben, obwohl es fest ist? Warum ist ein Föhn in der Badewanne so gefährlich, obwohl reines Wasser keinen Strom leitet? Und wie kann ein Insekt über das Wasser laufen?' },
+    { w: 'K', m: 'excited', icon: '🔬', t: 'Hinter allem steckt eine kleine Kraft zwischen den Wasser-Molekülen: die <b>Wasserstoffbrückenbindung</b>. Mit ihr fangen wir an. Dieses Modul ist Pflicht.' },
+    { w: 'K', m: 'happy', icon: '🧭', t: 'Danach suchst du dir selbst aus, ob du als Nächstes die Dichte, die Leitfähigkeit oder die Oberflächenspannung erforschst. Du findest alles selbst heraus.' },
+    { w: 'K', m: 'love', icon: '', t: 'Wenn die Einführung vorbei ist, bin ich wieder dein Helfer. Tippe mich einfach an, wenn du nicht weiterkommst. Los geht’s!' }
+  ];
+  var veil, svgR, wally, wdir = -1, icon, bub, hint, dots, lines, idx, busy, running, cb, gen = 0, wx = 0;
   function hasK() { return !!(window.Kolbi && Kolbi.lock && Kolbi.line); }
   function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
   function tween(ms, fn) { return new Promise(function (res) { var t0 = performance.now(); (function s(n) { var k = Math.min(1, (n - t0) / ms); fn(k * k * (3 - 2 * k)); if (k < 1) requestAnimationFrame(s); else res(); })(t0); }); }
@@ -50,9 +58,11 @@
     E('path', { d: 'M-1500 262 L120 262 Q140 262 150 300 L150 1500 L-1500 1500 Z', fill: '#7cc16a' }); E('path', { d: 'M-1500 290 L135 290 Q146 300 150 320 L150 1500 L-1500 1500 Z', fill: '#a9805a' });
     E('rect', { id: 'sShore', x: 18, y: 258, width: 70, height: 4, fill: 'none' });
     [[352, 300, 60], [366, 300, 80], [380, 300, 52]].forEach(function (r) { E('line', { x1: r[0], y1: r[1], x2: r[0] + 4, y2: r[1] - r[2], stroke: '#5a8a3a', 'stroke-width': 4, 'stroke-linecap': 'round' }); E('ellipse', { cx: r[0] + 4, cy: r[1] - r[2] - 8, rx: 5, ry: 12, fill: '#7a4a2a' }); });
+    icon = E('text', { x: 335, y: 175, 'text-anchor': 'middle', 'font-size': 60, opacity: 0 });
     // Wally (Füße auf Höhe der Wasserlinie y=300)
     wally = E('g', { id: 'sWally', transform: 'translate(470 300)' });
-    var b = E('g', { id: 'sWb' }, wally);
+    var wf = E('g', { id: 'sWf', transform: 'scale(-1 1)' }, wally);   // Wally schaut beim Hereinkommen nach links (Laufrichtung)
+    var b = E('g', { id: 'sWb' }, wf); wdir = -1;
     // Dellen unter den Füßen
     [[-40, 0], [-2, 0], [36, 0]].forEach(function (p) { E('path', { d: 'M' + (p[0] - 9) + ' -1 Q' + p[0] + ' 11 ' + (p[0] + 9) + ' -1', fill: '#2d8cc4', stroke: '#c7ecff', 'stroke-width': 2 }, b); });
     [['M16 -26 L38 -4', 1], ['M4 -26 L-2 -4', 1], ['M-14 -26 L-40 -4', 1]].forEach(function (l) { E('path', { d: l[0], fill: 'none', stroke: '#3f2a14', 'stroke-width': 2.6, 'stroke-linecap': 'round' }, b); });
@@ -71,8 +81,10 @@
   }
   function setDots() { dots.innerHTML = lines.map(function (_, i) { return '<i' + (i === idx ? ' class="on"' : '') + '></i>'; }).join(''); }
   async function wallyTo(x, ms) { var x0 = wx; wallyBob(false); await tween(ms, function (k) { wx = x0 + (x - x0) * k; wally.setAttribute('transform', 'translate(' + wx + ' 300)'); }); wallyBob(true); }
+  function turn(to) { var f = svgR.querySelector('#sWf'), from = wdir; wallyBob(false); return tween(550, function (k) { var v = from + (to - from) * k; f.setAttribute('transform', 'scale(' + (Math.abs(v) < 0.04 ? 0.04 * (v < 0 ? -1 : 1) : v).toFixed(3) + ' 1)'); }).then(function () { wdir = to; wallyBob(true); }); }
   async function show(i) {
-    var l = lines[i], g = gen; busy = true; idx = i; setDots(); bub.style.display = 'none'; if (hasK()) Kolbi.hush();
+    var l = lines[i], g = gen; busy = true; idx = i; setDots();
+    if (l.icon !== undefined && icon) { icon.textContent = l.icon; icon.setAttribute('opacity', l.icon ? 1 : 0); } bub.style.display = 'none'; if (hasK()) Kolbi.hush();
     if (l.act === 'enter') { await wallyTo(290, 2200); if (g !== gen) return; if (!l.t) { busy = false; return next(); } }
     if (g !== gen) return;
     if (l.t) {
@@ -85,13 +97,13 @@
   var leaving = false;
   async function next() {
     if (busy || !running) return;
-    if (leaving) { leaving = false; var g = gen; bub.style.display = 'none'; if (hasK()) Kolbi.hush(); busy = true; await wallyTo(470, 1600); if (g === gen) end(); return; }
+    if (leaving) { leaving = false; var g = gen; bub.style.display = 'none'; if (hasK()) Kolbi.hush(); busy = true; await turn(1); if (g !== gen) return; await wallyTo(470, 1600); if (g === gen) end(); return; }
     if (idx + 1 >= lines.length) return end();
     show(idx + 1);
   }
   function end() {
     if (!running) return; running = false; gen++;
-    if (hasK()) { Kolbi.hush(); Kolbi.lock(false); Kolbi._idle(0); Kolbi.mood('happy', 1500); }
+    if (hasK()) { if (Kolbi.motion) Kolbi.motion(false); Kolbi.hush(); Kolbi.lock(false); Kolbi._idle(0); Kolbi.mood('happy', 1500); }
     if (veil && veil.parentNode) veil.parentNode.removeChild(veil); veil = null; busy = false; leaving = false;
     var f = cb; cb = null; if (f) f();
   }
@@ -101,10 +113,12 @@
     build();
     veil.addEventListener('click', function (e) { if (e.target.id === 'sceneSkip') return; next(); });
     veil.querySelector('#sceneSkip').addEventListener('click', function (e) { e.stopPropagation(); end(); });
-    if (hasK()) { Kolbi.show(); Kolbi.hush(); Kolbi.lock(true);
+    if (hasK()) { Kolbi.show(); Kolbi.hush(); if (Kolbi.motion) Kolbi.motion(true); Kolbi.lock(true);
       var sh = svgR.querySelector('#sShore').getBoundingClientRect(), kh = innerWidth <= 700 ? 77 : 96;
       Kolbi.moveTo(Math.max(0.01, (sh.left + 4) / innerWidth), Math.max(0.05, (sh.top - kh + 6) / innerHeight)); }
-    wallyBob(true); await wait(1300); busy = false; show(0);
+    var solo = !arr.some(function (l) { return l.w === 'W'; });
+    if (solo) svgR.querySelector('#sWally').setAttribute('opacity', 0);
+    wallyBob(!solo); await wait(solo ? 700 : 1300); busy = false; show(0);
   }
-  window.Szene = { play: play, PRO: PRO, EPI: EPI, running: function () { return running; } };
+  window.Szene = { play: play, PRO: PRO, EPI: EPI, INTRO: INTRO, running: function () { return running; } };
 })();
