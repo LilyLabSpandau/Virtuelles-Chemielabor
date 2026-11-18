@@ -14,7 +14,7 @@
   var el = {}, pos = { x: 0, y: 0 };
   var wanderT = null, quietUntil = 0, bubbleOpen = false, curAsk = null, shownIds = {}, queue = [], closeT = null, introActive = false, locked = false;
   var lastAct = Date.now(), nextRemark = 45, base = 'happy', curMood = 'happy', moodT = null, wasSleeping = false, yawned = false;
-  var reduce0 = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches, eyeT = '', lastPtr = 0, taps = [], lastDizzy = 0, microT = null, reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var tint0 = null, shakeT = 0, reduce0 = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches, eyeT = '', lastPtr = 0, taps = [], lastDizzy = 0, microT = null, reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   function load() { try { var o = JSON.parse(localStorage.getItem(KEY) || '{}'); if (o && typeof o === 'object') { st.off = !!o.off; st.mute = o.mute || {}; st.met = !!o.met; st.quiet = !!o.quiet; } } catch (e) {} }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
@@ -168,6 +168,7 @@
   '@keyframes kolbi-blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}' +
   '@keyframes kolbi-shake{0%,100%{translate:-2px 0;rotate:-2deg}50%{translate:2px -2px;rotate:2deg}}' +
   '@keyframes kolbi-wobble{0%,100%{rotate:-7deg}50%{rotate:7deg}}' +
+  '#kolbi-root #kolbi-char.k-shake #kolbi-body{animation:kolbi-shk .15s linear infinite}@keyframes kolbi-shk{0%,100%{translate:-5px 2px;rotate:-13deg}50%{translate:5px -3px;rotate:13deg}}' +
   '@keyframes kolbi-wave{0%,100%{transform:rotate(0)}50%{transform:rotate(-24deg)}}' +
   '@keyframes kolbi-talk{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.55)}}' +
   '@keyframes kolbi-rise{0%{transform:translateY(0);opacity:0}15%{opacity:.7}85%{opacity:.5}100%{transform:translateY(-26px);opacity:0}}' +
@@ -616,6 +617,19 @@
       var g = document.createElementNS(svgEl0.namespaceURI, 'g'); g.setAttribute('id', 'kk-deco'); g.innerHTML = h;
       var face = svgEl0.querySelector('#kk-face'); svgEl0.insertBefore(g, face);
     },
+    // Färbung der Füllung (für Versuche, bei denen Kolbi die Lösung im Kolben ist): tint('rgb(31,79,216)', 0.9); tint(null) stellt den Normalzustand wieder her
+    tint: function (col, alpha) {
+      var svgEl0 = el.root && el.root.querySelector('#kolbi-body svg'); if (!svgEl0) return;
+      var st0 = svgEl0.querySelectorAll('#kk-g stop'), liq = svgEl0.querySelector('#kk-liq'), surf = svgEl0.querySelector('#kk-surf');
+      if (!st0.length) return;
+      if (!tint0) tint0 = [st0[0].getAttribute('stop-color'), st0[1].getAttribute('stop-color')];
+      if (col == null) { st0[0].setAttribute('stop-color', tint0[0]); st0[1].setAttribute('stop-color', tint0[1]); st0[0].removeAttribute('stop-opacity'); st0[1].setAttribute('stop-opacity', '.62'); liq.setAttribute('d', 'M-2 64 H106 V125 H-2Z'); surf.setAttribute('d', 'M-2 64 H106'); return; }
+      var a = alpha == null ? 1 : Math.max(0, Math.min(1, alpha));
+      st0[0].setAttribute('stop-color', col); st0[1].setAttribute('stop-color', col); st0[0].setAttribute('stop-opacity', a); st0[1].setAttribute('stop-opacity', Math.max(0, a * .86));
+      liq.setAttribute('d', 'M-2 44 H106 V125 H-2Z'); surf.setAttribute('d', 'M-2 44 H106');
+    },
+    // Kolben wird geschüttelt (z. B. Blue-Bottle-Versuch)
+    shake: function (ms) { if (!el.char) return; el.char.classList.add('k-shake'); clearTimeout(shakeT); shakeT = setTimeout(function () { el.char.classList.remove('k-shake'); }, ms || 1200); },
     motion: function (on) { reduce = on ? false : reduce0; if (el.root) el.root.classList.toggle('k-motion', !!on); },
     show: function () { st.off = false; save(); applyOff(); }
   };
