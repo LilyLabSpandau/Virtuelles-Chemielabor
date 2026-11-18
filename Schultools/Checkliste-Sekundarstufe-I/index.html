@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>Jahrgangs-Checkliste Chemie (Sek I)</title>
+<script>
+window.MathJax = { tex: { inlineMath: [['\\(', '\\)']] }, options: { skipHtmlTags: ['script','noscript','style','textarea','pre'] } };
+</script>
+<script id="MathJax-script" async src="../../vendor/mathjax/tex-mml-chtml.js"></script>
+<style>
+:root{
+  --bg1:#0b1020; --bg2:#141a33; --card:#171e3a; --card2:#1d2547; --line:rgba(255,255,255,.10);
+  --text:#e9edff; --muted:#9aa5cf; --gk:#4fd1c5; --lk:#ffb347; --ok:#5eea8f;
+  --q1:#ff6b9d; --q2:#ffb347; --q3:#a78bfa; --q4:#4fd1c5;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--text);
+  background:radial-gradient(1200px 700px at 10% -10%,#26307a55,transparent),radial-gradient(900px 600px at 100% 0%,#7a2a6a33,transparent),linear-gradient(180deg,var(--bg1),var(--bg2));
+  background-attachment:fixed;min-height:100vh;line-height:1.55;padding:0 0 70px}
+.wrap{max-width:960px;margin:0 auto;padding:18px 16px 40px}
+.back{display:inline-block;color:var(--muted);text-decoration:none;font-size:.9rem;margin:4px 0 10px}
+.back:hover{color:var(--text)}
+h1{margin:6px 0 4px;font-size:clamp(1.5rem,5vw,2.3rem);line-height:1.15;background:linear-gradient(90deg,#ff6b9d,#ffb347,#a78bfa,#4fd1c5);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{margin:0 0 14px;color:var(--muted);font-size:.95rem}
+.panel2{background:rgba(11,16,32,.6);border:1px solid var(--line);border-radius:16px;padding:4px 12px 12px;margin:0 0 18px}
+.panel{position:sticky;top:0;z-index:20;background:rgba(11,16,32,.92);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:16px;padding:8px;margin:0 0 12px}
+.seg{display:flex;background:#0d1330;border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px}
+.seg button{flex:1;border:0;border-radius:9px;padding:8px 6px;font-size:1rem;font-weight:700;color:var(--muted);background:transparent;cursor:pointer;min-height:44px}
+.seg button small{display:block;font-weight:500;font-size:.72rem;opacity:.85}
+body[data-mode="gk"] .seg .b-gk{background:linear-gradient(135deg,#1fa89c,#4fd1c5);color:#04201d}
+body[data-mode="lk"] .seg .b-lk{background:linear-gradient(135deg,#ff9a3c,#ffcf6b);color:#2b1700}
+.prog{display:flex;align-items:center;gap:12px;margin-top:8px}
+.bar{flex:1;height:12px;border-radius:99px;background:#0d1330;border:1px solid var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--ok),#a3ff6b);transition:width .35s}
+.pct{font-weight:800;min-width:92px;text-align:right;font-size:.92rem}
+.tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.tools button,.tools label.fb{border:1px solid var(--line);background:#1b2350;color:var(--text);border-radius:10px;padding:9px 12px;font-size:.85rem;cursor:pointer;min-height:40px}
+.tools button:hover{background:#26306b}
+.tools .danger.arm{background:#8a1f3a;border-color:#ff6b8a}
+.tools .push{margin-left:auto}
+.tools .toggle{display:inline-flex;align-items:center;gap:8px}
+.note{font-size:.8rem;color:var(--muted);margin:9px 0 0}
+.toast{position:fixed;left:50%;bottom:62px;transform:translateX(-50%);background:#232c63;border:1px solid var(--line);color:var(--text);padding:10px 16px;border-radius:12px;font-size:.9rem;opacity:0;pointer-events:none;transition:opacity .25s;z-index:60;max-width:90vw}
+.toast.show{opacity:1}
+
+.q{margin:26px 0 8px;display:flex;align-items:center;gap:12px}
+.q .tag{font-weight:900;font-size:1.05rem;padding:6px 12px;border-radius:10px;color:#0b1020}
+.q h2{margin:0;font-size:clamp(1.05rem,3.6vw,1.35rem)}
+.q1 .tag{background:var(--q1)} .q2 .tag{background:var(--q2)} .q3 .tag{background:var(--q3)} .q4 .tag{background:var(--q4)}
+
+details.field{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--c);border-radius:16px;margin:12px 0;overflow:hidden}
+.f1{--c:var(--q1)} .f2{--c:var(--q2)} .f3{--c:var(--q3)} .f4{--c:var(--q4)}
+details.field>summary{list-style:none;cursor:pointer;padding:14px 14px;display:flex;align-items:center;gap:10px;-webkit-tap-highlight-color:transparent}
+details.field>summary::-webkit-details-marker{display:none}
+.num{font-weight:800;color:var(--c);font-size:.9rem;white-space:nowrap}
+.ft{font-weight:700;font-size:1.05rem;flex:1;min-width:0}
+.cnt{font-size:.8rem;color:var(--muted);background:#0d1330;border:1px solid var(--line);border-radius:99px;padding:3px 10px;white-space:nowrap}
+.cnt.done{color:#04200f;background:var(--ok);border-color:transparent;font-weight:700}
+.chev{transition:transform .2s;color:var(--muted)}
+details.field[open]>summary .chev{transform:rotate(90deg)}
+.fb2{padding:0 14px 14px}
+.intro{color:var(--muted);font-size:.93rem;margin:2px 0 12px}
+.lkonly{display:none;background:#2a2147;border:1px dashed #a78bfa88;border-radius:12px;padding:12px 14px;color:#d8ccff;font-size:.92rem}
+body[data-mode="gk"] .field.onlylk .lkonly{display:block}
+body[data-mode="gk"] .field.onlylk .items,body[data-mode="gk"] .field.onlylk .blocks{display:none}
+
+.item{display:flex;gap:12px;padding:11px 8px;border-top:1px solid var(--line);border-radius:10px}
+.item:first-child{border-top:0}
+body[data-mode="gk"] .item[data-lvl="lk"]{display:none}
+.item.done .tt{color:var(--muted);text-decoration:line-through;text-decoration-color:#9aa5cf66}
+.ck{flex:none;width:34px;height:34px;display:flex;align-items:center;justify-content:center;margin:-2px 0 0 -4px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.ck input{position:absolute;opacity:0;width:34px;height:34px;margin:0;cursor:pointer}
+.ck .box{width:24px;height:24px;border-radius:8px;border:2px solid #6f7cc0;background:#0d1330;display:flex;align-items:center;justify-content:center;transition:.15s}
+.ck input:checked+.box{background:var(--ok);border-color:var(--ok)}
+.ck input:checked+.box::after{content:"";width:6px;height:12px;border:solid #04200f;border-width:0 3px 3px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.ck input:focus-visible+.box{outline:3px solid #fff8}
+.ib{flex:1;min-width:0}
+.tt{font-weight:650;font-size:1rem}
+.badge{display:inline-block;font-size:.68rem;font-weight:800;border-radius:6px;padding:1px 7px;margin-left:7px;vertical-align:2px;letter-spacing:.03em}
+.badge.lk{background:var(--lk);color:#2b1700}
+.badge.gk{background:var(--gk);color:#04201d}
+details.more{margin-top:4px}
+details.more>summary{list-style:none;cursor:pointer;color:#9fb2ff;font-size:.85rem;padding:4px 0;display:inline-block;-webkit-tap-highlight-color:transparent}
+details.more>summary::-webkit-details-marker{display:none}
+details.more>summary::before{content:"▸ ";}
+details.more[open]>summary::before{content:"▾ ";}
+.det{margin:4px 0 4px;color:#cfd6f6;font-size:.93rem}
+.links{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.links a{display:inline-flex;align-items:center;gap:6px;text-decoration:none;font-size:.8rem;color:#eaf0ff;background:linear-gradient(135deg,#2c3a8c,#44307d);border:1px solid #6f7cc066;border-radius:99px;padding:6px 12px;min-height:34px}
+.links a:hover{filter:brightness(1.2)}
+.links a.lklink{background:linear-gradient(135deg,#7a4a10,#8a5a1c);border-color:#ffb34788}
+body[data-mode="gk"] .links a.lklink{display:none}
+
+.blocks{margin-top:10px;display:grid;gap:10px}
+.blk{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.blk h4{margin:0 0 7px;font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:.82rem;padding:4px 10px;border-radius:99px;background:#0f1536;border:1px solid var(--line)}
+.chip.lk{border-color:#ffb34777;color:#ffd9a0}
+body[data-mode="gk"] .chip.lk{display:none}
+.exl{margin:0;padding-left:18px;font-size:.9rem}
+.exl li{margin:3px 0}
+body[data-mode="gk"] .exl li.lk{display:none}
+.exl li.lk::marker{color:var(--lk)}
+.nomod{font-size:.82rem;color:var(--muted);margin:10px 0 0;font-style:italic}
+.empty{display:none;text-align:center;color:var(--muted);padding:20px}
+.foot{color:var(--muted);font-size:.8rem;margin-top:26px;text-align:center}
+.hide-done .item.done{display:none}
+@media (max-width:560px){.wrap{padding:12px 12px 40px}.tools .push{margin-left:0}.pct{min-width:78px}}
+</style>
+<link rel="icon" type="image/png" href="../../icons/icon-192.png">
+<link rel="apple-touch-icon" href="../../icons/apple-touch-icon.png">
+</head>
+<body data-mode="gk">
+<div class="wrap">
+  <a class="back" href="../index.html">← Schultools</a>
+  <h1>Jahrgangs-Checkliste Chemie</h1>
+  <p class="sub">Klasse 7–10 nach dem Rahmenlehrplan Chemie (Berlin/Brandenburg). Hake ab, was du kannst. Tippe einen Punkt an, dann erklären dir Kolbi und Hugo die Fachbegriffe.</p>
+
+  <div class="panel">
+    <div class="prog"><div class="bar"><i id="barFill"></i></div><div class="pct" id="pctTxt">0 %</div></div>
+  </div>
+  <div class="panel2">
+    <div class="tools">
+      <button type="button" id="bOpen">Alle Erklärungen auf</button>
+      <button type="button" id="bClose">Alle zu</button>
+      <button type="button" class="toggle" id="bHide" aria-pressed="false">Erledigtes ausblenden</button>
+      <button type="button" class="push" id="bExp">💾 Speichern (.json)</button>
+      <label class="fb" for="impFile">📂 Laden (.json)</label>
+      <input type="file" id="impFile" accept=".json,application/json" hidden>
+      <button type="button" class="danger" id="bReset">🗑️ Zurücksetzen</button>
+    </div>
+    <p class="note">Dein Fortschritt wird automatisch in diesem Browser gespeichert. Die Datei (.json) hilft dir, ihn auf ein anderes Gerät mitzunehmen.</p>
+  </div>
+
+  <div id="root"></div>
+  <div class="empty" id="emptyMsg">Alles Erledigte ist ausgeblendet.</div>
+  <p class="foot">Grundlage: Rahmenlehrplan Teil C Chemie, Jahrgangsstufen 7–10 (Berlin/Brandenburg). Inhalte, Fachbegriffe und die genannten Experimente/Untersuchungen sind dort verbindlich. Die Kontexte sind Vorschläge. Welche Themenfelder in welchem Jahr dran sind, entscheidet deine Schule.</p>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="felder.js"></script>
+<script>
+(function(){
+  var PFX = 'cs1-', MODEKEY = 'cs1-mode';
+  var root = document.getElementById('root');
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function fx(s){return esc(s).replace(/⟦([\s\S]*?)⟧/g,function(_,m){return '\\('+m+'\\)';});}
+  function store(k,v){try{ if(v===null) localStorage.removeItem(k); else localStorage.setItem(k,v);}catch(e){}}
+  function load(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+
+  function linkHTML(spec){
+    var key, hint, lvl;
+    if(typeof spec === 'string'){ key = spec; }
+    else { key = spec[0]; hint = spec[1]; lvl = spec[2]; }
+    var L = LINKS[key]; if(!L) return '';
+    var label = esc(L[0]) + (hint ? ' <span style="opacity:.75">· ' + esc(hint) + '</span>' : '');
+    return '<a class="' + (lvl==='lk'?'lklink':'') + '" href="' + encodeURI(L[1]) + '">🔗 ' + label + '</a>';
+  }
+
+  var html = '', lastQ = 0;
+  FIELDS.forEach(function(f){
+    if(f.q !== lastQ){
+      lastQ = f.q;
+      html += '<div class="q q'+f.q+'"><span class="tag">'+QTAGS[f.q]+'</span><h2>'+esc(QTITLES[f.q])+'</h2></div>';
+    }
+    var hasLinks = f.items.some(function(i){return i[4] && i[4].length;});
+    html += '<details class="field f'+f.q+(f.onlyLK?' onlylk':'')+'" data-field="'+f.id+'" open>';
+    html += '<summary><span class="num">'+f.num+'</span><span class="ft">'+esc(f.title)+'</span><span class="cnt" data-cnt="'+f.id+'"></span><span class="chev">▸</span></summary>';
+    html += '<div class="fb2"><p class="intro">'+fx(f.intro)+'</p>';
+    if(f.onlyLK) html += '<div class="lkonly">Dieses Themenfeld ist im <b>Grundkurs nicht verbindlich</b> – es steht im Rahmenlehrplan nur für den Leistungskurs. Wechsle oben auf „Leistungskurs“, um die Punkte zu sehen.</div>';
+    html += '<div class="items">';
+    f.items.forEach(function(it){
+      var id = it[0], lvl = it[1], title = it[2], det = it[3], links = it[4] || [];
+      html += '<div class="item" data-lvl="'+lvl+'" data-id="'+id+'">';
+      html += '<label class="ck"><input type="checkbox" id="c-'+id+'" aria-label="'+esc(title)+'"><span class="box"></span></label>';
+      html += '<div class="ib"><div class="tt">'+fx(title)+(lvl==='lk'?'<span class="badge lk">LK</span>':'')+'</div>';
+      html += '<details class="more"><summary>Genauer</summary><div class="det">'+fx(det)+'</div></details>';
+      if(links.length) html += '<div class="links">'+links.map(linkHTML).join('')+'</div>';
+      html += '</div></div>';
+    });
+    html += '</div><div class="blocks">';
+    var tg = f.terms.gk.map(function(t){return '<span class="chip">'+fx(t)+'</span>';}).join('');
+    var tl = f.terms.lk.map(function(t){return '<span class="chip lk">'+fx(t)+'</span>';}).join('');
+    if(tg||tl) html += '<div class="blk"><h4>Verbindliche Fachbegriffe</h4><div class="chips">'+tg+tl+'</div></div>';
+    var eg = f.exp.gk.map(function(t){return '<li>'+fx(t)+'</li>';}).join('');
+    var el = f.exp.lk.map(function(t){return '<li class="lk">'+fx(t)+' <span class="badge lk">LK</span></li>';}).join('');
+    if(eg||el) html += '<div class="blk"><h4>Verbindliche Experimente und Untersuchungen</h4><ul class="exl">'+eg+el+'</ul></div>';
+    if(f.ctx && f.ctx.length) html += '<div class="blk"><h4>Mögliche Kontexte (Vorschläge des Rahmenlehrplans)</h4><div class="chips">'+f.ctx.map(function(t){return '<span class="chip">'+fx(t)+'</span>';}).join('')+'</div></div>';
+    if(!hasLinks) html += '<p class="nomod">Zu diesem Themenfeld gibt es auf der Seite noch kein passendes Lernmodul.</p>';
+    html += '</div></div></details>';
+  });
+  root.innerHTML = html;
+
+  var mode = 'gk';
+  function setMode(m, silent){
+    mode = m; document.body.setAttribute('data-mode', m);
+    store(MODEKEY, m); update();
+  }
+  function visibleItems(){
+    return Array.prototype.filter.call(document.querySelectorAll('.item'), function(el){
+      if(mode==='gk' && el.getAttribute('data-lvl')==='lk') return false;
+      return true;
+    });
+  }
+  function update(){
+    var vis = visibleItems(), done = 0;
+    vis.forEach(function(el){
+      var c = el.querySelector('input'); var d = c.checked; if(d) done++;
+      el.classList.toggle('done', d);
+    });
+    var pct = vis.length ? Math.round(done*100/vis.length) : 0;
+    document.getElementById('barFill').style.width = pct + '%';
+    document.getElementById('pctTxt').textContent = pct + ' % (' + done + '/' + vis.length + ')';
+    FIELDS.forEach(function(f){
+      var its = vis.filter(function(el){return el.closest('[data-field="'+f.id+'"]');});
+      var n = its.filter(function(el){return el.querySelector('input').checked;}).length;
+      var span = document.querySelector('[data-cnt="'+f.id+'"]');
+      if(its.length === 0){ span.textContent = 'nur LK'; span.classList.remove('done'); }
+      else { span.textContent = n + '/' + its.length; span.classList.toggle('done', n===its.length); }
+    });
+    var anyVisible = vis.some(function(el){return !el.classList.contains('done');}) || !document.body.classList.contains('hide-done');
+    document.getElementById('emptyMsg').style.display = (document.body.classList.contains('hide-done') && !vis.some(function(el){return !el.classList.contains('done');})) ? 'block' : 'none';
+  }
+
+  // Gespeicherten Stand laden
+  document.querySelectorAll('.item input').forEach(function(c){
+    var id = c.id.replace(/^c-/,'');
+    c.checked = load(PFX+id)==='1';
+    c.addEventListener('change', function(){ store(PFX+id, c.checked ? '1' : null); update(); });
+  });
+  setMode('gk');
+
+  function setAllMore(open){ document.querySelectorAll('details.more').forEach(function(d){d.open = open;}); }
+  document.getElementById('bOpen').onclick = function(){ document.querySelectorAll('details.field').forEach(function(d){d.open=true;}); setAllMore(true); };
+  document.getElementById('bClose').onclick = function(){ setAllMore(false); };
+  var hideBtn = document.getElementById('bHide');
+  hideBtn.onclick = function(){
+    var on = !document.body.classList.contains('hide-done');
+    document.body.classList.toggle('hide-done', on);
+    hideBtn.setAttribute('aria-pressed', on); hideBtn.textContent = on ? 'Erledigtes anzeigen' : 'Erledigtes ausblenden';
+    update();
+  };
+
+  var toastEl = document.getElementById('toast'), tt;
+  function toast(msg){ toastEl.textContent = msg; toastEl.classList.add('show'); clearTimeout(tt); tt = setTimeout(function(){toastEl.classList.remove('show');}, 2600); }
+
+  document.getElementById('bExp').onclick = function(){
+    var data = {version:2, mode:mode, done:{}};
+    document.querySelectorAll('.item input').forEach(function(c){ if(c.checked) data.done[c.id.replace(/^c-/,'')] = true; });
+    var blob = new Blob([JSON.stringify(data)], {type:'application/json'});
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'chemie_sek1_checkliste_fortschritt.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){URL.revokeObjectURL(a.href);}, 1500);
+    toast('Fortschritt als Datei gespeichert.');
+  };
+  document.getElementById('impFile').addEventListener('change', function(ev){
+    var file = ev.target.files[0]; if(!file) return;
+    var r = new FileReader();
+    r.onload = function(){
+      try{
+        var d = JSON.parse(r.result);
+        if(!d || d.version !== 2 || !d.done) throw new Error('format');
+        document.querySelectorAll('.item input').forEach(function(c){
+          var id = c.id.replace(/^c-/,''); c.checked = !!d.done[id]; store(PFX+id, c.checked ? '1' : null);
+        });
+        update();
+        toast('Fortschritt geladen.');
+      }catch(e){ toast('Diese Datei passt nicht zu dieser Checkliste (nur Dateien der neuen Version).'); }
+      ev.target.value = '';
+    };
+    r.readAsText(file);
+  });
+  var rb = document.getElementById('bReset'), rt;
+  rb.onclick = function(){
+    if(!rb.classList.contains('arm')){
+      rb.classList.add('arm'); rb.textContent = 'Wirklich alles löschen?';
+      rt = setTimeout(function(){rb.classList.remove('arm'); rb.textContent='🗑️ Zurücksetzen';}, 4000); return;
+    }
+    clearTimeout(rt); rb.classList.remove('arm'); rb.textContent = '🗑️ Zurücksetzen';
+    document.querySelectorAll('.item input').forEach(function(c){ c.checked = false; store(PFX+c.id.replace(/^c-/,''), null); });
+    update(); toast('Fortschritt zurückgesetzt.');
+  };
+
+  update();
+})();
+</script>
+<script src="../../kolbi/kolbi.js"></script>
+<script src="../../kolbi/skin-hugo.js"></script>
+<script src="helfer/fig.js"></script>
+<script src="helfer/helfer.js"></script>
+<script src="helfer/daten-a.js"></script>
+<script src="helfer/daten-b.js"></script>
+<script src="helfer/daten-c.js"></script>
+<script>Helfer.init(FIELDS);</script>
+<a href="/Virtuelles-Chemielabor/impressum.html" style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-family: sans-serif; font-size: 12px; z-index: 9999;">Impressum & Datenschutz</a>
+</body>
+</html>
