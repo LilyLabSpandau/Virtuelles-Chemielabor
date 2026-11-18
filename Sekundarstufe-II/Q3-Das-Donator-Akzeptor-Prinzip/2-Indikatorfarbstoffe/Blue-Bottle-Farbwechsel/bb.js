@@ -20,15 +20,16 @@
     },
     ic: {
       id: 'ic', name: 'Indigocarmin', kurz: 'IC', last: 2, need: 1,
-      st: [{ n: 'IC (grün)', col: [38, 160, 105], word: 'grün', lmax: 610 }, { n: 'IC (rot)', col: [214, 52, 44], word: 'rot', lmax: 510 }, { n: 'Leuko-IC', col: [236, 200, 40], word: 'gelb', lmax: 405 }],
-      colors: ['#26a069', '#d6342c', '#ecc828']
+      st: [{ n: 'IC (grün)', col: [38, 160, 105], word: 'grün', lmax: 610 }, { n: 'IC (rot)', col: [224, 30, 40], word: 'rot', lmax: 510 }, { n: 'Leuko-IC', col: [236, 200, 40], word: 'gelb', lmax: 405 }],
+      colors: ['#26a069', '#e01e28', '#ecc828']
     }
   };
   // Farbe der Lösung aus den Anteilen der Zustände; MB: Farbtiefe = Anteil MB⁺, IC: Mischfarbe
   BB.color = function (dye, pop) {
     if (dye === 'mb') { var x = clamp(pop[0], 0, 1); return { rgb: BB.DYE.mb.st[0].col, a: 0.03 + 0.97 * Math.pow(x, 0.85) }; }
     var c = [0, 0, 0], i, s = 0; for (i = 0; i < 3; i++) { s += pop[i]; }
-    s = s || 1; for (i = 0; i < 3; i++) { var col = BB.DYE.ic.st[i].col; c[0] += col[0] * pop[i] / s; c[1] += col[1] * pop[i] / s; c[2] += col[2] * pop[i] / s; }
+    var w = [], ws = 0; for (i = 0; i < 3; i++) { w[i] = Math.pow(pop[i], 2.6); ws += w[i]; } ws = ws || 1;
+    for (i = 0; i < 3; i++) { var col = BB.DYE.ic.st[i].col; c[0] += col[0] * w[i] / ws; c[1] += col[1] * w[i] / ws; c[2] += col[2] * w[i] / ws; }
     return { rgb: [Math.round(c[0]), Math.round(c[1]), Math.round(c[2])], a: 0.92 };
   };
   BB.css = function (c) { return 'rgba(' + c.rgb.join(',') + ',' + c.a.toFixed(3) + ')'; };
@@ -44,13 +45,13 @@
     var n = Math.max(1, Math.ceil(dt / 0.04)), h = dt / n, k, G, o, p = this.pop;
     for (k = 0; k < n; k++) {
       G = this.G; o = this.o;
-      var sup = shaking ? 7 : 0.03;
+      var sup = shaking ? 7 : 0.012;
       if (this.dye === 'mb') {
         var r1 = 0.45 * G * p[0], r2 = 4.0 * o * p[1];
         p[0] = clamp(p[0] + (r2 - r1) * h, 0, 1); p[1] = 1 - p[0];
         this.G = Math.max(0, G - 0.045 * r1 * h); o += (sup * (1 - o) - 0.9 * r2) * h;
       } else {
-        var a = 0.5 * G * p[0], b = 0.4 * G * p[1], c = 3.2 * o * p[2], d = 3.2 * o * p[1];
+        var a = 0.9 * G * p[0], b = 0.13 * G * p[1], c = 3.6 * o * p[2], d = 2.4 * o * p[1];
         p[0] = clamp(p[0] + (d - a) * h, 0, 1); p[1] = clamp(p[1] + (a - b + c - d) * h, 0, 1); p[2] = clamp(p[2] + (b - c) * h, 0, 1);
         var sm = p[0] + p[1] + p[2]; p[0] /= sm; p[1] /= sm; p[2] /= sm;
         this.G = Math.max(0, G - 0.0225 * (a + b) * h); o += (sup * (1 - o) - 0.45 * (c + d)) * h;
@@ -63,17 +64,21 @@
   BB.Bottle = Bottle;
 
   // ---------------------------------------------------------------- Kolbi als Kolben
-  var kolbiPick = null, kolbiOn = false;
-  BB.kolbiSource = function (fn) { kolbiPick = fn; };
+  // Kolbi hat seinen eigenen Ansatz. Er färbt sich nur um, wenn man ihn selbst schüttelt (schnell hin und her ziehen).
+  BB.kb = { mb: new Bottle('mb'), ic: new Bottle('ic') }; BB.kbSpeed = 1;
+  var kolbiOn = false, kbShake = 0, kbLast = Date.now();
   function kolbiLoop() {
+    var now = Date.now(), dt = Math.min(0.5, (now - kbLast) / 1000); kbLast = now;
+    var kb = BB.kb[BB.cur]; if (kbShake > 0) kbShake -= dt;
+    kb.step(dt * BB.kbSpeed, kbShake > 0);
     if (window.Kolbi && Kolbi.tint && Kolbi.deco) {
-      if (!kolbiOn) { kolbiOn = true; Kolbi.deco(['stopper']); }
-      var c = kolbiPick ? kolbiPick() : null;
-      Kolbi.tint(c ? 'rgb(' + c.rgb.join(',') + ')' : null, c ? c.a : 1);
+      if (!kolbiOn) { kolbiOn = true; Kolbi.deco(['stopper']); Kolbi.onShake = function () { kbShake = 1.4; Kolbi.shake(1400); }; }
+      var c = BB.color(BB.cur, kb.pop);
+      Kolbi.tint('rgb(' + c.rgb.join(',') + ')', c.a);
     }
   }
-  setInterval(kolbiLoop, 160);
-  BB.shakeKolbi = function (ms) { if (window.Kolbi && Kolbi.shake) Kolbi.shake(ms || 1400); };
+  setInterval(kolbiLoop, 120);
+  BB.shakeKolbi = function () { };
 
   // ---------------------------------------------------------------- Teilchenmodell
   var W = 640, H = 340, SURF = 56;
@@ -176,22 +181,24 @@
   };
   BB.flaskColor = function (svg, c) { var q = svg.querySelector('.fl-liq'); if (q) q.setAttribute('fill', BB.css(c)); };
 
-  // ---------------------------------------------------------------- Auswahl des Farbstoffs (in allen Modulen gleich)
+  // ---------------------------------------------------------------- Auswahl des Versuchs (Methylenblau oder Indigocarmin)
   BB.cur = 'mb'; BB.active = 'm1'; BB.src = {};
-  BB.kolbiSource(function () { var f = BB.src[BB.active]; return f ? f() : null; });
   document.addEventListener('tabchange', function (e) { BB.active = e.detail; });
-  var sw = [];
-  BB.dyeSwitch = function (box) {
-    box.innerHTML = '';
-    ['mb', 'ic'].forEach(function (id) {
-      var b = document.createElement('button'), D = BB.DYE[id];
-      b.setAttribute('data-d', id); b.innerHTML = '<i style="background:' + D.colors[0] + '"></i>' + D.name + (id === 'mb' ? ' (Blue Bottle)' : ' (Ampel)');
-      b.addEventListener('click', function () { BB.setDye(id); }); box.appendChild(b);
+  var NAMES = { mb: 'Versuch 1: Blue Bottle mit Methylenblau', ic: 'Versuch 2: Ampelreaktion mit Indigocarmin' };
+  BB.setDye = function (id) {
+    BB.cur = id; document.body.setAttribute('data-d', id); $('vname').textContent = NAMES[id]; Prog.setVersuch(id);
+    document.dispatchEvent(new CustomEvent('dye', { detail: id }));
+  };
+  // Aufgabenbereiche je Versuch: liefert { mb: <div>, ic: <div> } innerhalb des Containers
+  BB.boxes = function (box) {
+    var o = {}; ['mb', 'ic'].forEach(function (d) { var x = document.createElement('div'); x.setAttribute('data-only', d); box.appendChild(x); o[d] = x; }); return o;
+  };
+  document.addEventListener('DOMContentLoaded', function () {
+    document.body.setAttribute('data-d', 'mb');
+    Array.prototype.forEach.call(document.querySelectorAll('.chbtn'), function (b) {
+      b.addEventListener('click', function () { document.body.classList.add('chosen'); BB.setDye(b.getAttribute('data-d')); showTab('m1'); });
     });
-    sw.push(box); BB.setDye(BB.cur, true);
-  };
-  BB.setDye = function (id, quiet) {
-    BB.cur = id; sw.forEach(function (box) { Array.prototype.forEach.call(box.children, function (b) { var on = b.getAttribute('data-d') === id; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); }); });
-    if (!quiet) document.dispatchEvent(new CustomEvent('dye', { detail: id }));
-  };
+    $('vswitch').addEventListener('click', function () { document.body.classList.remove('chosen'); try { window.scrollTo(0, 0); } catch (e) {} });
+    BB.setDye('mb');
+  });
 })();

@@ -40,21 +40,34 @@
   $('m2reset').addEventListener('click', function () { sim.reset(); sim.draw(); });
   cv.addEventListener('click', function () { sim.shake(); });
 
-  Prog.add('m2', 5);
-  var box = $('m2q');
-  mc(box, { mod: 'm2', q: '<b>a)</b> Welche Teilchen geben im Verlauf des Versuchs Elektronen ab, welche nehmen sie auf?', opts: [
-      'Glucose gibt ab, der Farbstoff nimmt auf und gibt anschließend an Sauerstoff weiter.', 'Sauerstoff gibt ab, der Farbstoff nimmt auf, Glucose nimmt am Ende auf.', 'Der Farbstoff gibt immer ab, Glucose und Sauerstoff nehmen auf.', 'Alle Teilchen tauschen zufällig Elektronen aus.'], ok: 0,
-    why: 'Die Elektronen wandern von der Glucose über den Farbstoff zum Sauerstoff. Der Farbstoff ist dabei der Vermittler.', hints: { 1: 'Verfolge die gelben Elektronen in der Simulation: Wo starten sie, wo enden sie?', 2: 'Der Farbstoff nimmt zuerst auf und gibt erst danach ab.', 3: 'In der Simulation gibt es klare Richtungen.' } });
-  gap(box, { mod: 'm2', parts: ['<b>b)</b> Ein Glucose-Teilchen gibt ', { o: ['1', '2', '4'], ok: 1 }, ' Elektronen ab. Ein O₂-Molekül kann ', { o: ['2', '4', '8'], ok: 1 }, ' Elektronen aufnehmen. Ein Leuko-MB-Teilchen gibt ', { o: ['2', '4'], ok: 0 }, ' Elektronen ab. Deshalb kann ein O₂-Molekül ', { o: ['ein', 'zwei', 'vier'], ok: 1 }, ' Leuko-MB-Teilchen wieder in MB⁺ verwandeln.'],
+  var Q = BB.boxes($('m2q'));
+  Prog.add('m2|mb', 5); Prog.add('m2|ic', 5);
+  var WHY_A = 'Die Elektronen wandern von der Glucose über den Farbstoff zum Sauerstoff. Der Farbstoff ist dabei der Vermittler.', HINT_A = { 1: 'Verfolge die gelben Elektronen in der Simulation: Wo starten sie, wo enden sie?', 2: 'Der Farbstoff nimmt zuerst auf und gibt erst danach ab.', 3: 'In der Simulation gibt es klare Richtungen.' };
+  var OPT_A = ['Glucose gibt Elektronen ab, der Farbstoff nimmt sie auf und gibt sie an O₂ weiter.', 'O₂ gibt Elektronen ab, der Farbstoff nimmt sie auf und gibt sie an Glucose weiter.', 'Der Farbstoff gibt immer Elektronen ab, Glucose und O₂ nehmen sie beide auf.', 'Alle Teilchen tauschen Elektronen völlig zufällig untereinander aus, ohne Richtung.'];
+  var WHY_C = 'Die Teilchenzahl des Farbstoffs bleibt konstant. Nur ihr Zustand, also die Zahl ihrer Elektronen, ändert sich.';
+  var WHY_D = 'Glucose wird zu Gluconat, Sauerstoff zu OH⁻. Der Farbstoff kommt in der Gesamtgleichung nicht vor: Er wird weder verbraucht noch gebildet.', HINT_D = { 1: 'Zähle den Farbstoff vor und nach einem Durchlauf nach.', 2: 'Ein Stoff, der nur vermittelt, wird nicht verbraucht.', 3: 'Schau auch auf die Glucose-Teilchen: Sie werden grün und kommen nicht zurück.' };
+  ['mb', 'ic'].forEach(function (d) {
+    var box = Q[d], mb = d === 'mb', key = 'm2|' + d;
+    mc(box, { mod: key, q: '<b>a)</b> Welche Teilchen geben im Verlauf des Versuchs Elektronen ab, welche nehmen sie auf?', opts: OPT_A, ok: 0, why: WHY_A, hints: HINT_A });
+    (mb ? function () {
+  gap(box, { mod: 'm2|mb', parts: ['<b>b)</b> Ein Glucose-Teilchen gibt ', { o: ['1', '2', '4'], ok: 1 }, ' Elektronen ab. Ein O₂-Molekül kann ', { o: ['2', '4', '8'], ok: 1 }, ' Elektronen aufnehmen. Ein Leuko-MB-Teilchen gibt ', { o: ['2', '4'], ok: 0 }, ' Elektronen ab. Deshalb kann ein O₂-Molekül ', { o: ['ein', 'zwei', 'vier'], ok: 1 }, ' Leuko-MB-Teilchen wieder in MB⁺ verwandeln.'],
     why: 'Vier aufgenommene Elektronen reichen für zwei Leuko-MB-Teilchen mit je zwei abgegebenen Elektronen. Die Elektronenbilanz muss immer aufgehen.' });
-  mc(box, { mod: 'm2', q: '<b>c)</b> Die Lösung ist farblos. Was ist mit den Farbstoff-Teilchen geschehen?', opts: [
-      'Sie haben Elektronen aufgenommen und liegen in einer farblosen Form vor. Sie sind noch alle da.', 'Sie sind zerfallen und verschwunden.', 'Sie haben Elektronen abgegeben und sind dadurch farblos geworden.', 'Sie sind mit der Glucose zu einem neuen Stoff reagiert.'], ok: 0,
-    why: 'Die Teilchenzahl des Farbstoffs bleibt konstant. Nur ihr Zustand, also die Zahl ihrer Elektronen, ändert sich. Das sieht man den weißen gestrichelten Kreisen an.', hints: { 1: 'Zähle in der Simulation: Die Zahl der Farbstoff-Teilchen bleibt gleich.', 2: 'In der Simulation ist es umgekehrt: Zuerst nehmen sie Elektronen von der Glucose auf.', 3: 'Der Farbstoff wird in der Gesamtgleichung nicht mehr genannt.' } });
-  mc(box, { mod: 'm2', q: '<b>d)</b> Welche Teilchen werden im Verlauf des Versuchs dauerhaft verbraucht?', opts: [
-      'Glucose und Sauerstoff', 'Farbstoff und Glucose', 'Nur der Farbstoff', 'Nur der Sauerstoff'], ok: 0, fix: true,
-    why: 'Glucose wird zu Gluconat, Sauerstoff zu OH⁻. Der Farbstoff kommt in der Gesamtgleichung nicht vor: Er wird weder verbraucht noch gebildet.', hints: { 1: 'Zähle den Farbstoff vor und nach einem Durchlauf nach.', 2: 'Ein Stoff, der nur vermittelt, wird nicht verbraucht.', 3: 'Schau auch auf die Glucose-Teilchen: Sie werden grün und kommen nicht zurück.' } });
-  mc(box, { mod: 'm2', q: '<b>e)</b> Beim <b>Indigocarmin</b> gibt es eine rote Zwischenstufe. Woran liegt das?', opts: [
-      'Der Farbstoff nimmt die Elektronen einzeln auf. Nach dem ersten Elektron liegt die rote Zwischenstufe vor, nach dem zweiten die gelbe Leuko-Form.', 'Der Farbstoff nimmt vier Elektronen auf einmal auf.', 'Die rote Farbe entsteht aus der Reaktion von Sauerstoff mit Glucose.', 'Die rote Zwischenstufe entsteht nur, wenn kein Farbstoff vorhanden ist.'], ok: 0,
-    why: 'Zwei Schritte mit je einem Elektron ergeben drei Zustände und damit drei Farben: grün, rot und gelb. Methylenblau nimmt beide Elektronen in einem Schritt auf und hat deshalb nur zwei Zustände.', hints: { 1: 'In der Simulation transportiert jeder Elektronenpunkt beim Indigocarmin nur ein Elektron.', 2: 'Der rote Zustand ist ein Zustand des Farbstoffs. Schau auf die Farbe der Kreise.', 3: 'Ohne Farbstoff gibt es keine rote Stufe.' }});
-  Prog.onFinish('m2', function () { $('m2merke').hidden = false; });
+    } : function () {
+  gap(box, { mod: 'm2|ic', parts: ['<b>b)</b> Ein Glucose-Teilchen gibt ', { o: ['1', '2', '4'], ok: 1 }, ' Elektronen ab. Ein Indigocarmin-Teilchen nimmt je Schritt ', { o: ['1', '2', '4'], ok: 0 }, ' Elektron auf. Von grün bis gelb sind es insgesamt ', { o: ['2', '1', '4'], ok: 0 }, ' Schritte. Ein O₂-Molekül nimmt ', { o: ['4', '2', '1'], ok: 0 }, ' Elektronen auf.'],
+    why: 'Der Farbstoff nimmt die Elektronen einzeln auf, also zwei Schritte von grün über rot zu gelb. Die Elektronenbilanz muss immer aufgehen: Was die Glucose abgibt, nehmen Farbstoff und Sauerstoff auf.' });
+    })();
+    mc(box, { mod: key, q: '<b>c)</b> Die Lösung ist ' + (mb ? 'farblos' : 'gelb') + '. Was ist mit den Farbstoff-Teilchen geschehen?', opts: [
+        'Sie haben Elektronen aufgenommen und sind noch alle vorhanden.', 'Sie sind zerfallen und deshalb aus der Lösung verschwunden.', 'Sie haben Elektronen abgegeben und sind dadurch ' + (mb ? 'farblos' : 'gelb') + ' geworden.', 'Sie haben mit der Glucose zu einem neuen Stoff reagiert und sind weg.'], ok: 0,
+      why: WHY_C + (mb ? ' Das sieht man den weißen gestrichelten Kreisen an.' : ' Das sieht man an der Farbe der Kreise.'), hints: { 1: 'Zähle in der Simulation: Die Zahl der Farbstoff-Teilchen bleibt gleich.', 2: 'In der Simulation ist es umgekehrt: Zuerst nehmen sie Elektronen von der Glucose auf.', 3: 'Der Farbstoff wird in der Gesamtgleichung nicht mehr genannt.' } });
+    mc(box, { mod: key, q: '<b>d)</b> Welche Teilchen werden im Verlauf des Versuchs dauerhaft verbraucht?', opts: ['Glucose und Sauerstoff', 'Farbstoff und Glucose', 'Farbstoff und Sauerstoff', 'Nur der Sauerstoff'], ok: 0, fix: true, why: WHY_D, hints: HINT_D });
+    (mb ? function () {
+  mc(box, { mod: 'm2|mb', q: '<b>e)</b> Methylenblau zeigt nur zwei Zustände: blau und farblos. Woran liegt das?', opts: [
+      'Es nimmt beide Elektronen in einem Schritt auf, daher gibt es keine Zwischenstufe.', 'Es nimmt die Elektronen einzeln auf, die Zwischenstufe ist aber farblos wie die Endform.', 'Es nimmt gar keine Elektronen auf, die Farbe verschwindet durch Verdünnen.', 'Es nimmt vier Elektronen auf, und der Sauerstoff färbt es danach rot.'], ok: 0,
+    why: 'Zwei Elektronen werden gemeinsam aufgenommen. Es gibt nur den Ausgangszustand und den Endzustand, also zwei Farben. Beim Indigocarmin läuft es in zwei Einzelschritten ab.', hints: { 1: 'In der Simulation transportiert jeder Elektronenpunkt zwei Elektronen auf einmal.', 2: 'Die Zahl der Farbstoff-Teilchen bleibt gleich, nur ihr Zustand ändert sich.', 3: 'Rot kommt in diesem Versuch nicht vor.' } });
+    } : function () {
+  mc(box, { mod: 'm2|ic', q: '<b>e)</b> Beim Indigocarmin gibt es eine rote Zwischenstufe. Woran liegt das?', opts: [
+      'Der Farbstoff nimmt die Elektronen einzeln auf: erst rot, dann gelb.', 'Der Farbstoff nimmt vier Elektronen auf einmal auf und färbt sich dadurch rot.', 'Die rote Farbe entsteht erst, wenn Sauerstoff und Glucose direkt miteinander reagieren.', 'Die rote Zwischenstufe entsteht nur dann, wenn gar kein Farbstoff vorhanden ist.'], ok: 0,
+    why: 'Zwei Schritte mit je einem Elektron ergeben drei Zustände und damit drei Farben: grün, rot und gelb.', hints: { 1: 'In der Simulation transportiert jeder Elektronenpunkt beim Indigocarmin nur ein Elektron.', 2: 'Der rote Zustand ist ein Zustand des Farbstoffs. Schau auf die Farbe der Kreise.', 3: 'Ohne Farbstoff gibt es keine rote Stufe.' } });
+    })();
+  });
 })();

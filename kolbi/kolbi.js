@@ -518,7 +518,7 @@
         if (d.moved) {
           place(d.px + dx, d.py + dy, false); quietUntil = Date.now() + 30000;
           var dd = e.clientX - d.lx;
-          if (Math.abs(dd) > 7) { var dir = dd > 0 ? 1 : -1, now = Date.now(); if (d.dir && dir !== d.dir) { d.flips.push(now); d.flips = d.flips.filter(function (t) { return now - t < 1500; }); if (d.flips.length >= 5 && now - lastDizzy > 12000) { lastDizzy = now; d.flips = []; showRemark(rnd(SK.t.DIZZY), 'dizzy'); } } d.dir = dir; d.lx = e.clientX; }
+          if (Math.abs(dd) > 7) { var dir = dd > 0 ? 1 : -1, now = Date.now(); if (d.dir && dir !== d.dir) { d.flips.push(now); d.flips = d.flips.filter(function (t) { return now - t < 1500; }); if (d.flips.length >= 4 && API.onShake) { d.flips = []; API.onShake(); } else if (d.flips.length >= 5 && now - lastDizzy > 12000) { lastDizzy = now; d.flips = []; showRemark(rnd(SK.t.DIZZY), 'dizzy'); } } d.dir = dir; d.lx = e.clientX; }
         }
       });
       el.char.addEventListener('pointerup', function () { if (!d) return; var m = d.moved; d = null; el.char.classList.remove('drag'); if (m) { savePos(); return; }
@@ -618,6 +618,8 @@
       var face = svgEl0.querySelector('#kk-face'); svgEl0.insertBefore(g, face);
     },
     // Färbung der Füllung (für Versuche, bei denen Kolbi die Lösung im Kolben ist): tint('rgb(31,79,216)', 0.9); tint(null) stellt den Normalzustand wieder her
+    // Wird gesetzt, wenn Kolbi selbst geschüttelt werden soll (schnelles Hin-und-her-Ziehen); API.onShake = function () { … }
+    onShake: null,
     tint: function (col, alpha) {
       var svgEl0 = el.root && el.root.querySelector('#kolbi-body svg'); if (!svgEl0) return;
       var st0 = svgEl0.querySelectorAll('#kk-g stop'), liq = svgEl0.querySelector('#kk-liq'), surf = svgEl0.querySelector('#kk-surf');

@@ -2,15 +2,15 @@
 (function () {
   'use strict';
   var B = { mb: new BB.Bottle('mb'), ic: new BB.Bottle('ic') }, svg = $('flask'), shaking = 0, speed = 1, lastW = '', wT = 0, logN = 0, tlAcc = 0, cols = [], lastWord = '', pending = '', acted = 'Kolben steht in Ruhe';
-  BB.flaskSVG(svg, 'm1'); BB.dyeSwitch($('dsw1')); BB.dyeSwitch($('dsw2')); BB.dyeSwitch($('dsw3')); BB.dyeSwitch($('dsw4'));
+  BB.flaskSVG(svg, 'm1');
   BB.bottle = B;
   function cur() { return B[BB.cur]; }
   BB.src.m1 = BB.src.m5 = function () { var b = cur(); return BB.color(BB.cur, b.pop); };
   function shake() { shaking = 1.4; acted = 'Ich schüttle den Kolben'; svg.parentNode.classList.add('shk'); BB.shakeKolbi(1400); }
   $('m1shake').addEventListener('click', shake); $('flask').addEventListener('click', shake);
-  $('m1fast').addEventListener('click', function () { speed = speed === 1 ? 3 : 1; this.setAttribute('aria-pressed', speed === 3); this.classList.toggle('sec', speed !== 3); });
-  $('m1reset').addEventListener('click', function () { cur().reset(); cols = []; tlAcc = 0; lastWord = ''; acted = 'Neu angesetzt: frische Lösung'; });
-  document.addEventListener('dye', function () { cols = []; tlAcc = 0; lastWord = ''; acted = 'Anderer Farbstoff'; });
+  $('m1fast').addEventListener('click', function () { speed = speed === 1 ? 3 : 1; BB.kbSpeed = speed; this.setAttribute('aria-pressed', speed === 3); this.classList.toggle('sec', speed !== 3); });
+  $('m1reset').addEventListener('click', function () { cur().reset(); BB.kb[BB.cur].reset(); cols = []; tlAcc = 0; lastWord = ''; acted = 'Neu angesetzt: frische Lösung'; });
+  document.addEventListener('dye', function () { cols = []; tlAcc = 0; lastWord = ''; acted = 'Kolben steht in Ruhe'; logN = 0; $('m1log').innerHTML = '<tr><td colspan="3" class="small">Hier erscheinen deine Beobachtungen, sobald du den Kolben benutzt.</td></tr>'; });
   function fmt(t) { return Math.round(t) + ' s'; }
   function addLog(word) {
     var tb = $('m1log'); if (!logN) tb.innerHTML = ''; logN++;
@@ -42,18 +42,29 @@
   }
   requestAnimationFrame(frame);
 
-  // ---- Aufgaben
-  Prog.add('m1', 4);
-  mc($('m1q'), { mod: 'm1', q: '<b>a)</b> Du lässt den Kolben mit der Methylenblau-Lösung ruhig stehen. Was beobachtest du, und was geschieht dann beim Schütteln?', opts: [
-      'Die blaue Lösung wird farblos. Beim Schütteln wird sie wieder blau.', 'Die blaue Lösung bleibt blau. Beim Schütteln wird sie farblos.', 'Die Lösung wird immer dunkler, egal was man tut.', 'Die Lösung wird farblos und bleibt auch beim Schütteln farblos.'], ok: 0,
+  // ---- Aufgaben (je Versuch eigene Aufgaben und eigene Auswertung)
+  var Q = BB.boxes($('m1q'));
+  Prog.add('m1|mb', 4); Prog.add('m1|ic', 4);
+  mc(Q.mb, { mod: 'm1|mb', q: '<b>a)</b> Du lässt den Kolben mit der Methylenblau-Lösung ruhig stehen und schüttelst ihn danach. Was beobachtest du?', opts: [
+      'Zuerst wird die Lösung farblos, nach dem Schütteln wieder blau.', 'Zuerst bleibt die Lösung blau, nach dem Schütteln wird sie farblos.', 'Die Lösung wird immer dunkler, ganz gleich was man mit ihr tut.', 'Die Lösung wird farblos und bleibt auch nach dem Schütteln farblos.'], ok: 0,
     why: 'In Ruhe entfärbt sich die Lösung, beim Schütteln kehrt die Farbe zurück. Das lässt sich oft wiederholen.', hints: { 1: 'Probiere es oben noch einmal aus: Was passiert, wenn du lange nichts tust?', 2: 'Beobachte den Verlauf: Es gibt dunkle und helle Phasen.', 3: 'Schüttle den Kolben noch einmal und schau genau hin.' } });
-  mc($('m1q'), { mod: 'm1', q: '<b>b)</b> Beim <b>Indigocarmin</b> verändert sich die Farbe, wenn der Kolben ruht, in mehreren Stufen. Welche Reihenfolge siehst du?', opts: [
-      'grün → rot → gelb', 'gelb → rot → grün', 'blau → farblos', 'grün → blau → violett'], ok: 0, fix: true,
-    why: 'Beim Ruhen wird die Lösung zuerst rot und dann gelb. Beim Schütteln läuft die Reihe rückwärts: gelb → rot → grün. Das erinnert an eine Ampel.', hints: { 1: 'Das ist die Richtung beim Schütteln. Beim Ruhen läuft es umgekehrt.', 2: 'Das gilt für Methylenblau, nicht für Indigocarmin. Wähle oben den anderen Farbstoff.', 3: 'Wähle oben Indigocarmin und lass den Kolben ruhen.' } });
-  mc($('m1q'), { mod: 'm1', q: '<b>c)</b> Wozu braucht die Lösung wohl das Schütteln? Welche Vermutung passt zu den Anzeigen „gelöster Sauerstoff“ und „Glucose-Vorrat“?', opts: [
-      'Beim Schütteln löst sich Sauerstoff aus der Luft im Kolben in der Lösung.', 'Beim Schütteln wird die Lösung warm, und Wärme färbt den Farbstoff.', 'Beim Schütteln entsteht neuer Farbstoff aus Glucose.', 'Beim Schütteln wird Licht in die Lösung gemischt.'], ok: 0,
+  mc(Q.mb, { mod: 'm1|mb', q: '<b>b)</b> Beobachte den Balken „Glucose-Vorrat“ über längere Zeit. Wann sinkt er am schnellsten?', opts: [
+      'Direkt nach dem Schütteln, wenn die Lösung wieder blau ist.', 'Wenn die Lösung farblos ist und der Kolben ruhig steht.', 'Immer gleich schnell, unabhängig von Farbe und Schütteln.', 'Nur während des Schüttelns, danach bleibt der Vorrat konstant.'], ok: 0,
+    why: 'Die Reaktion läuft am schnellsten, solange viel Sauerstoff gelöst und der Farbstoff blau ist. In der farblosen Phase kommt Sauerstoff nur langsam nach, dann läuft die Reaktion kaum noch weiter.', hints: { 1: 'Schau auf den Balken, während die Lösung farblos ist: Er sinkt dann kaum.', 2: 'Vergleiche die blaue und die farblose Phase. Der Balken verhält sich nicht gleich.', 3: 'Nach dem Schütteln sinkt der Balken weiter, solange die Lösung blau ist.' } });
+  mc(Q.mb, { mod: 'm1|mb', q: '<b>c)</b> Wozu braucht die Lösung wohl das Schütteln? Welche Vermutung passt zu den Anzeigen „gelöster Sauerstoff“ und „Glucose-Vorrat“?', opts: [
+      'Beim Schütteln löst sich mehr Sauerstoff aus der Luft in der Lösung.', 'Beim Schütteln wird die Lösung warm, und Wärme färbt den Farbstoff blau.', 'Beim Schütteln entsteht aus der Glucose neuer blauer Farbstoff.', 'Beim Schütteln wird zusätzliches Licht in die Lösung eingemischt.'], ok: 0,
     why: 'Der Balken „gelöster Sauerstoff“ steigt beim Schütteln stark an. Sauerstoff ist also der Stoff, der die Farbe zurückbringt.', hints: { 1: 'Schau auf den Balken: Was steigt beim Schütteln an?', 2: 'Die Menge des Farbstoffs ändert sich nicht. Das siehst du in Modul 2.', 3: 'Licht spielt hier keine Rolle. Achte auf die Balken.' } });
-  gap($('m1q'), { mod: 'm1', parts: ['<b>d)</b> Zum Entfärben wird ', { o: ['Glucose', 'Sauerstoff', 'Natronlauge'], ok: 0 }, ' verbraucht, zum Zurückfärben wird ', { o: ['Glucose', 'Sauerstoff', 'Farbstoff'], ok: 1 }, ' verbraucht. Nach sehr vielen Wiederholungen bleibt die Lösung dauerhaft ', { o: ['farbig', 'farblos'], ok: 0 }, ', weil die ', { o: ['Glucose aufgebraucht ist', 'Luft im Kolben verbraucht ist'], ok: 0 }, '.'],
-    why: 'Der Glucose-Vorrat sinkt mit jeder Entfärbung. Ist er leer, kann der Farbstoff nicht mehr entfärbt werden.'});
-  Prog.onFinish('m1', function () { $('m1merke').hidden = false; });
+  mc(Q.ic, { mod: 'm1|ic', q: '<b>a)</b> Du lässt den Kolben mit der Indigocarmin-Lösung ruhig stehen und schüttelst ihn danach. Welche Farbfolge siehst du?', opts: [
+      'Beim Ruhen grün → rot → gelb, beim Schütteln gelb → rot → grün.', 'Beim Ruhen gelb → rot → grün, beim Schütteln grün → rot → gelb.', 'Beim Ruhen grün → blau → farblos, beim Schütteln wieder zurück.', 'Beim Ruhen grün → violett → blau, beim Schütteln wieder zurück.'], ok: 0,
+    why: 'Beim Ruhen wird die Lösung zuerst rot und dann gelb. Beim Schütteln läuft die Reihe rückwärts: gelb → rot → grün. Das erinnert an eine Ampel.', hints: { 1: 'Das ist die Richtung beim Schütteln. Beim Ruhen läuft es umgekehrt.', 2: 'Blau und farblos kennst du vom anderen Versuch. Hier siehst du drei Farben.', 3: 'Lass den Kolben oben ruhen und notiere die Farben im Protokoll.' } });
+  mc(Q.ic, { mod: 'm1|ic', q: '<b>b)</b> Beobachte den Balken „Glucose-Vorrat“ über längere Zeit. Wann sinkt er am schnellsten?', opts: [
+      'Direkt nach dem Schütteln, solange sie grün oder rot ist.', 'Wenn die Lösung gelb ist und der Kolben ruhig steht.', 'Immer gleich schnell, unabhängig von Farbe und Schütteln.', 'Nur während des Schüttelns, danach bleibt der Vorrat konstant.'], ok: 0,
+    why: 'Die Reaktion läuft am schnellsten, solange viel Sauerstoff gelöst ist und der Farbstoff grün oder rot vorliegt. In der gelben Phase kommt Sauerstoff nur langsam nach, dann läuft die Reaktion kaum noch weiter.', hints: { 1: 'Schau auf den Balken, während die Lösung gelb ist: Er sinkt dann kaum.', 2: 'Vergleiche die Farbphasen. Der Balken verhält sich nicht gleich.', 3: 'Nach dem Schütteln sinkt der Balken weiter, solange die Lösung grün oder rot ist.' } });
+  mc(Q.ic, { mod: 'm1|ic', q: '<b>c)</b> Wozu braucht die Lösung wohl das Schütteln? Welche Vermutung passt zu den Anzeigen „gelöster Sauerstoff“ und „Glucose-Vorrat“?', opts: [
+      'Beim Schütteln löst sich mehr Sauerstoff aus der Luft in der Lösung.', 'Beim Schütteln wird die Lösung warm, und Wärme färbt den Farbstoff grün.', 'Beim Schütteln entsteht aus der Glucose neuer grüner Farbstoff.', 'Beim Schütteln wird zusätzliches Licht in die Lösung eingemischt.'], ok: 0,
+    why: 'Der Balken „gelöster Sauerstoff“ steigt beim Schütteln stark an. Sauerstoff ist also der Stoff, der die Farbe zurückbringt.', hints: { 1: 'Schau auf den Balken: Was steigt beim Schütteln an?', 2: 'Die Menge des Farbstoffs ändert sich nicht. Das siehst du in Modul 2.', 3: 'Licht spielt hier keine Rolle. Achte auf die Balken.' } });
+  ['mb', 'ic'].forEach(function (d) {
+    gap(Q[d], { mod: 'm1|' + d, parts: ['<b>d)</b> Zum Entfärben wird ', { o: ['Glucose', 'Sauerstoff', 'Natronlauge'], ok: 0 }, ' verbraucht, zum Zurückfärben wird ', { o: ['Glucose', 'Sauerstoff', 'Farbstoff'], ok: 1 }, ' verbraucht. Nach sehr vielen Wiederholungen lässt sich die Lösung nicht mehr ', { o: ['entfärben', 'einfärben'], ok: 0 }, ', weil die ', { o: ['Glucose aufgebraucht ist', 'Luft im Kolben verbraucht ist'], ok: 0 }, '.'],
+      why: 'Der Glucose-Vorrat sinkt mit jedem Durchgang. Ist er leer, kann der Farbstoff nicht mehr entfärbt werden.' });
+  });
 })();

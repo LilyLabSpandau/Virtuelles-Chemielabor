@@ -100,6 +100,23 @@
 
   .tab{flex:1 1 170px}
   .hero{background:linear-gradient(120deg,#0f3d91 0%,#2563eb 50%,#14b8a6 100%)}
+
+  body[data-d=mb] [data-only=ic], body[data-d=ic] [data-only=mb]{display:none!important}
+  body:not(.chosen) .tabs, body:not(.chosen) .mod, body:not(.chosen) #vbar{display:none!important}
+  body.chosen #choose{display:none}
+  #choose{margin:14px 0}
+  #choose .chgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin-top:10px}
+  .chbtn{border:2px solid #cbd5e1;background:#fff;border-radius:14px;padding:16px 16px;font:inherit;text-align:left;cursor:pointer;min-height:96px;touch-action:manipulation}
+  .chbtn:hover,.chbtn:focus-visible{border-color:var(--pri);box-shadow:0 0 0 2px var(--pri) inset}
+  .chbtn b{display:block;font-size:18px;margin:6px 0 2px}.chbtn small{color:#475569;font-size:14px}
+  .chbtn i{display:inline-block;width:20px;height:20px;border-radius:50%;border:1px solid rgba(0,0,0,.3);vertical-align:-4px;margin-right:6px}
+  .orbgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+  .orbgrid .op{border:1px solid #e2e8f0;border-radius:12px;padding:8px 10px;background:#fff}
+  .orbgrid .op h5{margin:0 0 4px;font-size:14.5px}.orbgrid .op svg{width:100%;height:auto;display:block}.orbgrid .op p{margin:4px 0 0;font-size:13.5px}
+  .lpl{display:flex;flex-wrap:wrap;gap:4px 14px;margin:6px 0 0;font-size:13px;color:#334155}
+  .lpl i{display:inline-block;width:14px;height:6px;border-radius:3px;vertical-align:middle;margin-right:4px}
+  #vbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0 0;padding:8px 12px;background:#fff;border:1px solid #e2e8f0;border-radius:10px}
+  #vbar b{flex:1 1 auto}
   .dsw{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 12px}
   .dsw button{border:2px solid #cbd5e1;background:#fff;border-radius:12px;padding:9px 14px;font:inherit;font-weight:700;cursor:pointer;min-height:46px;display:flex;align-items:center;gap:8px;touch-action:manipulation}
   .dsw button i{width:18px;height:18px;border-radius:50%;display:inline-block;border:1px solid rgba(0,0,0,.3)}
@@ -138,6 +155,16 @@
   <div class="hero"><h1>Blue Bottle und Indigocarmin</h1>
   <p class="sub">Lerneinheit für die Oberstufe: Eine Lösung wird farblos, wenn sie ruht, und wieder farbig, wenn man sie schüttelt. Was tut der Farbstoff dabei? Du verfolgst die Elektronen auf Teilchenebene, erkennst die Katalysewirkung des Farbstoffs und erklärst den Farbverlust mit dem hypsochromen Effekt.</p></div>
 
+
+  <div class="card" id="choose"><h2>Wähle deinen Versuch</h2>
+    <p style="margin:0">Diese Lerneinheit enthält zwei getrennte Versuche. Jeder hat eigene Module, eigene Aufgaben und eine eigene Auswertung. Du kannst sie nacheinander bearbeiten und jederzeit zwischen ihnen wechseln.</p>
+    <div class="chgrid">
+      <button class="chbtn" data-d="mb"><i style="background:#1c3cbe"></i><small>Versuch 1</small><b>Blue Bottle mit Methylenblau</b><small>Blau → farblos → blau. Zwei Elektronen auf einmal.</small></button>
+      <button class="chbtn" data-d="ic"><i style="background:#26a069"></i><small>Versuch 2</small><b>Ampelreaktion mit Indigocarmin</b><small>Grün → rot → gelb und zurück. Elektronen einzeln.</small></button>
+    </div>
+  </div>
+  <div id="vbar"><b>Du bearbeitest: <span id="vname"></span></b><button class="btn sec" id="vswitch">Anderen Versuch wählen</button></div>
+
   <div class="tabs" role="tablist">
     <button class="tab on" role="tab" data-t="m1" id="tab-m1">1 · Der Versuch<span class="done">✔</span><small>Schütteln, ruhen lassen, beobachten</small></button>
     <button class="tab" role="tab" data-t="m2" id="tab-m2">2 · Teilchenebene<span class="done">✔</span><small>Wer gibt Elektronen an wen?</small></button>
@@ -149,8 +176,7 @@
   <!-- ================================================= MODUL 1 -->
   <section class="mod on" id="m1" role="tabpanel">
     <h2>Modul 1: Farbe weg, Farbe zurück</h2>
-    <div class="lead"><p><b>Auftrag:</b> In einem verschlossenen Kolben befindet sich eine alkalische Lösung aus Glucose und einem Farbstoff. Lass sie ruhen, schüttle sie, und beobachte genau. Probiere beide Farbstoffe aus. Kolbi ist hier der Kolben: Er trägt einen Stopfen und färbt sich wie die Lösung.</p></div>
-    <div class="dsw" id="dsw1"></div>
+    <div class="lead"><p><b>Auftrag:</b> In einem verschlossenen Kolben befindet sich eine alkalische Lösung aus Glucose und einem Farbstoff. Lass sie ruhen, schüttle sie, und beobachte genau. Kolbi ist ein zweiter Kolben mit demselben Ansatz: Er trägt einen Stopfen und färbt sich wie seine Lösung. Er färbt sich aber nur um, wenn <b>du ihn selbst schüttelst</b>: Ziehe ihn schnell hin und her.</p></div>
     <div class="grid">
       <div class="card"><h4>Der Kolben</h4>
         <div id="flaskBox"><svg id="flask" role="img" aria-label="Kolben mit der Farbstofflösung"></svg></div>
@@ -182,7 +208,6 @@
   <section class="mod" id="m2" role="tabpanel">
     <h2>Modul 2: Wer gibt Elektronen an wen?</h2>
     <div class="lead"><p><b>Auftrag:</b> Du schaust jetzt mit einer „Teilchenlupe“ in die Lösung. Gelbe Punkte zeigen, wie Elektronen von einem Teilchen zum anderen übergehen. Verfolge die Elektronen, notiere, wer sie abgibt und wer sie aufnimmt, und erkläre damit die Farbwechsel aus Modul 1.</p></div>
-    <div class="dsw" id="dsw2"></div>
     <div class="card"><h4>Teilchenlupe</h4>
       <canvas id="sim2" aria-label="Teilchenmodell der Lösung"></canvas>
       <div class="row" style="margin-top:8px"><button class="btn" id="m2play">Pause</button><button class="btn" id="m2shake">Schütteln</button><button class="btn sec" id="m2fast" aria-pressed="false">Zeitraffer ×3</button><button class="btn sec" id="m2reset">Zurücksetzen</button></div>
@@ -199,7 +224,7 @@
 
     <h3>Aufgaben</h3>
     <div id="m2q"></div>
-    <div class="merke" id="m2merke" hidden><b class="t">Merke:</b> Glucose gibt Elektronen ab, Sauerstoff nimmt sie auf. Der Farbstoff vermittelt: Er nimmt die Elektronen zuerst von der Glucose auf und gibt sie danach an den Sauerstoff weiter. Dabei wechselt er zwischen einer farbigen und einer farblosen (beim Indigocarmin gelben) Form. Er selbst wird nicht verbraucht, Glucose und Sauerstoff schon.</div>
+    <div class="merke" id="m2merke" hidden><b class="t">Merke:</b> Glucose gibt Elektronen ab, Sauerstoff nimmt sie auf. Der Farbstoff vermittelt: Er nimmt die Elektronen zuerst von der Glucose auf und gibt sie danach an den Sauerstoff weiter. Dabei wechselt er zwischen einer farbigen und einer <span data-only="mb">farblosen</span><span data-only="ic">gelben</span> Form. Er selbst wird nicht verbraucht, Glucose und Sauerstoff schon.</div>
     <div class="row" style="margin-top:12px"><button class="btn" data-go="m3">Weiter zu Modul 3 →</button></div>
   </section>
 
@@ -207,7 +232,6 @@
   <section class="mod" id="m3" role="tabpanel">
     <h2>Modul 3: Der Farbstoff als Katalysator</h2>
     <div class="lead"><p><b>Auftrag:</b> Glucose und Sauerstoff könnten Elektronen austauschen, tun es ohne Farbstoff aber kaum. Vergleiche zwei Kolben, die sich nur im Farbstoff unterscheiden, und erkläre mit dem Energiediagramm, was der Farbstoff ändert.</p></div>
-    <div class="dsw" id="dsw3"></div>
     <div class="card"><h4>Zwei Kolben im Vergleich</h4>
       <div class="twin">
         <div><h4 style="margin-top:0">Ohne Farbstoff <span>(nur Glucose und O₂)</span></h4><canvas id="sim3a" aria-label="Teilchenmodell ohne Farbstoff"></canvas>
@@ -236,7 +260,6 @@
   <section class="mod" id="m4" role="tabpanel">
     <h2>Modul 4: Warum wird die Lösung farblos?</h2>
     <div class="lead"><p><b>Auftrag:</b> Der Farbstoff ist nach der Aufnahme der Elektronen noch da, aber seine Farbe ist verschwunden oder hat sich stark verschoben. Verändere die Teilchen und untersuche, was sich im π-System und im Spektrum ändert. Nutze dein Wissen über Chromophor, Auxochrom und Antiauxochrom.</p></div>
-    <div class="dsw" id="dsw4"></div>
 
     <div class="dyepane on" data-dye="mb">
       <div class="sel formsel" id="m4fmb"></div>
@@ -245,6 +268,7 @@
         <div class="card"><h4>Absorptionsspektrum</h4><svg id="m4pmb" role="img" aria-label="Absorptionsspektrum"></svg>
           <div class="row" style="align-items:flex-end;flex-wrap:nowrap"><svg id="m4bmb" style="width:96px;flex:none" role="img" aria-label="Becherglas"></svg><div style="flex:1;min-width:0"><div class="chip" style="margin-bottom:6px"><b>Absorbiert wird</b><span id="m4amb" style="font-size:15px"></span></div><div class="chip"><b>Die Lösung erscheint</b><span id="m4cmb"></span></div></div></div></div>
       </div>
+      <div class="card" style="margin-top:14px"><h4>Orbitalmodell: Wer kann Elektronen ins π-System schieben?</h4><p class="small" style="margin:0 0 8px">Seitenansicht: Die graue Fläche ist die Molekülebene, die Keulen sind p-Orbitale senkrecht dazu. Nur Elektronen in überlappenden p-Orbitalen gehören zum π-System.</p><div class="orbgrid" id="m4omb"></div></div>
       <div class="fb info" id="m4dmb" style="margin-top:10px"></div>
       <h3>Aufgaben zu Methylenblau</h3><div id="m4qmb"></div>
     </div>
@@ -256,11 +280,12 @@
         <div class="card"><h4>Absorptionsspektrum</h4><svg id="m4pic" role="img" aria-label="Absorptionsspektrum"></svg>
           <div class="row" style="align-items:flex-end;flex-wrap:nowrap"><svg id="m4bic" style="width:96px;flex:none" role="img" aria-label="Becherglas"></svg><div style="flex:1;min-width:0"><div class="chip" style="margin-bottom:6px"><b>Absorbiert wird</b><span id="m4aic" style="font-size:15px"></span></div><div class="chip"><b>Die Lösung erscheint</b><span id="m4cic"></span></div></div></div></div>
       </div>
+      <div class="card" style="margin-top:14px"><h4>Orbitalmodell: Wer kann Elektronen ins π-System schieben?</h4><p class="small" style="margin:0 0 8px">Seitenansicht: Die graue Fläche ist die Molekülebene, die Keulen sind p-Orbitale senkrecht dazu. Nur Elektronen in überlappenden p-Orbitalen gehören zum π-System.</p><div class="orbgrid" id="m4oic"></div></div>
       <div class="fb info" id="m4dic" style="margin-top:10px"></div>
       <h3>Aufgaben zu Indigocarmin</h3><div id="m4qic"></div>
     </div>
 
-    <div class="merke" id="m4merke" hidden><b class="t">Merke:</b> Chromophor ist das ausgedehnte π-System, in dem Donator- und Akzeptorgruppen zusammenwirken (Auxochrome und Antiauxochrome). Nimmt der Farbstoff Elektronen auf, verliert die Akzeptorseite ihren Akzeptorcharakter, und das große π-System zerfällt in kleinere. Der Abstand zwischen HOMO und LUMO wächst, das Absorptionsmaximum wandert zu kürzeren Wellenlängen: <b>hypsochromer Effekt</b>. Beim Methylenblau liegt die Absorption danach im UV (farblos), beim Indigocarmin im violetten Bereich (die Lösung erscheint gelb). Beim Schütteln verläuft alles in die Gegenrichtung: <b>bathochromer Effekt</b>.</div>
+    <div class="merke" id="m4merke" hidden><b class="t">Merke:</b> Chromophor ist das ausgedehnte π-System, in dem Donator- und Akzeptorgruppen zusammenwirken (Auxochrome und Antiauxochrome). Nimmt der Farbstoff Elektronen auf, verliert die Akzeptorseite ihren Akzeptorcharakter, und das große π-System zerfällt in kleinere. Der Abstand zwischen HOMO und LUMO wächst, das Absorptionsmaximum wandert zu kürzeren Wellenlängen: <b>hypsochromer Effekt</b>. <span data-only="mb">Beim Methylenblau liegt die Absorption danach im UV, die Lösung erscheint farblos.</span><span data-only="ic">Beim Indigocarmin liegt die Absorption danach im violetten Bereich, die Lösung erscheint gelb.</span> Beim Schütteln verläuft alles in die Gegenrichtung: <b>bathochromer Effekt</b>.</div>
     <div class="row" style="margin-top:12px"><button class="btn" data-go="m5">Weiter zu Modul 5 →</button></div>
   </section>
 
@@ -274,10 +299,10 @@
     <p style="margin-top:0">Wähle in jedem Satz die passende Aussage.</p>
     <div class="card"><div class="gaptext" id="m5gap"></div></div>
     <h3>In eigenen Worten</h3>
-    <textarea id="m5free" placeholder="Erkläre in sechs bis acht Sätzen, was im Kolben geschieht, wenn die Lösung ruht und wenn man sie schüttelt. Benutze die Begriffe Katalysator, Elektronen, Chromophor, Auxochrom bzw. Antiauxochrom und hypsochromer bzw. bathochromer Effekt."></textarea>
+    <textarea id="m5free" placeholder="Erkläre in sechs bis acht Sätzen, was im Kolben geschieht, wenn die Lösung ruht und wenn man sie schüttelt. Benutze die Begriffe Katalysator, Elektronen, Chromophor, Auxochrom, Antiauxochrom, hypsochromer und bathochromer Effekt."></textarea>
     <div class="row" style="margin-top:8px"><button class="btn" id="m5sample">Musterlösung anzeigen</button></div>
     <div class="merke" id="m5box" hidden></div>
-    <div class="warn"><b>Zum Selbermachen:</b> Beide Versuche kannst du auch im Labor durchführen. Die Versuchsanleitungen stehen auf den Arbeitsblättern.</div>
+    <div class="warn"><b>Zum Selbermachen:</b> Diesen Versuch kannst du auch im Labor durchführen. Die Versuchsanleitung steht auf dem Arbeitsblatt.</div>
   </section>
 </div>
 

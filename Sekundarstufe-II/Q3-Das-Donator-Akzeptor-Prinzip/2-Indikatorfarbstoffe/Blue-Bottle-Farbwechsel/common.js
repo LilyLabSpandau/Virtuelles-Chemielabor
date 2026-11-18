@@ -21,15 +21,21 @@
   tabs.forEach(function (t) { t.addEventListener('click', function () { showTab(t.getAttribute('data-t')); }); });
   Array.prototype.forEach.call(document.querySelectorAll('[data-go]'), function (b) { b.addEventListener('click', function () { showTab(b.getAttribute('data-go')); }); });
 
-  // ------------------------------------------------------------ Fortschritt je Modul
-  var prog = {};
+  // ------------------------------------------------------------ Fortschritt je Modul und Versuch
+  // Schlüssel: 'm1|mb' (Modul 1, Versuch Methylenblau) bzw. 'm1|ic'. Jeder Versuch hat seine eigene Auswertung.
+  var prog = {}, fin = { mb: {}, ic: {} }, cur = 'mb';
+  function refresh() {
+    tabs.forEach(function (t) { var m = t.getAttribute('data-t'); t.classList.toggle('fin', !!fin[cur][m]); });
+    Array.prototype.forEach.call(document.querySelectorAll('.merke[id$=merke]'), function (b) { var m = b.id.replace('merke', ''); b.hidden = !fin[cur][m]; });
+  }
   window.Prog = {
-    add: function (mod, total) { prog[mod] = { n: 0, total: total, fn: null }; },
-    done: function (mod) {
-      var p = prog[mod]; if (!p) return; p.n++;
-      if (p.n >= p.total) { var t = $('tab-' + mod); if (t) t.classList.add('fin'); if (p.fn) p.fn(); }
+    add: function (key, total) { prog[key] = { n: 0, total: total }; },
+    done: function (key) {
+      var p = prog[key]; if (!p) return; p.n++;
+      if (p.n >= p.total) { var m = key.split('|'); fin[m[1]][m[0]] = true; refresh(); }
     },
-    onFinish: function (mod, fn) { if (prog[mod]) prog[mod].fn = fn; }
+    setVersuch: function (d) { cur = d; refresh(); },
+    onFinish: function () { }
   };
 
   // ------------------------------------------------------------ Multiple Choice

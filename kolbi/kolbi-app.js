@@ -55,7 +55,7 @@
     'Kupfer-Raffination': ['Hier lernst du die Elektrolyse in der Technik kennen: Aus Rohkupfer wird hochreines Kupfer, und die Edelmetalle fallen nebenbei an.'],
     'Wasser-erforschen': ['Hier erforschst du, warum Wasser sich so besonders verhält. Beginne mit Modul 1, danach kannst du die anderen drei in beliebiger Reihenfolge bearbeiten.'],
     'Farbe-und-Konstitution': ['Hier erarbeitest du in vier Modulen, wie die Struktur eines Stoffes seine Farbe bestimmt: Konjugation, I- und M-Effekte, Auxochrome und Antiauxochrome und am Ende der Tintenkiller.'],
-    'Blue-Bottle-Farbwechsel': ['Hier gehst du dem Blue-Bottle-Versuch mit Methylenblau und Indigocarmin auf den Grund: Elektronen auf Teilchenebene, der Farbstoff als Katalysator und der hypsochrome Effekt. Ich bin heute der Kolben und färbe mich mit!'],
+    'Blue-Bottle-Farbwechsel': ['Hier gehst du dem Blue-Bottle-Versuch mit Methylenblau und Indigocarmin auf den Grund: Elektronen auf Teilchenebene, der Farbstoff als Katalysator und der hypsochrome Effekt. Ich bin heute auch ein Kolben, mit eigenem Ansatz und Stopfen. Wenn du mich schnell hin und her ziehst, schüttelst du mich, und ich färbe mich um!'],
     'Wasserhaerte-Titration': ['Hier bestimmst du die Wasserhärte durch Titration: erst eine Einführung, dann das 3D-Labor mit Tutorial und zum Schluss die Berechnung.'],
     'Trinkwasser-Detektiv': ['Hier gehst du dem Trinkwasser auf die Spur: Was ist gelöst, woher kommt es, welche Grenzwerte gelten und warum setzt sich Kalk ab? Das Modul ist für Wahlpflicht Chemie Klasse 10.'],
     'Kunststoffklassen': ['Hier erkundest du an einem 3D-Modell, wie sich Thermoplaste, Duromere und Elastomere unterscheiden. Wähle oben eine Klasse und probiere Regler und Knöpfe aus.', 'Du kannst das Modell mit dem Finger drehen und mit zwei Fingern zoomen. Mit „Zurücksetzen“ startest du die Klasse neu.']
@@ -403,6 +403,6 @@
       else if (++tries < 5) setTimeout(go, 6000);
     }, 2200);
   }
-  function start() { if (window.Kolbi) return run(); var s = document.createElement('script'); s.src = base + 'kolbi.js?v=20261118'; s.onload = run; document.head.appendChild(s); }
+  function start() { if (window.Kolbi) return run(); var s = document.createElement('script'); s.src = base + 'kolbi.js?v=20261119'; s.onload = run; document.head.appendChild(s); }
   if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
 })();
