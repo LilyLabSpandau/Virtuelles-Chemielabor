@@ -190,6 +190,7 @@
     else if (!busy()) { Kolbi.mood('happy', 1600); }
   };
   B.fertig = function () { say(X() + '<p class="kb-text"><b>Das war geschafft!</b> Du hast dir die Zeit genommen und mitgedacht. Gönn dir jetzt eine kleine Pause.</p>' + back(), 'proud', 0); };
+  B.tippNext = function () { var t = cfg.tipps || []; if (!t.length) return null; var n = Math.min(stage, t.length - 1) + 1; tipp(); return { shown: n, total: t.length }; };   // für Tipp-Knöpfe der Module: Tipp in der Sprechblase
   B.setAufgabe = function (text, tipps, id, hilfe) { cfg.aufgabe = text; cfg.hilfe = hilfe || ''; cfg.tipps = tipps || []; if (id !== curId) stage = 0; if (id) curId = id; };
 
   // ------------------------------------------------------------------ Vorstellung (Übersichtsseiten)

@@ -440,7 +440,10 @@ function buildTask(t, label, kap) {
   if (!t.tips || !t.tips.length) bTip.style.display = 'none';
   bTip.addEventListener('click', function () {
     if (tipsShown >= t.tips.length) return;
-    tipsEl.appendChild(mk('div', 'tip', '<b>Tipp ' + (tipsShown + 1) + ':</b> ' + t.tips[tipsShown])); tipsShown++;
+    if (window.Begleiter && Begleiter.tippNext) {   // Herr Neumann gibt den Tipp in der Sprechblase, nicht zusätzlich unter der Aufgabe
+      Begleiter.setAufgabe(String(t.q).replace(/<[^>]+>/g, ''), t.tips || [], label, HILFE[t.type] || '');
+      var r = Begleiter.tippNext(); if (r) tipsShown = Math.max(tipsShown + 1, r.shown);
+    } else { tipsEl.appendChild(mk('div', 'tip', '<b>Tipp ' + (tipsShown + 1) + ':</b> ' + t.tips[tipsShown])); tipsShown++; }
     if (tipsShown >= t.tips.length) { bTip.disabled = true; bTip.textContent = 'Keine weiteren Tipps'; } else bTip.textContent = '💡 Noch ein Tipp (' + tipsShown + '/' + t.tips.length + ')';
   });
   bChk.addEventListener('click', function () {
