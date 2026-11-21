@@ -418,6 +418,18 @@ function updateTabs() {
   });
 }
 var TESTHOOK = [];
+var HILFE = {
+  mc: 'Lies die Frage und alle Antworten. Wähle eine Antwort aus und klicke auf „Prüfen“.',
+  multi: 'Ordne jede Aussage einer Gruppe zu. Entscheide für jede einzeln und klicke dann auf „Prüfen“.',
+  form: 'Berechne die gesuchten Werte und trage sie in die Felder ein. Klicke dann auf „Prüfen“.',
+  cloze: 'Wähle für jede Lücke das passende Wort aus. Lies dazu den ganzen Text noch einmal.',
+  order: 'Bringe die Karten in die richtige Reihenfolge und klicke dann auf „Prüfen“.',
+  lewis: 'Zeichne das Molekül: Setze Striche für bindende und freie Elektronenpaare. Prüfe danach.',
+  ladung: 'Setze für jedes Atom die passende Teilladung ein (δ+ oder δ−) und prüfe danach.',
+  bruecken: 'Tippe die Stellen an, an denen sich Wasserstoffbrücken bilden können, und prüfe danach.',
+  siede: 'Beobachte, was beim Erhitzen passiert, und beantworte die Frage dazu.'
+};
+
 function buildTask(t, label, kap) {
   var card = mk('article', 'card task'), widget = W[t.type](t), attempts = 0, tipsShown = 0, done = false;
   card.innerHTML = '<div class="head"><span class="nr">' + label + '</span><div class="q">' + t.q + '</div></div>';
@@ -436,11 +448,13 @@ function buildTask(t, label, kap) {
     fb.innerHTML = (r.ok === true ? '✔ ' : r.ok === false ? '✘ ' : '') + r.msg;
     if (r.ok === null) return;
     attempts++; bSol.disabled = false; bSol.textContent = 'Lösungsweg anzeigen';
+    if (window.Begleiter) { if (r.ok) Begleiter.richtig(label); else Begleiter.falsch(label); }
     if (r.ok && !done) { done = true; card.className = 'card task done'; chProgress[kap].done++; updateTabs(); }
   });
   bSol.addEventListener('click', function () { var s = sol.className.indexOf('show') >= 0; sol.className = 'loesung' + (s ? '' : ' show'); bSol.textContent = s ? 'Lösungsweg anzeigen' : 'Lösungsweg ausblenden'; });
   row.appendChild(bChk); row.appendChild(bTip); row.appendChild(bSol);
   card.appendChild(row); card.appendChild(tipsEl); card.appendChild(fb); card.appendChild(sol);
+  card.addEventListener('pointerdown', function () { if (window.Begleiter) Begleiter.setAufgabe(String(t.q).replace(/<[^>]+>/g, ''), t.tips || [], label, HILFE[t.type] || ''); });
   TESTHOOK.push({ label: label, widget: widget, btn: bChk, card: card });
   return card;
 }
@@ -903,6 +917,7 @@ function show(k) {
   updateTabs(); show('start');
 })();
 </script>
-<script src="../../../../kolbi/kolbi-app.js"></script>
+<script>window.NEUMANN_EXPLICIT = true;</script>
+<script src="../../../../kolbi/neumann-lernen.js"></script>
 </body>
 </html>

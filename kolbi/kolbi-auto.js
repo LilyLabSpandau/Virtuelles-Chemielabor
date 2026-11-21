@@ -1,5 +1,5 @@
 /*
-  Kolbi für Navigationsseiten (Startseite, Tische, Pinnwände).
+  Herr Neumann für Navigationsseiten (Startseite, Tische, Pinnwände). Ersetzt dort Kolbi.
   Wird von pinnwand.js geladen oder per <script src=".../kolbi/kolbi-auto.js"> eingebunden.
   Erkennt anhand des Pfades, wo der Schüler gerade ist, und begrüßt ihn auf der Startseite bei jedem Besuch.
 */
@@ -36,7 +36,7 @@
     var comments = isRoot ? [
       'Auf dem Tisch liegt alles, was du brauchst. Fang bei dem an, was dich neugierig macht.',
       'Hast du schon die Lewis-Werkstatt ausprobiert? Der Mörser ist ein Geheimtipp.',
-      'Ich wohne hier auf dem Tisch. Die Aussicht ist super!'
+      'Wenn du Hilfe brauchst, tippe mich einfach an.'
     ] : onBoard ? [
       title ? 'Du bist gerade bei „' + title + '“. Such dir einen Zettel aus!' : 'Such dir einen Zettel aus!',
       'Wenn an der Pinnwand noch nichts hängt: Hier kommt bald etwas dazu.',
@@ -45,7 +45,7 @@
       'Hier wählst du deinen Weg. Es gibt keinen falschen!',
       'Alle Wege führen zu Chemie. Garantiert.'
     ];
-    Kolbi.init({ id: 'site', color: '#38bdf8', offsetBottom: 56, tapHelp: function () { return help; }, comments: comments });
+    Begleiter.init({ mode: 'uebersicht', id: 'site', offsetBottom: 56, vorstellung: isRoot, comments: comments, seite: { text: function () { return help.text; }, tip: tip } });
 
     var key = 'kolbi-expl-' + rel, seen = false;
     try { seen = !!sessionStorage.getItem(key); } catch (e) {}
@@ -59,6 +59,14 @@
       setTimeout(function go() { if (Kolbi.say(explain(), 'interested')) mark(); else if (++tries < 5) setTimeout(go, 6000); }, onBoard ? 2400 : 1800);
     }
   }
-  function start() { if (window.Kolbi) return run(); var s = document.createElement('script'); s.src = base + 'kolbi.js'; s.onload = run; document.head.appendChild(s); }
+  // Lädt Engine, Skin und Begleiter nacheinander
+  function start() {
+    var files = ['kolbi.js', 'skin-neumann.js', 'neumann-begleiter.js'], i = 0;
+    (function next() {
+      var f = files[i++]; if (!f) return run();
+      if ((f === 'kolbi.js' && window.Kolbi) || (f === 'skin-neumann.js' && window.KolbiSkins && window.KolbiSkins.neumann) || (f === 'neumann-begleiter.js' && window.Begleiter)) return next();
+      var sc = document.createElement('script'); sc.src = base + f; sc.onload = next; document.head.appendChild(sc);
+    })();
+  }
   if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
 })();

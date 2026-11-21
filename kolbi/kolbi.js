@@ -582,7 +582,7 @@
       openBubble('<p class="kb-text" style="margin:0 0 6px">' + (o.praise ? '<b class="kb-praise">' + esc(o.praise) + '</b> ' : '') + o.html + '</p>' +
         '<p class="kb-bad" id="kb-bad"' + (o.bad ? '' : ' style="display:none"') + '>' + esc(o.bad || '') + '</p>' +
         (o.btn ? '<button class="kb-ok" data-k="g-go">' + esc(o.btn) + '</button>' : '') +
-        '<div class="kb-links">' + (o.skip ? '<button class="kb-link" data-k="g-skip">Schritt überspringen</button>' : '') + '<button class="kb-link" data-k="g-end">Tutorial beenden</button></div>', 0);
+        '<div class="kb-links">' + (o.skip ? '<button class="kb-link" data-k="g-skip">Schritt überspringen</button>' : '') + '<button class="kb-link" data-k="g-end">' + esc(o.endLabel || 'Tutorial beenden') + '</button></div>', 0);
       return true;
     },
     guideBad: function (t) { var b = document.getElementById('kb-bad'); if (!guide || !b || b.textContent === (t || '')) return; b.textContent = t || ''; b.style.display = t ? 'block' : 'none'; layoutBubble(); },
@@ -602,6 +602,7 @@
       if (!el.char || st.off) return false; curAsk = null; introActive = false; mood(m || 'happy', ms || 3000);
       openBubble('<p class="kb-text" style="margin:0">' + html + '</p>', ms || 4000); return true;
     },
+    open: function (html, ms, m) { if (!el.char || st.off || locked) return false; curAsk = null; introActive = false; lastAct = Date.now(); mood(m || 'happy', 6000); openBubble(html, ms || 0); return true; },   // freie Sprechblase (HTML des Moduls, Knöpfe mit data-k/data-nb), genutzt von Herrn Neumann
     hush: function () { clearTimeout(closeT); bubbleOpen = false; if (!el.bubble) return; el.bubble.classList.remove('show'); el.char.classList.remove('talk'); setTimeout(function () { if (!bubbleOpen) el.bubble.classList.remove('on'); }, 200); },
     moveTo: function (fx, fy) { if (!el.char) return; var a = { x: fx * vw(), y: fy * vh() }; walkTo(a); },
     setExtra: function (a) { cfg.extraOpts = a || null; },
