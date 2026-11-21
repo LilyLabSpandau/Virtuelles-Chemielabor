@@ -67,7 +67,7 @@
     svg: svg, face: face, phys: phys,
     t: {
       jokeLead: 'Unlustiger Atom-Witz: ',
-      intro: ['Hi, ich bin Hugo ⚛️', 'Ich bin ein Wasserstoff-Atom: ein Proton, ein Elektron und sehr viel Humor. Ich begleite dich beim Atombauen.'],
+      intro: ['Hi, ich bin Hugo ⚛️', 'Ich bin ein Wasserstoff-Atom: ein Proton, ein Elektron und sehr viel Humor. Ich begleite dich bei Atomen, Energie und Elektronen.'],
       NICE: [
         'Du baust das richtig gut. Ich bin beeindruckt!',
         'Du hast ein gutes Gefühl für Atome. Mein Elektron klatscht!',

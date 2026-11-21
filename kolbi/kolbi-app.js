@@ -10,6 +10,11 @@
   if (!me || !me.src) return;
   var base = me.src.replace(/kolbi-app\.js.*$/, '');
 
+  // Physikalische Chemie: Hier begleitet Hugo (statt Kolbi), wie in der Semestercheckliste. Neue Anwendung dieser Art: Ordnername hier ergänzen.
+  var HUGO = { 'Orbitalmodell': 1, 'Elektronenkonfiguration': 1, 'd-und-f-Orbitale': 1, 'Doppelspaltexperiment': 1, 'Systeme-und-1-Hauptsatz': 1,
+               'Redoxreihe-Metallgewinnung': 1, 'Disproportionierung': 1, 'Kupfer-Raffination': 1, 'Zusammenhang-von-Licht-und-Farbe': 1 };
+  var isHugo = !!HUGO[(location.pathname.replace(/\/index\.html$/, '').replace(/\/$/, '').split('/').pop())];
+
   var TIP = 'Probiere die Bedienelemente einfach aus, hier geht nichts kaputt. Oben kommst du über „Zur Übersicht“ oder „Zurück“ wieder aus der Anwendung heraus.';
   var APPS = {
     'Brandbekämpfung': ['Hier lernst du, welches Löschmittel bei welchem Brand hilft und was die Lage sogar noch verschlimmert.'],
@@ -289,8 +294,9 @@
     var help = { text: app[0], tip: app[1] || TIP };
     var ASKS = ['Kommst du gut voran?', 'Läuft alles rund oder hakt es irgendwo?', 'Alles klar bei dir? Ich helfe gern.', 'Hängst du irgendwo fest?'];
     var cm = (G[MAP[key]] || []).slice();
+    var who = isHugo && window.KolbiSkins && window.KolbiSkins.hugo ? { skin: window.KolbiSkins.hugo, color: '#e0334f' } : { color: '#38bdf8' };
     Kolbi.init({
-      id: 'app-' + key, color: '#38bdf8', offsetBottom: big ? 130 : 64, tapHelp: function () { return help; },
+      id: 'app-' + key, skin: who.skin, color: who.color, offsetBottom: big ? 130 : 64, tapHelp: function () { return help; },
       idleHelp: function () { return { text: ASKS[Math.floor(Math.random() * ASKS.length)], tip: help.tip }; },
       comments: cm,
       noFacts: EXPERT_APPS[key] ? expertMode : null
@@ -317,6 +323,11 @@
       else if (++tries < 5) setTimeout(go, 6000);
     }, 2200);
   }
-  function start() { if (window.Kolbi) return run(); var s = document.createElement('script'); s.src = base + 'kolbi.js?v=20261119'; s.onload = run; document.head.appendChild(s); }
+  function load(src, cb) { var s = document.createElement('script'); s.src = src; s.onload = cb; s.onerror = cb; document.head.appendChild(s); }
+  function start() {
+    var go = function () { if (isHugo && !(window.KolbiSkins && window.KolbiSkins.hugo)) load(base + 'skin-hugo.js?v=20261121', run); else run(); };
+    if (window.Kolbi) return go();
+    load(base + 'kolbi.js?v=20261119', go);
+  }
   if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
 })();
