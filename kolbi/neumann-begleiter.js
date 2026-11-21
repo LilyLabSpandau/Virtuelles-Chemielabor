@@ -203,13 +203,13 @@
   function actorStyle() {
     if (actorCss) return; actorCss = true;
     var st = document.createElement('style');
-    st.textContent = '.nb-actor{position:fixed;right:118px;bottom:64px;z-index:2147482000;width:92px;pointer-events:none;transform:translateX(340px);opacity:0}' +
+    st.textContent = '.nb-actor{position:fixed;right:132px;bottom:64px;z-index:2147482000;width:68px;pointer-events:none;transform:translateX(340px);opacity:0}' +
       '.nb-actor.in{animation:nbin .8s cubic-bezier(.2,1.2,.4,1) forwards}.nb-actor.out{animation:nbout .8s ease-in forwards}' +
-      '.nb-actor .nb-av{display:block;width:92px;transform-origin:50% 100%}.nb-actor .nb-av svg{display:block;width:100%;height:auto}.nb-actor.in .nb-av{animation:nbhop .5s ease-out .5s 1}.nb-actor.wave .nb-av{animation:nbwave .6s ease-in-out 3}' +
-      '.nb-bub{position:absolute;right:6px;bottom:104px;width:240px;max-width:calc(100vw - 150px);background:#fffbe6;color:#1f2937;border:1px solid #d6cfa8;border-radius:16px;padding:10px 14px 12px;font:14px/1.4 system-ui,sans-serif;box-shadow:0 8px 26px rgba(0,0,0,.28);pointer-events:auto;opacity:0;transform:translateY(6px);transition:opacity .25s,transform .25s}' +
+      '.nb-actor .nb-av{display:block;width:68px;transform-origin:50% 100%}.nb-actor .nb-av svg{display:block;width:100%;height:auto}.nb-actor.in .nb-av{animation:nbhop .5s ease-out .5s 1}.nb-actor.wave .nb-av{animation:nbwave .6s ease-in-out 3}' +
+      '.nb-bub{position:absolute;right:6px;bottom:92px;width:240px;max-width:calc(100vw - 150px);background:#fffbe6;color:#1f2937;border:1px solid #d6cfa8;border-radius:16px;padding:10px 14px 12px;font:14px/1.4 system-ui,sans-serif;box-shadow:0 8px 26px rgba(0,0,0,.28);pointer-events:auto;opacity:0;transform:translateY(6px);transition:opacity .25s,transform .25s}' +
       '.nb-bub.on{opacity:1;transform:none}.nb-bub:after{content:"";position:absolute;right:34px;bottom:-8px;width:14px;height:14px;background:#fffbe6;border-right:1px solid #d6cfa8;border-bottom:1px solid #d6cfa8;transform:rotate(45deg)}' +
       '.nb-hint{display:block;margin-top:6px;font-size:11.5px;color:#6b7280}.nb-bub button{display:block;margin:8px 0 -4px auto;background:none;border:0;color:#4b5563;font-size:12px;text-decoration:underline;cursor:pointer;padding:2px 0}' +
-      '@keyframes nbin{from{transform:translateX(340px);opacity:0}to{transform:none;opacity:1}}@keyframes nbout{from{transform:none;opacity:1}to{transform:translateX(340px);opacity:0}}' +
+      '#kolbi-char{scale:var(--nbs,1.3);transform-origin:50% 100%}@keyframes nbin{from{transform:translateX(340px);opacity:0}to{transform:none;opacity:1}}@keyframes nbout{from{transform:none;opacity:1}to{transform:translateX(340px);opacity:0}}' +
       '@keyframes nbhop{0%,100%{transform:none}40%{transform:translateY(-16px)}}@keyframes nbwave{0%,100%{transform:rotate(0)}25%{transform:rotate(-12deg)}75%{transform:rotate(12deg)}}' +
       '@media (prefers-reduced-motion:reduce){.nb-actor.in,.nb-actor.out{animation-duration:.01s}.nb-actor .nb-av{animation:none!important}}';
     document.head.appendChild(st);
@@ -260,7 +260,7 @@
     { m: 'interested', h: '<b>Und ich?</b> Auf den Übersichtsseiten erkläre ich dir, was es hier gibt. In den Wiederholungs- und Arbeitenmodulen bin ich dein Lernbegleiter. Dort erkläre ich Aufgaben, gebe Tipps und erkläre Wörter, die du markierst. Ich erzähle dir nichts, was dich ablenkt, außer du fragst mich.', btn: 'Verstanden, danke!' }
   ];
   B.vorstellung = function (i) {
-    i = i || 0; run++;
+    i = i || 0; run++; actorStyle();
     needHugo(function () { B._vor(i === 0 ? 0 : 3); });
   };
   B._vor = function (i) {
@@ -281,7 +281,7 @@
   };
 
   // ------------------------------------------------------------------ Start
-  B.init = function (o) {
+  B.init = function (o) { actorStyle(); document.documentElement.style.setProperty("--nbs", o && o.mode === "lernen" ? "1.12" : "1.3");
     var g0 = cfg.glossar || {}; cfg = o || {}; cfg.glossar = cfg.glossar ? (function (a, b) { Object.keys(b).forEach(function (k) { a[k] = b[k]; }); return a; })(g0, cfg.glossar) : g0; IDX = null; cfg.mode = cfg.mode || 'lernen'; SK = window.KolbiSkins && window.KolbiSkins.neumann; if (!SK || !window.Kolbi) return;
     Kolbi.init({
       id: cfg.id || 'neumann', skin: SK, color: '#5b7a6a', offsetBottom: cfg.offsetBottom == null ? 56 : cfg.offsetBottom,
