@@ -2632,7 +2632,7 @@ function drawMacro(dt){
     g.fillStyle=ZCOL[z.n];g.fillRect(TX+14,y1,5,y0-y1-2);
     g.fillStyle='rgba(220,240,240,.85)';g.fillText(z.s,TX+24,(y0+y1)/2+3);prev=z.to;
   }
-  g.textAlign='center';g.fillStyle='rgba(215,240,240,.75)';g.font='12px system-ui,sans-serif';g.fillText('Temperatur',TX,TT-14);
+  g.textAlign='center';g.fillStyle='rgba(215,240,240,.75)';g.font='12px system-ui,sans-serif';g.fillText('Temperatur',TX,TT-14);g.font='10.5px system-ui,sans-serif';g.fillStyle='rgba(255,224,138,.9)';g.fillText('↕ ziehen',TX,TT-2);
   // Prüfkörper
   const G=specGeometry(s),cols=specColor(s);
   const yTop=CT+60,gripH=34,gy0=yTop+gripH;
@@ -2708,7 +2708,7 @@ function drawMacro(dt){
   if(s.load>.01){const ay=gy0+Lg+gripH+28,al=18+s.load*60;g.strokeStyle='#ffc27a';g.fillStyle='#ffc27a';g.lineWidth=5;g.lineCap='round';g.beginPath();g.moveTo(CX,ay);g.lineTo(CX,Math.min(ay+al,CT+CH-14));g.stroke();g.beginPath();const ey=Math.min(ay+al,CT+CH-14);g.moveTo(CX-10,ey-6);g.lineTo(CX+10,ey-6);g.lineTo(CX,ey+10);g.closePath();g.fill();g.lineCap='butt';}
   const FX=720;roundRect(g,FX-12,70,24,370,12);g.fillStyle='rgba(255,255,255,.1)';g.fill();g.strokeStyle='rgba(255,255,255,.4)';g.lineWidth=2;g.stroke();
   const fh=(370-8)*s.load;const fg=g.createLinearGradient(0,440,0,70);fg.addColorStop(0,'#3a7d9a');fg.addColorStop(.6,'#d9c35a');fg.addColorStop(1,'#ff5a3d');g.fillStyle=fg;roundRect(g,FX-8,436-fh,16,fh+0.01,8);if(fh>0)g.fill();
-  g.fillStyle='rgba(215,240,240,.75)';g.font='12px system-ui,sans-serif';g.textAlign='center';g.fillText('Zugbelastung',FX,56);g.fillText('(qualitativ)',FX,458);
+  g.fillStyle='rgba(215,240,240,.75)';g.font='12px system-ui,sans-serif';g.textAlign='center';g.fillText('Zugbelastung',FX,56);g.fillText('(qualitativ)',FX,458);g.font='10.5px system-ui,sans-serif';g.fillStyle='rgba(255,224,138,.9)';g.fillText('↕ ziehen',FX,70-1);
   // Dehnungsanzeige
   const strain=Math.round((Lg/150/(1-.55*(k==='thermoplaste'?s.puddle:0))/(1+.18*(k==='thermoplaste'?s.melt:0))-1)*100);
   g.textAlign='left';g.fillStyle='rgba(255,255,255,.92)';g.font='bold 13px system-ui,sans-serif';
@@ -2788,6 +2788,18 @@ document.querySelectorAll('.view [role=tab]').forEach(el=>el.addEventListener('c
 $('reset').addEventListener('click',()=>{setKind(state.kind);kolbiReact('happy','Alles zurück auf Anfang. Der Stab ist wieder heil. Dein Laborbuch behalte ich.');});
 $('temperature').addEventListener('input',ev=>{state.temperature=+ev.target.value/100;updateLabels();});
 $('tension').addEventListener('input',ev=>{state.load=+ev.target.value/100;updateLabels();});
+/* Makro-Ansicht: Thermometer und Kraftbalken direkt am Bild ziehen */
+(function(){
+  let drag=null;
+  const lp=e=>{const r=macroCv.getBoundingClientRect();return [(e.clientX-r.left-mOx)/mSc,(e.clientY-r.top-mOy)/mSc];};
+  const hit=(x,y)=>Math.abs(x-64)<30&&y>50&&y<470?'temperature':Math.abs(x-720)<30&&y>50&&y<470?'tension':null;
+  const setSlider=(id,v)=>{const el=$(id);el.value=Math.round(clamp01(v)*100);el.dispatchEvent(new Event('input',{bubbles:true}));};
+  const apply=(which,y)=>{if(which==='temperature')setSlider('temperature',(440-y)/358);else setSlider('tension',(436-y)/362);};
+  macroCv.addEventListener('pointerdown',e=>{const [x,y]=lp(e);const w=hit(x,y);if(!w)return;drag=w;try{macroCv.setPointerCapture(e.pointerId);}catch(_){}apply(w,y);e.preventDefault();});
+  macroCv.addEventListener('pointermove',e=>{const [x,y]=lp(e);if(drag){apply(drag,y);e.preventDefault();}else macroCv.style.cursor=hit(x,y)?'ns-resize':'default';});
+  const end=e=>{drag=null;};
+  macroCv.addEventListener('pointerup',end);macroCv.addEventListener('pointercancel',end);
+})();
 $('release').addEventListener('click',()=>{state.load=0;$('tension').value=0;updateLabels();});
 document.querySelectorAll('#temp-presets button').forEach(b=>b.addEventListener('click',()=>{const v=+b.dataset.t;$('temperature').value=v;state.temperature=v/100;updateLabels();}));
 $('weak-hit').addEventListener('click',()=>{hit(state,false);book.hist('duromere').weak=true;});
