@@ -20,6 +20,7 @@
 (function () {
   'use strict';
   var B = window.Begleiter = {};
+  var BASE = (document.currentScript && document.currentScript.src || '').replace(/neumann-begleiter\.js.*$/, '');
   var cfg = {}, SK = null, KEY = 'neumann-begleiter-vorstellung';
   var q = {}, log = [], streakWrong = 0, streakOk = 0, curId = null, stage = 0;
   var lastWarn = 0, warns = 0, lastPraise = 0, checkins = 0, wordMode = false, wordTimer = null, factBag = [], niceBag = [];
@@ -192,16 +193,91 @@
   B.setAufgabe = function (text, tipps, id, hilfe) { cfg.aufgabe = text; cfg.hilfe = hilfe || ''; cfg.tipps = tipps || []; if (id !== curId) stage = 0; if (id) curId = id; };
 
   // ------------------------------------------------------------------ Vorstellung (Übersichtsseiten)
+  // Vorstellung: Kolbi und Hugo erscheinen kurz selbst im Bild, begrüßen den Anwender, stellen sich vor, verabschieden sich und gehen wieder.
+  var actorCss = false, hugoTried = false, run = 0;
+  function needHugo(cb) {
+    if (hugoTried) return cb(); hugoTried = true;
+    if ((window.KolbiSkins && window.KolbiSkins.hugo) || !BASE) return cb();
+    var sc = document.createElement('script'); sc.src = BASE + 'skin-hugo.js?v=20261121'; sc.onload = sc.onerror = cb; document.head.appendChild(sc);
+  }
+  function actorStyle() {
+    if (actorCss) return; actorCss = true;
+    var st = document.createElement('style');
+    st.textContent = '.nb-actor{position:fixed;right:118px;bottom:64px;z-index:2147482000;width:92px;pointer-events:none;transform:translateX(340px);opacity:0}' +
+      '.nb-actor.in{animation:nbin .8s cubic-bezier(.2,1.2,.4,1) forwards}.nb-actor.out{animation:nbout .8s ease-in forwards}' +
+      '.nb-actor .nb-av{display:block;width:92px;transform-origin:50% 100%}.nb-actor .nb-av svg{display:block;width:100%;height:auto}.nb-actor.in .nb-av{animation:nbhop .5s ease-out .5s 1}.nb-actor.wave .nb-av{animation:nbwave .6s ease-in-out 3}' +
+      '.nb-bub{position:absolute;right:6px;bottom:104px;width:240px;max-width:calc(100vw - 150px);background:#fffbe6;color:#1f2937;border:1px solid #d6cfa8;border-radius:16px;padding:10px 14px 12px;font:14px/1.4 system-ui,sans-serif;box-shadow:0 8px 26px rgba(0,0,0,.28);pointer-events:auto;opacity:0;transform:translateY(6px);transition:opacity .25s,transform .25s}' +
+      '.nb-bub.on{opacity:1;transform:none}.nb-bub:after{content:"";position:absolute;right:34px;bottom:-8px;width:14px;height:14px;background:#fffbe6;border-right:1px solid #d6cfa8;border-bottom:1px solid #d6cfa8;transform:rotate(45deg)}' +
+      '.nb-hint{display:block;margin-top:6px;font-size:11.5px;color:#6b7280}.nb-bub button{display:block;margin:8px 0 -4px auto;background:none;border:0;color:#4b5563;font-size:12px;text-decoration:underline;cursor:pointer;padding:2px 0}' +
+      '@keyframes nbin{from{transform:translateX(340px);opacity:0}to{transform:none;opacity:1}}@keyframes nbout{from{transform:none;opacity:1}to{transform:translateX(340px);opacity:0}}' +
+      '@keyframes nbhop{0%,100%{transform:none}40%{transform:translateY(-16px)}}@keyframes nbwave{0%,100%{transform:rotate(0)}25%{transform:rotate(-12deg)}75%{transform:rotate(12deg)}}' +
+      '@media (prefers-reduced-motion:reduce){.nb-actor.in,.nb-actor.out{animation-duration:.01s}.nb-actor .nb-av{animation:none!important}}';
+    document.head.appendChild(st);
+  }
+  var ACTORS = {
+    kolbi: { skin: 'kolbi', col: '#38bdf8', lines: ['Hallo, ich bin Kolbi! 🧪 Schön, dass du da bist.', 'Ich bin der Laborkolben und wohne in den Simulationen und Lernmodulen. Tippe mich dort an, dann bekommst du Hilfe oder einen Tipp.', 'Bis gleich in den Modulen! Tschüss!'] },
+    hugo: { skin: 'hugo', col: '#e0334f', lines: ['Hi, ich bin Hugo! ⚛️ Schön, dich zu sehen.', 'Ich bin ein Wasserstoff-Atom und kümmere mich um die Physik: Atombau, Energie und Elektronen.', 'Wir sehen uns bei den Orbitalen und bei der Thermodynamik. Tschüss!'] }
+  };
+  function actor(key, done, myRun) {
+    var A = ACTORS[key], sk = window.KolbiSkins && window.KolbiSkins[A.skin], svg = '';
+    try { if (sk) svg = String(sk.svg(A.col)).replace(/kk-/g, 'kg-'); } catch (e) { svg = ''; }
+    if (!svg) return done();
+    actorStyle();
+    var el = document.createElement('div'); el.className = 'nb-actor'; el.setAttribute('aria-live', 'polite');
+    el.innerHTML = '<div class="nb-bub"><span class="nb-t"></span><span class="nb-hint"></span><button type="button" class="nb-skip">Überspringen</button></div><span class="nb-av" aria-hidden="true">' + svg + '</span>';
+    document.body.appendChild(el);
+    var bub = el.querySelector('.nb-bub'), txt = el.querySelector('.nb-t'), ended = false, idx = -1, ready = false, tm = null;
+    function finish(skipped) {
+      if (ended) return; ended = true; clearTimeout(tm);
+      document.removeEventListener('click', onClick, true); document.removeEventListener('keydown', onKey, true);
+      bub.classList.remove('on'); el.classList.remove('wave', 'in'); void el.offsetWidth; el.classList.add('out');
+      setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); if (!skipped) done(); }, 850);
+    }
+    function next() {
+      if (ended || !ready) return;
+      idx++;
+      if (idx >= A.lines.length) return finish(false);
+      txt.textContent = A.lines[idx]; bub.classList.add('on');
+      el.classList.remove('wave'); void el.offsetWidth; if (idx === 0 || idx === A.lines.length - 1) el.classList.add('wave');
+      hint.textContent = idx === A.lines.length - 1 ? 'Klick oder Enter: Tschüss' : 'Klick oder Enter: weiter';
+    }
+    function onClick(e) {
+      if (e.target.closest && e.target.closest('.nb-skip')) { e.preventDefault(); e.stopPropagation(); actorAbort(); return; }
+      e.preventDefault(); e.stopPropagation(); next();
+    }
+    function onKey(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); next(); } }
+    var hint = el.querySelector('.nb-hint');
+    document.addEventListener('click', onClick, true); document.addEventListener('keydown', onKey, true);
+    actorAbort = function () { finish(true); skipAll(); };
+    el.classList.add('in');
+    tm = setTimeout(function () { try { if (window.Kolbi) Kolbi.mood('happy', 3000); } catch (e) {} ready = true; next(); }, 900);
+  }
+  var actorAbort = function () {};
+  function skipAll() { run++; B._vor(3); }
   var VOR = [
-    { m: 'excited', h: '<b>Hallo, ich bin Herr Neumann!</b><br>Ich begleite dich durch das virtuelle Chemielabor. Zwei Freunde von mir möchte ich dir kurz vorstellen.' },
-    { m: 'happy', h: '<b>Kolbi</b> 🧪 ist unser Laborkolben. Er wohnt in den Simulationen und Lernmodulen. Tippe ihn an, dann bekommst du Hilfe oder einen Tipp. Er kommentiert, was du tust, und erinnert dich an Pausen. Du kannst ihn verschieben oder ausblenden.' },
-    { m: 'happy', h: '<b>Hugo</b> ⚛️ ist ein Wasserstoff-Atom. Er begleitet dich beim Atombauen in Klasse 7.' },
-    { m: 'interested', h: '<b>Und ich?</b> Auf den Übersichtsseiten erkläre ich dir, was es hier gibt. In den Wiederholungs- und Arbeitenmodulen bin ich dein Lernbegleiter. Dort erkläre ich Aufgaben, gebe Tipps und erkläre Wörter, die du markierst. Ich erzähle dir nichts, was dich ablenkt, außer du fragst mich.' }
+    { m: 'excited', h: '<b>Hallo, ich bin Herr Neumann!</b><br>Ich begleite dich durch das virtuelle Chemielabor. Zwei Freunde von mir möchte ich dir kurz vorstellen. Sie kommen gleich vorbei.', btn: 'Gern, bitte!' },
+    null, null,
+    { m: 'interested', h: '<b>Und ich?</b> Auf den Übersichtsseiten erkläre ich dir, was es hier gibt. In den Wiederholungs- und Arbeitenmodulen bin ich dein Lernbegleiter. Dort erkläre ich Aufgaben, gebe Tipps und erkläre Wörter, die du markierst. Ich erzähle dir nichts, was dich ablenkt, außer du fragst mich.', btn: 'Verstanden, danke!' }
   ];
   B.vorstellung = function (i) {
-    i = i || 0; var s = VOR[i], last = i === VOR.length - 1;
-    Kolbi.guide({ endLabel: 'Vorstellung beenden', html: s.h, btn: last ? 'Verstanden, danke!' : 'Weiter', mood: s.m, onGo: function () { if (last) { Kolbi.guideEnd(); Kolbi.mood('excited', 2000); try { localStorage.setItem(KEY, '1'); } catch (e) {} } else B.vorstellung(i + 1); },
-      onEnd: function () { Kolbi.guideEnd(); try { localStorage.setItem(KEY, '1'); } catch (e) {} } });
+    i = i || 0; run++;
+    needHugo(function () { B._vor(i === 0 ? 0 : 3); });
+  };
+  B._vor = function (i) {
+    var s = VOR[i], mine = run;
+    function ende() { try { localStorage.setItem(KEY, '1'); } catch (e) {} }
+    if (i === 0) {
+      Kolbi.guide({ endLabel: 'Vorstellung beenden', html: s.h, btn: s.btn, mood: s.m,
+        onGo: function () {
+          Kolbi.guideEnd();
+          actor('kolbi', function () { if (mine !== run) return; actor('hugo', function () { if (mine !== run) return; B._vor(3); }, mine); }, mine);
+        },
+        onEnd: function () { Kolbi.guideEnd(); ende(); } });
+    } else {
+      Kolbi.guide({ endLabel: 'Vorstellung beenden', html: s.h, btn: s.btn, mood: s.m,
+        onGo: function () { Kolbi.guideEnd(); Kolbi.mood('excited', 2000); ende(); },
+        onEnd: function () { Kolbi.guideEnd(); ende(); } });
+    }
   };
 
   // ------------------------------------------------------------------ Start
