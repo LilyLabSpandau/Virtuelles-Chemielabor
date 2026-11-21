@@ -65,7 +65,7 @@ const FIELDS = [
   items: [
     ['s21','gk','Chemische Symbole','Du kennst die Symbole der wichtigsten Elemente und liest sie im PSE ab.',['pse']],
     ['s22','gk','Atombau: Kern-Hülle-Modell (Proton, Neutron, Elektron)','Der Atomkern besteht aus Protonen und Neutronen, die Hülle aus Elektronen. Du bestimmst Teilchenzahlen aus dem PSE.',['aw']],
-    ['s23','gk','Modell der strukturierten Atomhülle, Elektronenschreibweise nach Lewis','Die Elektronen besetzen Schalen. Die Außenelektronen stellst du mit Punkten oder Strichen nach Lewis dar.',['aw','lw']],
+    ['s23','gk','Modell der strukturierten Atomhülle, Elektronenschreibweise nach Lewis','Die Elektronen besetzen Schalen. Die Außenelektronen stellst du mit Punkten oder Strichen nach Lewis dar.',['aw','lw','lt']],
     ['s24','gk','Stoffliche und teilchenbezogene Ordnungsprinzipien des PSE','Du erklärst, warum Elemente einer Hauptgruppe ähnliche Eigenschaften haben, und ordnest Metalle, Nichtmetalle und Edelgase.',['pse','aw']]
   ],
   terms: { gk: ['PSE','Element','Proton, Neutron, Elektron','Isotop','absolute und relative Atommasse','Periode, Hauptgruppe, Nebengruppe','Atommodell','Valenzelektronen/Außenelektronen','Edelgase'], lk: [] },
@@ -92,7 +92,7 @@ const FIELDS = [
     ['s43','gk','Quantitative Analyse von Wasser','Du untersuchst Wasser auf Inhaltsstoffe, z. B. die Wasserhärte.',['wh','td']],
     ['s44','gk','Bildung und Zerlegung von Wasser als Beispiel der Umkehrbarkeit chemischer Reaktionen','Wasser lässt sich aus den Elementen bilden und wieder in sie zerlegen (Elektrolyse).',['we']],
     ['s45','gk','Reaktionsgleichung','Du stellst die Reaktionsgleichung für Bildung und Zerlegung von Wasser auf.',['we']],
-    ['s46','gk','Molekülbau','Du zeichnest das Wassermolekül mit Lewis-Strukturformel und erklärst seine gewinkelte Form.',['md','lw']],
+    ['s46','gk','Molekülbau','Du zeichnest das Wassermolekül mit Lewis-Strukturformel und erklärst seine gewinkelte Form.',['md','lw','lt']],
     ['s47','gk','Elektronegativität, polare Elektronenpaarbindung, Dipol','Unterschiedliche Elektronegativität macht die O–H-Bindung polar. Das gewinkelte Molekül ist deshalb ein Dipol.',['md']]
   ],
   terms: { gk: ['Reaktionsgleichung','Elektronegativität','polare Elektronenpaarbindung','Dipol','Dipol-Dipol-Wechselwirkungen'], lk: [] },

@@ -1,52 +1,300 @@
 <!doctype html>
-<!-- Standalone: all runtime resources and the Three.js MIT license are embedded. Open this single file in a WebGL 2 browser. -->
+<!-- Standalone: all runtime resources and the Three.js MIT license are embedded. Open this single file in a WebGL 2 browser.
+     Ursprüngliche Anwendung: Herr Stolp (3D-Strukturmodell). Überarbeitet und erweitert vom Betreiber dieses Chemielabors gemeinsam mit Claude. -->
 <html lang="de">
 <head><meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#f3f6f5">
-  <meta name="description" content="Drei Kunststoffklassen in einem interaktiven, schematischen 3D-Modell untersuchen.">
+  <meta name="theme-color" content="#0a2530">
+  <meta name="description" content="Kunststoffklassen untersuchen: Thermoplaste, Duromere und Elastomere mikroskopisch und makroskopisch, Verhalten in Wasser und Lösungsmitteln, Monomer-Werkstatt und Kolbis Check.">
   <title>Kunststoffklassen</title>
   <style>
-:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#153739;background:#f3f6f5;font-synthesis:none;color-scheme:light}*{box-sizing:border-box}body{margin:0}button,input{-webkit-tap-highlight-color:transparent}button{font:inherit;font-weight:650;cursor:pointer;min-height:46px;border:1px solid transparent;border-radius:10px;background:#146c70;color:#fff;padding:11px 18px;touch-action:manipulation}button:hover{filter:brightness(.96)}button:focus-visible,input:focus-visible{outline:3px solid #bd6a16;outline-offset:4px}button:disabled{opacity:.5;cursor:default}.secondary{background:#fff;color:#214d50;border-color:#cddcda}main{max-width:1200px;margin:auto;padding:24px 28px 14px}header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:21px}.eyebrow{font-size:11px;letter-spacing:.17em;font-weight:700;color:#567779;margin:0 0 5px}h1{font-size:28px;letter-spacing:-.025em;margin:0;font-weight:680}nav{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;background:#e3ecea;padding:5px;border-radius:13px;margin-bottom:12px}nav button{background:transparent;color:#4a6869;border-radius:9px;font-size:16px}nav button[aria-selected=true]{background:white;color:#125d61;box-shadow:0 2px 6px #15373912}#viewport{position:relative;height:clamp(330px,58vh,620px);height:clamp(330px,58svh,620px);background:radial-gradient(ellipse at 50% 43%,#fff 15%,#ecf3f1 100%);border:1px solid #d4e2df;border-radius:16px;overflow:hidden}#canvas-host{position:absolute;inset:0}canvas{display:block;width:100%;height:100%;touch-action:none;outline:none}.model-label{position:absolute;top:18px;left:20px;z-index:1;font-size:12px;color:#5c7878;pointer-events:none}.legend{position:absolute;right:20px;top:18px;display:flex;gap:16px;z-index:1;font-size:12px;pointer-events:none}.legend span{display:flex;gap:6px;align-items:center}.legend i{display:inline-block;width:18px;height:5px;border-radius:4px}.chain{background:#319b9e}.cross{background:#ba691b}.view-bottom{position:absolute;bottom:13px;left:20px;right:14px;display:flex;align-items:center;justify-content:space-between;pointer-events:none;color:#557474;font-size:12px}.zoom{display:flex;gap:5px;pointer-events:auto}.zoom button{min-width:44px;padding:2px 12px;font-size:23px;background:#ffffffdc;color:#356265;border-color:#d4e2df}#status{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);font-size:13px;font-weight:650;color:#964620;background:#fff8edeb;border-radius:6px;padding:5px 10px;pointer-events:none}#status:empty{display:none}.controls{display:flex;align-items:center;gap:35px;background:#fff;border:1px solid #d4e2df;border-radius:14px;margin-top:12px;padding:20px 24px}.control{flex:1;max-width:560px}.label-line{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}label{font-size:15px;font-weight:650}output{font-size:12px;color:#567779}input[type=range]{display:block;width:100%;height:34px;margin:0;accent-color:#167a7e;cursor:pointer;touch-action:pan-y}input[type=range]::-webkit-slider-thumb{min-width:26px;min-height:26px}.scale{display:flex;justify-content:space-between;font-size:11px;color:#708886}.actions{display:flex;gap:9px;align-items:center;justify-content:flex-end}#deform{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:none}#deform.active{background:#a55d1a}footer{text-align:center;font-size:11px;color:#637e7f;padding-top:13px}[hidden]{display:none!important}#error{position:absolute;inset:25% 8%;z-index:3;padding:25px;background:#fff8eb;border:1px solid #b57428;border-radius:12px;text-align:center;display:grid;place-content:center}noscript{display:block;text-align:center;color:#982f13}
-@media(max-width:750px){main{padding:16px}header{margin-bottom:15px}h1{font-size:24px}.eyebrow{font-size:9px}.legend{top:42px;left:20px;right:auto;font-size:11px}.controls{gap:16px;padding:16px;flex-wrap:wrap}.control{min-width:200px}.actions{flex:1;justify-content:flex-end}.actions button{font-size:13px;padding:11px 12px}.view-bottom{font-size:10px}#status{bottom:64px}nav button{font-size:14px;padding:10px 3px}#viewport{height:clamp(330px,53svh,540px)}}
-@media(max-width:450px){main{padding:12px}h1{font-size:22px}#reset{font-size:12px;padding:10px}header{gap:7px}.controls{display:block}.actions{justify-content:stretch;margin-top:12px}.actions button{flex:1}.legend{gap:10px}footer{font-size:10px}}
-@media(max-height:620px) and (min-width:751px){main{padding-top:12px}header{margin-bottom:10px}#viewport{height:330px}.controls{padding:12px 20px}}
-
+:root{
+  --bg0:#06202a;--bg1:#0b3140;--text:#e8f4f2;--muted:#9fc3c3;--dim:#7ea2a4;
+  --card:rgba(255,255,255,.06);--card2:rgba(255,255,255,.1);--line:rgba(150,225,220,.2);
+  --teal:#46d1c8;--orange:#f39c52;--violet:#c58bf5;--red:#ff7a66;--green:#7ddf8b;--yellow:#f6d66b;
+  --kt:#46d1c8;--kd:#f39c52;--ke:#c58bf5;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--text);font-synthesis:none;color-scheme:dark
+}
+*{box-sizing:border-box}
+html{background:var(--bg0)}
+body{margin:0;min-height:100vh;color:var(--text);padding-bottom:64px;position:relative}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:
+    radial-gradient(1100px 560px at 88% -8%,rgba(70,209,200,.20),transparent 62%),
+    radial-gradient(900px 520px at -8% 108%,rgba(197,139,245,.17),transparent 62%),
+    radial-gradient(700px 400px at 50% 55%,rgba(243,156,82,.06),transparent 70%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='97'%3E%3Cg fill='none' stroke='%2346d1c8' stroke-opacity='.075' stroke-width='1.2'%3E%3Cpath d='M28 2 54 17v30L28 62 2 47V17z'/%3E%3Cpath d='M28 62v30M2 47 28 62l26-15'/%3E%3C/g%3E%3C/svg%3E"),
+    linear-gradient(165deg,#051a23 0%,#0a2c3a 52%,#0a2431 100%);}
+button,input,select{font:inherit;-webkit-tap-highlight-color:transparent}
+button{cursor:pointer;min-height:44px;border:1px solid transparent;border-radius:12px;padding:10px 16px;font-weight:650;color:#06242c;background:linear-gradient(180deg,#5fe0d6,#34bdb4);touch-action:manipulation;transition:transform .08s,filter .15s}
+button:hover{filter:brightness(1.07)}button:active{transform:translateY(1px)}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid var(--yellow);outline-offset:3px}
+button:disabled{opacity:.45;cursor:default;filter:none}
+.ghost{background:var(--card);color:var(--text);border-color:var(--line)}
+.ghost:hover{background:var(--card2)}
+.ghost.on{background:rgba(70,209,200,.22);border-color:var(--teal)}
+main{max-width:1240px;margin:auto;padding:18px 24px 14px}
+.zurueck{display:inline-block;margin:0 0 12px;font-size:13px;color:var(--muted);text-decoration:none}.zurueck:hover{text-decoration:underline}
+header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.eyebrow{font-size:11px;letter-spacing:.2em;font-weight:700;color:var(--teal);margin:0 0 6px}
+h1{font-size:34px;letter-spacing:-.02em;margin:0;font-weight:760;line-height:1.1;background:linear-gradient(90deg,#fff,#a8f0ea 60%,#d9b8ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{margin:6px 0 0;color:var(--muted);font-size:14.5px;max-width:720px}
+.kbadge{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:8px 14px 8px 8px;max-width:380px}
+.kbadge svg{width:46px;height:56px;flex:none}
+.kbadge p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.35}.kbadge b{color:var(--text)}
+/* Hauptnavigation */
+.sections{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;background:rgba(0,0,0,.25);border:1px solid var(--line);padding:6px;border-radius:16px;margin-bottom:14px}
+.sections button{background:transparent;color:var(--muted);border-radius:11px;font-size:15px;min-height:48px;line-height:1.15;padding:8px 6px}
+.sections button b{display:block;font-size:19px}
+.sections button[aria-selected=true]{background:linear-gradient(180deg,rgba(70,209,200,.30),rgba(70,209,200,.14));color:#fff;box-shadow:inset 0 0 0 1px rgba(70,209,200,.5)}
+.sec{display:none}.sec.on{display:block}
+/* Karten */
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 18px;backdrop-filter:blur(4px)}
+.card h2{margin:0 0 6px;font-size:17px}.card h3{margin:0 0 6px;font-size:15px;color:#fff}
+.muted{color:var(--muted)}.small{font-size:12.5px}
+/* Klassen-Tabs */
+.kinds{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
+.kinds .seg{display:flex;gap:6px;background:rgba(0,0,0,.25);border:1px solid var(--line);padding:5px;border-radius:14px;flex:1;min-width:300px}
+.kinds .seg button{flex:1;background:transparent;color:var(--muted);border-radius:10px;font-size:16px}
+.kinds .seg button[aria-selected=true]{color:#06242c}
+#tab-thermoplaste[aria-selected=true]{background:var(--kt)}#tab-duromere[aria-selected=true]{background:var(--kd)}#tab-elastomere[aria-selected=true]{background:var(--ke)}
+.view{display:flex;gap:6px;background:rgba(0,0,0,.25);border:1px solid var(--line);padding:5px;border-radius:14px}
+.view button{background:transparent;color:var(--muted);border-radius:10px;min-height:40px;padding:8px 14px}
+.view button[aria-selected=true]{background:rgba(255,255,255,.16);color:#fff}
+/* Arbeitsfläche */
+.lab{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:14px;align-items:start}
+#viewport{position:relative;height:clamp(340px,56vh,560px);background:radial-gradient(ellipse at 50% 40%,#17495a 0%,#0b2d3b 55%,#071c27 100%);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:inset 0 0 60px rgba(0,0,0,.35)}
+#canvas-host,#macro-host{position:absolute;inset:0}
+canvas{display:block;width:100%;height:100%;touch-action:none;outline:none}
+#macro-host{display:none}#viewport.macro #macro-host{display:block}#viewport.macro #canvas-host,#viewport.macro .legend,#viewport.macro .view-bottom{display:none}
+.model-label{position:absolute;top:14px;left:16px;z-index:2;font-size:12px;color:var(--muted);pointer-events:none;background:rgba(0,0,0,.28);padding:4px 10px;border-radius:999px}
+.legend{position:absolute;right:16px;top:14px;display:flex;gap:14px;z-index:2;font-size:12px;pointer-events:none;background:rgba(0,0,0,.28);padding:4px 12px;border-radius:999px}
+.legend span{display:flex;gap:6px;align-items:center}.legend i{display:inline-block;width:18px;height:5px;border-radius:4px}
+.chain{background:#46c3c8}.cross{background:#f08a3a}
+.view-bottom{position:absolute;bottom:12px;left:16px;right:12px;display:flex;align-items:center;justify-content:space-between;pointer-events:none;color:var(--muted);font-size:12px;z-index:2}
+.zoom{display:flex;gap:5px;pointer-events:auto}
+.zoom button{min-width:44px;padding:2px 12px;font-size:23px;background:rgba(0,0,0,.35);color:#cfeeee;border-color:var(--line)}
+#status{position:absolute;left:50%;top:46px;transform:translateX(-50%);z-index:3;font-size:14px;font-weight:700;color:#2b1200;background:var(--yellow);border-radius:999px;padding:6px 16px;pointer-events:none;box-shadow:0 4px 18px rgba(0,0,0,.35);max-width:92%;text-align:center}
+#status:empty{display:none}
+#error{position:absolute;inset:25% 8%;z-index:5;padding:25px;background:#3a1f10;border:1px solid #b57428;border-radius:12px;text-align:center;display:grid;place-content:center}
+.controls{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ctl{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 16px 10px}
+.ctl .head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px}
+.ctl label{font-size:15px;font-weight:700}
+.ctl output{font-size:13px;font-weight:700;color:var(--yellow)}
+input[type=range]{display:block;width:100%;height:34px;margin:2px 0 0;cursor:pointer;touch-action:pan-y;-webkit-appearance:none;appearance:none;background:transparent}
+input[type=range]::-webkit-slider-runnable-track{height:10px;border-radius:6px;background:var(--track,linear-gradient(90deg,#2d7ea8,#f39c52,#ff5a3d));border:1px solid rgba(255,255,255,.18)}
+input[type=range]::-moz-range-track{height:10px;border-radius:6px;background:var(--track,linear-gradient(90deg,#2d7ea8,#f39c52,#ff5a3d));border:1px solid rgba(255,255,255,.18)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;margin-top:-9px;border-radius:50%;background:#fff;border:3px solid #0b2d3b;box-shadow:0 0 0 2px var(--teal),0 2px 8px rgba(0,0,0,.5)}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid #0b2d3b;box-shadow:0 0 0 2px var(--teal)}
+.ticks{position:relative;height:26px;font-size:11px;color:var(--dim)}
+.ticks span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap;text-align:center;line-height:1.15}
+.ticks span.l{transform:none}.ticks span.r{transform:translateX(-100%)}
+.presets{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.presets button{min-height:34px;padding:4px 10px;font-size:13px}
+.actions{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.actions button{min-height:44px}
+#deform{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:none}
+#deform.active{background:linear-gradient(180deg,#ffb26b,#e8883a)}
+.side{display:grid;gap:12px}
+.book h2{display:flex;align-items:center;gap:8px}
+.book h2 svg{width:34px;height:42px;flex:none}
+.mission{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px;line-height:1.35}
+.mission:first-of-type{border-top:0}
+.mission i{flex:none;width:22px;height:22px;border-radius:50%;border:2px solid var(--dim);display:grid;place-items:center;font-style:normal;font-size:13px;margin-top:1px}
+.mission.done i{background:var(--green);border-color:var(--green);color:#052a12}
+.mission .f{display:none;margin-top:4px;color:#c9f3d2;font-size:12.5px}
+.mission.done .f{display:block}
+.mission.done b{color:#c9f3d2}
+.prog{height:6px;border-radius:4px;background:rgba(255,255,255,.12);margin:8px 0 2px;overflow:hidden}.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--teal),var(--green));transition:width .4s}
+.fact{margin:10px 0 0;padding:10px 12px;border-radius:12px;background:rgba(246,214,107,.10);border:1px solid rgba(246,214,107,.3);font-size:13px;line-height:1.4}
+#ss{width:100%;height:170px;display:block}
+.phase{font-size:14px;line-height:1.4}.phase b{color:var(--yellow)}
+/* Wasser */
+.wgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.station{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.station h3{margin:0;padding:10px 14px;font-size:15px;border-bottom:1px solid var(--line)}
+.station canvas{height:230px;background:linear-gradient(180deg,#0e3948,#09242f)}
+.station canvas.lupe{height:130px;border-top:1px solid var(--line);background:#071e29}
+.station p{margin:0;padding:10px 14px 12px;font-size:13px;line-height:1.4;min-height:110px}
+.pchips{display:flex;gap:5px;flex-wrap:wrap;padding:8px 10px;border-bottom:1px solid var(--line)}
+.pchips button{min-height:34px;padding:4px 10px;font-size:13px;background:rgba(255,255,255,.06);color:var(--muted);border:1px solid var(--line);border-radius:9px}
+.pchips button[aria-pressed=true]{background:rgba(255,255,255,.18);color:#fff;box-shadow:inset 0 0 0 1px var(--teal)}
+.pick{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pick .grp{display:flex;gap:5px;background:rgba(0,0,0,.25);border:1px solid var(--line);padding:4px;border-radius:12px;align-items:center;flex-wrap:wrap}
+.pick .grp>span{font-size:12px;color:var(--dim);padding:0 6px}
+.pick button{min-height:40px;padding:6px 12px;background:transparent;color:var(--muted);border-radius:9px;font-size:14px}
+.pick button[aria-pressed=true]{background:rgba(255,255,255,.16);color:#fff;box-shadow:inset 0 0 0 1px var(--teal)}
+.timeline{display:flex;gap:12px;align-items:center;margin:12px 0}
+.timeline .ctl{flex:1}
+#dichte svg{width:100%;height:auto;display:block}
+/* Monomer-Werkstatt */
+.mgrid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:14px;align-items:start}
+.shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.shelf h4{grid-column:1/-1;margin:8px 0 0;font-size:12px;letter-spacing:.12em;color:var(--teal);text-transform:uppercase}
+.mono{position:relative;text-align:left;background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:9px 10px 8px;min-height:74px;display:block;font-weight:500}
+.mono b{display:block;font-size:13.5px;line-height:1.2}
+.mono span{display:block;font-size:12px;color:var(--muted);margin-top:3px;font-family:ui-monospace,Menlo,Consolas,monospace}
+.mono em{position:absolute;right:8px;top:7px;font-style:normal;font-size:11px;background:rgba(0,0,0,.35);border-radius:8px;padding:1px 6px;color:var(--yellow)}
+.mono[aria-pressed=true]{background:rgba(70,209,200,.2);border-color:var(--teal);box-shadow:0 0 0 1px var(--teal)}
+.reactor{min-height:60px}
+#rcanvas{width:100%;height:300px;border-radius:14px;background:radial-gradient(ellipse at 50% 40%,#17495a,#08222d);border:1px solid var(--line)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;min-height:34px;margin:6px 0}
+.chip{background:rgba(70,209,200,.18);border:1px solid var(--teal);border-radius:999px;padding:4px 12px;font-size:13px}
+.verdict{border-radius:14px;padding:12px 14px;font-size:14px;line-height:1.45;margin-top:10px;display:none}
+.verdict.on{display:block}
+.verdict.ok{background:rgba(125,223,139,.14);border:1px solid rgba(125,223,139,.5)}
+.verdict.bad{background:rgba(255,122,102,.13);border:1px solid rgba(255,122,102,.5)}
+.verdict.info{background:rgba(246,214,107,.10);border:1px solid rgba(246,214,107,.35)}
+.guess{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.guess button{flex:1;min-width:110px}
+.guess .gt{background:var(--kt)}.guess .gd{background:var(--kd)}.guess .ge{background:var(--ke)}
+.formula{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;color:#d9f6f2;background:rgba(0,0,0,.3);border-radius:10px;padding:8px 10px;margin-top:8px;overflow-x:auto;white-space:nowrap}
+/* Überblick */
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:14px}
+th,td{padding:10px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+th{font-size:13px;color:#fff;position:sticky;top:0}
+thead th{border-bottom:2px solid var(--line)}
+thead th.t{color:var(--kt)}thead th.d{color:var(--kd)}thead th.e{color:var(--ke)}
+tbody th{color:var(--muted);font-weight:600;white-space:nowrap}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:16px;background:var(--card)}
+/* Check */
+.q{max-width:820px;margin:0 auto}
+.qopts{display:grid;gap:8px;margin-top:10px}
+.qopts button{text-align:left;background:var(--card);color:var(--text);border:1px solid var(--line);font-weight:550}
+.qopts button.right{background:rgba(125,223,139,.22);border-color:var(--green)}
+.qopts button.wrong{background:rgba(255,122,102,.2);border-color:var(--red)}
+.qhead{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:6px}
+.qtext{font-size:17px;line-height:1.45;margin:0}
+footer{text-align:center;font-size:12px;color:var(--dim);padding:18px 12px 0;line-height:1.6}
+footer a{color:inherit}
+[hidden]{display:none!important}
+noscript{display:block;text-align:center;color:#ffb199}
+@media(max-width:1020px){.lab{grid-template-columns:1fr}.wgrid{grid-template-columns:1fr}.mgrid{grid-template-columns:1fr}}
+@media(max-width:750px){main{padding:12px}h1{font-size:26px}.sections{grid-template-columns:repeat(5,1fr);gap:3px;padding:4px}.sections button{font-size:11px;padding:6px 2px;min-height:52px}.sections button b{font-size:17px}.controls{grid-template-columns:1fr}.legend{top:46px;left:16px;right:auto;font-size:11px}#viewport{height:clamp(320px,52svh,520px)}.view-bottom{font-size:10px}.kinds .seg{min-width:0;width:100%}.kinds .seg button{font-size:14px;padding:8px 2px}.kbadge{max-width:none}}
+@media(max-width:750px){.kinds{flex-direction:column;align-items:stretch;flex-wrap:nowrap}.kinds .seg{min-width:0;flex:none}.kinds .seg button{font-size:14px;padding:8px 4px}.view{justify-content:stretch}.view button{flex:1}}
+@media(max-width:420px){.view button{padding:8px 9px;font-size:13px}#status{font-size:12.5px;top:42px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 <link rel="icon" type="image/png" href="../../../../icons/icon-192.png">
 <link rel="apple-touch-icon" href="../../../../icons/apple-touch-icon.png">
-<style>body{padding-bottom:44px}.zurueck{display:inline-block;margin:0 0 10px;font-size:13px;color:#567779;text-decoration:none}.zurueck:hover{text-decoration:underline}footer .cr{margin-top:5px;opacity:.9}</style>
 </head>
 <body>
 <main>
   <a class="zurueck" href="../index.html">← Zurück zu Kunststoffe</a>
-  <header><div><p class="eyebrow">CHEMIE · STRUKTURMODELLE</p><h1>Kunststoffklassen</h1></div><button id="reset" class="secondary">↺ Zurücksetzen</button></header>
-  <nav role="tablist" aria-label="Kunststoffklasse">
-    <button role="tab" id="tab-thermoplaste" aria-controls="experiment" data-kind="thermoplaste">Thermoplaste</button>
-    <button role="tab" id="tab-duromere" aria-controls="experiment" data-kind="duromere">Duromere</button>
-    <button role="tab" id="tab-elastomere" aria-controls="experiment" data-kind="elastomere">Elastomere</button>
-  </nav>
-  <section id="experiment" role="tabpanel" aria-labelledby="tab-thermoplaste">
-    <div id="viewport">
-      <div class="model-label">Schematisches Modell</div>
-      <div class="legend"><span><i class="chain"></i>Polymerkette</span><span><i class="cross"></i>Chemische Querverbindung</span></div>
-      <div id="canvas-host"></div>
-      <div id="error" role="alert" hidden=""></div>
-      <div id="status" role="status" aria-live="polite"></div>
-      <div class="view-bottom"><span>1 Finger: drehen · 2 Finger: zoomen</span><div class="zoom"><button id="zoom-out" aria-label="Verkleinern">−</button><button id="zoom-in" aria-label="Vergrößern">+</button></div></div>
+  <header class="top">
+    <div>
+      <p class="eyebrow">CHEMIE · STRUKTUR UND EIGENSCHAFTEN</p>
+      <h1>Kunststoffklassen</h1>
+      <p class="sub">Thermoplaste, Duromere und Elastomere: vom Teilchenmodell bis zum Probestab, vom Verhalten in Wasser bis zum Bau eines Polymers aus Monomeren.</p>
     </div>
-    <div class="controls">
-      <div id="temperature-control" class="control"><div class="label-line"><label for="temperature">Temperatur</label><output id="temperature-value" for="temperature">niedrig</output></div><input id="temperature" type="range" min="0" max="100" value="0" step="1" aria-valuetext="niedrig"><div class="scale"><span>niedrig</span><span>hoch</span></div></div>
-      <div id="tension-control" class="control" hidden=""><div class="label-line"><label for="tension">Zugbelastung</label><output id="tension-value" for="tension">keine</output></div><input id="tension" type="range" min="0" max="100" value="0" step="1" aria-valuetext="keine"><div class="scale"><span>keine</span><span>sehr hoch</span></div></div>
-      <div id="thermo-actions" class="actions"><button id="deform">Verformen · gedrückt halten</button></div>
-      <div id="duro-actions" class="actions" hidden=""><button id="weak-hit" class="secondary">Schwacher Schlag</button><button id="strong-hit" class="secondary">Starker Schlag</button></div>
-      <div id="elasto-actions" class="actions" hidden=""><button id="release">Entlasten</button></div>
+    <div class="kbadge" id="kbadge"><span id="kbadge-av"></span><p><b>Kolbi begleitet dich.</b><br>Er kommentiert deine Versuche und prüft am Ende, was du gelernt hast.</p></div>
+  </header>
+
+  <nav class="sections" role="tablist" aria-label="Bereiche">
+    <button role="tab" data-sec="untersuchen" aria-selected="true"><b>🔬</b>Untersuchen</button>
+    <button role="tab" data-sec="wasser" aria-selected="false"><b>💧</b>Wasser &amp; Lösungsmittel</button>
+    <button role="tab" data-sec="monomere" aria-selected="false"><b>🧪</b>Monomer-Werkstatt</button>
+    <button role="tab" data-sec="ueberblick" aria-selected="false"><b>📋</b>Überblick</button>
+    <button role="tab" data-sec="check" aria-selected="false"><b>✅</b>Kolbis Check</button>
+  </nav>
+
+  <!-- ============ 1 UNTERSUCHEN ============ -->
+  <section class="sec on" id="sec-untersuchen">
+    <div class="kinds">
+      <nav class="seg" role="tablist" aria-label="Kunststoffklasse">
+        <button role="tab" id="tab-thermoplaste" aria-controls="experiment" data-kind="thermoplaste">Thermoplaste</button>
+        <button role="tab" id="tab-duromere" aria-controls="experiment" data-kind="duromere">Duromere</button>
+        <button role="tab" id="tab-elastomere" aria-controls="experiment" data-kind="elastomere">Elastomere</button>
+      </nav>
+      <div class="view" role="tablist" aria-label="Ansicht">
+        <button role="tab" id="v-micro" data-view="micro" aria-selected="true">🔎 Mikroskopisch</button>
+        <button role="tab" id="v-macro" data-view="macro" aria-selected="false">🧱 Makroskopisch</button>
+      </div>
+    </div>
+    <div class="lab">
+      <div>
+        <section id="experiment" role="tabpanel" aria-labelledby="tab-thermoplaste">
+          <div id="viewport">
+            <div class="model-label" id="model-label">Schematisches Teilchenmodell</div>
+            <div class="legend"><span><i class="chain"></i>Polymerkette</span><span><i class="cross"></i>Chemische Querverbindung</span></div>
+            <div id="canvas-host"></div>
+            <div id="macro-host"><canvas id="macro" aria-label="Probestab in der Prüfapparatur mit Temperaturkammer"></canvas></div>
+            <div id="error" role="alert" hidden=""></div>
+            <div id="status" role="status" aria-live="polite"></div>
+            <div class="view-bottom"><span>1 Finger: drehen · 2 Finger: zoomen</span><div class="zoom"><button id="zoom-out" aria-label="Verkleinern">−</button><button id="zoom-in" aria-label="Vergrößern">+</button></div></div>
+          </div>
+          <div class="controls">
+            <div class="ctl" id="temperature-control">
+              <div class="head"><label for="temperature">🌡 Temperatur</label><output id="temperature-value" for="temperature">niedrig</output></div>
+              <input id="temperature" type="range" min="0" max="100" value="0" step="1" aria-valuetext="niedrig">
+              <div class="ticks" id="temp-ticks"></div>
+              <div class="presets" id="temp-presets"><button class="ghost" data-t="0">❄ kalt</button><button class="ghost" data-t="22">Raumtemperatur</button><button class="ghost" data-t="55">warm</button><button class="ghost" data-t="80">heiß</button><button class="ghost" data-t="98">sehr heiß</button></div>
+            </div>
+            <div class="ctl" id="tension-control">
+              <div class="head"><label for="tension">⚖ Zugbelastung</label><output id="tension-value" for="tension">keine</output></div>
+              <input id="tension" type="range" min="0" max="100" value="0" step="1" aria-valuetext="keine" style="--track:linear-gradient(90deg,#3a7d9a,#d9c35a,#ff5a3d)">
+              <div class="ticks"><span class="l" style="left:0">keine</span><span class="r" style="left:100%">sehr hoch</span></div>
+              <div class="presets"><button class="ghost" id="release">Entlasten</button></div>
+            </div>
+            <div class="actions">
+              <button id="deform" class="ghost" hidden>Verformen · gedrückt halten</button>
+              <span id="duro-actions" style="display:contents" hidden><button id="weak-hit" class="ghost">🔨 Schwacher Schlag</button><button id="strong-hit" class="ghost">💥 Starker Schlag</button></span>
+              <button id="reset" class="ghost" style="margin-left:auto">↺ Zurücksetzen</button>
+            </div>
+          </div>
+        </section>
+      </div>
+      <aside class="side">
+        <div class="card"><h3>Beobachtung</h3><div class="phase" id="phase">–</div></div>
+        <div class="card book" id="book"></div>
+        <div class="card"><h3>Dehnung unter Zugbelastung <span class="muted small">(qualitativ)</span></h3><canvas id="ss" aria-label="Qualitatives Spannungs-Dehnungs-Diagramm"></canvas><p class="muted small" style="margin:4px 0 0">Die Kurve gehört zur aktuellen Temperatur. Der Punkt zeigt, wo dein Probestab gerade steht.</p></div>
+      </aside>
     </div>
   </section>
-  <footer>Qualitative Darstellung · keine realen Temperatur- oder Kraftwerte<div class="cr">Anwendung von Herrn Stolp · <a href="/Virtuelles-Chemielabor/impressum.html" style="color:inherit">Impressum</a></div></footer>
+
+  <!-- ============ 2 WASSER ============ -->
+  <section class="sec" id="sec-wasser">
+    <div class="card" style="margin-bottom:12px"><h2>Wie verhalten sich die Klassen in Wasser und Lösungsmitteln?</h2><p class="muted" style="margin:0">Wähle ein Medium und in jedem Becher einen Kunststoff. Beobachte, ob die Probe schwimmt oder sinkt. Dann läuft die Zeit im Zeitraffer: Löst sie sich, quillt sie oder bleibt sie gleich? Die Lupe zeigt die Ketten.</p></div>
+    <div class="pick" id="wpick"></div>
+    <div class="timeline"><div class="ctl"><div class="head"><label for="wtime">⏱ Zeit im Zeitraffer</label><output id="wtime-value" for="wtime">0 min</output></div><input id="wtime" type="range" min="0" max="100" value="0" style="--track:linear-gradient(90deg,#2d7ea8,#7ddf8b)"></div><button id="wplay" class="ghost">▶ Abspielen</button><button id="wreset" class="ghost">↺</button></div>
+    <div class="wgrid" id="wgrid"></div>
+    <div class="card" id="wresult" style="margin-top:12px"></div>
+    
+  </section>
+
+  <!-- ============ 3 MONOMERE ============ -->
+  <section class="sec" id="sec-monomere">
+    <div class="card" style="margin-bottom:12px"><h2>Vom Monomer zum Polymer</h2><p class="muted" style="margin:0">Wähle Monomere aus dem Regal (tippe sie an) und baue das Polymer. Dann bestimmst du an der Struktur selbst, zu welcher Kunststoffklasse es gehört.</p></div>
+    <div class="mgrid">
+      <div><div class="shelf" id="shelf"></div></div>
+      <div>
+        <div class="card"><h3>Reaktionskolben</h3>
+          <div class="chips" id="chips"></div>
+          <div id="vwrap" hidden class="ctl" style="margin:6px 0"><div class="head"><label for="sulfur">Menge Schwefel</label><output id="sulfur-value" for="sulfur">wenig</output></div><input id="sulfur" type="range" min="0" max="100" value="12" style="--track:linear-gradient(90deg,#d9c35a,#f08a3a,#ff5a3d)"><div class="ticks"><span class="l" style="left:0">kaum</span><span style="left:50%">mittel</span><span class="r" style="left:100%">sehr viel</span></div></div>
+          <canvas id="rcanvas" aria-label="Animation: Monomere verknüpfen sich zum Polymer"></canvas>
+          <div class="presets" style="margin-top:8px"><button id="build">⚙ Polymer bauen</button><button class="ghost" id="mclear">Kolben leeren</button></div>
+          <div class="verdict" id="mres"></div>
+          <div id="mguess" hidden><p class="small muted" style="margin:10px 0 0">Welche Kunststoffklasse hat dieses Polymer? Tippe deine Vermutung:</p><div class="guess"><button class="gt" data-g="thermoplaste">Thermoplast</button><button class="gd" data-g="duromere">Duromer</button><button class="ge" data-g="elastomere">Elastomer</button></div></div>
+          <div class="verdict" id="mcheck"></div>
+          <div id="mgo" hidden style="margin-top:8px"><button class="ghost" id="gotolab">🔬 Im Labor testen</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ÜBERBLICK ============ -->
+  <section class="sec" id="sec-ueberblick">
+    <div class="card" style="margin-bottom:12px"><h2>Die drei Kunststoffklassen im Vergleich</h2><p class="muted" style="margin:0">Alles, was du in den Versuchen gefunden hast, auf einen Blick. Der Aufbau erklärt das Verhalten.</p></div>
+    <div class="tw"><table id="ovtable"></table></div>
+  </section>
+
+  <!-- ============ 5 CHECK ============ -->
+  <section class="sec" id="sec-check"><div class="q card" id="quiz"></div></section>
+
+  <footer>Qualitative Darstellung · keine realen Temperatur- oder Kraftwerte · Die Lage der Temperaturbereiche hängt vom jeweiligen Kunststoff ab<div class="cr" style="margin-top:6px">Ursprüngliche Anwendung von Herrn Stolp · überarbeitet und erweitert vom Betreiber dieses Chemielabors gemeinsam mit Claude · <a href="/Virtuelles-Chemielabor/impressum.html">Impressum</a></div></footer>
 </main>
-<noscript>Bitte JavaScript im Browser aktivieren, um das Modell zu verwenden.</noscript>
-<script>window.addEventListener('error',function(){var e=document.getElementById('error');e.hidden=false;e.textContent='Das Modell konnte nicht geladen werden. Bitte die Seite neu laden und den Browser aktualisieren.';});</script>
+<noscript>Bitte JavaScript im Browser aktivieren, um die Anwendung zu verwenden.</noscript>
+<script>window.addEventListener('error',function(){var e=document.getElementById('error');if(e){e.hidden=false;e.textContent='Das Modell konnte nicht geladen werden. Bitte die Seite neu laden und den Browser aktualisieren.';}});</script>
 <script>
 /* Three.js 0.180.0 — bundled locally.
 The MIT License
@@ -1948,79 +2196,147 @@ function interceptControlUp( event ) {
 
 return {OrbitControls:OrbitControls};
 })();
-const {KINDS,COUNT,buildTopology,initialState,hit,advance,position,positions,isCut}=(()=>{
-// Deterministic qualitative model. Coordinates represent chain segments, not atoms.
-const KINDS = ['thermoplaste','duromere','elastomere'];
-const COUNT = 49;
-function buildTopology(kind) {
-  const nodes=[], bonds=[], links=[];
-  for(let c=0;c<9;c++) for(let i=0;i<COUNT;i++) {
-    nodes.push({c,i,t:i/(COUNT-1),y:(c%3-1)*1.32,z:(Math.floor(c/3)-1)*1.3,phase:c*1.73});
-    if(i) bonds.push([c*COUNT+i-1,c*COUNT+i]);
+
+/* ===================================================================================
+   Kunststoffklassen · Anwendung
+   Das mikroskopische 3D-Strukturmodell (Aufbau von Topologie, Ketten und Querverbindungen, Kamera, Steuerung)
+   stammt ursprünglich von Herrn Stolp. Zustandsmodell, makroskopische Ansicht, Wasser-Station,
+   Monomer-Werkstatt, Laborbuch und Kolbis Check wurden vom Betreiber dieses Chemielabors gemeinsam mit Claude ergänzt.
+   =================================================================================== */
+const $=id=>document.getElementById(id);
+const KS={};window.KS=KS;
+const smooth=(a,b,x)=>{const t=Math.min(1,Math.max(0,(x-a)/(b-a)));return t*t*(3-2*t);};
+const clamp01=x=>Math.min(1,Math.max(0,x));
+const lerp=(a,b,k)=>a+(b-a)*k;
+const KINDS=['thermoplaste','duromere','elastomere'];
+const COUNT=49;
+const KNAME={thermoplaste:'Thermoplast',duromere:'Duromer',elastomere:'Elastomer'};
+const KCOL={thermoplaste:'#46d1c8',duromere:'#f39c52',elastomere:'#c58bf5'};
+const TEMP0=.22;
+
+/* ---------- Kolbi (sicher, falls Kolbi noch nicht geladen ist) ---------- */
+const said={};
+function kolbi(id,text,mood,delay){
+  if(id&&said[id])return;if(id)said[id]=1;
+  setTimeout(()=>{try{if(window.Kolbi&&Kolbi.tell)Kolbi.tell(text,mood||'interested');}catch(e){}},delay||0);
+}
+function kolbiReact(mood,text){try{if(window.Kolbi&&Kolbi.react)Kolbi.react(mood,text);}catch(e){}}
+KS.kolbi=kolbi;KS.react=kolbiReact;
+
+/* ---------- Materialmodell (gemeinsam für mikroskopische und makroskopische Ansicht) ---------- */
+// Temperaturbereiche (qualitativ): t = 0 … 1
+const ZONES={
+  thermoplaste:[{to:.31,n:'hart, spröde',s:'hart'},{to:.66,n:'weich und formbar',s:'weich'},{to:.90,n:'schmelzflüssig',s:'Schmelze'},{to:1,n:'Zersetzung',s:'zerfällt'}],
+  duromere:[{to:.90,n:'hart und formstabil',s:'hart und formstabil'},{to:1,n:'Zersetzung',s:'verkohlt'}],
+  elastomere:[{to:.17,n:'eingefroren (glasartig)',s:'eingefroren'},{to:.90,n:'gummielastisch',s:'gummielastisch'},{to:1,n:'Zersetzung',s:'verkohlt'}]
+};
+const ZCOL={'hart, spröde':'#3a86b0','weich und formbar':'#d6b74e','schmelzflüssig':'#e8793a','Zersetzung':'#7a2e2a','hart und formstabil':'#3a86b0','eingefroren (glasartig)':'#2f6fa6','gummielastisch':'#4fae7a'};
+function props(kind,t){
+  return {
+    glass:kind==='thermoplaste'?1-smooth(.27,.36,t):kind==='elastomere'?1-smooth(.12,.22,t):1,
+    melt:kind==='thermoplaste'?smooth(.64,.80,t):0,
+    decompT:smooth(.90,.97,t)
+  };
+}
+function zoneOf(kind,t){const z=ZONES[kind];for(const e of z)if(t<=e.to)return e;return z[z.length-1];}
+function initialState(kind='thermoplaste'){
+  return {kind,temperature:TEMP0,load:0,extension:0,flow:0,plastic:0,press:false,broken:false,torn:false,fracture:0,breakStyle:'',
+    impact:0,impactStrength:0,impactFired:false,time:0,glass:1,melt:0,decomp:0,puddle:0,maxMelt:0,maxFlow:0,maxExt:0};
+}
+function hit(s,strong){if(s.broken||s.impact>0)return;s.impact=1;s.impactStrength=strong?1:.25;s.impactFired=false;}
+function advance(s,dt){
+  dt=Math.min(dt,.05);s.time+=dt;
+  const t=s.temperature,P=props(s.kind,t),l=s.load;
+  s.glass=P.glass;s.melt=P.melt;s.decomp=Math.max(s.decomp,P.decompT);
+  s.maxMelt=Math.max(s.maxMelt,s.melt);
+  let target=0;
+  if(s.kind==='thermoplaste'){
+    target=l*(.045*P.glass+.14*(1-P.glass))*(1-.6*P.melt);
+    if(!s.broken&&!s.torn&&l>.02)s.flow=Math.min(1.4,s.flow+l*(.17*(1-P.glass)*(1-P.melt)+.9*P.melt)*dt);
+    if(s.press)s.plastic=Math.min(1,s.plastic+Math.pow(t,2.6)*dt*.4);
+    if(!s.broken&&!s.torn){
+      if(P.glass>.7&&l>.88){s.broken=true;s.breakStyle='spröd';}
+      else if(s.flow>=1.15){s.torn=true;s.breakStyle=P.melt>.4?'fließt ab':'zäh';}
+    }
+    if(P.melt>.4)s.puddle=Math.min(.6,s.puddle+dt*.012*P.melt);
+  }else if(s.kind==='duromere'){
+    target=l*.045*(1+.4*s.decomp);
+    if(!s.broken&&l>.9-.45*s.decomp){s.broken=true;s.breakStyle='spröd';}
+  }else{
+    target=l*(.60*(1-P.glass)+.045*P.glass);
+    if(!s.broken&&P.glass>.7&&l>.72){s.broken=true;s.breakStyle='spröd';}
   }
-  if(kind!=='thermoplaste') for(let c=0;c<9;c++) {
+  s.extension+=(target-s.extension)*(1-Math.exp(-dt*5));
+  s.maxExt=Math.max(s.maxExt,s.extension);s.maxFlow=Math.max(s.maxFlow,s.flow);
+  if(s.impact>0){
+    s.impact=Math.max(0,s.impact-dt*1.2);
+    if(s.impact<.63&&!s.impactFired){s.impactFired=true;if(s.impactStrength>.5||s.decomp>.5){if(!s.broken){s.broken=true;s.breakStyle='spröd';}}}
+  }
+  s.fracture+=(((s.broken||s.torn)?1:0)-s.fracture)*(1-Math.exp(-dt*7));
+}
+/* ---------- Mikroskopisches Modell (Topologie nach Herrn Stolp) ---------- */
+function buildTopology(kind){
+  const nodes=[],bonds=[],links=[];
+  for(let c=0;c<9;c++)for(let i=0;i<COUNT;i++){
+    nodes.push({c,i,t:i/(COUNT-1),y:(c%3-1)*1.32,z:(Math.floor(c/3)-1)*1.3,phase:c*1.73});
+    if(i)bonds.push([c*COUNT+i-1,c*COUNT+i]);
+  }
+  if(kind!=='thermoplaste')for(let c=0;c<9;c++){
     const neighbors=[];
-    if(c%3<2) neighbors.push(c+1);
-    if(c<6) neighbors.push(c+3);
-    for(const n of neighbors) {
+    if(c%3<2)neighbors.push(c+1);
+    if(c<6)neighbors.push(c+3);
+    for(const n of neighbors){
       const sites=kind==='duromere'?[6,12,18,24,30,36,42]:[8,40];
-      for(const i of sites) links.push([c*COUNT+i,n*COUNT+i]);
+      for(const i of sites)links.push([c*COUNT+i,n*COUNT+i]);
     }
   }
   return {kind,nodes,bonds,links};
 }
-function initialState(kind='thermoplaste') {
-  return {kind,temperature:0,load:0,extension:0,plastic:0,press:false,broken:false,fracture:0,impact:0,impactStrength:0,impactFired:false,time:0};
+function thermalAmp(s){
+  if(s.kind==='thermoplaste')return .008+.065*s.temperature+.2*s.melt;
+  if(s.kind==='duromere')return .004+.03*s.temperature;
+  return (.006+.05*s.temperature)*(1-.75*s.glass);
 }
-function hit(s,strong) {
-  if(s.broken||s.impact>0) return;
-  s.impact=1; s.impactStrength=strong?1:.25; s.impactFired=false;
-}
-function advance(s,dt) {
-  dt=Math.min(dt,.05); s.time+=dt;
-  if(s.kind==='thermoplaste'&&s.press) s.plastic=Math.min(1,s.plastic+Math.pow(s.temperature,2.6)*dt*.4);
-  const target=s.kind==='elastomere'?s.load*.60:s.kind==='duromere'?s.load*.045:0;
-  s.extension+=(target-s.extension)*(1-Math.exp(-dt*5));
-  if(s.kind==='duromere'&&s.load>.9) s.broken=true;
-  if(s.impact>0){
-    s.impact=Math.max(0,s.impact-dt*1.2);
-    if(s.impact<.63&&!s.impactFired){s.impactFired=true;if(s.impactStrength>.5)s.broken=true;}
-  }
-  s.fracture+=((s.broken?1:0)-s.fracture)*(1-Math.exp(-dt*7));
-}
-function position(n,s,coil=1) {
-  const u=n.t, p=n.phase, taper=Math.sin(Math.PI*u);
+function position(n,s,coil=1){
+  const u=n.t,p=n.phase,taper=Math.sin(Math.PI*u);
   const x=-3.15+6.3*u+.22*Math.sin(u*4*Math.PI+p)*taper;
   const amp=s.kind==='duromere'?.29:s.kind==='elastomere'?.75:.56;
   let y=n.y+amp*coil*Math.sin(u*4*Math.PI+p);
   let z=n.z+amp*coil*.8*Math.cos(u*4*Math.PI+p);
   let px=x*(1+s.extension);
-  if(s.kind==='elastomere') {const lateral=1/Math.sqrt(1+s.extension);y=n.y*lateral+(y-n.y);z=n.z*lateral+(z-n.z);}
-  if(s.kind==='thermoplaste') {
+  if(s.kind==='elastomere'){const lateral=1/Math.sqrt(1+s.extension);y=n.y*lateral+(y-n.y);z=n.z*lateral+(z-n.z);}
+  const a=thermalAmp(s),speed=1.3+5*s.temperature;
+  px+=a*Math.sin(s.time*speed+u*9+p);
+  y+=a*Math.sin(s.time*speed*1.3+u*11+p);
+  z+=a*Math.cos(s.time*speed*.9+u*8+p);
+  if(s.kind==='thermoplaste'){
     px+=s.plastic*(n.y*1.05+.35*Math.sin(p));
-    const a=.008+.065*s.temperature, speed=1.3+5*s.temperature;
-    px+=a*Math.sin(s.time*speed+u*9+p);
-    y+=a*Math.sin(s.time*speed*1.3+u*11+p);
-    z+=a*Math.cos(s.time*speed*.9+u*8+p);
-    if(s.press)px+=.035*n.y; // small recoverable cold deflection
+    // Ketten gleiten bei Zug aneinander vorbei (keine Querverbindungen): jede Kette ein Stück anders
+    px+=s.flow*1.5*(((n.c*5)%7)/3-1);
+    if(s.press)px+=.035*n.y;
+    if(s.melt>0){
+      px+=s.melt*.45*Math.sin(s.time*.8+p*3+u*5);
+      y+=s.melt*.55*Math.sin(s.time*.65+p*2+u*4);
+      z+=s.melt*.5*Math.cos(s.time*.7+p+u*6);
+    }
   }
-  if(s.kind==='duromere') {
+  if(s.broken&&s.kind!=='thermoplaste'||s.broken&&s.breakStyle==='spröd'){
     const side=x<0?-1:1;
     px+=side*s.fracture*.63;
     y+=side*s.fracture*.12;
-    if(s.impact>0)y-=Math.sin(s.impact*Math.PI*2)*.025*s.impactStrength;
   }
+  if(s.kind==='duromere'&&s.impact>0)y-=Math.sin(s.impact*Math.PI*2)*.025*s.impactStrength;
   return [px,y,z];
 }
-function contour(topo,s,coil) {
+function contour(topo,s,coil){
   let length=0,prev;
-  for(const n of topo.nodes){const p=position(n,s,coil);if(n.i) length+=Math.hypot(...p.map((v,k)=>v-prev[k]));prev=p;}
+  for(const n of topo.nodes){const p=position(n,s,coil);if(n.i)length+=Math.hypot(...p.map((v,k)=>v-prev[k]));prev=p;}
   return length;
 }
-function positions(topo,s) {
+function positions(topo,s){
   let coil=1;
   if(s.kind==='elastomere'&&s.extension>0){
-    // Uncoil instead of stretching covalent backbone bonds: preserve total contour length.
+    // Entknäueln statt Dehnen der kovalenten Bindungen: Konturlänge bleibt erhalten.
     const rest={...s,extension:0};
     const target=contour(topo,rest,1);
     let lo=0,hi=1;
@@ -2029,76 +2345,126 @@ function positions(topo,s) {
   }
   return topo.nodes.map(n=>position(n,s,coil));
 }
-function isCut(edge,topo,s) {
+function isCut(edge,topo,s){
   if(!s.broken)return false;
-  const rest={...s,extension:0,fracture:0,impact:0};
+  const rest={...s,extension:0,fracture:0,impact:0,flow:0,plastic:0,melt:0};
   return (position(topo.nodes[edge[0]],rest)[0]<0)!==(position(topo.nodes[edge[1]],rest)[0]<0);
 }
 
-return {KINDS,COUNT,buildTopology,initialState,hit,advance,position,positions,isCut};})();
-const $=id=>document.getElementById(id),host=$('canvas-host');
+/* ---------- 3D-Ansicht (Aufbau nach Herrn Stolp, dunkler Hintergrund) ---------- */
+const host=$('canvas-host');
 let renderer;
-try { renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:'low-power'}); }
-catch(e){$('error').hidden=false;$('error').textContent='Die 3D-Darstellung benötigt WebGL 2. Bitte Safari aktualisieren oder ein anderes Gerät verwenden.';throw e;}
-renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));
-renderer.setClearColor(0x000000,0);
-renderer.outputColorSpace=THREE.SRGBColorSpace;
-host.appendChild(renderer.domElement);
-renderer.domElement.setAttribute('aria-label','Drehbares dreidimensionales Polymermodell. Pfeiltasten drehen; Plus und Minus zoomen.');
-renderer.domElement.tabIndex=0;
-const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(38,1,.1,100);
-scene.add(new THREE.HemisphereLight(0xffffff,0x477773,2.3));
-const light=new THREE.DirectionalLight(0xffffff,3);light.position.set(-4,7,8);scene.add(light);
-const fill=new THREE.DirectionalLight(0xc6e8ee,1.2);fill.position.set(5,1,-5);scene.add(fill);
-const controls=new OrbitControls(camera,renderer.domElement);
-controls.enablePan=false;controls.enableDamping=true;controls.dampingFactor=.13;
-controls.minDistance=5;controls.maxDistance=27;controls.rotateSpeed=.7;
-controls.touches.ONE=THREE.TOUCH.ROTATE;controls.touches.TWO=THREE.TOUCH.DOLLY_ROTATE;
-const model=new THREE.Group();scene.add(model);
-const sphere=new THREE.SphereGeometry(1,12,8),cylinder=new THREE.CylinderGeometry(1,1,1,7);
-const chainMat=new THREE.MeshStandardMaterial({color:0x369fa3,roughness:.3,metalness:.05});
-const bondMat=new THREE.MeshStandardMaterial({color:0x439a9d,roughness:.55});
-const linkMat=new THREE.MeshStandardMaterial({color:0xb96920,roughness:.4});
-const brokenMat=new THREE.MeshStandardMaterial({color:0xbd402e,roughness:.6});
-let state,topo,beads,backbone,bridges,junctions,ends;
-const dummy=new THREE.Object3D(),a=new THREE.Vector3(),b=new THREE.Vector3(),up=new THREE.Vector3(0,1,0);
-const arrowL=new THREE.ArrowHelper(new THREE.Vector3(-1,0,0),new THREE.Vector3(-4,0,0),.8,0x8e622b,.21,.13);
-const arrowR=new THREE.ArrowHelper(new THREE.Vector3(1,0,0),new THREE.Vector3(4,0,0),.8,0x8e622b,.21,.13);
-scene.add(arrowL,arrowR);
-const hammer=new THREE.Group();
-const handle=new THREE.Mesh(new THREE.CylinderGeometry(.065,.065,1,10),new THREE.MeshStandardMaterial({color:0x9c7750}));handle.position.y=.5;
-const head=new THREE.Mesh(new THREE.BoxGeometry(.62,.3,.32),new THREE.MeshStandardMaterial({color:0x526467,roughness:.4}));head.position.y=1.05;
-hammer.add(handle,head);scene.add(hammer);hammer.visible=false;
-
+try{renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:'low-power'});}
+catch(e){$('error').hidden=false;$('error').textContent='Die 3D-Darstellung benötigt WebGL 2. Bitte den Browser aktualisieren oder ein anderes Gerät verwenden. Die makroskopische Ansicht funktioniert trotzdem.';renderer=null;}
+let scene,camera,controls,model,sphere,cylinder,chainMat,bondMat,linkMat,brokenMat,beads,backbone,bridges,junctions,ends,arrowL,arrowR,hammer;
+const dummy=new THREE.Object3D(),va=new THREE.Vector3(),vb=new THREE.Vector3(),up=new THREE.Vector3(0,1,0);
+const C_CHAIN=new THREE.Color(0x46c3c8),C_BOND=new THREE.Color(0x56b7ba),C_LINK=new THREE.Color(0xf08a3a),C_CHAR=new THREE.Color(0x2a1f1a),C_CHARL=new THREE.Color(0x4a2a18),C_FROST=new THREE.Color(0x9fd6ff);
+if(renderer){
+  renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));
+  renderer.setClearColor(0x000000,0);
+  renderer.outputColorSpace=THREE.SRGBColorSpace;
+  host.appendChild(renderer.domElement);
+  renderer.domElement.setAttribute('aria-label','Drehbares dreidimensionales Polymermodell. Pfeiltasten drehen; Plus und Minus zoomen.');
+  renderer.domElement.tabIndex=0;
+  scene=new THREE.Scene();camera=new THREE.PerspectiveCamera(38,1,.1,100);
+  scene.add(new THREE.HemisphereLight(0xffffff,0x477773,2.3));
+  const light=new THREE.DirectionalLight(0xffffff,3);light.position.set(-4,7,8);scene.add(light);
+  const fill=new THREE.DirectionalLight(0xc6e8ee,1.2);fill.position.set(5,1,-5);scene.add(fill);
+  controls=new OrbitControls(camera,renderer.domElement);
+  controls.enablePan=false;controls.enableDamping=true;controls.dampingFactor=.13;
+  controls.minDistance=5;controls.maxDistance=27;controls.rotateSpeed=.7;
+  controls.touches.ONE=THREE.TOUCH.ROTATE;controls.touches.TWO=THREE.TOUCH.DOLLY_ROTATE;
+  model=new THREE.Group();scene.add(model);
+  sphere=new THREE.SphereGeometry(1,12,8);cylinder=new THREE.CylinderGeometry(1,1,1,7);
+  chainMat=new THREE.MeshStandardMaterial({color:0x46c3c8,roughness:.3,metalness:.05});
+  bondMat=new THREE.MeshStandardMaterial({color:0x56b7ba,roughness:.55});
+  linkMat=new THREE.MeshStandardMaterial({color:0xf08a3a,roughness:.4});
+  brokenMat=new THREE.MeshStandardMaterial({color:0xff5a45,roughness:.6});
+  arrowL=new THREE.ArrowHelper(new THREE.Vector3(-1,0,0),new THREE.Vector3(-4,0,0),.8,0xffc27a,.21,.13);
+  arrowR=new THREE.ArrowHelper(new THREE.Vector3(1,0,0),new THREE.Vector3(4,0,0),.8,0xffc27a,.21,.13);
+  scene.add(arrowL,arrowR);
+  hammer=new THREE.Group();
+  const handle=new THREE.Mesh(new THREE.CylinderGeometry(.065,.065,1,10),new THREE.MeshStandardMaterial({color:0xc29a66}));handle.position.y=.5;
+  const head=new THREE.Mesh(new THREE.BoxGeometry(.62,.3,.32),new THREE.MeshStandardMaterial({color:0x8fa3a8,roughness:.4}));head.position.y=1.05;
+  hammer.add(handle,head);scene.add(hammer);hammer.visible=false;
+}
 function mesh(geo,mat,count){const m=new THREE.InstancedMesh(geo,mat,Math.max(count,1));m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);m.frustumCulled=false;model.add(m);return m;}
-function sphereAt(mesh,i,p,r){dummy.position.set(...p);dummy.quaternion.identity();dummy.scale.setScalar(r);dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);}
-function rodAt(mesh,i,p,q,r){a.set(...p);b.set(...q).sub(a);dummy.position.copy(a).addScaledVector(b,.5);dummy.quaternion.setFromUnitVectors(up,b.clone().normalize());dummy.scale.set(r,b.length(),r);dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);}
-function fitCamera(){const aspect=host.clientWidth/host.clientHeight;const distance=Math.max(9.2,15.1/(2*Math.tan(19*Math.PI/180)*aspect));camera.position.set(distance*.14,distance*.19,distance);controls.target.set(0,0,0);controls.update();}
-function resize(){const w=host.clientWidth,h=host.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
-new ResizeObserver(()=>{resize();fitCamera();}).observe(host);
-function setKind(kind,writeHash=true){
+function sphereAt(m,i,p,r){dummy.position.set(...p);dummy.quaternion.identity();dummy.scale.setScalar(r);dummy.updateMatrix();m.setMatrixAt(i,dummy.matrix);}
+function rodAt(m,i,p,q,r){va.set(...p);vb.set(...q).sub(va);dummy.position.copy(va).addScaledVector(vb,.5);dummy.quaternion.setFromUnitVectors(up,vb.clone().normalize());dummy.scale.set(r,vb.length(),r);dummy.updateMatrix();m.setMatrixAt(i,dummy.matrix);}
+function fitCamera(){if(!renderer)return;const aspect=host.clientWidth/Math.max(1,host.clientHeight);const distance=Math.max(9.2,15.1/(2*Math.tan(19*Math.PI/180)*aspect));camera.position.set(distance*.14,distance*.19,distance);controls.target.set(0,0,0);controls.update();}
+function resize3d(){if(!renderer)return;const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+
+/* ---------- Zustand und Steuerung ---------- */
+let state=initialState('thermoplaste'),topo=null,view='micro',section='untersuchen';
+function tempLabel(t){return t<.2?'niedrig':t<.5?'mittel':t<.8?'hoch':'sehr hoch';}
+function loadLabel(l){return l===0?'keine':l<.35?'gering':l<.7?'mittel':l<.9?'hoch':'sehr hoch';}
+function updateLabels(){
+  const tl=tempLabel(state.temperature),ll=loadLabel(state.load);
+  $('temperature-value').textContent=tl+' · '+zoneOf(state.kind,state.temperature).n;$('temperature').setAttribute('aria-valuetext',tl);
+  $('tension-value').textContent=ll;$('tension').setAttribute('aria-valuetext',ll);
+}
+function buildTemperatureScale(kind){
+  const z=ZONES[kind];let prev=0;const stops=[],ticks=[];
+  z.forEach(e=>{const c=ZCOL[e.n];stops.push(`${c} ${prev*100}%`,`${c} ${e.to*100}%`);ticks.push(`<span style="left:${(prev+e.to)/2*100}%">${e.s}</span>`);prev=e.to;});
+  $('temperature').style.setProperty('--track','linear-gradient(90deg,'+stops.join(',')+')');
+  $('temp-ticks').innerHTML=ticks.join('');
+}
+function setKind(kind,writeHash=true,keep=false){
   if(!KINDS.includes(kind))kind='thermoplaste';
   state=initialState(kind);topo=buildTopology(kind);
-  for(const child of [...model.children]){model.remove(child);child.dispose();}
-  beads=mesh(sphere,chainMat,topo.nodes.length);backbone=mesh(cylinder,bondMat,topo.bonds.length);
-  bridges=mesh(cylinder,linkMat,topo.links.length);junctions=mesh(sphere,linkMat,topo.links.length*2);
-  ends=mesh(sphere,brokenMat,topo.nodes.length);
-  $('temperature').value=0;$('tension').value=0;
-  for(const el of document.querySelectorAll('[role=tab]')){const selected=el.dataset.kind===kind;el.setAttribute('aria-selected',selected);el.tabIndex=selected?0:-1;}
+  if(renderer){
+    for(const child of [...model.children]){model.remove(child);if(child.dispose)child.dispose();}
+    beads=mesh(sphere,chainMat,topo.nodes.length);backbone=mesh(cylinder,bondMat,topo.bonds.length);
+    bridges=mesh(cylinder,linkMat,topo.links.length);junctions=mesh(sphere,linkMat,topo.links.length*2);
+    ends=mesh(sphere,brokenMat,topo.nodes.length);
+  }
+  $('temperature').value=Math.round(TEMP0*100);$('tension').value=0;
+  for(const el of document.querySelectorAll('.seg [role=tab]')){const selected=el.dataset.kind===kind;el.setAttribute('aria-selected',selected);el.tabIndex=selected?0:-1;}
   $('experiment').setAttribute('aria-labelledby','tab-'+kind);
-  $('temperature-control').hidden=kind!=='thermoplaste';$('tension-control').hidden=kind==='thermoplaste';
-  $('thermo-actions').hidden=kind!=='thermoplaste';$('duro-actions').hidden=kind!=='duromere';$('elasto-actions').hidden=kind!=='elastomere';
+  $('deform').hidden=kind!=='thermoplaste';$('duro-actions').hidden=kind!=='duromere';
   $('deform').classList.remove('active');
-  if(writeHash)history.replaceState(null,'','#'+kind);
-  resize();fitCamera();updateLabels();draw();
+  buildTemperatureScale(kind);
+  if(writeHash&&section==='untersuchen')history.replaceState(null,'','#'+kind);
+  resize3d();fitCamera();resizeMacro();updateLabels();book.render();
+  KS.onKind&&KS.onKind(kind);
 }
-function updateLabels(){
-  const temp=state.temperature<.3?'niedrig':state.temperature<.7?'mittel':'hoch';
-  const load=state.load===0?'keine':state.load<.35?'gering':state.load<.7?'mittel':state.load<.9?'hoch':'sehr hoch';
-  $('temperature-value').textContent=temp;$('temperature').setAttribute('aria-valuetext',temp);
-  $('tension-value').textContent=load;$('tension').setAttribute('aria-valuetext',load);
+KS.setKind=setKind;KS.getState=()=>state;
+function setView(v){
+  view=v;$('viewport').classList.toggle('macro',v==='macro');
+  for(const b of document.querySelectorAll('.view [role=tab]'))b.setAttribute('aria-selected',b.dataset.view===v);
+  $('model-label').textContent=v==='macro'?'Probestab in der Prüfapparatur (Modell)':'Schematisches Teilchenmodell';
+  resize3d();resizeMacro();
+  KS.onView&&KS.onView(v);
 }
-function draw(){
+function showStatus(){
+  const s=state;let msg='';
+  if(s.broken){msg=s.kind==='duromere'?'Bruch: Querverbindungen und Ketten reißen':s.kind==='thermoplaste'?'Sprödbruch: Die Ketten reißen':'Sprödbruch: eingefroren, nicht mehr elastisch';}
+  else if(s.torn)msg=s.breakStyle==='fließt ab'?'Die Schmelze fließt ab: Ketten gleiten auseinander':'Probestab reißt: Ketten gleiten auseinander';
+  else if(s.decomp>.5)msg='Zersetzung: Der Kunststoff verkohlt (nicht umkehrbar)';
+  else if(s.melt>.6)msg='Schmelze: Die Ketten fließen';
+  else if(s.press)msg='Verformende Kraft wirkt';
+  else if(s.kind==='thermoplaste'&&s.flow>.12&&s.load>.02)msg='Die Ketten gleiten: bleibende Verformung';
+  else if(s.kind==='elastomere'&&s.glass>.7&&s.load>.1)msg='Eingefroren: kaum dehnbar';
+  if($('status').textContent!==msg)$('status').textContent=msg;
+}
+const PHASE={
+  thermoplaste:{hart:'<b>Hart und spröde.</b> Unterhalb der Erweichung halten die schwachen Kräfte zwischen den Ketten sie fest. Der Stab ist steif und bricht bei großer Last ohne vorherige Verformung.',weich:'<b>Weich und formbar.</b> Die Ketten sind beweglich und gleiten unter Last aneinander vorbei. Es gibt keine Querverbindungen, die sie zurückhalten. Der Stab verformt sich bleibend.',schmelze:'<b>Schmelze.</b> Die Ketten gleiten frei, das Material fließt. Beim Abkühlen erstarrt es wieder: Darum kann man Thermoplaste einschmelzen und recyceln.',zers:'<b>Zersetzung.</b> Bei sehr hoher Temperatur reißen die Bindungen innerhalb der Ketten. Der Kunststoff verkohlt, das lässt sich nicht umkehren.'},
+  duromere:{hart:'<b>Hart und formstabil.</b> Das engmaschige Netz aus Querverbindungen hält die Ketten fest. Erwärmen ändert die Form praktisch nicht, es gibt keinen Schmelzbereich.',zers:'<b>Zersetzung.</b> Ein Duromer schmilzt nicht: Bei sehr hoher Temperatur zerfallen die Bindungen, der Kunststoff verkohlt.'},
+  elastomere:{kalt:'<b>Eingefroren.</b> Bei tiefer Temperatur sind die Kettensegmente unbeweglich. Das Netz ist glasartig-hart und bricht bei starkem Zug, statt sich zu dehnen.',warm:'<b>Gummielastisch.</b> Die Kettenstücke zwischen den wenigen Querverbindungen sind beweglich. Unter Zug entknäueln sie sich und ziehen sich danach wieder zusammen. Auch Wärme bringt das Netz nicht zum Fließen.',zers:'<b>Zersetzung.</b> Ein Elastomer schmilzt nicht. Bei sehr hoher Temperatur zersetzen sich die Ketten, der Gummi verkohlt.'}
+};
+function phaseText(){
+  const s=state,k=s.kind,t=s.temperature;
+  let h='';
+  if(k==='thermoplaste')h=t>.9?PHASE[k].zers:t>.66?PHASE[k].schmelze:t>.31?PHASE[k].weich:PHASE[k].hart;
+  else if(k==='duromere')h=t>.9?PHASE[k].zers:PHASE[k].hart;
+  else h=t>.9?PHASE[k].zers:t>.17?PHASE[k].warm:PHASE[k].kalt;
+  if(s.decomp>.5&&t<=.9)h+='<br><span class="muted">Der Probestab ist bereits zersetzt, das bleibt auch beim Abkühlen so.</span>';
+  if(s.broken||s.torn)h='<b>Probestab gerissen.</b> '+(s.breakStyle==='spröd'?'Spröder Bruch: Die Ketten reißen ohne vorherige Verformung.':s.breakStyle==='fließt ab'?'Die Schmelze fließt ab.':'Zäher Bruch nach starkem Fließen.')+'<br>'+h;
+  if($('phase').innerHTML!==h)$('phase').innerHTML=h;
+}
+/* Zeichnen der 3D-Szene */
+function draw3d(){
+  if(!renderer)return;
   const points=positions(topo,state),brokenEnds=new Set();
   for(let i=0;i<points.length;i++)sphereAt(beads,i,points[i],.088);
   let n=0;
@@ -2108,25 +2474,324 @@ function draw(){
   bridges.count=n;junctions.count=j;ends.count=brokenEnds.size;
   let e=0;for(const i of brokenEnds)sphereAt(ends,e++,points[i],.12);
   for(const m of [beads,backbone,bridges,junctions,ends])m.instanceMatrix.needsUpdate=true;
-  const loaded=state.kind==='thermoplaste'?state.press:state.load>.01;
+  // Farben: Zersetzung (verkohlt) und Frost
+  const d=state.decomp,fr=state.kind==='elastomere'?state.glass*.35:0;
+  chainMat.color.copy(C_CHAIN).lerp(C_FROST,fr).lerp(C_CHAR,d);bondMat.color.copy(C_BOND).lerp(C_FROST,fr).lerp(C_CHAR,d);linkMat.color.copy(C_LINK).lerp(C_CHARL,d);
+  const loaded=state.press||state.load>.01;
   arrowL.visible=arrowR.visible=loaded;
-  if(loaded){const xs=points.map(p=>p[0]);arrowL.position.set(Math.min(...xs)-.22,state.kind==='thermoplaste'?-1.5:0,0);arrowR.position.set(Math.max(...xs)+.22,state.kind==='thermoplaste'?1.5:0,0);const length=.4+(state.kind==='thermoplaste'?.5:state.load)*.55;arrowL.setLength(length,.18,.11);arrowR.setLength(length,.18,.11);}
+  if(loaded){const xs=points.map(p=>p[0]);const level=Math.max(state.press?.5:0,state.load);arrowL.position.set(Math.min(...xs)-.22,state.kind==='thermoplaste'&&state.press&&state.load<.01?-1.5:0,0);arrowR.position.set(Math.max(...xs)+.22,state.kind==='thermoplaste'&&state.press&&state.load<.01?1.5:0,0);const length=.4+level*.55;arrowL.setLength(length,.21,.13);arrowR.setLength(length,.21,.13);}
   hammer.visible=state.impact>0;
   if(hammer.visible){const phase=(1-state.impact)*Math.PI;hammer.position.set(.2,2.3+Math.abs(Math.cos(phase))*.8,1);hammer.rotation.z=Math.PI+.6*Math.cos(phase);}
-  const msg=state.broken?'Riss / Bruch':state.press?'Verformende Kraft wirkt':'';
-  if($('status').textContent!==msg)$('status').textContent=msg;
-  $('weak-hit').disabled=$('strong-hit').disabled=state.broken||state.impact>0;
   renderer.render(scene,camera);
 }
-document.querySelectorAll('[role=tab]').forEach(el=>{
+/* ---------- Spannungs-Dehnungs-Skizze ---------- */
+function ssCurve(kind,t,pts=60){
+  // liefert [[eps,F]] und Endmarkierung 'break'|'flow'|null; Einheit: Dehnung relativ, Kraft 0 … 1
+  const P=props(kind,t),out=[];let end=null;
+  for(let i=0;i<=pts;i++){
+    const F=i/pts;let eps=0;
+    if(kind==='thermoplaste'){
+      const el=F*(.045*P.glass+.14*(1-P.glass))*(1-.6*P.melt);
+      const yieldF=lerp(.72,.14,smooth(.28,.7,t))*(1-P.melt*.9);
+      const flow=F>yieldF?(F-yieldF)/(1-yieldF+1e-6)*1.1*smooth(.27,.4,t)*(1-P.glass*.0):0;
+      eps=el+flow*(1-P.glass);
+      if(P.glass>.7&&F>.88){end='break';break;}
+    }else if(kind==='duromere'){
+      eps=F*.045;if(F>.9){end='break';break;}
+    }else{
+      eps=F*(.6*(1-P.glass)+.045*P.glass);if(P.glass>.7&&F>.72){end='break';break;}
+    }
+    out.push([eps,F]);
+  }
+  return {pts:out,end};
+}
+function drawSS(){
+  const c=$('ss');if(!c||section!=='untersuchen')return;
+  const dpr=Math.min(devicePixelRatio||1,2),w=c.clientWidth,h=c.clientHeight;
+  if(!w||!h)return;
+  if(c.width!==Math.round(w*dpr)||c.height!==Math.round(h*dpr)){c.width=Math.round(w*dpr);c.height=Math.round(h*dpr);}
+  const g=c.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,w,h);
+  const L=34,R=10,T=10,B=26,pw=w-L-R,ph=h-T-B,emax=1.0;
+  g.strokeStyle='rgba(255,255,255,.35)';g.lineWidth=1.4;g.beginPath();g.moveTo(L,T);g.lineTo(L,T+ph);g.lineTo(L+pw,T+ph);g.stroke();
+  g.fillStyle='#9fc3c3';g.font='11px system-ui,sans-serif';g.textAlign='center';g.fillText('Dehnung →',L+pw/2,h-6);
+  g.save();g.translate(11,T+ph/2);g.rotate(-Math.PI/2);g.fillText('Zugbelastung →',0,0);g.restore();
+  const X=e=>L+Math.min(1,e/emax)*pw,Y=f=>T+ph-f*ph;
+  const cv=ssCurve(state.kind,state.temperature);
+  g.strokeStyle=KCOL[state.kind];g.lineWidth=2.6;g.lineJoin='round';g.beginPath();
+  cv.pts.forEach((p,i)=>{if(i)g.lineTo(X(p[0]),Y(p[1]));else g.moveTo(X(p[0]),Y(p[1]));});g.stroke();
+  if(cv.end==='break'&&cv.pts.length){const p=cv.pts[cv.pts.length-1];g.fillStyle='#ff7a66';g.font='bold 15px system-ui,sans-serif';g.textAlign='center';g.fillText('✖',X(p[0])+(p[0]<.5?0:-8),Y(p[1])-6);}
+  if(state.kind==='thermoplaste'&&state.melt>.3){g.fillStyle='#e8793a';g.font='11px system-ui,sans-serif';g.textAlign='left';g.fillText('Schmelze: kaum Widerstand',L+8,T+16);}
+  // aktueller Punkt
+  const eps=state.extension+(state.kind==='thermoplaste'?state.flow*.85:0);
+  const broken=state.broken||state.torn;
+  g.fillStyle=broken?'#ff7a66':'#fff';g.strokeStyle='#06242c';g.lineWidth=2;g.beginPath();g.arc(X(eps),Y(state.load),6,0,Math.PI*2);g.fill();g.stroke();
+}
+/* ---------- Makroskopische Ansicht ---------- */
+const macroCv=$('macro'),mg=macroCv.getContext('2d');
+let mDpr=1,mSc=1,mOx=0,mOy=0;
+const MW=800,MH=500;
+function resizeMacro(){
+  const w=macroCv.clientWidth,h=macroCv.clientHeight;if(!w||!h)return;
+  mDpr=Math.min(devicePixelRatio||1,2);macroCv.width=Math.round(w*mDpr);macroCv.height=Math.round(h*mDpr);
+  mSc=Math.min(w/MW,h/MH);mOx=(w-MW*mSc)/2;mOy=(h-MH*mSc)/2;
+}
+const hex=(h)=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
+function mix(a,b,k){const A=hex(a),B=hex(b);return '#'+[0,1,2].map(i=>Math.round(lerp(A[i],B[i],clamp01(k))).toString(16).padStart(2,'0')).join('');}
+function tempChamber(t){
+  if(t<.2)return mix('#1c5675','#164658',t/.2);
+  if(t<.55)return mix('#164658','#4f3a2e',(t-.2)/.35);
+  if(t<.8)return mix('#4f3a2e','#7d3a1e',(t-.55)/.25);
+  return mix('#7d3a1e','#a02a12',(t-.8)/.2);
+}
+const BASECOL={thermoplaste:['#6fcfca','#c8f5f0','#3d9b97'],duromere:['#9a5320','#d68a4c','#6e3510'],elastomere:['#6c46b4','#a77de6','#46287f']};
+const smoke=[],shards=[];
+let lastBreakKey='';
+function rnd(i){const x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x);}
+function roundRect(g,x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
+function specGeometry(s){
+  // Rückgabe: Länge, Breiten-Funktion, Farbe
+  const L0=150;
+  const meltLoss=s.kind==='thermoplaste'?s.puddle:0;
+  let strain=s.extension*1.6+(s.kind==='thermoplaste'?s.flow*.85:0);
+  const sag=s.kind==='thermoplaste'?s.melt:0;
+  const L=L0*(1+strain)*(1-.55*meltLoss)*(1+.18*sag);
+  const w0=34;
+  const hw=(r)=>{ // r = 0…1 entlang des Messbereichs
+    let w=w0/2*(s.kind==='elastomere'?1/Math.sqrt(1+s.extension*1.2):s.kind==='thermoplaste'?1-.06*s.extension*3:1);
+    if(s.kind==='thermoplaste'){
+      const neck=smooth(.02,.7,s.flow);
+      w*=1-.62*neck*Math.exp(-Math.pow((r-.5)/.2,2));
+      w*=1-.45*meltLoss;
+      if(sag>0){w*=1-.5*sag*r;w+=sag*13*smooth(.72,1,r)*(1-.4*meltLoss);}
+    }
+    return Math.max(1.5,w);
+  };
+  return {L,hw,w0};
+}
+function specColor(s){
+  const b=BASECOL[s.kind];
+  let c0=b[0],c1=b[1],c2=b[2];
+  if(s.kind==='elastomere'&&s.glass>0){const f=s.glass*.55;c0=mix(c0,'#7fb9e8',f);c1=mix(c1,'#d3ecff',f);c2=mix(c2,'#4a86bd',f);}
+  if(s.decomp>0){const d=clamp01(s.decomp*1.1);c0=mix(c0,'#241a14',d);c1=mix(c1,'#4a352a',d);c2=mix(c2,'#120c09',d);}
+  return [c0,c1,c2];
+}
+function drawSpecPiece(g,x,yTop,yBot,hwFn,r0,r1,cols,ds){
+  // zeichnet ein Stück des Messbereichs von relativer Position r0 bis r1
+  const N=34;const left=[],right=[];
+  for(let i=0;i<=N;i++){const r=lerp(r0,r1,i/N),y=lerp(yTop,yBot,i/N),w=hwFn(r);left.push([x-w,y]);right.push([x+w,y]);}
+  g.beginPath();left.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));
+  right.reverse().forEach(p=>g.lineTo(p[0],p[1]));g.closePath();
+  const wmax=Math.max(...left.map(p=>x-p[0]));
+  const gr=g.createLinearGradient(x-wmax,0,x+wmax,0);gr.addColorStop(0,cols[0]);gr.addColorStop(.35,cols[1]);gr.addColorStop(1,cols[2]);
+  g.fillStyle=gr;g.fill();g.lineWidth=1.4;g.strokeStyle='rgba(255,255,255,.35)';g.stroke();
+  // Dehnungsmarken
+  g.save();g.clip();g.strokeStyle='rgba(0,0,0,.25)';g.lineWidth=1.2;
+  const nm=7;for(let m=1;m<nm;m++){const r=m/nm;if(r<=r0||r>=r1)continue;const y=lerp(yTop,yBot,(r-r0)/(r1-r0));g.beginPath();g.moveTo(x-60,y);g.lineTo(x+60,y);g.stroke();}
+  g.restore();
+}
+function spawnShards(x,y,style,col){
+  const n=style==='spröd'?14:6;
+  for(let i=0;i<n;i++)shards.push({x,y,vx:(Math.random()-.5)*160,vy:-50-Math.random()*90,r:2+Math.random()*4,rot:Math.random()*6,vr:(Math.random()-.5)*8,life:1.6,col});
+}
+function drawMacro(dt){
+  const s=state,k=s.kind,t=s.temperature;
+  const g=mg;g.setTransform(mDpr*mSc,0,0,mDpr*mSc,mDpr*mOx,mDpr*mOy);
+  g.clearRect(-mOx/mSc,-mOy/mSc,macroCv.clientWidth/mSc,macroCv.clientHeight/mSc);
+  const CX=430,CT=34,CH=438,CL=215,CW=430,floor=CT+CH-10;
+  // Kammer
+  const col=tempChamber(t);
+  roundRect(g,CL,CT,CW,CH,22);
+  const bg=g.createLinearGradient(0,CT,0,CT+CH);bg.addColorStop(0,mix(col,'#ffffff',.08));bg.addColorStop(1,mix(col,'#000000',.35));
+  g.fillStyle=bg;g.fill();g.lineWidth=3;g.strokeStyle='rgba(190,235,240,.4)';g.stroke();
+  // Reflex
+  g.save();roundRect(g,CL,CT,CW,CH,22);g.clip();
+  const refl=g.createLinearGradient(CL,0,CL+CW,0);refl.addColorStop(0,'rgba(255,255,255,.10)');refl.addColorStop(.18,'rgba(255,255,255,0)');refl.addColorStop(.9,'rgba(255,255,255,0)');refl.addColorStop(1,'rgba(255,255,255,.07)');g.fillStyle=refl;g.fillRect(CL,CT,CW,CH);
+  // Hitzeflimmern
+  if(t>.5){const a=smooth(.5,1,t)*.3;g.strokeStyle='rgba(255,170,90,'+a+')';g.lineWidth=2;for(let i=0;i<7;i++){const x0=CL+40+i*60;g.beginPath();for(let y=CT+CH;y>CT;y-=8){const x=x0+Math.sin(y*.05+s.time*3+i*1.7)*6;if(y===CT+CH)g.moveTo(x,y);else g.lineTo(x,y);}g.stroke();}}
+  // Frost
+  if(t<.14){g.fillStyle='rgba(220,245,255,'+(.55*(1-t/.14))+')';for(let i=0;i<46;i++){const px=CL+8+rnd(i)*(CW-16),py=CT+8+rnd(i+99)*(CH-16);const r=1.5+rnd(i+5)*3;g.beginPath();g.moveTo(px,py-r);g.lineTo(px+r*.5,py);g.lineTo(px,py+r);g.lineTo(px-r*.5,py);g.closePath();g.fill();}}
+  // Pfütze (Schmelze, die abgetropft ist)
+  if(k==='thermoplaste'&&s.puddle>.01){
+    const pw=40+s.puddle*170;const cols=specColor(s);
+    g.fillStyle=cols[1];g.beginPath();g.ellipse(CX,floor-1,pw,6+s.puddle*10,0,0,Math.PI*2);g.fill();g.lineWidth=1.2;g.strokeStyle='rgba(255,255,255,.35)';g.stroke();
+  }
+  g.restore();
+  // Beschriftung Kammer
+  g.fillStyle='rgba(215,240,240,.55)';g.font='12px system-ui,sans-serif';g.textAlign='left';g.fillText('Temperierkammer',CL+14,CT+22);
+  // Thermometer
+  const TX=64,TT=70,TB=440;
+  roundRect(g,TX-9,TT,18,TB-TT,9);g.fillStyle='rgba(255,255,255,.12)';g.fill();g.strokeStyle='rgba(255,255,255,.4)';g.lineWidth=2;g.stroke();
+  const lev=TB-(TB-TT-12)*t;
+  const tg=g.createLinearGradient(0,TB,0,TT);tg.addColorStop(0,'#4aa3e0');tg.addColorStop(.5,'#f0a04b');tg.addColorStop(1,'#ff4a2a');
+  g.fillStyle=tg;roundRect(g,TX-5,lev,10,TB-lev+6,5);g.fill();
+  g.beginPath();g.arc(TX,TB+12,16,0,Math.PI*2);g.fillStyle=t>.5?'#ff5a3a':'#4aa3e0';g.fill();g.strokeStyle='rgba(255,255,255,.5)';g.stroke();
+  // Zonen neben dem Thermometer
+  let prev=0;g.font='10.5px system-ui,sans-serif';g.textAlign='left';
+  for(const z of ZONES[k]){
+    const y0=TB-(TB-TT-12)*prev,y1=TB-(TB-TT-12)*z.to;
+    g.fillStyle=ZCOL[z.n];g.fillRect(TX+14,y1,5,y0-y1-2);
+    g.fillStyle='rgba(220,240,240,.85)';g.fillText(z.s,TX+24,(y0+y1)/2+3);prev=z.to;
+  }
+  g.textAlign='center';g.fillStyle='rgba(215,240,240,.75)';g.font='12px system-ui,sans-serif';g.fillText('Temperatur',TX,TT-14);
+  // Prüfkörper
+  const G=specGeometry(s),cols=specColor(s);
+  const yTop=CT+60,gripH=34,gy0=yTop+gripH;
+  // oberer Halter (fest)
+  g.fillStyle='#8fa3a8';g.fillRect(CX-6,CT,12,yTop-CT);
+  const clamp=(x,y,w,h)=>{const gr=g.createLinearGradient(0,y,0,y+h);gr.addColorStop(0,'#cfd9dc');gr.addColorStop(1,'#7e9196');g.fillStyle=gr;roundRect(g,x,y,w,h,5);g.fill();g.strokeStyle='#2c3a3e';g.lineWidth=1.5;g.stroke();g.fillStyle='#37474b';g.beginPath();g.arc(x+9,y+h/2,2.6,0,Math.PI*2);g.arc(x+w-9,y+h/2,2.6,0,Math.PI*2);g.fill();};
+  clamp(CX-34,yTop-12,68,gripH-10);
+  // Ausgangslänge markieren
+  g.setLineDash([5,5]);g.strokeStyle='rgba(255,255,255,.35)';g.lineWidth=1.2;g.beginPath();g.moveTo(CX-90,gy0);g.lineTo(CX+90,gy0);g.moveTo(CX-90,gy0+150);g.lineTo(CX+90,gy0+150);g.stroke();g.setLineDash([]);
+  g.fillStyle='rgba(215,240,240,.6)';g.font='11px system-ui,sans-serif';g.textAlign='left';g.fillText('Ausgangslänge',CX+94,gy0+154);
+  const broken=s.broken||s.torn;
+  const Lg=G.L;
+  const hwFn=G.hw;
+  // Bruchstelle
+  const style=s.breakStyle;
+  const key=(broken?'b':'n')+k;
+  if(broken&&lastBreakKey!==key){lastBreakKey=key;spawnShards(CX,gy0+Lg*(k==='duromere'&&s.impactFired?.55:.5),style,cols[1]);}
+  if(!broken)lastBreakKey='';
+  const f=s.fracture;
+  if(!broken){
+    // Messbereich
+    drawSpecPiece(g,CX,gy0,gy0+Lg,hwFn,0,1,cols);
+    // Halterungen
+    g.save();const gp=g.createLinearGradient(CX-30,0,CX+30,0);gp.addColorStop(0,cols[0]);gp.addColorStop(.35,cols[1]);gp.addColorStop(1,cols[2]);g.fillStyle=gp;roundRect(g,CX-28,yTop,56,gripH,5);g.fill();roundRect(g,CX-28,gy0+Lg,56,gripH,5);g.fill();g.restore();
+    clamp(CX-34,gy0+Lg+gripH-14,68,24);
+    // Zugstange nach unten
+    g.fillStyle='#8fa3a8';g.fillRect(CX-4,gy0+Lg+gripH+8,8,16);
+  }else{
+    const yb=gy0+Lg*.5;
+    // oberes Stück
+    const rJ=(r)=>hwFn(r);
+    drawSpecPiece(g,CX,gy0,yb,hwFn,0,.5,cols);
+    // Bruchfläche oben (gezackt oder spitz)
+    g.beginPath();
+    if(style==='spröd'){const w=hwFn(.5);g.moveTo(CX-w,yb);for(let i=0;i<=8;i++){g.lineTo(CX-w+(2*w)*i/8,yb+(i%2?7:-1)+rnd(i+k.length)*5);}g.lineTo(CX+w,yb);g.closePath();}
+    else{const w=hwFn(.5);g.moveTo(CX-w,yb);g.quadraticCurveTo(CX-w*.2,yb+22,CX,yb+34);g.quadraticCurveTo(CX+w*.2,yb+22,CX+w,yb);g.closePath();}
+    const gr=g.createLinearGradient(CX-20,0,CX+20,0);gr.addColorStop(0,cols[0]);gr.addColorStop(.4,cols[1]);gr.addColorStop(1,cols[2]);g.fillStyle=gr;g.fill();g.strokeStyle='rgba(255,255,255,.3)';g.lineWidth=1;g.stroke();
+    // oberer Halter
+    g.fillStyle=cols[1];roundRect(g,CX-28,yTop,56,gripH,5);g.fill();
+    // unteres Stück fällt
+    const drop=f*(floor-(gy0+Lg+gripH+30));
+    g.save();g.translate(CX+f*22,gy0+Lg*.5+drop*.0);
+    const cy=(gy0+Lg*.5+(gy0+Lg+gripH+20))/2;
+    g.translate(0,drop);g.translate(0,cy-(gy0+Lg*.5));g.rotate(f*.9);g.translate(0,-(cy-(gy0+Lg*.5)));
+    g.translate(-CX,-(gy0+Lg*.5));
+    drawSpecPiece(g,CX,yb+(style==='spröd'?6:34),gy0+Lg,hwFn,.5,1,cols);
+    g.fillStyle=cols[1];roundRect(g,CX-28,gy0+Lg,56,gripH,5);g.fill();
+    clamp(CX-34,gy0+Lg+gripH-14,68,24);
+    g.restore();
+  }
+  // Heiße Zone: Glühen
+  if(t>.62&&!broken){g.strokeStyle='rgba(255,140,70,'+(smooth(.62,1,t)*.45)+')';g.lineWidth=4;g.beginPath();g.moveTo(CX-hwFn(.5)-3,gy0+Lg*.2);g.lineTo(CX-hwFn(.5)-3,gy0+Lg*.8);g.stroke();}
+  // Tropfen (Schmelze)
+  if(k==='thermoplaste'&&s.melt>.45){
+    const dp=(s.time*.7)%1;const dx=CX,dy=gy0+Lg+gripH-2;
+    g.fillStyle=cols[1];g.beginPath();g.ellipse(dx,dy+dp*(floor-dy-6),5-1.5*dp,7+4*dp,0,0,Math.PI*2);g.fill();
+  }
+  // Schmelzfaden bei Zersetzung/Rauch
+  if(s.decomp>.15&&dt>0){if(Math.random()<s.decomp*.9)smoke.push({x:CX+(Math.random()-.5)*28,y:gy0+Lg*(.2+Math.random()*.6),vy:-30-Math.random()*40,vx:(Math.random()-.5)*14,r:5+Math.random()*6,life:2.4});}
+  for(let i=smoke.length-1;i>=0;i--){const p=smoke[i];p.life-=dt;p.y+=p.vy*dt;p.x+=p.vx*dt;p.r+=dt*8;if(p.life<=0||p.y<CT){smoke.splice(i,1);continue;}g.fillStyle='rgba(60,55,52,'+Math.min(.5,p.life*.25)+')';g.beginPath();g.arc(p.x,p.y,p.r,0,Math.PI*2);g.fill();}
+  if(s.decomp>.5){g.fillStyle='rgba(255,90,40,.9)';for(let i=0;i<4;i++){const px=CX+Math.sin(s.time*5+i)*10,py=gy0+Lg*.5+Math.cos(s.time*4+i*2)*Lg*.3;g.beginPath();g.arc(px,py,1.6,0,Math.PI*2);g.fill();}}
+  // Splitter
+  for(let i=shards.length-1;i>=0;i--){const p=shards[i];p.life-=dt;p.vy+=500*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.rot+=p.vr*dt;if(p.y>floor){p.y=floor;p.vy*=-.3;p.vx*=.6;}if(p.life<=-3){shards.splice(i,1);continue;}g.save();g.translate(p.x,p.y);g.rotate(p.rot);g.fillStyle=p.col;g.globalAlpha=Math.min(1,p.life+3);g.beginPath();g.moveTo(-p.r,-p.r*.6);g.lineTo(p.r,-p.r*.2);g.lineTo(p.r*.3,p.r);g.closePath();g.fill();g.restore();}
+  // Hammer
+  if(s.impact>0){
+    const ph=1-s.impact;const swing=Math.sin(Math.min(1,ph/.4)*Math.PI/2);const hx=CX+130-swing*(130-hwFn(.5)-12);const hy=gy0+Lg*.5;
+    g.save();g.translate(hx,hy);g.rotate(-.15);
+    g.fillStyle='#c29a66';g.fillRect(8,-5,120,10);g.fillStyle='#9fb2b7';g.fillRect(-14,-22,26,44);g.strokeStyle='#2c3a3e';g.lineWidth=1.5;g.strokeRect(-14,-22,26,44);g.restore();
+    if(ph>.3&&ph<.55){g.strokeStyle='rgba(255,230,140,'+(1-(ph-.3)/.25)+')';g.lineWidth=3;for(let a=0;a<8;a++){const an=a*Math.PI/4;g.beginPath();g.moveTo(CX-hwFn(.5)+Math.cos(an)*8,hy+Math.sin(an)*8);g.lineTo(CX-hwFn(.5)+Math.cos(an)*24,hy+Math.sin(an)*24);g.stroke();}}
+  }
+  // Zugkraft: Pfeil und Messbalken
+  const lv=Math.max(s.load,s.press?.5:0);
+  if(s.load>.01){const ay=gy0+Lg+gripH+28,al=18+s.load*60;g.strokeStyle='#ffc27a';g.fillStyle='#ffc27a';g.lineWidth=5;g.lineCap='round';g.beginPath();g.moveTo(CX,ay);g.lineTo(CX,Math.min(ay+al,CT+CH-14));g.stroke();g.beginPath();const ey=Math.min(ay+al,CT+CH-14);g.moveTo(CX-10,ey-6);g.lineTo(CX+10,ey-6);g.lineTo(CX,ey+10);g.closePath();g.fill();g.lineCap='butt';}
+  const FX=720;roundRect(g,FX-12,70,24,370,12);g.fillStyle='rgba(255,255,255,.1)';g.fill();g.strokeStyle='rgba(255,255,255,.4)';g.lineWidth=2;g.stroke();
+  const fh=(370-8)*s.load;const fg=g.createLinearGradient(0,440,0,70);fg.addColorStop(0,'#3a7d9a');fg.addColorStop(.6,'#d9c35a');fg.addColorStop(1,'#ff5a3d');g.fillStyle=fg;roundRect(g,FX-8,436-fh,16,fh+0.01,8);if(fh>0)g.fill();
+  g.fillStyle='rgba(215,240,240,.75)';g.font='12px system-ui,sans-serif';g.textAlign='center';g.fillText('Zugbelastung',FX,56);g.fillText('(qualitativ)',FX,458);
+  // Dehnungsanzeige
+  const strain=Math.round((Lg/150/(1-.55*(k==='thermoplaste'?s.puddle:0))/(1+.18*(k==='thermoplaste'?s.melt:0))-1)*100);
+  g.textAlign='left';g.fillStyle='rgba(255,255,255,.92)';g.font='bold 13px system-ui,sans-serif';
+  if(!broken)g.fillText('Länge: '+(strain<=0?'unverändert':'+'+strain+' %'),CL+16,CT+CH-16);
+  else g.fillText(style==='spröd'?'Gerissen (spröd)':s.breakStyle==='fließt ab'?'Abgeflossen':'Gerissen (zäh)',CL+16,CT+CH-16);
+  if(k==='thermoplaste'&&s.flow>.08&&!broken){g.font='12px system-ui,sans-serif';g.fillStyle='#ffe08a';g.fillText('bleibende Verformung (Einschnürung)',CL+16,CT+CH-34);}
+}
+/* ---------- Laborbuch (Aufträge, Kolbi führt) ---------- */
+const MISSIONS={
+  thermoplaste:[
+    {id:'t1',t:'Erzeuge bei Raumtemperatur oder kalt mit großer Zugbelastung einen Bruch.',f:'Unterhalb der Erweichung sind die Ketten fest: Thermoplaste sind hart, aber spröde. Sie brechen ohne Vorwarnung.',chk:s=>s.broken&&s.glass>.7,say:'Der Stab ist glatt gebrochen. Kalt und hart bedeutet bei einem Thermoplast: spröde.'},
+    {id:'t2',t:'Erwärme in den weichen Bereich (gelb) und ziehe mäßig am Stab. Beobachte, was nach dem Entlasten bleibt.',f:'Im weichen Bereich gleiten die Ketten aneinander vorbei. Die Verformung bleibt, auch wenn du entlastest: Das nennt man plastisch.',chk:s=>s.flow>.15&&s.load<.02&&s.glass<.5&&!s.broken,say:'Entlastet, aber die Verformung bleibt. Die Ketten sind aneinander vorbeigeglitten, ohne Querverbindungen, die sie zurückziehen.'},
+    {id:'t3',t:'Erhitze bis zur Schmelze (orange) und warte, bis etwas abtropft.',f:'Ohne Querverbindungen können sich die Ketten ganz voneinander lösen: Das Material wird zähflüssig und fließt.',chk:s=>s.melt>.7&&s.puddle>.02,say:'Das Material fließt und tropft. So ist ein Thermoplast gebaut: Die Ketten halten nur durch schwache Kräfte zusammen.'},
+    {id:'t4',t:'Kühle nach dem Schmelzen wieder ab. Was ist mit der Schmelze passiert?',f:'Beim Abkühlen erstarrt die Schmelze wieder. Das lässt sich beliebig oft wiederholen. Darum kann man Thermoplaste einschmelzen und neu formen.',chk:s=>s.maxMelt>.7&&s.temperature<.3,say:'Wieder fest! Thermoplaste kann man immer wieder einschmelzen. Das ist wichtig für das Recycling.'}
+  ],
+  duromere:[
+    {id:'d1',t:'Erhitze den Stab kräftig, aber nicht bis zur Zersetzung. Was passiert mit der Form?',f:'Ein Duromer erweicht nicht und schmilzt nicht. Das engmaschige Netz aus Querverbindungen hält alles fest.',chk:(s,h)=>s.temperature>.6&&s.temperature<.88&&h.hold>2.5,say:'Auch heiß bleibt er hart und formstabil. Das Netz aus Querverbindungen verhindert, dass die Ketten gleiten.'},
+    {id:'d2',t:'Erhöhe die Zugbelastung bis der Stab bricht.',f:'Duromere dehnen sich kaum und brechen spröde, weil das enge Netz keine Ausweichbewegung zulässt.',chk:s=>s.broken&&s.impactFired===false,say:'Kaum gedehnt, dann gebrochen. Das enge Netz lässt keine Ausweichbewegung zu.'},
+    {id:'d3',t:'Vergleiche einen schwachen und einen starken Schlag (Schaltflächen unter dem Modell).',f:'Ein schwacher Schlag richtet nichts aus. Ein starker Schlag reißt Bindungen im Netz und der Stab bricht.',chk:(s,h)=>h.weak&&h.strong,say:'Schwach wirkungslos, stark gebrochen: Das Netz ist hart, aber nicht zäh.'},
+    {id:'d4',t:'Erhitze extrem (sehr heiß). Schmilzt der Stab?',f:'Ein Duromer schmilzt nicht. Bei sehr hoher Temperatur zerfallen die Bindungen: Der Kunststoff verkohlt. Das ist nicht umkehrbar. Darum lassen sich Duromere kaum recyceln.',chk:s=>s.decomp>.6,say:'Verkohlt statt geschmolzen. Duromere kann man nicht einschmelzen, deshalb sind sie schwer zu recyceln.'}
+  ],
+  elastomere:[
+    {id:'e1',t:'Ziehe bei Raumtemperatur kräftig am Stab. Wie weit dehnt er sich?',f:'Elastomere lassen sich stark dehnen: Die Ketten entknäueln sich zwischen den wenigen Querverbindungen.',chk:(s,h)=>s.load>.55&&s.glass<.3&&s.extension>.3&&s.temperature<.88,say:'Weit gedehnt! Die Ketten entknäueln sich, das Netz ist weitmaschig.'},
+    {id:'e2',t:'Entlaste den Stab. Was passiert?',f:'Der Stab zieht sich zurück: Die Querverbindungen ziehen die entknäuelten Ketten wieder in ihre alte Lage. Das heißt elastisch.',chk:(s,h)=>h.stretched&&s.load<.02&&s.extension<.05&&!s.broken,say:'Zurückgefedert! Dank der Querverbindungen kehrt das Netz in den Ausgangszustand zurück.'},
+    {id:'e3',t:'Kühle stark ab und ziehe dann am Stab.',f:'Bei tiefer Temperatur sind die Kettenstücke eingefroren. Das Netz ist glasartig-hart und bricht bei starkem Zug.',chk:s=>s.glass>.7&&s.load>.2&&(s.extension<.06),say:'Kalt ist der Gummi hart und dehnt sich kaum. Nur bei höherer Temperatur sind die Ketten beweglich.'},
+    {id:'e4',t:'Erwärme stark, bis kurz vor der Zersetzung. Wird der Gummi flüssig?',f:'Elastomere schmelzen nicht, denn die Querverbindungen halten das Netz zusammen. Erst bei sehr hoher Temperatur zersetzt sich der Gummi.',chk:(s,h)=>s.temperature>.6&&s.temperature<.88&&h.hold>2.5,say:'Er bleibt ein Netz und fließt nicht, auch heiß nicht. Erst viel höher zersetzt sich der Gummi.'}
+  ]
+};
+const book={
+  done:{},hold:{},seen:{},
+  hist(kind){return this.hold[kind]||(this.hold[kind]={hold:0,weak:false,strong:false,stretched:false});},
+  render(){
+    const k=state.kind,list=MISSIONS[k],n=list.filter(m=>this.done[m.id]).length;
+    const av='<span id="book-av"></span>';
+    $('book').innerHTML='<h2><span id="book-av" aria-hidden="true"></span>Kolbis Laborbuch</h2><p class="muted small" style="margin:0 0 6px">'+KNAME[k]+': '+n+' von '+list.length+' Aufträgen erledigt</p><div class="prog"><i style="width:'+(n/list.length*100)+'%"></i></div>'+
+      list.map(m=>'<div class="mission'+(this.done[m.id]?' done':'')+'"><i>'+(this.done[m.id]?'✓':'')+'</i><div>'+m.t+'<div class="f"><b>Befund:</b> '+m.f+'</div></div></div>').join('');
+    KS.avatar&&KS.avatar($('book-av'),'#38bdf8',34);
+  },
+  tick(dt){
+    const s=state,h=this.hist(s.kind);
+    if(s.kind==='duromere'||s.kind==='elastomere'){h.hold=(s.temperature>.6&&s.temperature<.88&&!s.broken)?h.hold+dt:0;}
+    if(s.kind==='elastomere'&&s.extension>.3)h.stretched=true;
+    for(const m of MISSIONS[s.kind]){
+      if(this.done[m.id])continue;
+      let ok=false;try{ok=m.chk(s,h);}catch(e){}
+      if(ok){this.done[m.id]=1;this.render();
+        const list=MISSIONS[s.kind];const all=list.every(x=>this.done[x.id]);
+        KS.react('excited');
+        kolbi('m-'+m.id,m.say+(all?' Alle Aufträge zu '+KNAME[s.kind]+'n sind geschafft!':''),'excited',500);
+        if(KINDS.every(kk=>MISSIONS[kk].every(x=>this.done[x.id])))kolbi('all-m','Du hast alle neun Aufträge erledigt! Jetzt kannst du in der Monomer-Werkstatt selbst Kunststoffe bauen oder dich in Kolbis Check prüfen.','excited',4000);
+      }
+    }
+  }
+};
+/* ---------- Haupt-Schleife ---------- */
+let last=performance.now();
+function loop(now){
+  requestAnimationFrame(loop);
+  if(document.hidden){last=now;return;}
+  let dt=(now-last)/1000;
+  if(section!=='untersuchen'){last=now;return;}
+  if(dt<1/32)return;last=now;
+  dt=Math.min(dt,.05);
+  advance(state,dt);
+  book.tick(dt);
+  if(view==='macro')drawMacro(dt);else draw3d();
+  drawSS();showStatus();phaseText();
+  $('weak-hit').disabled=$('strong-hit').disabled=state.broken||state.impact>0;
+  KS.afterFrame&&KS.afterFrame(state);
+}
+/* ---------- Ereignisse ---------- */
+document.querySelectorAll('.seg [role=tab]').forEach(el=>{
   el.addEventListener('click',()=>setKind(el.dataset.kind));
-  el.addEventListener('keydown',ev=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(ev.key))return;ev.preventDefault();const i=KINDS.indexOf(state.kind);const index=ev.key==='Home'?0:ev.key==='End'?2:(i+(ev.key==='ArrowRight'?1:2))%3;setKind(KINDS[index]);$('tab-'+state.kind).focus();});
+  el.addEventListener('keydown',ev=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(ev.key))return;ev.preventDefault();const i=KINDS.indexOf(state.kind);const index=ev.key==='Home'?0:ev.key==='End'?2:(i+(ev.key==='ArrowRight'?1:2))%3;setKind(KINDS[index]);document.getElementById('tab-'+KINDS[index]).focus();});
 });
-$('reset').addEventListener('click',()=>setKind(state.kind));
+document.querySelectorAll('.view [role=tab]').forEach(el=>el.addEventListener('click',()=>setView(el.dataset.view)));
+$('reset').addEventListener('click',()=>{setKind(state.kind);kolbiReact('happy','Alles zurück auf Anfang. Der Stab ist wieder heil. Dein Laborbuch behalte ich.');});
 $('temperature').addEventListener('input',ev=>{state.temperature=+ev.target.value/100;updateLabels();});
 $('tension').addEventListener('input',ev=>{state.load=+ev.target.value/100;updateLabels();});
 $('release').addEventListener('click',()=>{state.load=0;$('tension').value=0;updateLabels();});
-$('weak-hit').addEventListener('click',()=>hit(state,false));$('strong-hit').addEventListener('click',()=>hit(state,true));
+document.querySelectorAll('#temp-presets button').forEach(b=>b.addEventListener('click',()=>{const v=+b.dataset.t;$('temperature').value=v;state.temperature=v/100;updateLabels();}));
+$('weak-hit').addEventListener('click',()=>{hit(state,false);book.hist('duromere').weak=true;});
+$('strong-hit').addEventListener('click',()=>{hit(state,true);book.hist('duromere').strong=true;});
 const deform=$('deform');
 const press=()=>{if(state.kind!=='thermoplaste')return;state.press=true;deform.classList.add('active');};
 const release=()=>{state.press=false;deform.classList.remove('active');};
@@ -2136,22 +2801,533 @@ deform.addEventListener('keydown',ev=>{if(ev.code==='Space'||ev.code==='Enter'){
 deform.addEventListener('keyup',ev=>{if(ev.code==='Space'||ev.code==='Enter'){ev.preventDefault();release();}});
 deform.addEventListener('contextmenu',ev=>ev.preventDefault());
 window.addEventListener('blur',release);
-function zoom(f){camera.position.multiplyScalar(f);camera.position.clampLength(controls.minDistance,controls.maxDistance);controls.update();}
+function zoom(f){if(!renderer)return;camera.position.multiplyScalar(f);camera.position.clampLength(controls.minDistance,controls.maxDistance);controls.update();}
 $('zoom-in').addEventListener('click',()=>zoom(.86));$('zoom-out').addEventListener('click',()=>zoom(1.16));
-renderer.domElement.addEventListener('keydown',ev=>{if(ev.key==='+'||ev.key==='='){zoom(.86);ev.preventDefault();}if(ev.key==='-'){zoom(1.16);ev.preventDefault();}if(ev.key.startsWith('Arrow')){ev.preventDefault();const spherical=new THREE.Spherical().setFromVector3(camera.position);if(ev.key==='ArrowLeft')spherical.theta-=.15;if(ev.key==='ArrowRight')spherical.theta+=.15;if(ev.key==='ArrowUp')spherical.phi-=.15;if(ev.key==='ArrowDown')spherical.phi+=.15;spherical.makeSafe();camera.position.setFromSpherical(spherical);controls.update();}});
-window.addEventListener('hashchange',()=>setKind(location.hash.slice(1),false));
-renderer.domElement.addEventListener('webglcontextlost',ev=>{ev.preventDefault();$('error').hidden=false;$('error').textContent='Die 3D-Darstellung wurde unterbrochen. Bitte die Seite neu laden.';});
-setKind(location.hash.slice(1));
-let last=performance.now();
-function loop(now){requestAnimationFrame(loop);if(document.hidden){last=now;return;}const dt=(now-last)/1000;if(dt<1/32)return;last=now;advance(state,dt);controls.update();draw();}
-requestAnimationFrame(loop);
+if(renderer){
+  renderer.domElement.addEventListener('keydown',ev=>{if(ev.key==='+'||ev.key==='='){zoom(.86);ev.preventDefault();}if(ev.key==='-'){zoom(1.16);ev.preventDefault();}if(ev.key.startsWith('Arrow')){ev.preventDefault();const spherical=new THREE.Spherical().setFromVector3(camera.position);if(ev.key==='ArrowLeft')spherical.theta-=.15;if(ev.key==='ArrowRight')spherical.theta+=.15;if(ev.key==='ArrowUp')spherical.phi-=.15;if(ev.key==='ArrowDown')spherical.phi+=.15;spherical.makeSafe();camera.position.setFromSpherical(spherical);controls.update();}});
+  renderer.domElement.addEventListener('webglcontextlost',ev=>{ev.preventDefault();$('error').hidden=false;$('error').textContent='Die 3D-Darstellung wurde unterbrochen. Bitte die Seite neu laden oder die makroskopische Ansicht nutzen.';});
+}
+new ResizeObserver(()=>{resize3d();fitCamera();resizeMacro();}).observe($('viewport'));
 document.addEventListener('visibilitychange',()=>{release();last=performance.now();});
-// Read-only inspection only when explicitly requested by the local QA runner.
-if(new URLSearchParams(location.search).has('qa'))window.__lab={snapshot:()=>({state:{...state},links:topo.links.length,visibleLinks:bridges.count,bonds:topo.bonds.length,visibleBonds:backbone.count,nodes:topo.nodes.length,points:positions(topo,state),camera:camera.position.toArray(),calls:renderer.info.render.calls,triangles:renderer.info.render.triangles})};
+
+/* ===================== Station: Wasser und Lösungsmittel ===================== */
+const MEDIA={
+  wasser:{n:'Wasser',d:1.00,col:[120,190,235],shape:'h2o',pc:'#8fd1ff'},
+  salz:{n:'Kochsalzlösung (gesättigt)',s:'Kochsalzlösung',d:1.20,col:[150,205,235],shape:'h2o',pc:'#b5e0ff'},
+  ethanol:{n:'Ethanol',d:.79,col:[205,225,235],shape:'bar',pc:'#c9e4f2'},
+  aceton:{n:'Aceton',d:.79,col:[200,230,215],shape:'bar',pc:'#a8f0c8'},
+  benzin:{n:'Benzin',d:.75,col:[240,214,120],shape:'bar',pc:'#ffd56b'},
+  toluol:{n:'Toluol',d:.87,col:[235,195,140],shape:'bar',pc:'#ffb86b'}
+};
+const MORDER=['wasser','salz','ethanol','aceton','benzin','toluol'];
+const PLASTICS={
+  thermoplaste:[
+    {id:'pp',n:'PP',d:.91,r:{},note:'Polypropylen löst sich bei Raumtemperatur in keinem dieser Stoffe.'},
+    {id:'pe',n:'PE',d:.95,r:{},note:'Polyethylen löst sich erst in heißem Toluol, nicht bei Raumtemperatur.'},
+    {id:'ps',n:'PS',d:1.05,r:{aceton:['dissolve'],toluol:['dissolve']}},
+    {id:'pmma',n:'PMMA',d:1.18,r:{aceton:['dissolve'],toluol:['dissolve']}},
+    {id:'pvc',n:'PVC',d:1.38,r:{},note:'Hart-PVC löst sich erst in besonderen Lösungsmitteln wie Tetrahydrofuran, nicht in diesen.'},
+    {id:'pva',n:'PVA',d:1.27,r:{wasser:['dissolve'],salz:['dissolve']},full:'Polyvinylalkohol'}
+  ],
+  duromere:[
+    {id:'bak',n:'Bakelit',d:1.30,r:{},full:'Phenolharz'},
+    {id:'mel',n:'Melaminharz',d:1.50,r:{}}
+  ],
+  elastomere:[
+    {id:'gum',n:'Gummi',d:.93,r:{benzin:['swell',.55],toluol:['swell',.65]},full:'Naturkautschuk'},
+    {id:'sap',n:'Superabsorber',d:1.10,r:{wasser:['swell',1.15],salz:['swell',.3]},full:'Polyacrylat (Windel)'}
+  ]
+};
+const W={med:'wasser',p:0,playing:false,seen:{},pl:{thermoplaste:'pva',duromere:'bak',elastomere:'sap'},drop:{thermoplaste:1,duromere:1,elastomere:1}};
+const wgrid=$('wgrid');
+const wCv={},wLu={};
+KINDS.forEach(k=>{
+  const d=document.createElement('div');d.className='station';
+  d.innerHTML='<h3 style="color:'+KCOL[k]+'">'+KNAME[k]+'</h3><div class="pchips" id="wc-'+k+'" role="group" aria-label="Kunststoff wählen: '+KNAME[k]+'"></div><canvas id="wb-'+k+'" aria-label="Becherglas mit Probekörper: '+KNAME[k]+'"></canvas><canvas class="lupe" id="wl-'+k+'" aria-label="Lupe: Ketten und Teilchen des Mediums"></canvas><p id="wt-'+k+'"></p>';
+  wgrid.appendChild(d);wCv[k]=d.querySelector('#wb-'+k);wLu[k]=d.querySelector('#wl-'+k);
+});
+const fmtD=x=>x.toFixed(2).replace('.',',');
+function wPl(k){return PLASTICS[k].find(p=>p.id===W.pl[k]);}
+function wEffect(k,p){
+  const pl=wPl(k),r=pl.r[W.med];
+  if(!r)return {mode:'none',scale:k==='duromere'?1+.02*p:1,diss:0};
+  if(r[0]==='dissolve')return {mode:'dissolve',scale:1-.95*p,diss:p};
+  return {mode:'swell',scale:1+r[1]*p,diss:0};
+}
+function wText(k){
+  const pl=wPl(k),M=MEDIA[W.med],e=wEffect(k,1),dm=M.d,sink=pl.d>dm;
+  const sw='<b>Schwimmen:</b> '+pl.n+' ('+fmtD(pl.d)+' g/cm³) '+(sink?'sinkt':'schwimmt')+' in '+(M.s||M.n)+' ('+fmtD(dm)+' g/cm³).<br>';
+  let t;
+  if(e.mode==='dissolve')t='Der Stoff <b>löst sich</b> auf. Die Teilchen des Mediums passen zu den Ketten und schieben sich dazwischen. Ohne Querverbindungen trennen sich die Ketten vollständig.';
+  else if(e.mode==='swell')t='Der Stoff <b>quillt</b> auf, löst sich aber nicht. Die Teilchen dringen ins Netz ein, die Querverbindungen halten die Ketten zusammen.';
+  else if(k==='duromere')t='Der Stoff bleibt <b>unverändert</b>. Das engmaschige Netz lässt kaum Teilchen herein und hält die Ketten fest, auch wenn das Medium sonst gut lösen würde.';
+  else t='Der Stoff bleibt <b>unverändert</b>: Medium und Kunststoff passen nicht zusammen („Gleiches löst sich in Gleichem“).'+(pl.note?' '+pl.note:'');
+  return sw+t;
+}
+function wSizeCanvas(c){const dpr=Math.min(devicePixelRatio||1,2),w=c.clientWidth,h=c.clientHeight;if(!w||!h)return null;if(c.width!==Math.round(w*dpr)||c.height!==Math.round(h*dpr)){c.width=Math.round(w*dpr);c.height=Math.round(h*dpr);}const g=c.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);return {g,w,h};}
+function drawBeaker(k,time){
+  const r=wSizeCanvas(wCv[k]);if(!r)return;const {g,w,h}=r;g.clearRect(0,0,w,h);
+  const p=W.p,e=wEffect(k,p),cx=w/2,bw=Math.min(190,w-40),bx=cx-bw/2,by=24,bh=h-44;
+  const liquid=MEDIA[W.med].col;
+  // Flüssigkeit
+  const turb=e.diss*.75;const lc=`rgba(${liquid[0]},${liquid[1]},${liquid[2]},${.42+turb*.3})`;
+  const fy=by+bh*.28;
+  g.fillStyle=lc;g.beginPath();g.moveTo(bx+3,fy);g.lineTo(bx+bw-3,fy);g.lineTo(bx+bw-3,by+bh-6);g.quadraticCurveTo(bx+bw-3,by+bh,bx+bw-12,by+bh);g.lineTo(bx+12,by+bh);g.quadraticCurveTo(bx+3,by+bh,bx+3,by+bh-6);g.closePath();g.fill();
+  if(e.mode==='dissolve'){ // Trübung durch gelöste Ketten
+    const gr=g.createLinearGradient(0,fy,0,by+bh);gr.addColorStop(0,'rgba('+hex(KCOL[k]).join(',')+','+(.0)+')');gr.addColorStop(1,'rgba('+hex(KCOL[k]).join(',')+','+(.5*e.diss)+')');g.fillStyle=gr;g.fillRect(bx+3,fy,bw-6,by+bh-fy-2);
+    for(let i=0;i<18;i++){const ph=rnd(i)*6;const x=cx+(rnd(i+3)-.5)*bw*.8*(.3+e.diss)+Math.sin(time*.7+ph)*6,y=by+bh-14-rnd(i+9)*(bh*.55)*e.diss+Math.cos(time*.6+ph)*4;g.fillStyle='rgba('+hex(KCOL[k]).join(',')+','+(.35*e.diss)+')';g.beginPath();g.arc(x,y,2+rnd(i+1)*4,0,Math.PI*2);g.fill();}
+  }
+  // Probekörper
+  const base=34,sz=base*e.scale;
+  if(sz>2){
+    const cols=BASECOL[k],x=cx-sz/2,pl=wPl(k),dm=MEDIA[W.med].d,sinks=pl.d>dm;
+    const frac=Math.min(1,pl.d/dm);
+    const yEnd=sinks?by+bh-8-sz:fy-sz*(1-frac)+Math.sin(time*1.3+k.length)*2;
+    const dr=1-Math.pow(1-clamp01(W.drop[k]),3);
+    const y=lerp(by-sz-6,yEnd,dr);
+    let c0=cols[0],c1=cols[1];
+    if(e.mode==='swell'){c0=mix(c0,'#d9c6ff',.4*p);c1=mix(c1,'#ffffff',.35*p);}
+    if(e.mode==='dissolve'){c0=mix(c0,'#ffffff',.3*e.diss);}
+    const gr=g.createLinearGradient(x,y,x+sz,y+sz);gr.addColorStop(0,c1);gr.addColorStop(1,c0);g.fillStyle=gr;
+    g.globalAlpha=e.mode==='dissolve'?Math.max(.15,1-.6*e.diss):1;
+    roundRect(g,x,y,sz,sz,e.mode==='swell'?6+8*p:4);g.fill();g.globalAlpha=1;g.lineWidth=1.4;g.strokeStyle='rgba(255,255,255,.55)';g.stroke();
+    if(e.mode==='swell'){g.strokeStyle='rgba(255,255,255,.35)';g.beginPath();g.arc(x+sz*.3,y+sz*.3,sz*.12,Math.PI,Math.PI*1.6);g.stroke();}
+  }
+  // Glas
+  g.strokeStyle='rgba(215,240,245,.8)';g.lineWidth=3;g.beginPath();g.moveTo(bx,by);g.lineTo(bx,by+bh-8);g.quadraticCurveTo(bx,by+bh,bx+12,by+bh);g.lineTo(bx+bw-12,by+bh);g.quadraticCurveTo(bx+bw,by+bh,bx+bw,by+bh-8);g.lineTo(bx+bw,by);g.stroke();
+  g.strokeStyle='rgba(255,255,255,.35)';g.lineWidth=1.4;g.beginPath();g.moveTo(bx+8,by+10);g.lineTo(bx+8,by+bh-24);g.stroke();
+  g.fillStyle='rgba(215,240,240,.75)';g.font='12px system-ui,sans-serif';g.textAlign='center';g.fillText((MEDIA[W.med].s||MEDIA[W.med].n)+' · '+wPl(k).n,cx,h-8);
+}
+function drawLupe(k,time){
+  const r=wSizeCanvas(wLu[k]);if(!r)return;const {g,w,h}=r;g.clearRect(0,0,w,h);
+  const p=W.p,e=wEffect(k,p),m=e.mode!=='none';
+  const x0=34,x1=w-34,rows=6,cy=h/2;
+  const sp=k==='thermoplaste'?1+(e.mode==='dissolve'?2.2*p:0):k==='elastomere'?1+(e.mode==='swell'?e.scale-1:0):.8;
+  const gap=(h-28)/(rows-1)*Math.min(sp,1.35);
+  const chainCol=KCOL[k];
+  const pos=(i,x)=>{
+    let y=cy+(i-(rows-1)/2)*gap*(k==='thermoplaste'?(1+(m?1.3*p:0)):1)+Math.sin(x*.07+i*1.9+time*.8)*(k==='duromere'?3:6);
+    let xx=x;
+    if(k==='thermoplaste'&&m){xx+=Math.sin(time*.6+i*2)*p*18;y+=Math.sin(time*.9+i*3.3+x*.02)*p*12;}
+    return [xx,y];
+  };
+  // Querverbindungen
+  const nL=k==='duromere'?9:k==='elastomere'?3:0;
+  g.lineWidth=3;
+  for(let j=0;j<nL;j++){
+    const xl=lerp(x0+14,x1-14,(j+.5)/nL);
+    for(let i=0;i<rows-1;i++){if(k==='elastomere'&&(i+j)%2)continue;if(k==='duromere'&&(i*3+j)%3===1)continue;const a=pos(i,xl),b=pos(i+1,xl);g.strokeStyle='#f08a3a';g.beginPath();g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);g.stroke();g.fillStyle='#f08a3a';g.beginPath();g.arc(a[0],a[1],3,0,Math.PI*2);g.arc(b[0],b[1],3,0,Math.PI*2);g.fill();}
+  }
+  // Ketten
+  g.lineWidth=2.6;g.lineJoin='round';
+  for(let i=0;i<rows;i++){g.strokeStyle=chainCol;g.beginPath();for(let x=x0;x<=x1;x+=6){const q=pos(i,x);if(x===x0)g.moveTo(q[0],q[1]);else g.lineTo(q[0],q[1]);}g.stroke();}
+  // Lösungsmittelteilchen
+  const N=34,col=MEDIA[W.med].pc,h2o=MEDIA[W.med].shape==='h2o';
+  const inside=m?(k==='duromere'?.1:1)*Math.max(p,.02):.0;
+  for(let i=0;i<N;i++){
+    const frac=i/N,ins=frac<inside*.95;
+    let x,y;
+    if(ins){x=lerp(x0,x1,rnd(i+2))+Math.sin(time*.8+i)*8;y=lerp(10,h-10,rnd(i+7))+Math.cos(time*.7+i*1.3)*7;}
+    else{const left=i%2===0;x=(left?lerp(4,x0-8,rnd(i+2)):lerp(x1+8,w-4,rnd(i+2)))+Math.sin(time*.9+i)*3;y=lerp(8,h-8,rnd(i+7))+Math.cos(time*.8+i*1.3)*6;}
+    if(h2o){g.fillStyle=col;g.beginPath();g.arc(x,y,3.6,0,Math.PI*2);g.fill();g.fillStyle='#e8f6ff';g.beginPath();g.arc(x-4,y+2.5,2.2,0,Math.PI*2);g.arc(x+4,y+2.5,2.2,0,Math.PI*2);g.fill();}
+    else{g.fillStyle=col;roundRect(g,x-5,y-2.6,10,5.2,2.6);g.fill();}
+  }
+  g.fillStyle='rgba(215,240,240,.7)';g.font='11px system-ui,sans-serif';g.textAlign='left';
+  g.fillText('Lupe: '+(h2o?'Wasser-Teilchen':(MEDIA[W.med].s||MEDIA[W.med].n)+'-Teilchen'),6,h-6);
+}
+
+function wUpdate(){
+  $('wpick').querySelectorAll('[data-med]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.med===W.med));
+  KINDS.forEach(k=>{
+    $('wc-'+k).querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.id===W.pl[k]));
+    $('wt-'+k).innerHTML=wText(k);
+  });
+  $('wtime').value=Math.round(W.p*100);$('wtime-value').textContent=(W.p===0?'0':Math.round(W.p*180))+' min';
+  const M=MEDIA[W.med],E={};KINDS.forEach(k=>E[k]=wEffect(k,1).mode);
+  const word=m=>m==='dissolve'?'löst sich':m==='swell'?'quillt':'bleibt unverändert';
+  const line=k=>'<b style="color:'+KCOL[k]+'">'+KNAME[k]+'</b> ('+wPl(k).n+') '+word(E[k]);
+  const typical=E.thermoplaste==='dissolve'&&E.elastomere==='swell'&&E.duromere==='none';
+  let msg;
+  if(typical)msg='Jetzt unterscheiden sich die Klassen deutlich: Ohne Querverbindungen löst sich der Thermoplast, mit wenigen quillt der Elastomer, das enge Netz des Duromers bleibt unverändert.';
+  else if(E.thermoplaste==='none'&&E.elastomere==='none')msg='In diesem Medium passiert bei diesen Kunststoffen nichts. Das sagt nichts über die Klasse: Das Medium passt nur nicht zum Kunststoff. Wähle andere Kunststoffe oder ein anderes Medium.';
+  else msg='Beobachte die Becher: Löst sich der Stoff, quillt er, oder bleibt er unverändert? Daran erkennst du, wie die Ketten verbunden sind.';
+  const ths=PLASTICS.thermoplaste.map(p=>p.n+' '+(p.d>M.d?'sinkt':'schwimmt')).join(', ');
+  $('wresult').innerHTML='<h3>Ergebnis in '+(M.s||M.n)+'</h3><p style="margin:0">'+line('thermoplaste')+' · '+line('duromere')+' · '+line('elastomere')+'.</p><p style="margin:8px 0 0">'+msg+'</p><p class="muted small" style="margin:8px 0 0"><b>Schwimmen oder Sinken</b> hängt nur von der Dichte ab, nicht von der Klasse. In '+(M.s||M.n)+' ('+fmtD(M.d)+' g/cm³) gilt für die Thermoplaste: '+ths+'. '+(new Set(PLASTICS.thermoplaste.map(p=>p.d>M.d)).size>1?' Bei gleicher Klasse gibt es also beides.':' Probiere Wasser oder Kochsalzlösung: Dort schwimmen manche, andere sinken.')+' Die Zeitangaben sind nur ein Zeitraffer.</p>';
+}
+function wKey(){return W.med+'|'+KINDS.map(k=>W.pl[k]).join(',');}
+function wDone(){
+  if(W.p<=.9)return;const key=wKey();if(W.seen[key])return;W.seen[key]=1;
+  const E={};KINDS.forEach(k=>E[k]=wEffect(k,1).mode);
+  if(E.thermoplaste==='dissolve'&&E.elastomere==='swell'&&E.duromere==='none')kolbi('w-'+key,'Jetzt sieht man den Unterschied: Der Thermoplast löst sich, der Elastomer quillt, das Duromer bleibt. Warum löst sich der Thermoplast, aber der Elastomer nicht? Genau: Die Querverbindungen halten das Netz zusammen.','excited',300);
+  else if(E.thermoplaste==='dissolve'&&E.duromere==='none')kolbi('w-'+key,'Der Thermoplast löst sich, das Duromer nicht. Das Netz des Duromers hält alles fest.','excited',300);
+  else if(E.thermoplaste==='none'&&E.elastomere==='none'&&E.duromere==='none')kolbi('w-'+key,'Nichts passiert, in keinem Becher. Das Medium passt nicht zu diesen Kunststoffen. Probier ein anderes Medium aus, zum Beispiel Aceton oder Benzin.','interested',300);
+  const n=Object.keys(W.seen).length;
+  if(n===5)kolbi('w-many','Fünf Kombinationen ausprobiert. Merke: Es kommt auf Medium und Kunststoff an. Löst sich etwas, ist es ein Thermoplast. Quillt es nur, ist es weitmaschig vernetzt.','excited',3500);
+}
+function wDrop(k){W.drop[k]=0;}
+(function(){
+  $('wpick').innerHTML='<div class="grp"><span>Medium</span>'+MORDER.map(m=>'<button data-med="'+m+'" aria-pressed="false">'+(MEDIA[m].s||MEDIA[m].n)+' ('+fmtD(MEDIA[m].d)+')</button>').join('')+'</div>';
+  $('wpick').addEventListener('click',e=>{const b=e.target.closest('[data-med]');if(!b)return;W.med=b.dataset.med;W.p=0;KINDS.forEach(wDrop);wUpdate();});
+  KINDS.forEach(k=>{
+    const c=$('wc-'+k);c.innerHTML=PLASTICS[k].map(p=>'<button data-id="'+p.id+'" aria-pressed="false" title="'+(p.full||p.n)+'">'+p.n+'</button>').join('');
+    c.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;W.pl[k]=b.dataset.id;W.p=0;wDrop(k);wUpdate();});
+  });
+})();
+$('wtime').addEventListener('input',ev=>{W.p=+ev.target.value/100;W.playing=false;$('wplay').textContent='▶ Abspielen';wUpdate();wDone();});
+$('wplay').addEventListener('click',()=>{if(W.p>=1)W.p=0;W.playing=!W.playing;$('wplay').textContent=W.playing?'⏸ Pause':'▶ Abspielen';});
+$('wreset').addEventListener('click',()=>{W.p=0;W.playing=false;$('wplay').textContent='▶ Abspielen';KINDS.forEach(wDrop);wUpdate();});
+let wLast=performance.now();
+function wLoop(now){
+  requestAnimationFrame(wLoop);
+  if(section!=='wasser'||document.hidden){wLast=now;return;}
+  const dt=Math.min(.05,(now-wLast)/1000);wLast=now;
+  KINDS.forEach(k=>{if(W.drop[k]<1)W.drop[k]=Math.min(1,W.drop[k]+dt/.9);});
+  if(W.playing){W.p=Math.min(1,W.p+dt/9);if(W.p>=1){W.playing=false;$('wplay').textContent='▶ Abspielen';}wUpdate();wDone();}
+  const t=now/1000;KINDS.forEach(k=>{drawBeaker(k,t);drawLupe(k,t);});
+}
+requestAnimationFrame(wLoop);
+wUpdate();
+
+/* ===================== Monomer-Werkstatt ===================== */
+const MONO=[
+  {id:'eth',n:'Ethen',fm:'H₂C=CH₂',g:'vinyl',f:2,c:'#46d1c8',grp:'Mit C=C-Doppelbindung'},
+  {id:'pro',n:'Propen',fm:'H₂C=CH–CH₃',g:'vinyl',f:2,c:'#7be0a8',grp:'Mit C=C-Doppelbindung'},
+  {id:'sty',n:'Styrol',fm:'H₂C=CH–C₆H₅',g:'vinyl',f:2,c:'#f2c880',grp:'Mit C=C-Doppelbindung'},
+  {id:'vcl',n:'Vinylchlorid',fm:'H₂C=CHCl',g:'vinyl',f:2,c:'#d79bd9',grp:'Mit C=C-Doppelbindung'},
+  {id:'mma',n:'Methylmethacrylat',fm:'H₂C=C(CH₃)COOCH₃',g:'vinyl',f:2,c:'#9bb3e8',grp:'Mit C=C-Doppelbindung'},
+  {id:'iso',n:'Isopren',fm:'H₂C=C(CH₃)–CH=CH₂',g:'dien',f:2,c:'#c58bf5',grp:'Mit C=C-Doppelbindung'},
+  {id:'but',n:'Butadien',fm:'H₂C=CH–CH=CH₂',g:'dien',f:2,c:'#e39bd0',grp:'Mit C=C-Doppelbindung'},
+  {id:'s8',n:'Schwefel',fm:'S₈',g:'verne',f:0,c:'#f6d66b',grp:'Zusatzstoff'},
+  {id:'tpa',n:'Terephthalsäure',fm:'HOOC–C₆H₄–COOH',g:'saeure',f:2,c:'#ff9a8a',grp:'Säuren, Alkohole, Amine'},
+  {id:'ads',n:'Adipinsäure',fm:'HOOC–(CH₂)₄–COOH',g:'saeure',f:2,c:'#ffb27a',grp:'Säuren, Alkohole, Amine'},
+  {id:'eg',n:'Ethan-1,2-diol',fm:'HO–CH₂–CH₂–OH',g:'alk',f:2,c:'#6fb9e8',grp:'Säuren, Alkohole, Amine'},
+  {id:'hda',n:'Hexan-1,6-diamin',fm:'H₂N–(CH₂)₆–NH₂',g:'amin',f:2,c:'#8fe3a8',grp:'Säuren, Alkohole, Amine'},
+  {id:'gly',n:'Propan-1,2,3-triol (Glycerin)',fm:'HO–CH₂–CH(OH)–CH₂–OH',g:'alk',f:3,c:'#5aa0e0',grp:'Säuren, Alkohole, Amine'},
+  {id:'phe',n:'Phenol',fm:'C₆H₅OH',g:'harz',f:3,c:'#e8a0c0',grp:'Weitere Bausteine'},
+  {id:'ure',n:'Harnstoff',fm:'H₂N–CO–NH₂',g:'harz',f:4,c:'#b0e0a0',grp:'Weitere Bausteine'},
+  {id:'mel',n:'Melamin',fm:'C₃N₃(NH₂)₃',g:'harz',f:6,c:'#a8c8f0',grp:'Weitere Bausteine'},
+  {id:'fom',n:'Formaldehyd',fm:'H₂C=O',g:'fom',f:2,c:'#f0d0a0',grp:'Weitere Bausteine'}
+];
+const MBY={};MONO.forEach(m=>MBY[m.id]=m);
+const SEL=[];
+const R={res:null,built:false,t0:0,guess:null,nodes:[],links:[],correct:{},tries:0};
+function mfmt(s){return s;}
+/* ------- Regel-Engine ------- */
+function sulfurLevel(v){return v<6?'kaum':v<=40?'wenig':'viel';}
+function buildPolymer(sel,sv){
+  const ids=sel.slice(),has=x=>ids.includes(x),M=ids.map(i=>MBY[i]);
+  if(!ids.length)return {ok:false,why:'Der Kolben ist leer. Tippe zuerst ein paar Monomere im Regal an.'};
+  const V=M.filter(m=>m.g==='vinyl'||m.g==='dien'),dien=M.filter(m=>m.g==='dien'),hasS=has('s8');
+  const C=M.filter(m=>['saeure','alk','amin'].includes(m.g)),F=M.filter(m=>m.g==='harz'||m.g==='fom');
+  const kinds=[V.length>0,C.length>0,F.length>0].filter(Boolean).length;
+  if(hasS&&!V.length&&(C.length||F.length))return {ok:false,why:'Schwefel kann nur Ketten verbinden, die noch Doppelbindungen haben (zum Beispiel aus Isopren oder Butadien). Mit diesen Monomeren hat er nichts zum Verbinden.',hint:'Kombiniere Schwefel mit Isopren oder Butadien.'};
+  if(hasS&&!V.length)return {ok:false,why:'Schwefel allein ist kein Monomer: Er verbindet fertige Ketten miteinander. Ergänze Isopren oder Butadien.',hint:'Isopren und Schwefel sind ein klassisches Paar.'};
+  if(kinds>1)return {ok:false,why:'Diese Monomere passen nicht zusammen. Ethen, Styrol und Co. verknüpfen sich über ihre C=C-Doppelbindung. Säuren, Alkohole und Amine verknüpfen sich über ihre funktionellen Gruppen, und Phenol, Harnstoff oder Melamin brauchen Formaldehyd als Brücke. Nimm Monomere aus <b>einem</b> Reaktionstyp.',hint:'Bleibe in einer Gruppe des Regals.'};
+  const fmax=Math.max(...M.filter(m=>m.f>0).map(m=>m.f));
+  /* A) Polymerisation */
+  if(V.length){
+    const names=V.map(m=>m.n);
+    if(hasS){
+      if(!dien.length)return {ok:false,why:'Schwefel kann hier nichts verbinden: In der Kette aus '+names.join(' und ')+' bleiben keine Doppelbindungen zurück. Nur Ketten aus Isopren oder Butadien lassen sich mit Schwefel verbinden.',hint:'Ergänze Isopren oder Butadien.'};
+      const lvl=sulfurLevel(sv);
+      let name=has('iso')&&!has('but')&&!has('sty')?'Naturkautschuk (Polyisopren)':has('but')&&!has('iso')&&!has('sty')?'Butadien-Kautschuk (BR)':has('but')&&has('sty')&&!has('iso')?'Styrol-Butadien-Kautschuk (SBR)':'Kautschuk-Copolymer aus '+names.join(' und ');
+      const base={ok:true,typ:'Die C=C-Doppelbindungen öffnen sich und verknüpfen die Monomere, Schwefel kann die Ketten zusätzlich verbinden',parts:ids,sv,fmax};
+      if(lvl==='kaum')return {...base,name:name+', ohne Schwefel',cls:'thermoplaste',structure:'linear',cross:0,formel:'–[CH₂–C(CH₃)=CH–CH₂]ₙ–',use:'Rohkautschuk',
+        why:'Mit so wenig Schwefel entstehen kaum Schwefelbrücken. Die Ketten liegen praktisch frei nebeneinander. Das Material ist weich, klebrig und lässt sich verformen: Es verhält sich wie ein Thermoplast. Erst genug <b>Schwefel</b> macht daraus Gummi.',lab:'Rohkautschuk ist unvernetzt. Deshalb zählt er hier zu den Thermoplasten.'};
+      if(lvl==='wenig')return {...base,name:name+', mit wenig Schwefel',cls:'elastomere',structure:'net-wide',cross:2,formel:'–[CH₂–C(CH₃)=CH–CH₂]ₙ– mit Schwefelbrücken (–Sₓ–)',use:'Autoreifen, Radiergummi, Gummibänder',
+        why:'Wenig Schwefel bildet <b>wenige Brücken</b> zwischen den Ketten. Das Netz ist <b>weitmaschig</b>: Die Kettenstücke dazwischen können sich entknäueln und wieder zusammenziehen.',lab:'Weitmaschig vernetzt: gummielastisch.'};
+      return {...base,name:name+', mit viel Schwefel',cls:'duromere',structure:'net-dense',cross:7,formel:'–[CH₂–C(CH₃)=CH–CH₂]ₙ– mit Schwefelbrücken (–Sₓ–)',use:'Hartgummi (Ebonit): Kämme, Mundstücke, Gehäuse',
+        why:'Sehr viel Schwefel bildet <b>viele Brücken</b>. Das Netz ist <b>engmaschig</b>: Die Ketten können sich kaum noch bewegen. Aus dem weichen Gummi wird ein harter, spröder Werkstoff.',lab:'Engmaschig vernetzt: hart, nicht schmelzbar.'};
+    }
+    const single=V.length===1;
+    const T={eth:['Polyethylen (PE)','–[CH₂–CH₂]ₙ–','Folien, Tüten, Flaschen'],pro:['Polypropylen (PP)','–[CH₂–CH(CH₃)]ₙ–','Verpackungen, Joghurtbecher'],sty:['Polystyrol (PS)','–[CH₂–CH(C₆H₅)]ₙ–','Joghurtbecher, Dämmstoff (geschäumt)'],vcl:['Polyvinylchlorid (PVC)','–[CH₂–CHCl]ₙ–','Rohre, Fensterprofile, Bodenbeläge'],mma:['Polymethylmethacrylat (PMMA)','–[CH₂–C(CH₃)(COOCH₃)]ₙ–','Acrylglas, Lichtleiter'],iso:['Polyisopren (Rohkautschuk)','–[CH₂–C(CH₃)=CH–CH₂]ₙ–','Rohstoff für Gummi'],but:['Polybutadien (Rohkautschuk)','–[CH₂–CH=CH–CH₂]ₙ–','Rohstoff für Gummi']};
+    const allDien=V.every(m=>m.g==='dien');
+    return {ok:true,name:single?T[V[0].id][0]:'Copolymer aus '+names.join(' und '),cls:'thermoplaste',structure:'linear',cross:0,fmax,sv,parts:ids,
+      typ:'Die C=C-Doppelbindung öffnet sich, die Monomere reihen sich aneinander',
+      formel:single?T[V[0].id][1]:'–[A–B–A–B…]ₙ– (Copolymer)',use:single?T[V[0].id][2]:'je nach Anteil der Bausteine',
+      why:'Jedes Monomer hat nur <b>zwei Verknüpfungsstellen</b>. So entstehen lange, <b>unverzweigte Einzelketten</b> ohne chemische Querverbindungen. Die Ketten halten nur durch schwache Kräfte zusammen.'+(allDien?' Weil noch Doppelbindungen in der Kette sind, könnte man sie mit Schwefel vernetzen.':''),
+      lab:allDien?'Ohne Schwefel: unvernetzter Rohkautschuk, er verhält sich wie ein Thermoplast.':'Nur lange Einzelketten: schmelzbar und formbar.'};
+  }
+  /* B) Polykondensation */
+  if(C.length){
+    const A=M.filter(m=>m.g==='saeure'),D=M.filter(m=>m.g==='alk'),N=M.filter(m=>m.g==='amin');
+    if(!A.length)return {ok:false,why:'Hier brauchst du eine <b>Säure mit zwei COOH-Gruppen</b> (Terephthal- oder Adipinsäure) und einen Partner. Ein Alkohol oder Amin allein verknüpft sich nicht zu einem Polymer.',hint:'Nimm eine Säure dazu.'};
+    if(!D.length&&!N.length)return {ok:false,why:'Eine Säure allein bildet kein Polymer. Sie braucht einen Partner mit OH- oder NH₂-Gruppen: Ethandiol, Glycerin oder Hexandiamin.',hint:'Ergänze einen Alkohol oder ein Amin.'};
+    const base={ok:true,fmax,sv,parts:ids,typ:'Beim Verknüpfen wird jedes Mal ein Wassermolekül abgespalten'};
+    if(has('gly'))return {...base,name:'Alkydharz (Polyester)'+(N.length?' mit Amidgruppen':''),cls:'duromere',structure:'net-dense',cross:7,formel:'Estergruppen (–CO–O–) verbinden die Bausteine',use:'Lacke, Harze',
+      why:'<b>Glycerin hat drei OH-Gruppen</b> und damit drei Verknüpfungsstellen. Jede kann eine weitere Kette anbinden: Es entstehen <b>Querverbindungen in alle Richtungen</b> und ein engmaschiges Netz.',lab:'Mindestens ein Monomer mit drei Verknüpfungsstellen: Netz.'};
+    const t=A.map(m=>m.id).join(',')+'|'+D.map(m=>m.id).join(',')+'|'+N.map(m=>m.id).join(',');
+    const NM={'tpa|eg|':['Polyethylenterephthalat (PET)','–[O–CH₂–CH₂–O–CO–C₆H₄–CO]ₙ–','Getränkeflaschen, Textilfasern'],'ads||hda':['Polyamid 6.6 (Nylon)','–[NH–(CH₂)₆–NH–CO–(CH₂)₄–CO]ₙ–','Textilfasern, Zahnräder, Seile'],'ads|eg|':['Aliphatischer Polyester','–[O–CH₂–CH₂–O–CO–(CH₂)₄–CO]ₙ–','biologisch abbaubare Folien'],'tpa||hda':['Aromatisches Polyamid','–[NH–(CH₂)₆–NH–CO–C₆H₄–CO]ₙ–','Hochleistungsfasern, Technikteile']};
+    const e=NM[t];
+    return {...base,name:e?e[0]:'Copolymer (Polyester/Polyamid)',cls:'thermoplaste',structure:'linear',cross:0,formel:e?e[1]:'–[Säure–Alkohol/Amin]ₙ– (Copolymer)',use:e?e[2]:'je nach Anteil der Bausteine',
+      why:'Alle Monomere haben genau <b>zwei Verknüpfungsstellen</b> (zwei COOH, zwei OH oder zwei NH₂). So entstehen lange <b>Einzelketten</b>, die sich nicht untereinander verbinden.',lab:'Nur zwei Verknüpfungsstellen pro Monomer: lineare Ketten.'};
+  }
+  /* C) Harze mit Formaldehyd */
+  const H=M.filter(m=>m.g==='harz');
+  if(!has('fom'))return {ok:false,why:H.map(m=>m.n).join(' und ')+' braucht <b>Formaldehyd</b> als Brückenglied zwischen den Molekülen. Ohne Formaldehyd gibt es keine Verknüpfung.',hint:'Ergänze Formaldehyd.'};
+  if(!H.length)return {ok:false,why:'Formaldehyd allein bildet noch kein Harz. Er verbrückt Moleküle mit mehreren reaktiven Stellen: Phenol, Harnstoff oder Melamin.',hint:'Ergänze Phenol, Harnstoff oder Melamin.'};
+  const HN={phe:['Phenolharz (Bakelit)','Steckdosen, Pfannengriffe'],ure:['Harnstoff-Formaldehyd-Harz (Aminoplast)','Spanplattenleim, Elektroteile'],mel:['Melaminharz','Küchenarbeitsplatten, Geschirr']};
+  const one=H.length===1;
+  return {ok:true,name:one?HN[H[0].id][0]:'Mischharz aus '+H.map(m=>m.n).join(' und ')+' mit Formaldehyd',cls:'duromere',structure:'net-dense',cross:7,fmax,sv,parts:ids,
+    typ:'Formaldehyd verbrückt die Moleküle, dabei wird Wasser abgespalten',formel:'Ringe, verbunden über –CH₂–Brücken',use:one?HN[H[0].id][1]:'Harze, Pressstoffe',
+    why:'<b>'+H.map(m=>m.n+' hat '+m.f+' reaktive Stellen').join(', ')+'.</b> Mit Formaldehyd als Brücke geht jede Stelle eine neue Bindung ein. Es entsteht ein <b>engmaschiges, dreidimensionales Netz</b>.',lab:'Monomere mit drei oder mehr Verknüpfungsstellen: engmaschiges Netz.'};
+}
+/* ------- Regal ------- */
+(function(){
+  const shelf=$('shelf');let grp='',h='';
+  MONO.forEach(m=>{
+    if(m.grp!==grp){grp=m.grp;h+='<h4>'+grp+'</h4>';}
+    h+='<button class="mono" data-id="'+m.id+'" aria-pressed="false"><em title="Verknüpfungsstellen">'+(m.f?'f = '+m.f:'Zusatz')+'</em><b>'+m.n+'</b><span>'+m.fm+'</span></button>';
+  });
+  shelf.innerHTML=h+'<p class="muted small" style="grid-column:1/-1;margin:8px 2px 0">f = Zahl der Verknüpfungsstellen: Wie viele Anschlüsse hat das Monomer, um sich mit anderen zu verbinden?</p>';
+  shelf.addEventListener('click',e=>{
+    const b=e.target.closest('.mono');if(!b)return;
+    const id=b.dataset.id,i=SEL.indexOf(id);
+    if(i>=0)SEL.splice(i,1);
+    else{if(SEL.length>=4){mMsg('info','Im Kolben ist Platz für höchstens vier Monomere. Nimm erst eines heraus.');return;}SEL.push(id);}
+    R.res=null;R.built=false;mUpdate();
+  });
+})();
+function mUpdate(){
+  for(const b of document.querySelectorAll('.mono'))b.setAttribute('aria-pressed',SEL.includes(b.dataset.id));
+  $('chips').innerHTML=SEL.map(id=>'<span class="chip" style="border-color:'+MBY[id].c+'">'+MBY[id].n+'</span>').join('')||'<span class="muted small">Noch nichts im Kolben</span>';
+  $('vwrap').hidden=!SEL.includes('s8');
+  const v=+$('sulfur').value;$('sulfur-value').textContent=v<6?'sehr wenig':v<=40?'wenig':'viel';
+  $('mres').className='verdict';$('mres').innerHTML='';$('mguess').hidden=true;$('mcheck').className='verdict';$('mcheck').innerHTML='';$('mgo').hidden=true;
+}
+function mMsg(kind,html){const e=$('mres');e.className='verdict on '+kind;e.innerHTML=html;}
+/* ------- Bauen ------- */
+function doBuild(){
+  const res=buildPolymer(SEL,+$('sulfur').value);
+  R.res=res;R.guess=null;
+  $('mcheck').className='verdict';$('mcheck').innerHTML='';$('mgo').hidden=true;
+  if(!res.ok){R.built=false;$('mguess').hidden=true;mMsg('info','<b>Das klappt so nicht.</b><br>'+res.why);kolbi(null,res.hint||'Das ergibt noch kein Polymer. Lies den Hinweis und probiere es noch einmal.','interested');return;}
+  R.built=true;R.t0=performance.now();
+  mMsg('ok','<b>Gebaut: '+res.name+'</b><div class="small muted" style="margin-top:4px">'+res.typ+'</div><div class="formula">'+res.formel+'</div><div class="small muted" style="margin-top:6px">Untersuche die Struktur im Bild. Welche Kunststoffklasse ist das? Begründe mit dem, was du siehst.</div>');R.revealed=false;R.wrongs=0;document.querySelectorAll('.guess button').forEach(b=>b.disabled=false);
+  $('mguess').hidden=false;
+  const cnt={};SEL.forEach(id=>cnt[id]=1);
+  kolbi(null,'Jetzt bist du dran: Schau dir die Struktur genau an und tippe, welche Kunststoffklasse das ist. Wie sind die Ketten untereinander verbunden?','interested',2200);
+}
+$('build').addEventListener('click',doBuild);
+$('mclear').addEventListener('click',()=>{SEL.length=0;R.res=null;R.built=false;mUpdate();});
+$('sulfur').addEventListener('input',()=>{const had=R.built;mUpdate();if(had&&SEL.includes('s8'))doBuild();});
+document.querySelectorAll('.guess button').forEach(b=>b.addEventListener('click',()=>{
+  if(!R.res||!R.res.ok||R.revealed)return;
+  const g=b.dataset.g,res=R.res,right=g===res.cls;R.tries++;
+  const e=$('mcheck');
+  if(!right&&!R.wrongs){
+    R.wrongs=1;b.disabled=true;e.className='verdict on bad';
+    e.innerHTML='<b>Das passt noch nicht.</b> Schau noch einmal auf die Struktur: Gibt es Verbindungen zwischen den Ketten? Wie viele? Du hast einen weiteren Versuch.';
+    kolbiReact('oops');kolbi(null,'Noch nicht ganz. Schau auf die Verbindungen zwischen den Ketten. Du darfst noch einmal tippen.','interested',200);return;
+  }
+  R.revealed=true;document.querySelectorAll('.guess button').forEach(x=>x.disabled=true);
+  e.className='verdict on '+(right?'ok':'bad');
+  e.innerHTML=(right?'<b>Richtig: '+KNAME[res.cls]+'!</b> ':'<b>Das ist ein '+KNAME[res.cls]+'.</b> ')+res.why+'<div class="small" style="margin-top:6px"><b>'+res.lab+'</b></div><div class="small muted" style="margin-top:6px">Verwendung: '+res.use+'</div>';
+  $('mgo').hidden=false;
+  if(right&&!R.wrongs){R.correct[res.cls]=1;}
+  kolbiReact(right?'excited':'oops');
+  kolbi(null,right?'Genau! '+res.lab+' Teste das Verhalten gern im Labor nach.':'Jetzt weißt du es: '+res.lab+' Probiere eine andere Kombination aus.',right?'excited':'interested',200);
+  if(Object.keys(R.correct).length>=3)kolbi('m-all','Alle drei Klassen hast du schon allein erkannt! Probier die Schwefelmenge bei Isopren: Aus demselben Monomer entstehen drei verschiedene Kunststoffe.','excited',2500);
+}));
+$('gotolab').addEventListener('click',()=>{if(R.res&&R.res.ok){go('untersuchen');setKind(R.res.cls);kolbi(null,'Jetzt kannst du das Polymer im Labor testen: Wie verhält es sich bei Wärme und Zug?','interested',500);}});
+/* ------- Animation ------- */
+const rcv=$('rcanvas');
+function mLayout(res,w,h,cols){
+  const nodes=[],links=[],px=36,py=34;
+  const add=(x,y,c,r,k)=>{nodes.push({x,y,c,r:r||8,k:k||0});return nodes.length-1;};
+  const rows=5;
+  if(res.structure==='linear'){
+    const per=11;
+    for(let r=0;r<rows;r++)for(let j=0;j<per;j++){const x=px+(w-2*px)*j/(per-1),y=py+(h-2*py)*r/(rows-1)+Math.sin(j*.9+r*1.7)*7;const i=add(x,y,cols[(j+r)%cols.length]);if(j)links.push([i-1,i,'b']);}
+  }else if(res.structure==='net-dense'){
+    const per=9,idx=[];
+    for(let r=0;r<rows;r++){idx[r]=[];for(let j=0;j<per;j++){const x=px+(w-2*px)*j/(per-1),y=py+(h-2*py)*r/(rows-1);idx[r][j]=add(x,y,cols[(r+j)%cols.length]);}}
+    for(let r=0;r<rows;r++)for(let j=0;j<per;j++){if(j)links.push([idx[r][j-1],idx[r][j],'b']);if(r)links.push([idx[r-1][j],idx[r][j],'x']);if(r&&j&&(r+j)%2===0)links.push([idx[r-1][j-1],idx[r][j],'x']);}
+  }else{ // Ketten mit Schwefelbrücken
+    const per=11,idx=[],dense=res.cross>4;
+    for(let r=0;r<rows;r++){idx[r]=[];for(let j=0;j<per;j++){const x=px+(w-2*px)*j/(per-1),y=py+(h-2*py)*r/(rows-1)+Math.sin(j*.9+r*1.7)*6;idx[r][j]=add(x,y,cols[(j+r)%cols.length]);if(j)links.push([idx[r][j-1],idx[r][j],'b']);}}
+    for(let r=1;r<rows;r++){const js=dense?[1,2,4,5,6,8,9]:((r%2)?[3,8]:[2,6]);for(const j of js){const a=idx[r-1][j],b=idx[r][j],s=add((nodes[a].x+nodes[b].x)/2,(nodes[a].y+nodes[b].y)/2,'#f6d66b',5.5,1);links.push([a,s,'x']);links.push([s,b,'x']);}}
+  }
+  return {nodes,links};
+}
+function mSize(){const dpr=Math.min(devicePixelRatio||1,2),w=rcv.clientWidth,h=rcv.clientHeight;if(!w||!h)return null;if(rcv.width!==Math.round(w*dpr)||rcv.height!==Math.round(h*dpr)){rcv.width=Math.round(w*dpr);rcv.height=Math.round(h*dpr);R.nodes=[];}const g=rcv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);return {g,w,h};}
+const ease=x=>{x=clamp01(x);return x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;};
+function stubs(g,x,y,f,rot,len){for(let k=0;k<f;k++){const a=rot+k*2*Math.PI/f;g.beginPath();g.moveTo(x+Math.cos(a)*7,y+Math.sin(a)*7);g.lineTo(x+Math.cos(a)*len,y+Math.sin(a)*len);g.stroke();}}
+function drawReactor(now){
+  const r=mSize();if(!r)return;const {g,w,h}=r;g.clearRect(0,0,w,h);
+  const time=now/1000;
+  const built=R.built&&R.res&&R.res.ok;
+  if(!built){
+    // Monomere im Kolben: bewegen sich, Stummel zeigen die Verknüpfungsstellen
+    if(!SEL.length){g.fillStyle='rgba(215,240,240,.6)';g.font='14px system-ui,sans-serif';g.textAlign='center';g.fillText('Wähle Monomere im Regal. Hier siehst du ihre Verknüpfungsstellen.',w/2,h/2);return;}
+    const n=SEL.length;
+    SEL.forEach((id,mi)=>{
+      const m=MBY[id],cx=(mi+.5)*w/n,cy=h/2-8,cnt=m.id==='s8'?5:6;
+      for(let k=0;k<cnt;k++){
+        const ph=k*2.1+mi*1.3,x=cx+Math.cos(ph)*(w/n*.28)+Math.sin(time*.8+ph)*10,y=cy+Math.sin(ph*1.3)*(h*.3)+Math.cos(time*.7+ph)*10;
+        g.strokeStyle='rgba(255,255,255,.75)';g.lineWidth=2.4;g.lineCap='round';
+        if(m.f)stubs(g,x,y,m.f,time*.5+ph,m.f>=4?17:15);
+        g.fillStyle=m.c;g.beginPath();g.arc(x,y,m.id==='s8'?7:9,0,Math.PI*2);g.fill();g.strokeStyle='rgba(0,0,0,.25)';g.lineWidth=1;g.stroke();
+      }
+      g.fillStyle='rgba(235,248,248,.9)';g.font='12px system-ui,sans-serif';g.textAlign='center';g.fillText(m.n.replace(' (Glycerin)',''),cx,h-8);
+      if(m.f){g.fillStyle='#ffe08a';g.fillText('f = '+m.f,cx,h-24);}
+    });
+    return;
+  }
+  const res=R.res,cols=SEL.filter(id=>MBY[id].g!=='verne').map(id=>MBY[id].c);
+  if(!R.nodes.length||R.nodesFor!==R.t0){
+    const L=mLayout(res,w,h,cols.length?cols:['#46d1c8']);R.nodes=L.nodes;R.links=L.links;R.nodesFor=R.t0;
+    R.nodes.forEach((n,i)=>{const a=rnd(i+R.t0%97)*6.28;n.sx=w/2+Math.cos(a)*(w*.45)*rnd(i+4);n.sy=-20-rnd(i+8)*h*.6+h*.2*rnd(i+1);n.d=i*.018+rnd(i)*.3;});
+  }
+  const tb=(now-R.t0)/1000;
+  const prog=n=>ease((tb-n.d)/1.4);
+  const wob=clamp01((tb-2.8)/1)*2.4;
+  const P=n=>{const p=prog(n);return [lerp(n.sx,n.x,p)+Math.sin(time*1.4+n.x*.05)*wob,lerp(n.sy,n.y,p)+Math.cos(time*1.2+n.y*.07)*wob,p];};
+  for(const [a,b,t] of R.links){
+    const A=R.nodes[a],B=R.nodes[b],pa=P(A),pb=P(B),al=Math.min(pa[2],pb[2]);if(al<.6)continue;
+    g.strokeStyle=t==='x'?'#f08a3a':'rgba(255,255,255,.78)';g.lineWidth=t==='x'?3.2:2.6;g.globalAlpha=(al-.6)/.4;g.beginPath();g.moveTo(pa[0],pa[1]);g.lineTo(pb[0],pb[1]);g.stroke();
+  }
+  g.globalAlpha=1;
+  for(const n of R.nodes){const p=P(n);g.fillStyle=n.c;g.beginPath();g.arc(p[0],p[1],n.r,0,Math.PI*2);g.fill();g.strokeStyle='rgba(0,0,0,.3)';g.lineWidth=1;g.stroke();}
+  if(tb>3.2&&R.nodes.some(n=>n.k===1)){g.fillStyle='#f6d66b';g.font='12px system-ui,sans-serif';g.textAlign='left';g.fillText('● Schwefel',10,h-8);}
+  g.fillStyle='rgba(235,248,248,.85)';g.font='12px system-ui,sans-serif';g.textAlign='right';
+  if(R.revealed)g.fillText(res.structure==='linear'?'Einzelketten, keine Querverbindungen':res.structure==='net-wide'?'weitmaschiges Netz (wenige Querverbindungen)':'engmaschiges Netz (viele Querverbindungen)',w-10,h-8);
+}
+let mReqId;
+function mLoop(now){requestAnimationFrame(mLoop);if(section!=='monomere'||document.hidden)return;drawReactor(now);}
+requestAnimationFrame(mLoop);
+mUpdate();
+
+/* ===================== Navigation, Überblick, Kolbis Check, Kolbi ===================== */
+const SECS=['untersuchen','wasser','monomere','ueberblick','check'];
+function go(sec,write=true){
+  if(!SECS.includes(sec))sec='untersuchen';
+  section=sec;
+  document.querySelectorAll('.sec').forEach(e=>e.classList.toggle('on',e.id==='sec-'+sec));
+  document.querySelectorAll('.sections [role=tab]').forEach(b=>{const on=b.dataset.sec===sec;b.setAttribute('aria-selected',on);b.tabIndex=on?0:-1;});
+  state.press=false;
+  if(write)history.replaceState(null,'',sec==='untersuchen'?'#'+state.kind:'#'+sec);
+  if(sec==='untersuchen'){requestAnimationFrame(()=>{resize3d();fitCamera();resizeMacro();});}
+  KS.onSection&&KS.onSection(sec);
+}
+KS.go=go;
+document.querySelectorAll('.sections [role=tab]').forEach(b=>b.addEventListener('click',()=>{go(b.dataset.sec);window.scrollTo({top:0,behavior:'smooth'});}));
+function route(h){
+  if(KINDS.includes(h)){go('untersuchen',false);if(state.kind!==h||!topo)setKind(h,false);}
+  else if(SECS.includes(h)){if(!topo)setKind('thermoplaste',false);go(h,false);}
+  else{go('untersuchen',false);if(!topo)setKind('thermoplaste',false);}
+}
+window.addEventListener('hashchange',()=>route(location.hash.slice(1)));
+
+/* ---------- Überblick ---------- */
+(function(){
+  const rows=[
+    ['Aufbau','Lange Einzelketten ohne chemische Querverbindungen','Engmaschiges Netz: viele chemische Querverbindungen','Weitmaschiges Netz: wenige chemische Querverbindungen'],
+    ['Zusammenhalt','Schwache Kräfte zwischen den Ketten','Chemische Bindungen im ganzen Netz','Wenige Querverbindungen, dazwischen bewegliche Kettenstücke'],
+    ['Bei Wärme','Wird weich, dann schmelzflüssig, beim Abkühlen wieder fest','Bleibt hart und formstabil, schmilzt nicht, zersetzt sich erst bei sehr hoher Temperatur','Bleibt gummielastisch, schmilzt nicht, zersetzt sich erst bei sehr hoher Temperatur'],
+    ['Bei Zug','Warm: Ketten gleiten, bleibende Verformung. Kalt: Sprödbruch','Kaum Dehnung, bricht spröde','Starke elastische Dehnung, zieht sich nach Entlastung zurück'],
+    ['Bei Kälte','Hart und spröde','Hart, ändert sich kaum','Wird hart und spröde (eingefroren)'],
+    ['Schlag','Kalt: splittert oder bricht, warm: verformt sich','Spröde: starker Schlag bricht das Material','Dämpft den Schlag, solange es nicht eingefroren ist'],
+    ['Lösungsmittel','Löst sich in einem passenden Lösungsmittel','Weder löslich noch quellbar','Quillt in einem passenden Lösungsmittel, löst sich nicht'],
+    ['Wasser','Unpolar: unverändert. Polar-hydrophil: löst sich (z. B. Polyvinylalkohol)','Praktisch unverändert','Unpolar: unverändert. Polar-hydrophil: quillt stark (z. B. Polyacrylat in Windeln)'],
+    ['Beispiele','PE, PP, PS, PVC, PET, Nylon','Bakelit, Melaminharz, Hartgummi','Autoreifen, Gummibänder, Dichtungen'],
+    ['Recycling','Gut: einschmelzen und neu formen','Schwierig: nicht schmelzbar, nur zerkleinern oder verbrennen','Schwierig: nicht schmelzbar, Altreifen werden zu Granulat zerkleinert']
+  ];
+  $('ovtable').innerHTML='<thead><tr><th></th><th class="t">Thermoplaste</th><th class="d">Duromere</th><th class="e">Elastomere</th></tr></thead><tbody>'+rows.map(r=>'<tr><th scope="row">'+r[0]+'</th><td>'+r[1]+'</td><td>'+r[2]+'</td><td>'+r[3]+'</td></tr>').join('')+'</tbody>';
+})();
+
+/* ---------- Kolbis Check ---------- */
+const QS=[
+  {q:'Ein Plastiklöffel wird in heißem Wasser weich und lässt sich biegen. Abgekühlt behält er die neue Form. Welche Klasse ist es?',o:['Thermoplast','Duromer','Elastomer'],a:0,s:'untersuchen',e:'Ohne Querverbindungen gleiten die Ketten bei Wärme aneinander vorbei. Beim Abkühlen halten sie in der neuen Lage wieder fest.'},
+  {q:'Warum schmilzt ein Duromer nicht, sondern verkohlt bei sehr hoher Temperatur?',o:['Ein engmaschiges Netz aus Querverbindungen hält die Ketten fest','Seine Ketten sind kurz und werden durch Wärme zerstört','Seine Ketten gleiten bei Wärme, ohne sich zu lösen'],a:0,s:'untersuchen',e:'Die Ketten sind durch chemische Bindungen im ganzen Netz verbunden. Sie können nicht gleiten. Erst bei sehr hoher Temperatur zerfallen die Bindungen selbst.'},
+  {q:'Ein Gummiband zieht sich nach dem Dehnen wieder zusammen. Was erklärt das?',o:['Die Querverbindungen ziehen die entknäuelten Ketten zurück','Die Ketten schmelzen kurz und erstarren dann wieder','Die Ketten gleiten bei Zug einfach in ihre Lage zurück'],a:0,s:'untersuchen',e:'Beim Dehnen entknäueln sich die Ketten zwischen den wenigen Querverbindungen. Beim Loslassen ziehen die Querverbindungen sie wieder in die Ausgangslage.'},
+  {q:'Ein Stück Gummi liegt in flüssigem Stickstoff und zerspringt beim Draufschlagen. Was ist passiert?',o:['Die Kettenstücke sind eingefroren, das Netz ist glasartig-hart','Die Querverbindungen haben sich in der Kälte gelöst','Das Netz ist durch die Kälte engmaschiger vernetzt worden'],a:0,s:'untersuchen',e:'Bei tiefer Temperatur sind die Kettenstücke unbeweglich. Ohne Beweglichkeit kann das Netz nicht elastisch nachgeben und bricht.'},
+  {q:'Ein Kunststoffstück löst sich in Aceton vollständig auf. Welche Klasse kommt in Frage?',o:['Thermoplast','Duromer','Elastomer'],a:0,s:'wasser',e:'Nur ohne Querverbindungen können sich die Ketten vollständig voneinander trennen. Das Duromer bleibt fest, der Elastomer quillt nur.'},
+  {q:'Ein Gummiwürfel nimmt in Benzin Flüssigkeit auf und wird sehr viel größer, bleibt aber ein Stück. Wie nennt man das?',o:['Quellen','Schmelzen','Lösen'],a:0,s:'wasser',e:'Die Querverbindungen halten das Netz zusammen, obwohl die Lösungsmittelteilchen eindringen. Das Netz wird nur größer: Es quillt.'},
+  {q:'Welche Monomere führen zu einem Duromer?',o:['Phenol und Formaldehyd','Terephthalsäure und Ethandiol','Ethen und Propen'],a:0,s:'monomere',e:'Phenol hat drei reaktive Stellen. Mit Formaldehyd als Brücke entsteht ein engmaschiges Netz. Die beiden anderen Gruppen haben nur je zwei Verknüpfungsstellen und bilden Einzelketten.'},
+  {q:'Isopren wird mit sehr viel Schwefel zusammengebracht. Was entsteht?',o:['Hartgummi (Ebonit), ein Duromer','Weichgummi, ein Elastomer','Rohkautschuk, ein Thermoplast'],a:0,s:'monomere',e:'Viel Schwefel bildet viele Brücken: ein engmaschiges Netz. Mit wenig Schwefel entsteht Weichgummi, ohne Schwefel bleibt es Rohkautschuk.'},
+  {q:'Polyethylen schwimmt auf Wasser, Polystyrol sinkt darin. Was folgt daraus für die Klasse?',o:['Nichts, beide sind Thermoplaste mit verschiedener Dichte','Polyethylen ist ein Elastomer, Polystyrol ein Duromer','Beide sind verschiedene Klassen, weil sie verschieden dicht sind'],a:0,s:'wasser',e:'Die Dichte sagt nichts über die Klasse. Die Klasse hängt davon ab, ob und wie die Ketten vernetzt sind.'},
+  {q:'Warum lassen sich Thermoplaste gut recyceln, Duromere und Elastomere aber kaum?',o:['Thermoplaste kann man einschmelzen, die anderen zersetzen sich dabei','Thermoplaste zersetzen sich nicht, die anderen schon bei Wärme','Duromere und Elastomere lösen sich beim Einschmelzen auf'],a:0,s:'untersuchen',e:'Ohne Querverbindungen fließt ein Thermoplast bei Wärme und erstarrt beim Abkühlen wieder. Ein Netz schmilzt nicht: Es zerfällt erst, wenn die Bindungen zerstört werden.'}
+];
+const Q={i:0,score:0,order:[],wrong:{},answered:false,perm:[]};
+function shuffle(a){const r=a.slice();for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;}
+function qStart(){Q.i=0;Q.score=0;Q.wrong={};Q.answered=false;Q.order=shuffle(QS.map((_,i)=>i));qShow();}
+function qShow(){
+  const box=$('quiz');
+  if(Q.i>=Q.order.length)return qEnd();
+  const it=QS[Q.order[Q.i]];Q.answered=false;Q.perm=shuffle(it.o.map((_,k)=>k));
+  box.innerHTML='<div class="qhead"><span>Frage '+(Q.i+1)+' von '+Q.order.length+'</span><span>Richtig: '+Q.score+'</span></div><div class="prog"><i style="width:'+(Q.i/Q.order.length*100)+'%"></i></div><p class="qtext" style="margin-top:14px">'+it.q+'</p><div class="qopts">'+Q.perm.map((k,n)=>'<button data-n="'+n+'">'+it.o[k]+'</button>').join('')+'</div><div class="verdict" id="qfb"></div><div id="qnext" style="margin-top:10px" hidden><button id="qnb">Weiter →</button></div>';
+  box.querySelectorAll('.qopts button').forEach(b=>b.addEventListener('click',()=>qAnswer(+b.dataset.n)));
+  $('qnb').addEventListener('click',()=>{Q.i++;qShow();});
+}
+function qAnswer(n){
+  if(Q.answered)return;Q.answered=true;
+  const it=QS[Q.order[Q.i]],k=Q.perm[n],right=k===it.a;
+  document.querySelectorAll('.qopts button').forEach((b,m)=>{b.disabled=true;if(Q.perm[m]===it.a)b.classList.add('right');else if(m===n)b.classList.add('wrong');});
+  if(right)Q.score++;else Q.wrong[it.s]=(Q.wrong[it.s]||0)+1;
+  const fb=$('qfb');fb.className='verdict on '+(right?'ok':'bad');fb.innerHTML=(right?'<b>Richtig!</b> ':'<b>Nicht ganz.</b> ')+it.e;
+  $('qnext').hidden=false;$('qnb').textContent=Q.i+1>=Q.order.length?'Ergebnis ansehen':'Weiter →';
+  kolbiReact(right?'excited':'oops');
+}
+const SECN={untersuchen:'Untersuchen',wasser:'Wasser & Lösungsmittel',monomere:'Monomer-Werkstatt'};
+function qEnd(){
+  const n=Q.order.length,s=Q.score,ws=Object.keys(Q.wrong);
+  const msg=s===n?'Perfekt! Du hast alles richtig. Du kannst Kunststoffklassen jetzt wirklich unterscheiden und begründen.':s>=n*.7?'Stark! Du hast die Klassen gut verstanden.':s>=n*.4?'Ein guter Anfang. Mit ein bisschen Ausprobieren sitzt es bald.':'Das war noch holprig, aber dafür ist das Labor da: Probiere die Versuche noch einmal aus.';
+  $('quiz').innerHTML='<h2 style="margin:0 0 6px">Kolbis Check: '+s+' von '+n+'</h2><div class="prog"><i style="width:'+(s/n*100)+'%"></i></div><p class="qtext" style="margin-top:12px">'+msg+'</p>'+(ws.length?'<p class="muted" style="margin:12px 0 6px">Hier lohnt sich ein zweiter Blick:</p><div class="presets">'+ws.map(w=>'<button class="ghost" data-go="'+w+'">'+SECN[w]+'</button>').join('')+'</div>':'')+'<div class="presets" style="margin-top:14px"><button id="qagain">↺ Noch einmal</button></div>';
+  $('qagain').addEventListener('click',qStart);
+  document.querySelectorAll('#quiz [data-go]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.go)));
+  kolbi(null,msg,s>=n*.7?'excited':'happy',300);
+}
+qStart();
+KS.quiz={QS};
+
+/* ---------- Kolbi: Avatar, Hilfe, Begrüßungen ---------- */
+KS.avatar=function(el,col,h){
+  if(!el)return;
+  const put=()=>{const sk=window.KolbiSkins&&window.KolbiSkins.kolbi;if(!sk)return false;el.innerHTML=sk.svg(col||'#38bdf8');const s=el.querySelector('svg');if(s){s.style.height=(h||46)+'px';s.style.width='auto';s.style.display='block';}return true;};
+  if(put())return;
+  let n=0;const iv=setInterval(()=>{if(put()||++n>40)clearInterval(iv);},400);
+};
+KS.avatar($('kbadge-av'),'#38bdf8',56);
+$('kbadge').addEventListener('click',()=>{const h=KS.help.tap();try{if(window.Kolbi)Kolbi.tell(h.text+' '+h.tip,'interested');}catch(e){}});
+$('kbadge').style.cursor='pointer';
+KS.help={
+  tap(){
+    const k=state.kind;
+    if(section==='untersuchen'){
+      const open=MISSIONS[k].find(m=>!book.done[m.id]);
+      const B={thermoplaste:'Thermoplaste bestehen aus langen Einzelketten ohne chemische Querverbindungen.',duromere:'Duromere sind engmaschig vernetzt: Viele chemische Querverbindungen halten die Ketten fest.',elastomere:'Elastomere sind weitmaschig vernetzt: Wenige Querverbindungen, dazwischen bewegliche Kettenstücke.'};
+      return {text:B[k],tip:open?'Nächster Auftrag im Laborbuch: '+open.t:'Alle Aufträge dieser Klasse sind erledigt. Wechsle die Klasse, die Ansicht oder gehe in einen anderen Bereich.'};
+    }
+    if(section==='wasser')return {text:'Wasser und Lösungsmittel lösen nur, was zu ihnen passt: Gleiches löst sich in Gleichem.',tip:'Wähle ein Medium und Kunststoffe und schiebe die Zeit: Was passiert in den drei Bechern?'};
+    if(section==='monomere')return {text:'Die Anschlüsse (f) der Monomere bestimmen, wie die Bausteine verbunden werden.',tip:'Wähle Monomere, baue das Polymer und bestimme die Klasse an der Struktur.'};
+    if(section==='ueberblick')return {text:'Hier siehst du die Klassen im Vergleich. Alle Unterschiede gehen auf die Vernetzung zurück.',tip:'Teste dich danach in Kolbis Check.'};
+    return {text:'Das ist Kolbis Check: Zehn Fragen zu allem, was du ausprobiert hast.',tip:'Lies die Fragen in Ruhe. Bei jeder Antwort gibt es eine Erklärung.'};
+  },
+  idle(){const t=['Kommst du gut voran?','Alles klar bei dir? Ich helfe gern.','Hängst du irgendwo fest?'];return {text:t[Math.floor(Math.random()*t.length)],tip:KS.help.tap().tip};}
+};
+window.KSHelp=KS.help;
+KS.onKind=function(k){
+  const T={thermoplaste:'Thermoplaste bestehen aus langen Einzelketten ohne chemische Querverbindungen. Was passiert, wenn du die Temperatur erhöhst und dann ziehst? Probiere es aus: Rechts im Laborbuch stehen deine Aufträge.',duromere:'Duromere sind engmaschig vernetzt. Erhitze den Stab und ziehe daran. Und was passiert bei einem Schlag? Das Laborbuch zeigt dir, was du entdecken kannst.',elastomere:'Elastomere sind weitmaschig vernetzt. Ziehe am Stab und entlaste ihn wieder. Und was passiert, wenn du ihn stark abkühlst?'};
+  kolbi('kind-'+k,T[k],'interested',500);
+};
+KS.onView=function(v){
+  if(v==='macro')kolbi('view-macro','Das ist derselbe Versuch von außen betrachtet: ein Probestab in der Prüfapparatur. Schau, wie sich das, was du im Teilchenmodell gesehen hast, am Stab zeigt. Dann wechsle zurück und vergleiche.','interested',400);
+  else kolbi('view-micro','Zurück bei den Teilchen: Hier siehst du, warum sich das Material so verhält, wie du es von außen gesehen hast.','happy',400);
+};
+KS.onSection=function(s){
+  const T={wasser:'Jetzt geht es um Wasser und Lösungsmittel. Merke dir: Gleiches löst sich in Gleichem. Wähle ein Medium und in jedem Becher einen Kunststoff. Schau, ob die Probe schwimmt oder sinkt, und schiebe dann die Zeit nach rechts.',monomere:'Hier baust du selbst Kunststoffe: Wähle Monomere und baue das Polymer. Danach bestimmst du an der Struktur, zu welcher Klasse es gehört.',ueberblick:'Hier steht alles auf einen Blick. Alle Unterschiede kommen von der Vernetzung der Ketten.',check:'Bereit? Zehn Fragen, und ich bin bei jeder Antwort dabei. Es gibt keine Noten, nur Erklärungen.'};
+  if(T[s])kolbi('sec-'+s,T[s],'interested',500);
+};
+
+/* ---------- Start ---------- */
+setKind('thermoplaste',false);
+route(location.hash.slice(1));
+requestAnimationFrame(loop);
 
 })();
 </script>
 <script src="../../../../kolbi/kolbi-app.js"></script>
-<a href="/Virtuelles-Chemielabor/impressum.html" style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-family: sans-serif; font-size: 12px; z-index: 9999;">Impressum & Datenschutz</a>
+<a href="/Virtuelles-Chemielabor/impressum.html" style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-family: sans-serif; font-size: 12px; z-index: 9999;">Impressum &amp; Datenschutz</a>
 </body>
 </html>

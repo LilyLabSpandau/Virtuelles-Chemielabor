@@ -58,7 +58,7 @@
     'Blue-Bottle-Farbwechsel': ['Hier gehst du dem Blue-Bottle-Versuch mit Methylenblau und Indigocarmin auf den Grund: Elektronen auf Teilchenebene, der Farbstoff als Katalysator und der hypsochrome Effekt. Ich bin heute auch ein Kolben, mit eigenem Ansatz und Stopfen. Wenn du mich schnell hin und her ziehst, schüttelst du mich, und ich färbe mich um!'],
     'Wasserhaerte-Titration': ['Hier bestimmst du die Wasserhärte durch Titration: erst eine Einführung, dann das 3D-Labor mit Tutorial und zum Schluss die Berechnung.'],
     'Trinkwasser-Detektiv': ['Hier gehst du dem Trinkwasser auf die Spur: Was ist gelöst, woher kommt es, welche Grenzwerte gelten und warum setzt sich Kalk ab? Das Modul ist für Wahlpflicht Chemie Klasse 10.'],
-    'Kunststoffklassen': ['Hier erkundest du an einem 3D-Modell, wie sich Thermoplaste, Duromere und Elastomere unterscheiden. Wähle oben eine Klasse und probiere Regler und Knöpfe aus.', 'Du kannst das Modell mit dem Finger drehen und mit zwei Fingern zoomen. Mit „Zurücksetzen“ startest du die Klasse neu.']
+    'Kunststoffklassen': ['Hier untersuchst du Thermoplaste, Duromere und Elastomere im Teilchenmodell und von außen, prüfst ihr Verhalten in Wasser und Lösungsmitteln und baust Kunststoffe aus Monomeren.', 'Oben wählst du den Bereich. Tippe mich an, dann sage ich dir, was als Nächstes dran ist.']
   };
 
 
@@ -273,94 +273,8 @@
       }).observe(fin, { attributes: true, attributeFilter: ['hidden'] });
     },
     'Kunststoffklassen': function () {
-      var $ = function (id) { return document.getElementById(id); };
-      var kind = function () { var t = document.querySelector('[role=tab][aria-selected=true]'); return t ? t.dataset.kind : 'thermoplaste'; };
-      var seen = { thermoplaste: 0, duromere: 0, elastomere: 0 };      // Klasse wurde besucht
-      var did = { cold: 0, hot: 0, weak: 0, strong: 0, stretch: 0, back: 0, broke: 0 };
-      var said = {}, wasBroken = false, allDone = false;
-      var BASIS = {
-        thermoplaste: 'Thermoplaste bestehen aus Ketten, die nur durch schwache Kräfte zusammenhalten. Es gibt keine chemischen Querverbindungen.',
-        duromere: 'Duromere sind engmaschig vernetzt. Die Querverbindungen sind chemische Bindungen zwischen den Ketten.',
-        elastomere: 'Elastomere sind weitmaschig vernetzt. Die Ketten sind durch wenige Querverbindungen verbunden.'
-      };
-      function nextTip() {
-        var k = kind();
-        if (k === 'thermoplaste') return !did.cold && !did.hot ? 'Halte „Verformen“ gedrückt, zuerst bei niedriger und dann bei hoher Temperatur. Vergleiche, was sich ändert.'
-          : did.cold && !did.hot ? 'Schiebe den Temperaturregler nach rechts und halte „Verformen“ noch einmal gedrückt.'
-          : !did.cold ? 'Probiere „Verformen“ auch einmal bei niedriger Temperatur und vergleiche.'
-          : 'Wechsle jetzt zu den Duromeren und Elastomeren und vergleiche, wie die Ketten dort verbunden sind.';
-        if (k === 'duromere') return !did.weak ? 'Teste zuerst den schwachen Schlag und beobachte das Netz.'
-          : !did.strong && !did.broke ? 'Und jetzt der starke Schlag. Achte auf die Querverbindungen.'
-          : 'Schau dir an, was mit den Querverbindungen beim Bruch passiert. Mit „Zurücksetzen“ kannst du neu testen.';
-        return !did.stretch ? 'Ziehe den Regler „Zugbelastung“ langsam nach rechts und beobachte die Ketten.'
-          : !did.back ? 'Drücke jetzt „Entlasten“ und schau, was das Netz macht.'
-          : 'Wie weit kannst du ziehen, bevor etwas reißt? Mit „Zurücksetzen“ startest du neu.';
-      }
-      Kolbi.init({
-        tapHelp: function () { return { text: BASIS[kind()], tip: nextTip() }; },
-        idleHelp: function () { return { text: ['Kommst du gut voran?', 'Alles klar bei dir? Ich helfe gern.', 'Hängst du irgendwo fest?'][Math.floor(Math.random() * 3)], tip: nextTip() }; }
-      });
-      function once(id, text, mood, delay) {
-        if (said[id]) return; said[id] = 1;
-        setTimeout(function () { Kolbi.tell(text, mood || 'interested'); }, delay || 0);
-      }
-      function checkAll() {
-        if (allDone || !(seen.thermoplaste && seen.duromere && seen.elastomere)) return;
-        if (!((did.cold || did.hot) && (did.weak || did.strong || did.broke) && (did.stretch || did.back))) return;
-        allDone = true;
-        setTimeout(function () { Kolbi.tell('Du hast alle drei Klassen untersucht. Vergleiche: Wo gibt es chemische Querverbindungen zwischen den Ketten, und wie eng ist das Netz? Daraus folgt das Verhalten des Materials.', 'excited'); }, 2600);
-      }
-      function onKind() {
-        var k = kind(); seen[k] = 1; wasBroken = false;
-        var T = {
-          thermoplaste: 'Bei den Thermoplasten gibt es keine chemischen Querverbindungen zwischen den Ketten. Was passiert wohl, wenn du die Temperatur änderst? Probiere es aus und halte „Verformen“ gedrückt.',
-          duromere: 'Bei den Duromeren sind die Ketten eng vernetzt. Teste, wie das Material auf einen schwachen und einen starken Schlag reagiert.',
-          elastomere: 'Bei den Elastomeren ist das Netz weitmaschig. Erhöhe die Zugbelastung langsam und drücke dann „Entlasten“. Was fällt dir auf?'
-        };
-        once('tab-' + k, T[k], 'interested', 400);
-        checkAll();
-      }
-      document.addEventListener('click', function (e) {
-        var t = e.target.closest && e.target.closest('[role=tab], #reset, #release, #weak-hit, #strong-hit');
-        if (!t) return;
-        if (t.id === 'reset') { wasBroken = false; Kolbi.react('happy', 'Alles zurück auf Anfang. Probiere es noch einmal.'); return; }
-        if (t.getAttribute('role') === 'tab') return void setTimeout(onKind, 60);
-        if (t.id === 'release') {
-          if ($('tension-value').textContent !== 'keine' || !did.back) { did.back = 1; if (did.stretch) once('back', 'Das Netz federt zurück: Die Querverbindungen ziehen die gestreckten Ketten wieder in ihre alte Lage. Das ist elastisch.', 'excited', 500); }
-          checkAll(); return;
-        }
-        var strong = t.id === 'strong-hit'; did[strong ? 'strong' : 'weak'] = 1;
-        setTimeout(function () {
-          if ($('status').textContent.indexOf('Bruch') < 0 && !wasBroken) Kolbi.tell(strong ? 'Hier ist (noch) nichts gebrochen. Probiere es noch einmal.' : 'Der schwache Schlag richtet nichts aus. Probiere auch den starken Schlag.', 'interested');
-        }, 2800);
-        checkAll();
-      }, true);
-      var deform = $('deform');
-      if (deform) deform.addEventListener('pointerdown', function () {
-        var t = $('temperature-value').textContent;
-        if (t === 'niedrig') { did.cold = 1; once('cold', 'Bei niedriger Temperatur passiert kaum etwas: Die Kräfte zwischen den Ketten halten sie fest. Erwärme das Material und probiere es noch einmal.', 'interested', 900); }
-        else { did.hot = 1; once('hot', 'Wärme macht die Ketten beweglich: Sie gleiten aneinander vorbei, und das Material lässt sich verformen. Weil keine chemischen Querverbindungen da sind, geht das immer wieder. Darum kann man Thermoplaste einschmelzen und recyceln.', 'excited', 1500); }
-        checkAll();
-      });
-      var tension = $('tension');
-      if (tension) tension.addEventListener('input', function () {
-        var l = $('tension-value').textContent;
-        if (l !== 'keine') did.stretch = 1;
-        if (l === 'hoch' || l === 'sehr hoch') once('stretch', 'Die Ketten strecken sich, und die Querverbindungen halten das Netz zusammen. Drücke jetzt „Entlasten“ und beobachte.', 'interested', 400);
-      });
-      var st = $('status');
-      if (st) new MutationObserver(function () {
-        var b = st.textContent.indexOf('Bruch') >= 0;
-        if (b && !wasBroken) {
-          did.broke = 1;
-          var k = kind();
-          Kolbi.tell(k === 'duromere' ? 'Es ist gebrochen. Die Querverbindungen sind Atombindungen: Sie können nicht nachgeben oder gleiten, sie reißen. Duromere sind hart, aber spröde. Mit „Zurücksetzen“ testest du neu.'
-            : 'Zu viel Zug: Bei sehr hoher Last reißen sogar chemische Bindungen. Mit „Zurücksetzen“ startest du neu.', 'oops');
-          checkAll();
-        }
-        wasBroken = b;
-      }).observe(st, { childList: true, characterData: true, subtree: true });
-      seen[kind()] = 1;
+      var H = window.KSHelp; if (!H) return;
+      Kolbi.init({ tapHelp: function () { return H.tap(); }, idleHelp: function () { return H.idle(); } });
     }
   };
 
