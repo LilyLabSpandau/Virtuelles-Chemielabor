@@ -61,11 +61,11 @@ h1{font-size:34px;letter-spacing:-.02em;margin:0;font-weight:760;line-height:1.1
 .view button{background:transparent;color:var(--muted);border-radius:10px;min-height:40px;padding:8px 14px}
 .view button[aria-selected=true]{background:rgba(255,255,255,.16);color:#fff}
 /* Arbeitsfläche */
-.lab{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:14px;align-items:start}
-#viewport{position:relative;height:clamp(340px,56vh,560px);background:radial-gradient(ellipse at 50% 40%,#17495a 0%,#0b2d3b 55%,#071c27 100%);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:inset 0 0 60px rgba(0,0,0,.35)}
+.lab{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;align-items:start}
+#viewport{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pane{position:relative;height:clamp(340px,52vh,460px);background:radial-gradient(ellipse at 50% 40%,#17495a 0%,#0b2d3b 55%,#071c27 100%);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:inset 0 0 60px rgba(0,0,0,.35)}
 #canvas-host,#macro-host{position:absolute;inset:0}
 canvas{display:block;width:100%;height:100%;touch-action:none;outline:none}
-#macro-host{display:none}#viewport.macro #macro-host{display:block}#viewport.macro #canvas-host,#viewport.macro .legend,#viewport.macro .view-bottom{display:none}
 .model-label{position:absolute;top:14px;left:16px;z-index:2;font-size:12px;color:var(--muted);pointer-events:none;background:rgba(0,0,0,.28);padding:4px 10px;border-radius:999px}
 .legend{position:absolute;right:16px;top:14px;display:flex;gap:14px;z-index:2;font-size:12px;pointer-events:none;background:rgba(0,0,0,.28);padding:4px 12px;border-radius:999px}
 .legend span{display:flex;gap:6px;align-items:center}.legend i{display:inline-block;width:18px;height:5px;border-radius:4px}
@@ -95,7 +95,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
 .actions button{min-height:44px}
 #deform{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:none}
 #deform.active{background:linear-gradient(180deg,#ffb26b,#e8883a)}
-.side{display:grid;gap:12px}
+.side{display:grid;gap:12px;grid-template-columns:repeat(3,minmax(0,1fr));align-items:start}
 .book h2{display:flex;align-items:center;gap:8px}
 .book h2 svg{width:34px;height:42px;flex:none}
 .mission{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px;line-height:1.35}
@@ -169,10 +169,11 @@ footer{text-align:center;font-size:12px;color:var(--dim);padding:18px 12px 0;lin
 footer a{color:inherit}
 [hidden]{display:none!important}
 noscript{display:block;text-align:center;color:#ffb199}
-@media(max-width:1020px){.lab{grid-template-columns:1fr}.wgrid{grid-template-columns:1fr}.mgrid{grid-template-columns:1fr}}
-@media(max-width:750px){main{padding:12px}h1{font-size:26px}.sections{grid-template-columns:repeat(5,1fr);gap:3px;padding:4px}.sections button{font-size:11px;padding:6px 2px;min-height:52px}.sections button b{font-size:17px}.controls{grid-template-columns:1fr}.legend{top:46px;left:16px;right:auto;font-size:11px}#viewport{height:clamp(320px,52svh,520px)}.view-bottom{font-size:10px}.kinds .seg{min-width:0;width:100%}.kinds .seg button{font-size:14px;padding:8px 2px}.kbadge{max-width:none}}
+@media(max-width:1020px){.side{grid-template-columns:1fr}.lab{grid-template-columns:1fr}.wgrid{grid-template-columns:1fr}.mgrid{grid-template-columns:1fr}}
+@media(max-width:750px){main{padding:12px}h1{font-size:26px}.sections{grid-template-columns:repeat(5,1fr);gap:3px;padding:4px}.sections button{font-size:11px;padding:6px 2px;min-height:52px}.sections button b{font-size:17px}.controls{grid-template-columns:1fr}.legend{top:46px;left:16px;right:auto;font-size:11px}.view-bottom{font-size:10px}.kinds .seg{min-width:0;width:100%}.kinds .seg button{font-size:14px;padding:8px 2px}.kbadge{max-width:none}}
 @media(max-width:750px){.kinds{flex-direction:column;align-items:stretch;flex-wrap:nowrap}.kinds .seg{min-width:0;flex:none}.kinds .seg button{font-size:14px;padding:8px 4px}.view{justify-content:stretch}.view button{flex:1}}
-@media(max-width:420px){.view button{padding:8px 9px;font-size:13px}#status{font-size:12.5px;top:42px}}
+@media(max-width:820px){#viewport{grid-template-columns:1fr}.pane{height:320px}.legend{top:46px;right:auto;left:16px}}
+@media(max-width:420px){#status{font-size:12.5px;top:42px}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 <link rel="icon" type="image/png" href="../../../../icons/icon-192.png">
@@ -187,7 +188,6 @@ noscript{display:block;text-align:center;color:#ffb199}
       <h1>Kunststoffklassen</h1>
       <p class="sub">Thermoplaste, Duromere und Elastomere: vom Teilchenmodell bis zum Probestab, vom Verhalten in Wasser bis zum Bau eines Polymers aus Monomeren.</p>
     </div>
-    <div class="kbadge" id="kbadge"><span id="kbadge-av"></span><p><b>Kolbi begleitet dich.</b><br>Er kommentiert deine Versuche und prüft am Ende, was du gelernt hast.</p></div>
   </header>
 
   <nav class="sections" role="tablist" aria-label="Bereiche">
@@ -206,22 +206,23 @@ noscript{display:block;text-align:center;color:#ffb199}
         <button role="tab" id="tab-duromere" aria-controls="experiment" data-kind="duromere">Duromere</button>
         <button role="tab" id="tab-elastomere" aria-controls="experiment" data-kind="elastomere">Elastomere</button>
       </nav>
-      <div class="view" role="tablist" aria-label="Ansicht">
-        <button role="tab" id="v-micro" data-view="micro" aria-selected="true">🔎 Mikroskopisch</button>
-        <button role="tab" id="v-macro" data-view="macro" aria-selected="false">🧱 Makroskopisch</button>
-      </div>
     </div>
     <div class="lab">
       <div>
         <section id="experiment" role="tabpanel" aria-labelledby="tab-thermoplaste">
           <div id="viewport">
-            <div class="model-label" id="model-label">Schematisches Teilchenmodell</div>
-            <div class="legend"><span><i class="chain"></i>Polymerkette</span><span><i class="cross"></i>Chemische Querverbindung</span></div>
-            <div id="canvas-host"></div>
-            <div id="macro-host"><canvas id="macro" aria-label="Probestab in der Prüfapparatur mit Temperaturkammer"></canvas></div>
-            <div id="error" role="alert" hidden=""></div>
-            <div id="status" role="status" aria-live="polite"></div>
-            <div class="view-bottom"><span>1 Finger: drehen · 2 Finger: zoomen</span><div class="zoom"><button id="zoom-out" aria-label="Verkleinern">−</button><button id="zoom-in" aria-label="Vergrößern">+</button></div></div>
+            <div class="pane" id="pane-micro">
+              <div class="model-label">Teilchenmodell (mikroskopisch)</div>
+              <div class="legend"><span><i class="chain"></i>Polymerkette</span><span><i class="cross"></i>Chemische Querverbindung</span></div>
+              <div id="canvas-host"></div>
+              <div id="error" role="alert" hidden=""></div>
+              <div class="view-bottom"><span>1 Finger: drehen · 2 Finger: zoomen</span><div class="zoom"><button id="zoom-out" aria-label="Verkleinern">−</button><button id="zoom-in" aria-label="Vergrößern">+</button></div></div>
+            </div>
+            <div class="pane" id="pane-macro">
+              <div class="model-label">Probestab in der Prüfapparatur (makroskopisch)</div>
+              <div id="macro-host"><canvas id="macro" aria-label="Probestab in der Prüfapparatur mit Temperaturkammer"></canvas></div>
+            </div>
+            <div id="status" role="status" aria-live="polite" hidden></div>
           </div>
           <div class="controls">
             <div class="ctl" id="temperature-control">
@@ -237,17 +238,17 @@ noscript{display:block;text-align:center;color:#ffb199}
               <div class="presets"><button class="ghost" id="release">Entlasten</button></div>
             </div>
             <div class="actions">
-              <button id="deform" class="ghost" hidden>Verformen · gedrückt halten</button>
+              <button id="deform" class="ghost" hidden style="display:none">Verformen</button>
               <span id="duro-actions" style="display:contents" hidden><button id="weak-hit" class="ghost">🔨 Schwacher Schlag</button><button id="strong-hit" class="ghost">💥 Starker Schlag</button></span>
-              <button id="reset" class="ghost" style="margin-left:auto">↺ Zurücksetzen</button>
+              <button id="reset" style="margin-left:auto">↺ Neuer Probestab</button>
             </div>
           </div>
         </section>
       </div>
       <aside class="side">
-        <div class="card"><h3>Beobachtung</h3><div class="phase" id="phase">–</div></div>
+        <div class="card"><h3>Erklärung</h3><p class="muted small" id="explain-hint" style="margin:0 0 8px">Beobachte zuerst selbst. Wenn du magst, erklärt dir Kolbi den aktuellen Zustand.</p><button id="explain" class="ghost">💡 Erklärung anzeigen</button><div class="phase" id="phase" hidden style="margin-top:10px"></div></div>
         <div class="card book" id="book"></div>
-        <div class="card"><h3>Dehnung unter Zugbelastung <span class="muted small">(qualitativ)</span></h3><canvas id="ss" aria-label="Qualitatives Spannungs-Dehnungs-Diagramm"></canvas><p class="muted small" style="margin:4px 0 0">Die Kurve gehört zur aktuellen Temperatur. Der Punkt zeigt, wo dein Probestab gerade steht.</p></div>
+        <div class="card"><h3>Dehnung unter Zugbelastung <span class="muted small">(qualitativ)</span></h3><canvas id="ss" aria-label="Qualitatives Spannungs-Dehnungs-Diagramm"></canvas><p class="muted small" style="margin:4px 0 0">Die Linie zeichnet deinen Versuch auf. Der Punkt zeigt, wo dein Probestab gerade steht.</p></div>
       </aside>
     </div>
   </section>
@@ -2400,18 +2401,16 @@ function tempLabel(t){return t<.2?'niedrig':t<.5?'mittel':t<.8?'hoch':'sehr hoch
 function loadLabel(l){return l===0?'keine':l<.35?'gering':l<.7?'mittel':l<.9?'hoch':'sehr hoch';}
 function updateLabels(){
   const tl=tempLabel(state.temperature),ll=loadLabel(state.load);
-  $('temperature-value').textContent=tl+' · '+zoneOf(state.kind,state.temperature).n;$('temperature').setAttribute('aria-valuetext',tl);
+  $('temperature-value').textContent=tl;$('temperature').setAttribute('aria-valuetext',tl);
   $('tension-value').textContent=ll;$('tension').setAttribute('aria-valuetext',ll);
 }
 function buildTemperatureScale(kind){
-  const z=ZONES[kind];let prev=0;const stops=[],ticks=[];
-  z.forEach(e=>{const c=ZCOL[e.n];stops.push(`${c} ${prev*100}%`,`${c} ${e.to*100}%`);ticks.push(`<span style="left:${(prev+e.to)/2*100}%">${e.s}</span>`);prev=e.to;});
-  $('temperature').style.setProperty('--track','linear-gradient(90deg,'+stops.join(',')+')');
-  $('temp-ticks').innerHTML=ticks.join('');
+  $('temperature').style.removeProperty('--track');
+  $('temp-ticks').innerHTML='<span class="l" style="left:0">niedrig</span><span class="r" style="left:100%">sehr hoch</span>';
 }
 function setKind(kind,writeHash=true,keep=false){
   if(!KINDS.includes(kind))kind='thermoplaste';
-  state=initialState(kind);topo=buildTopology(kind);
+  state=initialState(kind);topo=buildTopology(kind);ssTrail.length=0;
   if(renderer){
     for(const child of [...model.children]){model.remove(child);if(child.dispose)child.dispose();}
     beads=mesh(sphere,chainMat,topo.nodes.length);backbone=mesh(cylinder,bondMat,topo.bonds.length);
@@ -2421,7 +2420,7 @@ function setKind(kind,writeHash=true,keep=false){
   $('temperature').value=Math.round(TEMP0*100);$('tension').value=0;
   for(const el of document.querySelectorAll('.seg [role=tab]')){const selected=el.dataset.kind===kind;el.setAttribute('aria-selected',selected);el.tabIndex=selected?0:-1;}
   $('experiment').setAttribute('aria-labelledby','tab-'+kind);
-  $('deform').hidden=kind!=='thermoplaste';$('duro-actions').hidden=kind!=='duromere';
+  $('deform').hidden=true;$('duro-actions').hidden=kind!=='duromere';
   $('deform').classList.remove('active');
   buildTemperatureScale(kind);
   if(writeHash&&section==='untersuchen')history.replaceState(null,'','#'+kind);
@@ -2429,14 +2428,7 @@ function setKind(kind,writeHash=true,keep=false){
   KS.onKind&&KS.onKind(kind);
 }
 KS.setKind=setKind;KS.getState=()=>state;
-function setView(v){
-  view=v;$('viewport').classList.toggle('macro',v==='macro');
-  for(const b of document.querySelectorAll('.view [role=tab]'))b.setAttribute('aria-selected',b.dataset.view===v);
-  $('model-label').textContent=v==='macro'?'Probestab in der Prüfapparatur (Modell)':'Schematisches Teilchenmodell';
-  resize3d();resizeMacro();
-  KS.onView&&KS.onView(v);
-}
-function showStatus(){
+function showStatus(){return;
   const s=state;let msg='';
   if(s.broken){msg=s.kind==='duromere'?'Bruch: Querverbindungen und Ketten reißen':s.kind==='thermoplaste'?'Sprödbruch: Die Ketten reißen':'Sprödbruch: eingefroren, nicht mehr elastisch';}
   else if(s.torn)msg=s.breakStyle==='fließt ab'?'Die Schmelze fließt ab: Ketten gleiten auseinander':'Probestab reißt: Ketten gleiten auseinander';
@@ -2460,6 +2452,7 @@ function phaseText(){
   else h=t>.9?PHASE[k].zers:t>.17?PHASE[k].warm:PHASE[k].kalt;
   if(s.decomp>.5&&t<=.9)h+='<br><span class="muted">Der Probestab ist bereits zersetzt, das bleibt auch beim Abkühlen so.</span>';
   if(s.broken||s.torn)h='<b>Probestab gerissen.</b> '+(s.breakStyle==='spröd'?'Spröder Bruch: Die Ketten reißen ohne vorherige Verformung.':s.breakStyle==='fließt ab'?'Die Schmelze fließt ab.':'Zäher Bruch nach starkem Fließen.')+'<br>'+h;
+  if($('phase').hidden)return;
   if($('phase').innerHTML!==h)$('phase').innerHTML=h;
 }
 /* Zeichnen der 3D-Szene */
@@ -2505,6 +2498,7 @@ function ssCurve(kind,t,pts=60){
   }
   return {pts:out,end};
 }
+const ssTrail=[];
 function drawSS(){
   const c=$('ss');if(!c||section!=='untersuchen')return;
   const dpr=Math.min(devicePixelRatio||1,2),w=c.clientWidth,h=c.clientHeight;
@@ -2516,11 +2510,13 @@ function drawSS(){
   g.fillStyle='#9fc3c3';g.font='11px system-ui,sans-serif';g.textAlign='center';g.fillText('Dehnung →',L+pw/2,h-6);
   g.save();g.translate(11,T+ph/2);g.rotate(-Math.PI/2);g.fillText('Zugbelastung →',0,0);g.restore();
   const X=e=>L+Math.min(1,e/emax)*pw,Y=f=>T+ph-f*ph;
-  const cv=ssCurve(state.kind,state.temperature);
-  g.strokeStyle=KCOL[state.kind];g.lineWidth=2.6;g.lineJoin='round';g.beginPath();
-  cv.pts.forEach((p,i)=>{if(i)g.lineTo(X(p[0]),Y(p[1]));else g.moveTo(X(p[0]),Y(p[1]));});g.stroke();
-  if(cv.end==='break'&&cv.pts.length){const p=cv.pts[cv.pts.length-1];g.fillStyle='#ff7a66';g.font='bold 15px system-ui,sans-serif';g.textAlign='center';g.fillText('✖',X(p[0])+(p[0]<.5?0:-8),Y(p[1])-6);}
-  if(state.kind==='thermoplaste'&&state.melt>.3){g.fillStyle='#e8793a';g.font='11px system-ui,sans-serif';g.textAlign='left';g.fillText('Schmelze: kaum Widerstand',L+8,T+16);}
+  const eps0=state.extension+(state.kind==='thermoplaste'?state.flow*.85:0),broken0=state.broken||state.torn;
+  const lastP=ssTrail[ssTrail.length-1];
+  if(!lastP||lastP===null||Math.abs(lastP[0]-eps0)>.004||Math.abs(lastP[1]-state.load)>.004)if(state.load>0||eps0>0||ssTrail.length)ssTrail.push([eps0,state.load]);
+  if(ssTrail.length>800)ssTrail.splice(0,200);
+  g.strokeStyle=KCOL[state.kind];g.lineWidth=2.6;g.lineJoin='round';g.beginPath();let pen=false;
+  for(const p of ssTrail){if(p===null){pen=false;continue;}if(pen)g.lineTo(X(p[0]),Y(p[1]));else{g.moveTo(X(p[0]),Y(p[1]));pen=true;}}g.stroke();
+  if(broken0){g.fillStyle='#ff7a66';g.font='bold 15px system-ui,sans-serif';g.textAlign='center';g.fillText('✖',X(eps0)+(eps0<.5?0:-8),Y(state.load)-8);}
   // aktueller Punkt
   const eps=state.extension+(state.kind==='thermoplaste'?state.flow*.85:0);
   const broken=state.broken||state.torn;
@@ -2625,13 +2621,6 @@ function drawMacro(dt){
   const tg=g.createLinearGradient(0,TB,0,TT);tg.addColorStop(0,'#4aa3e0');tg.addColorStop(.5,'#f0a04b');tg.addColorStop(1,'#ff4a2a');
   g.fillStyle=tg;roundRect(g,TX-5,lev,10,TB-lev+6,5);g.fill();
   g.beginPath();g.arc(TX,TB+12,16,0,Math.PI*2);g.fillStyle=t>.5?'#ff5a3a':'#4aa3e0';g.fill();g.strokeStyle='rgba(255,255,255,.5)';g.stroke();
-  // Zonen neben dem Thermometer
-  let prev=0;g.font='10.5px system-ui,sans-serif';g.textAlign='left';
-  for(const z of ZONES[k]){
-    const y0=TB-(TB-TT-12)*prev,y1=TB-(TB-TT-12)*z.to;
-    g.fillStyle=ZCOL[z.n];g.fillRect(TX+14,y1,5,y0-y1-2);
-    g.fillStyle='rgba(220,240,240,.85)';g.fillText(z.s,TX+24,(y0+y1)/2+3);prev=z.to;
-  }
   g.textAlign='center';g.fillStyle='rgba(215,240,240,.75)';g.font='12px system-ui,sans-serif';g.fillText('Temperatur',TX,TT-14);g.font='10.5px system-ui,sans-serif';g.fillStyle='rgba(255,224,138,.9)';g.fillText('↕ ziehen',TX,TT-2);
   // Prüfkörper
   const G=specGeometry(s),cols=specColor(s);
@@ -2714,29 +2703,29 @@ function drawMacro(dt){
   g.textAlign='left';g.fillStyle='rgba(255,255,255,.92)';g.font='bold 13px system-ui,sans-serif';
   if(!broken)g.fillText('Länge: '+(strain<=0?'unverändert':'+'+strain+' %'),CL+16,CT+CH-16);
   else g.fillText(style==='spröd'?'Gerissen (spröd)':s.breakStyle==='fließt ab'?'Abgeflossen':'Gerissen (zäh)',CL+16,CT+CH-16);
-  if(k==='thermoplaste'&&s.flow>.08&&!broken){g.font='12px system-ui,sans-serif';g.fillStyle='#ffe08a';g.fillText('bleibende Verformung (Einschnürung)',CL+16,CT+CH-34);}
 }
 /* ---------- Laborbuch (Aufträge, Kolbi führt) ---------- */
 const MISSIONS={
   thermoplaste:[
-    {id:'t1',t:'Erzeuge bei Raumtemperatur oder kalt mit großer Zugbelastung einen Bruch.',f:'Unterhalb der Erweichung sind die Ketten fest: Thermoplaste sind hart, aber spröde. Sie brechen ohne Vorwarnung.',chk:s=>s.broken&&s.glass>.7,say:'Der Stab ist glatt gebrochen. Kalt und hart bedeutet bei einem Thermoplast: spröde.'},
-    {id:'t2',t:'Erwärme in den weichen Bereich (gelb) und ziehe mäßig am Stab. Beobachte, was nach dem Entlasten bleibt.',f:'Im weichen Bereich gleiten die Ketten aneinander vorbei. Die Verformung bleibt, auch wenn du entlastest: Das nennt man plastisch.',chk:s=>s.flow>.15&&s.load<.02&&s.glass<.5&&!s.broken,say:'Entlastet, aber die Verformung bleibt. Die Ketten sind aneinander vorbeigeglitten, ohne Querverbindungen, die sie zurückziehen.'},
-    {id:'t3',t:'Erhitze bis zur Schmelze (orange) und warte, bis etwas abtropft.',f:'Ohne Querverbindungen können sich die Ketten ganz voneinander lösen: Das Material wird zähflüssig und fließt.',chk:s=>s.melt>.7&&s.puddle>.02,say:'Das Material fließt und tropft. So ist ein Thermoplast gebaut: Die Ketten halten nur durch schwache Kräfte zusammen.'},
-    {id:'t4',t:'Kühle nach dem Schmelzen wieder ab. Was ist mit der Schmelze passiert?',f:'Beim Abkühlen erstarrt die Schmelze wieder. Das lässt sich beliebig oft wiederholen. Darum kann man Thermoplaste einschmelzen und neu formen.',chk:s=>s.maxMelt>.7&&s.temperature<.3,say:'Wieder fest! Thermoplaste kann man immer wieder einschmelzen. Das ist wichtig für das Recycling.'}
+    {id:'t1',t:'Belaste den Stab bei niedriger Temperatur mit großer Zugkraft. Wie reagiert er?',f:'Unterhalb der Erweichung sind die Ketten fest: Thermoplaste sind hart, aber spröde. Sie brechen ohne Vorwarnung.',chk:s=>s.broken&&s.glass>.7,say:'Der Stab ist glatt gebrochen. Kalt und hart bedeutet bei einem Thermoplast: spröde.'},
+    {id:'t2',t:'Erwärme den Stab mittelstark und ziehe mäßig daran. Entlaste ihn danach. Was bleibt zurück?',f:'Im weichen Bereich gleiten die Ketten aneinander vorbei. Die Verformung bleibt, auch wenn du entlastest: Das nennt man plastisch.',chk:s=>s.flow>.15&&s.load<.02&&s.glass<.5&&!s.broken,say:'Entlastet, aber die Verformung bleibt. Die Ketten sind aneinander vorbeigeglitten, ohne Querverbindungen, die sie zurückziehen.'},
+    {id:'t3',t:'Erhitze den Stab stark und warte ab. Beobachte die Probe.',f:'Ohne Querverbindungen können sich die Ketten ganz voneinander lösen: Das Material wird zähflüssig und fließt.',chk:s=>s.melt>.7&&s.puddle>.02,say:'Das Material fließt und tropft. So ist ein Thermoplast gebaut: Die Ketten halten nur durch schwache Kräfte zusammen.'},
+    {id:'t4',t:'Kühle die Probe danach wieder ab. Was ist mit dem Material passiert?',f:'Beim Abkühlen erstarrt die Schmelze wieder. Das lässt sich beliebig oft wiederholen. Darum kann man Thermoplaste einschmelzen und neu formen.',chk:s=>s.maxMelt>.7&&s.temperature<.3,say:'Wieder fest! Thermoplaste kann man immer wieder einschmelzen. Das ist wichtig für das Recycling.'}
   ],
   duromere:[
-    {id:'d1',t:'Erhitze den Stab kräftig, aber nicht bis zur Zersetzung. Was passiert mit der Form?',f:'Ein Duromer erweicht nicht und schmilzt nicht. Das engmaschige Netz aus Querverbindungen hält alles fest.',chk:(s,h)=>s.temperature>.6&&s.temperature<.88&&h.hold>2.5,say:'Auch heiß bleibt er hart und formstabil. Das Netz aus Querverbindungen verhindert, dass die Ketten gleiten.'},
-    {id:'d2',t:'Erhöhe die Zugbelastung bis der Stab bricht.',f:'Duromere dehnen sich kaum und brechen spröde, weil das enge Netz keine Ausweichbewegung zulässt.',chk:s=>s.broken&&s.impactFired===false,say:'Kaum gedehnt, dann gebrochen. Das enge Netz lässt keine Ausweichbewegung zu.'},
+    {id:'d1',t:'Erhitze den Stab kräftig, aber nicht extrem. Verändert sich seine Form?',f:'Ein Duromer erweicht nicht und schmilzt nicht. Das engmaschige Netz aus Querverbindungen hält alles fest.',chk:(s,h)=>s.temperature>.6&&s.temperature<.88&&h.hold>2.5,say:'Auch heiß bleibt er hart und formstabil. Das Netz aus Querverbindungen verhindert, dass die Ketten gleiten.'},
+    {id:'d2',t:'Erhöhe die Zugbelastung, bis etwas passiert.',f:'Duromere dehnen sich kaum und brechen spröde, weil das enge Netz keine Ausweichbewegung zulässt.',chk:s=>s.broken&&s.impactFired===false,say:'Kaum gedehnt, dann gebrochen. Das enge Netz lässt keine Ausweichbewegung zu.'},
     {id:'d3',t:'Vergleiche einen schwachen und einen starken Schlag (Schaltflächen unter dem Modell).',f:'Ein schwacher Schlag richtet nichts aus. Ein starker Schlag reißt Bindungen im Netz und der Stab bricht.',chk:(s,h)=>h.weak&&h.strong,say:'Schwach wirkungslos, stark gebrochen: Das Netz ist hart, aber nicht zäh.'},
-    {id:'d4',t:'Erhitze extrem (sehr heiß). Schmilzt der Stab?',f:'Ein Duromer schmilzt nicht. Bei sehr hoher Temperatur zerfallen die Bindungen: Der Kunststoff verkohlt. Das ist nicht umkehrbar. Darum lassen sich Duromere kaum recyceln.',chk:s=>s.decomp>.6,say:'Verkohlt statt geschmolzen. Duromere kann man nicht einschmelzen, deshalb sind sie schwer zu recyceln.'}
+    {id:'d4',t:'Erhitze den Stab extrem. Was geschieht mit ihm?',f:'Ein Duromer schmilzt nicht. Bei sehr hoher Temperatur zerfallen die Bindungen: Der Kunststoff verkohlt. Das ist nicht umkehrbar. Darum lassen sich Duromere kaum recyceln.',chk:s=>s.decomp>.6,say:'Verkohlt statt geschmolzen. Duromere kann man nicht einschmelzen, deshalb sind sie schwer zu recyceln.'}
   ],
   elastomere:[
     {id:'e1',t:'Ziehe bei Raumtemperatur kräftig am Stab. Wie weit dehnt er sich?',f:'Elastomere lassen sich stark dehnen: Die Ketten entknäueln sich zwischen den wenigen Querverbindungen.',chk:(s,h)=>s.load>.55&&s.glass<.3&&s.extension>.3&&s.temperature<.88,say:'Weit gedehnt! Die Ketten entknäueln sich, das Netz ist weitmaschig.'},
     {id:'e2',t:'Entlaste den Stab. Was passiert?',f:'Der Stab zieht sich zurück: Die Querverbindungen ziehen die entknäuelten Ketten wieder in ihre alte Lage. Das heißt elastisch.',chk:(s,h)=>h.stretched&&s.load<.02&&s.extension<.05&&!s.broken,say:'Zurückgefedert! Dank der Querverbindungen kehrt das Netz in den Ausgangszustand zurück.'},
     {id:'e3',t:'Kühle stark ab und ziehe dann am Stab.',f:'Bei tiefer Temperatur sind die Kettenstücke eingefroren. Das Netz ist glasartig-hart und bricht bei starkem Zug.',chk:s=>s.glass>.7&&s.load>.2&&(s.extension<.06),say:'Kalt ist der Gummi hart und dehnt sich kaum. Nur bei höherer Temperatur sind die Ketten beweglich.'},
-    {id:'e4',t:'Erwärme stark, bis kurz vor der Zersetzung. Wird der Gummi flüssig?',f:'Elastomere schmelzen nicht, denn die Querverbindungen halten das Netz zusammen. Erst bei sehr hoher Temperatur zersetzt sich der Gummi.',chk:(s,h)=>s.temperature>.6&&s.temperature<.88&&h.hold>2.5,say:'Er bleibt ein Netz und fließt nicht, auch heiß nicht. Erst viel höher zersetzt sich der Gummi.'}
+    {id:'e4',t:'Erwärme den Stab stark, aber nicht extrem. Wie verhält er sich?',f:'Elastomere schmelzen nicht, denn die Querverbindungen halten das Netz zusammen. Erst bei sehr hoher Temperatur zersetzt sich der Gummi.',chk:(s,h)=>s.temperature>.6&&s.temperature<.88&&h.hold>2.5,say:'Er bleibt ein Netz und fließt nicht, auch heiß nicht. Erst viel höher zersetzt sich der Gummi.'}
   ]
 };
+$('book').addEventListener('click',e=>{if(e.target.closest('#book-reset')){MISSIONS[state.kind].forEach(m=>delete book.done[m.id]);delete book.hold[state.kind];setKind(state.kind,true);}});
 const book={
   done:{},hold:{},seen:{},
   hist(kind){return this.hold[kind]||(this.hold[kind]={hold:0,weak:false,strong:false,stretched:false});},
@@ -2744,7 +2733,7 @@ const book={
     const k=state.kind,list=MISSIONS[k],n=list.filter(m=>this.done[m.id]).length;
     const av='<span id="book-av"></span>';
     $('book').innerHTML='<h2><span id="book-av" aria-hidden="true"></span>Kolbis Laborbuch</h2><p class="muted small" style="margin:0 0 6px">'+KNAME[k]+': '+n+' von '+list.length+' Aufträgen erledigt</p><div class="prog"><i style="width:'+(n/list.length*100)+'%"></i></div>'+
-      list.map(m=>'<div class="mission'+(this.done[m.id]?' done':'')+'"><i>'+(this.done[m.id]?'✓':'')+'</i><div>'+m.t+'<div class="f"><b>Befund:</b> '+m.f+'</div></div></div>').join('');
+      list.map(m=>'<div class="mission'+(this.done[m.id]?' done':'')+'"><i>'+(this.done[m.id]?'✓':'')+'</i><div>'+m.t+(this.done[m.id]?'<div class="f"><b>Befund:</b> '+m.f+'</div>':'')+'</div></div>').join('')+'<button class="ghost" id="book-reset" style="margin-top:10px">↺ Aufträge dieser Klasse neu starten</button>';
     KS.avatar&&KS.avatar($('book-av'),'#38bdf8',34);
   },
   tick(dt){
@@ -2774,7 +2763,7 @@ function loop(now){
   dt=Math.min(dt,.05);
   advance(state,dt);
   book.tick(dt);
-  if(view==='macro')drawMacro(dt);else draw3d();
+  draw3d();drawMacro(dt);
   drawSS();showStatus();phaseText();
   $('weak-hit').disabled=$('strong-hit').disabled=state.broken||state.impact>0;
   KS.afterFrame&&KS.afterFrame(state);
@@ -2784,9 +2773,9 @@ document.querySelectorAll('.seg [role=tab]').forEach(el=>{
   el.addEventListener('click',()=>setKind(el.dataset.kind));
   el.addEventListener('keydown',ev=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(ev.key))return;ev.preventDefault();const i=KINDS.indexOf(state.kind);const index=ev.key==='Home'?0:ev.key==='End'?2:(i+(ev.key==='ArrowRight'?1:2))%3;setKind(KINDS[index]);document.getElementById('tab-'+KINDS[index]).focus();});
 });
-document.querySelectorAll('.view [role=tab]').forEach(el=>el.addEventListener('click',()=>setView(el.dataset.view)));
-$('reset').addEventListener('click',()=>{setKind(state.kind);kolbiReact('happy','Alles zurück auf Anfang. Der Stab ist wieder heil. Dein Laborbuch behalte ich.');});
-$('temperature').addEventListener('input',ev=>{state.temperature=+ev.target.value/100;updateLabels();});
+$('reset').addEventListener('click',()=>{setKind(state.kind,true);kolbiReact('happy','Neuer Probestab eingespannt. Du kannst ' + KNAME[state.kind] + ' noch einmal untersuchen.');});
+$('explain').addEventListener('click',()=>{const p=$('phase');p.hidden=!p.hidden;$('explain').textContent=p.hidden?'💡 Erklärung anzeigen':'Erklärung ausblenden';$('explain-hint').hidden=!p.hidden;if(!p.hidden)phaseText();});
+$('temperature').addEventListener('input',ev=>{state.temperature=+ev.target.value/100;if(ssTrail.length&&ssTrail[ssTrail.length-1]!==null)ssTrail.push(null);updateLabels();});
 $('tension').addEventListener('input',ev=>{state.load=+ev.target.value/100;updateLabels();});
 /* Makro-Ansicht: Thermometer und Kraftbalken direkt am Bild ziehen */
 (function(){
@@ -3300,9 +3289,6 @@ KS.avatar=function(el,col,h){
   if(put())return;
   let n=0;const iv=setInterval(()=>{if(put()||++n>40)clearInterval(iv);},400);
 };
-KS.avatar($('kbadge-av'),'#38bdf8',56);
-$('kbadge').addEventListener('click',()=>{const h=KS.help.tap();try{if(window.Kolbi)Kolbi.tell(h.text+' '+h.tip,'interested');}catch(e){}});
-$('kbadge').style.cursor='pointer';
 KS.help={
   tap(){
     const k=state.kind;
@@ -3322,10 +3308,6 @@ window.KSHelp=KS.help;
 KS.onKind=function(k){
   const T={thermoplaste:'Thermoplaste bestehen aus langen Einzelketten ohne chemische Querverbindungen. Was passiert, wenn du die Temperatur erhöhst und dann ziehst? Probiere es aus: Rechts im Laborbuch stehen deine Aufträge.',duromere:'Duromere sind engmaschig vernetzt. Erhitze den Stab und ziehe daran. Und was passiert bei einem Schlag? Das Laborbuch zeigt dir, was du entdecken kannst.',elastomere:'Elastomere sind weitmaschig vernetzt. Ziehe am Stab und entlaste ihn wieder. Und was passiert, wenn du ihn stark abkühlst?'};
   kolbi('kind-'+k,T[k],'interested',500);
-};
-KS.onView=function(v){
-  if(v==='macro')kolbi('view-macro','Das ist derselbe Versuch von außen betrachtet: ein Probestab in der Prüfapparatur. Schau, wie sich das, was du im Teilchenmodell gesehen hast, am Stab zeigt. Dann wechsle zurück und vergleiche.','interested',400);
-  else kolbi('view-micro','Zurück bei den Teilchen: Hier siehst du, warum sich das Material so verhält, wie du es von außen gesehen hast.','happy',400);
 };
 KS.onSection=function(s){
   const T={wasser:'Jetzt geht es um Wasser und Lösungsmittel. Merke dir: Gleiches löst sich in Gleichem. Wähle ein Medium und in jedem Becher einen Kunststoff. Schau, ob die Probe schwimmt oder sinkt, und schiebe dann die Zeit nach rechts.',monomere:'Hier baust du selbst Kunststoffe: Wähle Monomere und baue das Polymer. Danach bestimmst du an der Struktur, zu welcher Klasse es gehört.',ueberblick:'Hier steht alles auf einen Blick. Alle Unterschiede kommen von der Vernetzung der Ketten.',check:'Bereit? Zehn Fragen, und ich bin bei jeder Antwort dabei. Es gibt keine Noten, nur Erklärungen.'};
