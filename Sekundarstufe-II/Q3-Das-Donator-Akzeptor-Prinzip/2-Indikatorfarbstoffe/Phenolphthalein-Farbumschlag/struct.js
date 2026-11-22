@@ -11,7 +11,7 @@
   function Mol() { this.at = []; this.bd = []; this.n = {}; this.sets = []; }
   Mol.prototype.add = function (x, y, lab) { this.at.push({ x: x, y: y, lab: lab || '' }); return this.at.length - 1; };
   Mol.prototype.bond = function (a, b, ord, c) { this.bd.push({ a: a, b: b, ord: ord || 1, c: c || null }); };
-  Mol.prototype.sub = function (i, len, ang, lab, ord) { var a = this.at[i], d = dir(ang), j = this.add(a.x + len * d[0], a.y + len * d[1], lab); this.bond(i, j, ord || 1); return j; };
+  Mol.prototype.sub = function (i, len, ang, lab, ord) { var a = this.at[i], d = dir(ang), j = this.add(a.x + len * d[0], a.y + len * d[1], lab); if (d[0] < -0.3) this.at[j].left = true; this.bond(i, j, ord || 1); return j; };
 
   // Benzolring, der in Richtung theta an das zentrale C-Atom (c0) gebunden ist; ids[0] = C1 (ipso), ids[3] = para
   function arene(m, c0, theta, dbl, o) {
@@ -51,12 +51,12 @@
       m.sets = [{ at: A.ids.concat([A.oi]), col: '#2563eb' }, { at: B.ids.concat([B.oi]), col: '#16a34a' }, { at: ids.concat([P[3], oc]), col: '#d97706' }];
     } else if (form === 'dian') {
       A = arene(m, c0, 150, [0, 2, 4], { end: 'O⁻', subs: sA }); B = arene(m, c0, 30, [1, 4], { end: 'O', endOrd: 2, exo: 2, subs: sB });
-      C = arene(m, c0, 270, [0, 2, 4], { subs: [{ k: 1, lab: 'COO⁻' }] });
+      C = arene(m, c0, 270, [0, 2, 4], { subs: [{ k: 5, lab: 'COO⁻' }] });
       m.n.A = A.ids; m.n.B = B.ids; m.n.C = C.ids; m.n.oA = A.oi; m.n.oB = B.oi;
       m.sets = [{ at: A.ids.concat([A.oi, c0], B.ids, [B.oi]), col: '#c026d3', big: true }, { at: C.ids, col: '#d97706' }];
     } else {
       A = arene(m, c0, 160, [0, 2, 4], { end: 'O⁻', subs: sA }); B = arene(m, c0, 20, [0, 2, 4], { end: 'O⁻', subs: sB });
-      C = arene(m, c0, 270, [0, 2, 4], { subs: [{ k: 1, lab: 'COO⁻' }] });
+      C = arene(m, c0, 270, [0, 2, 4], { subs: [{ k: 5, lab: 'COO⁻' }] });
       var oh = m.sub(c0, L, 90, 'OH');
       m.n.A = A.ids; m.n.B = B.ids; m.n.C = C.ids; m.n.oA = A.oi; m.n.oB = B.oi; m.n.oh = oh;
       m.sets = [{ at: A.ids.concat([A.oi]), col: '#2563eb' }, { at: B.ids.concat([B.oi]), col: '#16a34a' }, { at: C.ids, col: '#d97706' }];
@@ -101,7 +101,8 @@
     m.at.forEach(function (a, i) {
       if (o.hl && o.hl.atoms && o.hl.atoms.indexOf(i) >= 0) el('circle', { cx: a.x, cy: a.y, r: 15, fill: 'none', stroke: '#ea580c', 'stroke-width': 2.6, 'stroke-dasharray': '4 3' }, svg);
       if (!a.lab) return;
-      var t = el('text', { x: a.x, y: a.y + 5.4 }, gt); t.textContent = a.lab;
+      var lab = a.lab, dx = 0; if (a.left) { var FL = { 'OH': 'HO', 'COO⁻': '⁻OOC', 'CH₃': 'H₃C' }; if (FL[lab]) { lab = FL[lab]; dx = lab.length > 2 ? -8 : -4; } }
+      var t = el('text', { x: a.x + dx, y: a.y + 5.4 }, gt); t.textContent = lab;
       if (/[OH]/.test(a.lab) && a.lab !== 'iPr' && a.lab.indexOf('CH') < 0) t.setAttribute('fill', '#b91c1c');
     });
     if (o.c0label) { var t2 = el('text', { x: m.at[m.n.c0].x + 11, y: m.at[m.n.c0].y + 4.5, 'font-size': 12, 'font-weight': 700, fill: '#64748b', 'font-family': 'system-ui, sans-serif' }, svg); t2.textContent = o.c0label; }
