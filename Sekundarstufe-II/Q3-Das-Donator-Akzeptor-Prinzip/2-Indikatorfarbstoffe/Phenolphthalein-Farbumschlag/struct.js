@@ -27,12 +27,13 @@
   var VARIANTS = {
     phenolphthalein: { name: 'Phenolphthalein', subs: [] },
     kresol: { name: 'o-Kresolphthalein', subs: [{ k: 2, lab: 'CH₃' }] },
-    thymol: { name: 'Thymolphthalein', subs: [{ k: 1, lab: 'iPr' }, { k: 4, lab: 'CH₃' }] }
+    thymol: { name: 'Thymolphthalein', subs: [{ k: 5, lab: 'CH₃' }, { k: 2, lab: 'iPr' }], same: true }
   };
 
   function build(form, variant) {
     var v = VARIANTS[variant || 'phenolphthalein'] || VARIANTS.phenolphthalein, m = new Mol(), c0 = m.add(0, 0, ''), A, B, C, sA = [], sB = [];
-    v.subs.forEach(function (s) { sB.push({ k: s.k, lab: s.lab }); sA.push({ k: (6 - s.k) % 6, lab: s.lab }); });
+    v.subs.forEach(function (s) { sB.push({ k: s.k, lab: s.lab }); sA.push({ k: v.same ? s.k : (6 - s.k) % 6, lab: s.lab }); });
+    if (v.same && form === 'lac') { sA = []; sB = []; v.subs.forEach(function (s) { sA.push({ k: (s.k + 2) % 6, lab: s.lab }); sB.push({ k: (s.k + 2) % 6, lab: s.lab }); }); }
     m.n.c0 = c0;
     if (form === 'lac') {
       A = arene(m, c0, 150, [0, 2, 4], { end: 'OH', subs: sA }); B = arene(m, c0, 30, [0, 2, 4], { end: 'OH', subs: sB });

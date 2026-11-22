@@ -44,14 +44,15 @@
     { t: 'Form ① (λmax ≈ 275 nm) → Form ② (λmax ≈ 553 nm)', a: 'b', e: 'Das Maximum wandert zu größerer Wellenlänge. Das π-System wächst: bathochrom.' },
     { t: 'Form ② (λmax ≈ 553 nm) → Form ③ (λmax ≈ 292 nm)', a: 'h', e: 'Das Maximum wandert zu kleinerer Wellenlänge, weil das π-System zerfällt: hypsochrom.' },
     { t: 'Phenolphthalein (≈ 553 nm) → Thymolphthalein (≈ 596 nm)', a: 'b', e: 'Zusätzliche Donatoren verkleinern ΔE. Das Maximum rückt zu größerer Wellenlänge: bathochrom.' },
-    { t: 'Thymolphthalein (≈ 596 nm) → Phenolphthalein (≈ 553 nm)', a: 'h', e: 'Der umgekehrte Weg: Das Maximum rückt zu kleinerer Wellenlänge: hypsochrom.' },
+    { t: 'Thymolphthalein (≈ 596 nm) → Phenolphthalein (≈ 553 nm)', a: 'h', e: 'Ohne die Donatoren rückt das Maximum zu kleinerer Wellenlänge: hypsochrom.' },
     { t: 'In einer Polyenkette wird eine weitere C=C-Doppelbindung eingefügt.', a: 'b', e: 'Das konjugierte System wird länger, ΔE sinkt: bathochrom.' },
     { t: 'Ein sp²-Kohlenstoffatom in der Mitte des π-Systems wird durch Addition zu sp³. Das System wird unterbrochen.', a: 'h', e: 'Aus einem großen System werden kleine, ΔE steigt: hypsochrom.' }
   ], sbox = $('m5sort'), okN = 0;
   sbox.innerHTML = '<p style="margin:0 0 6px">Entscheide bei jedem Beispiel, ob die Verschiebung des Absorptionsmaximums <b>bathochrom</b> oder <b>hypsochrom</b> ist.</p>';
+  for (var si = SORT.length - 1; si > 0; si--) { var sj = Math.floor(Math.random() * (si + 1)), st = SORT[si]; SORT[si] = SORT[sj]; SORT[sj] = st; }
   SORT.forEach(function (s) {
     var d = document.createElement('div'); d.className = 'grp';
-    d.innerHTML = '<div class="nm" style="font-size:15.5px;font-weight:600">' + s.t + '</div><div class="bt"><button class="btn sec" data-a="b">bathochrom</button><button class="btn sec" data-a="h">hypsochrom</button></div><div class="fb" hidden></div>';
+    d.innerHTML = '<div class="nm" style="font-size:15.5px;font-weight:600">' + s.t + '</div><div class="bt">' + (Math.random() < 0.5 ? '<button class="btn sec" data-a="b">bathochrom</button><button class="btn sec" data-a="h">hypsochrom</button>' : '<button class="btn sec" data-a="h">hypsochrom</button><button class="btn sec" data-a="b">bathochrom</button>') + '</div><div class="fb" hidden></div>';
     var fb = d.querySelector('.fb'), done = false;
     d.addEventListener('click', function (e) {
       var b = e.target.closest ? e.target.closest('button') : null; if (!b || done) return;
