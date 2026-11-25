@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="de">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#f6f7f2"><title>Elektrophile Addition · Brom an Ethen</title>
+<style>
+:root{--ink:#19352e;--muted:#50665c;--green:#105c46;--line:#d5ded6;--paper:#f7f8f3;--mint:#c6e8b8;--rust:#a4492f;font-family:"Inter","Segoe UI",Arial,sans-serif;color:var(--ink);background:var(--paper);font-size:16px}
+*{box-sizing:border-box}body{margin:0}button,input{font:inherit}button{touch-action:manipulation;cursor:pointer;color:inherit;-webkit-tap-highlight-color:transparent}button:focus-visible,input:focus-visible,canvas:focus-visible{outline:3px solid #cf8225;outline-offset:2px}
+header{border-bottom:1px solid var(--line)}.top,main{max-width:1310px;margin:auto;padding:0 clamp(18px,4vw,62px)}.top{display:flex;align-items:center;justify-content:space-between;min-height:55px;font-size:.83rem}.brand{display:flex;align-items:center;gap:10px;font-weight:700}.brand svg{background:var(--green);color:#fff;border-radius:9px;padding:5px;width:31px;height:31px}.course{color:var(--muted)}
+h1{font-size:clamp(32px,4vw,54px);line-height:1.04;letter-spacing:-.055em;margin:0;font-weight:650}.intro{display:flex;align-items:end;justify-content:space-between;gap:16px;padding:clamp(20px,3vw,36px) 0 23px}.intro p{margin:8px 0 0;color:var(--muted);font-size:1.03rem}.equation{font-family:Georgia,serif;font-size:clamp(20px,2vw,27px);white-space:nowrap}.equation sub{font-size:.64em}.brText{color:var(--rust)}
+.layout{display:grid;grid-template-columns:minmax(232px,.81fr) minmax(0,2.15fr);gap:clamp(14px,2vw,30px);align-items:start;padding-bottom:20px}.kicker{font-size:.69rem;letter-spacing:.13em;font-weight:720;text-transform:uppercase;color:var(--muted);margin:0 0 10px}.steps{display:grid;gap:6px}.step{background:transparent;border:1px solid var(--line);border-radius:11px;display:flex;align-items:center;gap:12px;text-align:left;width:100%;padding:11px 13px;min-height:51px;font-weight:590;font-size:.95rem}.step span{border:1px solid #becbc1;border-radius:50%;font:600 .8rem/27px "Segoe UI",sans-serif;text-align:center;min-width:29px;height:29px}.step[aria-current=step]{background:#dcefd4;border-color:#8db694}.step[aria-current=step] span{background:var(--green);border-color:var(--green);color:white}.step:hover,.control:hover{border-color:#61977e}
+.expl{margin-top:22px;border-top:1px solid var(--line);padding-top:18px}.expl h2{font-size:1.3rem;letter-spacing:-.03em;margin:0 0 9px}.expl p:last-child{font-size:.95rem;line-height:1.57;margin:0;color:#324d42}.expl strong{font-weight:690}
+.viewer{min-width:0;border:1px solid var(--line);border-radius:17px;overflow:hidden;background:#fff;box-shadow:0 5px 20px #17342809}.space{position:relative;color:#f7fcf8;background-color:#183e36;background-image:radial-gradient(ellipse at 52% 54%,#38605080,transparent 70%),radial-gradient(#b1d5b626 .8px,transparent .9px);background-size:auto,17px 17px}.panelhead{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 18px 0}.viewTitle{font-size:.87rem;font-weight:650;display:flex;align-items:center;gap:8px}.viewTitle svg{width:18px;height:18px}.legend{display:flex;gap:10px;font-size:.72rem}.legend span{display:flex;align-items:center;gap:4px}.legend i{width:9px;height:9px;border-radius:50%;background:var(--atom);border:1px solid #ffffff80}.space canvas{display:block;width:100%;height:clamp(190px,25vh,285px);touch-action:none;cursor:grab}.space canvas:active{cursor:grabbing}.modelFoot{display:flex;align-items:center;justify-content:space-between;min-height:34px;padding:0 12px 4px 18px;color:#d0e3d8;font-size:.73rem}.modelFoot button{background:transparent;border:0;color:inherit;font-size:.74rem;min-height:36px;padding:4px 8px;text-decoration:underline;text-underline-offset:3px}.formula .panelhead{padding-top:12px}.key{font-size:.72rem;color:#256a98}.formula svg.scene{display:block;width:100%;height:clamp(178px,23vh,252px);overflow:visible}.strip{border-top:1px solid var(--line);padding:2px 14px 8px;background:#fbfcf8}.strip input{width:100%;height:27px;accent-color:var(--green);cursor:pointer;margin:0;display:block}.buttons{display:flex;gap:6px;align-items:center}.control{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;border:1px solid var(--line);border-radius:9px;background:#fff;padding:6px 12px;font-size:.82rem;font-weight:600}.control.primary{background:var(--green);color:white;border-color:var(--green)}.buttons .next{margin-left:auto}.control svg{width:16px;height:16px}.status{font-size:.73rem;color:var(--muted);font-variant-numeric:tabular-nums}.mobile{display:none}
+@media(max-width:960px){.top,main{padding-left:18px;padding-right:18px}.layout{grid-template-columns:minmax(215px,.82fr) minmax(0,2fr);gap:14px}.legend{gap:6px}}
+@media(max-width:710px){.top{min-height:44px}.intro{padding:18px 0}.equation{display:none}.layout{display:flex;flex-direction:column;gap:13px}.side,.viewer{width:100%}.side{display:contents}.steps{order:0;width:100%;grid-template-columns:repeat(4,1fr);gap:4px}.side>.kicker{display:none}.step{flex-direction:column;justify-content:center;gap:5px;padding:6px 2px;min-height:56px;font-size:.72rem;text-align:center}.step span{min-width:22px;height:22px;line-height:20px}.step .wide{display:none}.mobile{display:block;font-style:normal}.expl{order:2;margin-top:0;padding:13px 2px 0;width:100%}.viewer{order:1}.panelhead{padding:11px 12px 0}.space canvas{height:170px}.formula svg.scene{height:175px}.key{font-size:.66rem}.control{min-height:42px;padding:5px 8px}.status{display:none}.modelFoot{padding-left:12px}}
+@media(max-width:380px){.legend{font-size:.65rem;gap:4px}.top,main{padding-left:10px;padding-right:10px}.key{font-size:.6rem}}
+</style></head>
+<body><header><div class="top"><div class="brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 15 6-7 6 7M7 16h10"/><circle cx="5" cy="17" r="2.4"/><circle cx="12" cy="6" r="2.4"/><circle cx="19" cy="17" r="2.4"/></svg>Organische Chemie</div><span class="course">Grundkurs · Q1</span></div></header>
+<main><div class="intro"><div><h1>Elektrophile Addition</h1><p>Wie reagiert Brom mit Ethen?</p></div><div class="equation" aria-label="Ethen und Brom reagieren zu 1,2-Dibromethan">C<sub>2</sub>H<sub>4</sub> + <span class="brText">Br<sub>2</sub></span> → C<sub>2</sub>H<sub>4</sub><span class="brText">Br<sub>2</sub></span></div></div>
+<div class="layout"><aside class="side"><p class="kicker">Reaktionsschritte</p><nav class="steps" aria-label="Reaktionsschritte"></nav><section class="expl" aria-live="polite"><p class="kicker" id="counter"></p><h2 id="stepTitle"></h2><p id="explanation"></p></section></aside>
+<div class="viewer"><section class="space"><div class="panelhead"><span class="viewTitle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m12 2 9 5v10l-9 5-9-5V7ZM3 7l9 5 9-5M12 12v10"/></svg>Kugel-Stab-Modell</span><div class="legend"><span><i style="--atom:#52636d"></i>C</span><span><i style="--atom:#eff4ef"></i>H</span><span><i style="--atom:#cb6747"></i>Br</span></div></div><canvas id="model" tabindex="0" aria-label="Drehbares Molekülmodell. Mit Ziehen oder den Pfeiltasten drehen."></canvas><div class="modelFoot"><span>↔ &nbsp; Zum Drehen ziehen</span><button id="home">Ansicht zurücksetzen</button></div></section>
+<section class="formula"><div class="panelhead"><span class="viewTitle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m2 17 7-10 7 9 6-9M10 4l7 9"/></svg>Strukturformel</span><span class="key" id="arrowKey"></span></div><svg id="scheme" class="scene" viewBox="0 0 530 246" role="img" aria-label="Strukturformel zum gewählten Reaktionsschritt"></svg></section>
+<div class="strip"><input id="time" type="range" min="0" max="1000" value="0" aria-label="Zeitpunkt im gewählten Schritt"><div class="buttons"><button id="play" class="control primary"></button><button id="repeat" class="control" title="Diesen Schritt von vorn abspielen">↺ Wiederholen</button><span id="status" class="status"></span><button id="next" class="control next"></button></div></div></div></div></main>
+<footer style="max-width:1310px;margin:0 auto;padding:6px clamp(18px,4vw,62px) 22px;font-size:.72rem;color:#7a8c83">Von Herrn Stolp · <a href="/Virtuelles-Chemielabor/impressum.html" style="color:inherit">Impressum &amp; Datenschutz</a></footer>
+
+<script>
+'use strict';
+const stages=[
+ {label:'Annäherung',short:'Annäherung',title:'Annäherung und Polarisierung',duration:5800,text:'Die elektronenreiche Doppelbindung des Ethens verdrängt Elektronendichte zum ferneren Br-Atom. Durch diese <strong>Polarisierung</strong> trägt das nähere Br-Atom die positive <strong>Partialladung</strong> δ+, das fernere die negative Partialladung δ−. Die Doppelbindung wirkt als <strong>Nukleophil</strong>, weil sie ein Elektronenpaar für eine neue Bindung bereitstellt. Das Brommolekül ist das <strong>Elektrophil</strong>, weil sein positiv polarisiertes Br-Atom dieses Paar aufnehmen kann.'},
+ {label:'Bromonium-Ion',short:'Ionenbildung',title:'Bildung des Bromonium-Ions',duration:9300,text:'Ein Paar aus der Doppelbindung und ein freies Paar des nahen Br-Atoms bilden zwei C–Br-Bindungen. Bei der gleichzeitigen <strong>heterolytischen Bindungsspaltung</strong> erhält das fernere Br-Atom das gesamte Paar der Br–Br-Bindung und wird zum Bromid-Ion. Jeder gekrümmte <strong>Elektronenpaarpfeil</strong> zeigt, wo ein Paar startet und wohin es gelangt. Der positiv geladene Dreiring heißt <strong>Bromonium-Ion</strong> und ist ein Zwischenprodukt.'},
+ {label:'Rückseitenangriff',short:'Angriff',title:'Nukleophiler Rückseitenangriff',duration:11300,text:'Das Bromid-Ion ist jetzt das <strong>Nukleophil</strong>. Es nähert sich einem C-Atom von der Seite, die der Brombrücke gegenüberliegt, und stellt ein freies Elektronenpaar für eine neue C–Br-Bindung bereit. Bei diesem <strong>nukleophilen Angriff</strong> geht das Elektronenpaar der Bindung zwischen diesem C-Atom und dem Brückenatom auf das Brückenatom über. Der Ring öffnet sich.'},
+ {label:'Produktbildung',short:'Produkt',title:'1,2-Dibromethan',duration:4400,text:'An jedem C-Atom sitzt jetzt ein Br-Atom. Zwischen den beiden C-Atomen liegt eine Einfachbindung vor, und alle Atome sind formal ungeladen. Die beiden hervorgehobenen C–Br-Bindungen zeigen, an welchen Stellen Brom an das Ethen addiert wurde.'}
+];
+const q=s=>document.querySelector(s), clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x)),mix=(a,b,t)=>a+(b-a)*t;
+function smooth(x){x=clamp(x);return x*x*(3-2*x)}
+function ramp(t,a,b){return smooth((t-a)/(b-a))}
+function blend(a,b,t){return a.map((v,i)=>mix(v,b[i],t))}
+function curve(a,b,c,d,t){return a.map((v,i)=>(1-t)**3*v+3*(1-t)**2*t*b[i]+3*(1-t)*t*t*c[i]+t**3*d[i])}
+let step=0,t=0,playing=false,whole=false,previous=0,frame=0;
+function state(){
+ const near=step===0?ramp(t,.04,.83):1;
+ const ring=step<1?0:step===1?ramp(t,.55,.77):1;
+ const release=step<1?0:step===1?ramp(t,.77,.99):1;
+ const orbit=step<2?0:step===2?ramp(t,.02,.34):1;
+ const open=step<2?0:step===2?ramp(t,.73,.94):1;
+ const settle=step===3?ramp(t,.12,.8):0;
+ const electric=near*(1-ring),ionic=ring*(1-open);
+ return {near,ring,release,orbit,open,settle,electric,ionic,
+ arrow:step===1?ramp(t,.04,.2)*(1-ramp(t,.52,.615)):step===2?ramp(t,.36,.50)*(1-ramp(t,.70,.78)):0,
+ second:1-ring,brbr:1-ring,left:ring,right:ring*(1-open),attack:open,
+ accent:step===3?.65+.35*settle:0};
+}
+const canvas=q('#model'),ctx=canvas.getContext('2d');
+const baseYaw=0,basePitch=.50;
+let yaw=baseYaw,pitch=basePitch;
+function coordinates(s){
+ const half=mix(.67,.765,s.ring);
+ const left=[-half,0,0],right=[half,0,0];
+ const xyz=[left,right];
+ for(const side of [-1,1]){
+  for(const front of [-1,1]){
+   const start=[side*(half+.54),0,front*.94];
+   const intermediate=[side*(half+.49),-.40,front*.89];
+   const product=[side*(half+.363),side*.513,front*.889];
+   xyz.push(blend(blend(start,intermediate,s.ring),product,s.open));
+  }
+ }
+ const approachHeight=mix(3.60,1.98,s.near);
+ let bridge=[0,approachHeight,0];
+ bridge=blend(bridge,[0,1.7,0],s.ring);
+ bridge=blend(bridge,[-1.29,1.78,0],s.open);
+ xyz.push(blend(bridge,[-1.40,1.80,0],s.settle));
+ let bromide=[0,approachHeight+1.58+.25*s.ring,0];
+ const separated=[2.29,2.06,0],behind=[2.14,-2.77,0];
+ bromide=blend(bromide,separated,s.release);
+ if(s.orbit>0)bromide=curve(separated,[4.1,2.03,.15],[4.7,-2.50,.1],behind,s.orbit);
+ bromide=blend(bromide,[1.57,-1.71,0],s.open);
+ xyz.push(blend(bromide,[1.40,-1.80,0],s.settle));
+ return xyz;
+}
+const materials=[
+ {r:.38,light:'#b3c5c8',mid:'#546872',dark:'#1a292f'},
+ {r:.24,light:'#ffffff',mid:'#e6eee8',dark:'#849c91'},
+ {r:.48,light:'#ffd1a4',mid:'#c66a48',dark:'#743321'}
+];
+const kinds=[0,0,1,1,1,1,2,2];
+function draw3(s){
+ const w=canvas.clientWidth,h=canvas.clientHeight,dpr=Math.min(window.devicePixelRatio||1,2);
+ if(w<=56||h<=13)return;
+ if(canvas.width!==Math.round(w*dpr)||canvas.height!==Math.round(h*dpr)){canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr)}
+ ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
+ const coords=coordinates(s);
+ const points=coords.map(([x,y,z])=>{
+  const xx=x*Math.cos(yaw)+z*Math.sin(yaw),zz=z*Math.cos(yaw)-x*Math.sin(yaw);
+  return [xx,-y*Math.cos(pitch)+zz*Math.sin(pitch),y*Math.sin(pitch)+zz*Math.cos(pitch)];
+ });
+ const extent=axis=>[Math.min(...points.map((p,i)=>p[axis]-materials[kinds[i]].r)),Math.max(...points.map((p,i)=>p[axis]+materials[kinds[i]].r))];
+ const [xmin,xmax]=extent(0),[ymin,ymax]=extent(1);
+ const scale=Math.min((w-56)/(xmax-xmin),(h-13)/(ymax-ymin),h/3.72);
+ const screen=points.map(([x,y,z])=>[(x-(xmin+xmax)/2)*scale+w/2,(y-(ymin+ymax)/2)*scale+h/2,z]);
+ const items=[];
+ function stick(i,j,alpha=1,offset=0,highlight=false){
+  if(alpha<.01)return;
+  const a=screen[i],b=screen[j],dx=b[0]-a[0],dy=b[1]-a[1],len=Math.hypot(dx,dy)||1;
+  const nx=-dy/len,ny=dx/len;const ax=a[0]+offset*nx,ay=a[1]+offset*ny,bx=b[0]+offset*nx,by=b[1]+offset*ny;
+  const radius=scale*(offset!==0?.045:.073);
+  const distance=Math.hypot(...coords[i].map((v,k)=>v-coords[j][k]));
+  const start=materials[kinds[i]].r*.90/distance,finish=1-materials[kinds[j]].r*.90/distance;
+  if(finish<=start)return;
+  items.push({z:mix(a[2],b[2],.5),paint(){
+   const px=mix(ax,bx,start),py=mix(ay,by,start);
+   const fill=ctx.createLinearGradient(px-nx*radius,py-ny*radius,px+nx*radius,py+ny*radius);
+   fill.addColorStop(0,highlight?'#5e8e64':'#768c85');fill.addColorStop(.34,highlight?'#c8ecac':'#d6e1d9');fill.addColorStop(1,highlight?'#69965f':'#91a29b');
+   ctx.globalAlpha=alpha;ctx.strokeStyle=fill;ctx.lineCap='round';ctx.lineWidth=radius*2;
+   ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(mix(ax,bx,finish),mix(ay,by,finish));ctx.stroke();ctx.globalAlpha=1;
+  }});
+ }
+ for(let i=2;i<6;i++)stick(i<4?0:1,i);
+ stick(0,1,1,-scale*.103*s.second);stick(0,1,s.second,scale*.103);
+ stick(6,7,s.brbr);stick(0,6,s.left,0,s.accent>0);stick(1,6,s.right);stick(1,7,s.attack,0,s.accent>0);
+ screen.forEach(([x,y,z],i)=>{
+  const mat=materials[kinds[i]],r=mat.r*scale;
+  items.push({z:z+.12,paint(){
+   const fill=ctx.createRadialGradient(x-r*.32,y-r*.39,r*.015,x,y,r*1.03);
+   fill.addColorStop(0,mat.light);fill.addColorStop(.45,mat.mid);fill.addColorStop(1,mat.dark);
+   ctx.fillStyle=fill;ctx.beginPath();ctx.arc(x,y,r,0,2*Math.PI);ctx.fill();
+  }});
+ });
+ items.sort((a,b)=>a.z-b.z).forEach(o=>o.paint());
+ for(const [i,partial,formal] of [[6,'δ+','+'],[7,'δ−','−']]){
+  const visible=Math.max(s.electric,s.ionic);if(visible<.06)continue;
+  const [x,y]=screen[i],r=materials[2].r*scale;
+  ctx.globalAlpha=visible;ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold '+Math.max(12,r*.66)+'px Segoe UI, sans-serif';
+  ctx.fillStyle='#fff';ctx.shadowColor='#45251c';ctx.shadowBlur=3;ctx.fillText(s.electric>s.ionic?partial:formal,x,y);ctx.shadowBlur=0;ctx.globalAlpha=1;
+ }
+}
+function draw2(s){
+ const a=[202,151],b=[292,151];
+ const H=[[151,113],[151,189],[343,113],[343,189]].map((p,i)=>blend(p,[[139,151],[208,210],[293,92],[356,151]][i],s.open));
+ const centerX=(a[0]+b[0])/2,approachY=mix(41,84,s.near);
+ let br=[centerX,approachY],ion=[centerX,approachY-55-5*s.ring];
+ br=blend(br,[247,82],s.ring);br=blend(br,[172,84],s.open);
+ br=blend(br,[167,87],s.settle);
+ const free=[395,72],back=[369,211];
+ ion=blend(ion,free,s.release);
+ if(s.orbit>0)ion=curve(free,[479,74],[462,217],back,s.orbit);
+ ion=blend(ion,[329,214],s.open);ion=blend(ion,[327,212],s.settle);
+ let ink='',labels='',arrows='';
+ const line=(p,v,color,width,op=1)=>'<line x1="'+p[0]+'" y1="'+p[1]+'" x2="'+v[0]+'" y2="'+v[1]+'" stroke="'+color+'" stroke-linecap="round" stroke-width="'+width+'" opacity="'+op+'"/>';
+ function bond(p,v,op=1,off=0,highlight=false){
+  if(op<.005)return;
+  const dx=v[0]-p[0],dy=v[1]-p[1],d=Math.hypot(dx,dy),cx=dx/d,cy=dy/d;
+  const pad1=p===br||p===ion?19:13,pad2=v===br||v===ion?19:13;
+  const first=[p[0]+cx*pad1-cy*off,p[1]+cy*pad1+cx*off],last=[v[0]-cx*pad2-cy*off,v[1]-cy*pad2+cx*off];
+  if(highlight)ink+=line(first,last,'#cbe8b8',9,op);
+  ink+=line(first,last,highlight?'#236c50':'#32483e',2.8,op);
+ }
+ function txt(p,value,size,color,op=1,bold=550){
+  return '<text x="'+p[0]+'" y="'+p[1]+'" text-anchor="middle" dominant-baseline="central" font-family="Arial,sans-serif" font-size="'+size+'" font-weight="'+bold+'" fill="'+color+'" opacity="'+op+'">'+value+'</text>';
+ }
+ function pair(p,degrees,op){
+  if(op<.01)return;
+  const angle=degrees*Math.PI/180,dx=Math.cos(angle),dy=Math.sin(angle),r=Math.abs(dx)> .7?21:16;
+  for(const side of [-1,1])labels+='<circle cx="'+(p[0]+dx*r-side*dy*3)+'" cy="'+(p[1]+dy*r+side*dx*3)+'" r="1.75" fill="#8b422c" opacity="'+op+'"/>';
+ }
+ // Two electrons per curved, full-headed arrow. Each tail sits on a bond or lone pair.
+ function arrow(p,c1,c2,end){
+  const path='M '+p.join(' ')+' C '+c1.join(' ')+' '+c2.join(' ')+' '+end.join(' ');
+  arrows+='<path d="'+path+'" fill="none" stroke="#2775aa" stroke-width="2.8" stroke-linecap="round" marker-end="url(#tip)"/>';
+ }
+ for(let i=0;i<4;i++){bond(i<2?a:b,H[i]);labels+=txt(H[i],'H',22,'#47584f',1,450)}
+ bond(a,b,1,4*s.second);bond(a,b,s.second,-4);
+ bond(br,ion,s.brbr);bond(a,br,s.left,0,s.accent>0);bond(b,br,s.right);bond(b,ion,s.attack,0,s.accent>0);
+ for(const p of [a,b])labels+=txt(p,'C',27,'#293e36');
+ for(const p of [br,ion])labels+=txt(p,'Br',26,'#a14930');
+ pair(br,180,1);pair(br,-90*s.ring,1);pair(br,90,1-s.ring);pair(br,0,s.open);
+ pair(ion,0,1);pair(ion,270,1);pair(ion,90,s.ring);pair(ion,180,1-s.open);
+ for(const [p,pol,formal] of [[br,'δ+','+'],[ion,'δ−','−']]){
+  const pos=[p[0]+23,p[1]-20];
+  labels+=txt(pos,pol,17,'#315f70',s.electric);
+  labels+=txt(pos,formal,19,'#315f70',s.ionic,650);
+ }
+ if(s.arrow>.001&&step===1){
+  arrow([240,147],[212,131],[211,101],[br[0]-13,br[1]+9]);
+  arrow([br[0],br[1]+16],[270,96],[293,111],[b[0],b[1]-14]);
+  const mid=blend(br,ion,.53);
+  arrow(mid,[mid[0]-27,mid[1]+1],[ion[0]-27,ion[1]+18],[ion[0]-10,ion[1]+10]);
+ }else if(s.arrow>.001&&step===2){
+  arrow([ion[0]-21,ion[1]],[323,223],[302,194],[b[0]+4,b[1]+14]);
+  const mid=blend(b,br,.50);
+  arrow(mid,[mid[0]+26,mid[1]-10],[br[0]+42,br[1]+4],[br[0]+17,br[1]+1]);
+ }
+ const top=mix(-44,-7,s.near);
+ const bounds=step<2?`91 ${top} 348 ${211-top}`:step===2?'105 16 352 225':'102 43 295 199';
+ // Fit both reactants with a fixed frame across each electron transfer.
+ q('#scheme').setAttribute('viewBox',bounds);
+ q('#scheme').innerHTML='<defs><marker id="tip" viewBox="0 0 10 9" refX="9" refY="4.5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0 0 10 4.5 0 9 2.5 4.5Z" fill="#2775aa"/></marker></defs>'+ink+labels+'<g opacity="'+s.arrow+'">'+arrows+'</g>';
+}
+const steps=q('.steps');
+stages.forEach((x,i)=>{
+ const btn=document.createElement('button');btn.className='step';btn.innerHTML='<span>'+ (i+1)+'</span><b class="wide" style="font-weight:inherit">'+x.label+'</b><em class="mobile">'+x.short+'</em>';btn.setAttribute('aria-label','Schritt '+(i+1)+': '+x.title);
+ btn.onclick=()=>select(i);steps.append(btn);
+});
+function setDetails(){
+ [...steps.children].forEach((b,i)=>i===step?b.setAttribute('aria-current','step'):b.removeAttribute('aria-current'));
+ q('#counter').textContent='Schritt '+(step+1)+' von 4';
+ q('#stepTitle').textContent=stages[step].title;q('#explanation').innerHTML=stages[step].text;
+ q('#arrowKey').textContent=step===1||step===2?'↷ Elektronenpaarverschiebung':step===3?'Grün · neue C–Br-Bindungen':'';
+ q('#scheme').setAttribute('aria-label',stages[step].title+'. '+q('#explanation').textContent);
+ q('#next').textContent=step===3?'Gesamtablauf ↻':'Weiter →';
+}
+function controls(){
+ q('#play').textContent=playing?'Ⅱ Pause':t>=1?'▶ Abspielen':'▶ Start';
+ q('#play').setAttribute('aria-label',playing?'Animation pausieren':'Animation abspielen');
+ q('#status').textContent=whole?'Gesamtablauf':t>=1?'Schritt beendet':'';
+}
+function render(){
+ const s=state();draw3(s);draw2(s);q('#time').value=Math.round(t*1000);q('#time').setAttribute('aria-valuetext',Math.round(t*100)+' Prozent');
+}
+function tick(now){
+ if(!playing)return;
+ if(previous)t=Math.min(1,t+(now-previous)/stages[step].duration);
+ previous=now;render();
+ if(t===1){
+  if(whole&&step<3){step++;t=0;setDetails();controls()}
+  else{playing=false;whole=false;controls();return}
+ }
+ frame=requestAnimationFrame(tick);
+}
+function run(){cancelAnimationFrame(frame);playing=true;previous=0;controls();frame=requestAnimationFrame(tick)}
+function pause(){playing=false;cancelAnimationFrame(frame);controls()}
+function select(i,all=false){step=i;t=0;whole=all;setDetails();render();run()}
+q('#play').onclick=()=>{if(playing){pause();return}if(t===1)t=0;run()};
+q('#repeat').onclick=()=>select(step);
+q('#next').onclick=()=>step===3?select(0,true):select(step+1);
+q('#time').oninput=e=>{whole=false;pause();t=+e.target.value/1000;render();controls()};
+function resetView(){yaw=baseYaw;pitch=basePitch;draw3(state())}
+q('#home').onclick=resetView;
+q('#home').onpointerup=e=>{if(e.pointerType==='touch')resetView()};
+let drag=null;
+canvas.onpointerdown=e=>{if(drag)return;drag=[e.pointerId,e.clientX,e.clientY];canvas.setPointerCapture(e.pointerId)};
+canvas.onpointermove=e=>{if(!drag||e.pointerId!==drag[0])return;yaw+=(e.clientX-drag[1])*.012;pitch=clamp(pitch+(e.clientY-drag[2])*.012,-1.48,1.48);drag=[e.pointerId,e.clientX,e.clientY];draw3(state())};
+canvas.onlostpointercapture=canvas.onpointercancel=canvas.onpointerup=()=>{drag=null};
+canvas.onkeydown=e=>{const move={ArrowLeft:[-.15,0],ArrowRight:[.15,0],ArrowUp:[0,-.15],ArrowDown:[0,.15]}[e.key];if(move){e.preventDefault();yaw+=move[0];pitch=clamp(pitch+move[1],-1.48,1.48);draw3(state())}};
+window.addEventListener('resize',()=>draw3(state()));
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&playing)pause()});
+setDetails();render();if(matchMedia('(prefers-reduced-motion: reduce)').matches){controls()}else{run()}
+</script></body></html>
+
