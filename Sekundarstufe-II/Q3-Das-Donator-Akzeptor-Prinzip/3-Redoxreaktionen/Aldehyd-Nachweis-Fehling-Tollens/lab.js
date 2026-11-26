@@ -125,11 +125,11 @@
       var warm = S.heat || (S.done);
       var g = '<defs><clipPath id="' + P + 'clip"><path d="' + TUBE + ' V40 Z"/></clipPath></defs>';
       // Wasserbad
-      g += '<rect x="30" y="170" width="200" height="140" rx="12" fill="' + (warm ? '#f9d8c0' : '#cfe4f5') + '" fill-opacity=".55" stroke="#94a3b8" stroke-width="3"/>';
+      g += '<rect x="30" y="170" width="200" height="140" rx="12" fill="#cfe4f5" fill-opacity=".7" stroke="#94a3b8" stroke-width="3"/>';
       g += '<path d="M36 186 q16 -8 32 0 t32 0 t32 0 t32 0 t32 0" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="2"/>';
-      if (warm) g += '<path d="M60 300 q-6 -12 0 -22 M200 300 q6 -12 0 -22 M130 305 q-6 -12 0 -22" fill="none" stroke="#ea580c" stroke-opacity=".6" stroke-width="3" stroke-linecap="round"/>';
+      if (warm) g += '<path d="M52 300 q-6 -12 0 -22 M208 300 q6 -12 0 -22" fill="none" stroke="#ea580c" stroke-opacity=".6" stroke-width="3" stroke-linecap="round"/>';
       // Reagenzglas
-      g += '<path d="' + TUBE + '" fill="#fff" fill-opacity=".45"/>';
+      g += '<path d="' + TUBE + '" fill="#fff" fill-opacity=".92"/>';
       g += '<g clip-path="url(#' + P + 'clip)">';
       if (L) {
         g += '<rect x="100" y="' + yTop + '" width="60" height="' + (300 - yTop) + '" fill="rgb(' + L.c.map(Math.round).join(',') + ')" fill-opacity="' + L.a + '"/>';
@@ -146,7 +146,8 @@
       }
       g += '</g><path d="' + TUBE + '" fill="none" stroke="#64748b" stroke-width="3.5" stroke-linecap="round"/>';
       g += '<path d="M98 40 H162" stroke="#64748b" stroke-width="3.5" stroke-linecap="round"/>';
-      g += '<text x="130" y="326" text-anchor="middle" font-size="13" fill="#475569" font-family="Arial,sans-serif">' + (S.sub ? sub().name : '') + '</text>';
+      g += '<text x="130" y="296" text-anchor="middle" font-size="12.5" font-weight="700" fill="#475569" font-family="Arial,sans-serif">Wasserbad' + (warm ? ' · ' + (FEH ? '70' : '60') + ' °C' : '') + '</text>';
+      g += '<text x="130" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#334155" font-family="Arial,sans-serif">' + (S.sub ? 'Reagenzglas: ' + sub().name : 'Reagenzglas') + '</text>';
       svg.innerHTML = g;
     }
 
