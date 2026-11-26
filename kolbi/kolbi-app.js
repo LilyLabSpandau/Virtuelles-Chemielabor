@@ -61,6 +61,7 @@
     'Wasser-erforschen': ['Hier erforschst du, warum Wasser sich so besonders verhält. Beginne mit Modul 1, danach kannst du die anderen drei in beliebiger Reihenfolge bearbeiten.'],
     'Farbe-und-Konstitution': ['Hier erarbeitest du in vier Modulen, wie die Struktur eines Stoffes seine Farbe bestimmt: Konjugation, I- und M-Effekte, Auxochrome und Antiauxochrome und am Ende der Tintenkiller.'],
     'Blue-Bottle-Farbwechsel': ['Hier gehst du dem Blue-Bottle-Versuch mit Methylenblau und Indigocarmin auf den Grund: Elektronen auf Teilchenebene, der Farbstoff als Katalysator und der hypsochrome Effekt. Ich bin heute auch ein Kolben, mit eigenem Ansatz und Stopfen. Wenn du mich schnell hin und her ziehst, schüttelst du mich, und ich färbe mich um!'],
+    'Aldehyd-Nachweis-Fehling-Tollens': ['Hier weist du mit FEHLING- und TOLLENS-Probe nach, dass Aldehyde reduzierend wirken. Heute bin ich die Probe: Ich zeige dir immer, was im Reagenzglas passiert. Danach stellst du die Redoxgleichungen auf.'],
     'Phenolphthalein-Farbumschlag': ['Hier gehst du dem Farbumschlag von Phenolphthalein auf den Grund, in fünf Modulen vom Kolben bis zum Spektrum. Heute bin ich wieder ein Kolben: Ich enthalte denselben Ansatz wie der Kolben im Versuch und färbe mich mit. Tropfe Natronlauge oder Salzsäure zu und sieh mir zu!'],
     'Wasserhaerte-Titration': ['Hier bestimmst du die Wasserhärte durch Titration: erst eine Einführung, dann das 3D-Labor mit Tutorial und zum Schluss die Berechnung.'],
     'Trinkwasser-Detektiv': ['Hier gehst du dem Trinkwasser auf die Spur: Was ist gelöst, woher kommt es, welche Grenzwerte gelten und warum setzt sich Kalk ab? Das Modul ist für Wahlpflicht Chemie Klasse 10.'],
@@ -89,7 +90,7 @@
     'pH-Wert-und-Neutralisation': 'saeure', 'Ueberblick-Alkene-Alkine-Cycloalkane': 'organik', 'Ueberblick-Alkohole': 'organik', 'Ueberblick-Alkanale-Alkanone-Alkansaeuren': 'organik', 'Ueberblick-Ester': 'organik',
     'Eigenschaften-des-Wassers': 'wasser', 'Loeslichkeit': 'wasser', 'Aminosaeuren': 'protein', 'Biuretprobe': 'protein', 'Peptidbindung-EPA': 'protein', 'Proteinstrukturen': 'protein',
     'Systeme-und-1-Hauptsatz': 'energie', 'Der-Kohlenstoffdioxid-Carbonat-Kreislauf': 'energie', 'Gleichgewicht': 'energie', 'Haber-Bosch-Verfahren': 'energie', 'Konduktometrie': 'saeure', 'Nukleophile-Substitution': 'organik',
-    'Saeure-Base-Titration': 'saeure', 'Saeure-Basen-Konstanten': 'saeure', 'Säure-Base-Konzept-Brönsted': 'saeure', 'Chromatografie-Rf-Werte': 'farbe', 'Phenolphthalein-Farbumschlag': 'farbe', 'Indikatoren-Grundlagen': 'saeure', 'Zusammenhang-von-Licht-und-Farbe': 'farbe',
+    'Saeure-Base-Titration': 'saeure', 'Saeure-Basen-Konstanten': 'saeure', 'Säure-Base-Konzept-Brönsted': 'saeure', 'Chromatografie-Rf-Werte': 'farbe', 'Phenolphthalein-Farbumschlag': 'farbe', 'Aldehyd-Nachweis-Fehling-Tollens': 'redox', 'Indikatoren-Grundlagen': 'saeure', 'Zusammenhang-von-Licht-und-Farbe': 'farbe',
     'Disproportionierung': 'redox', 'Redoxreihe-Metallgewinnung': 'redox', 'Sulfit-Titration': 'saeure', 'Doppelspaltexperiment': 'atom', 'Elektronenkonfiguration': 'atom', 'Orbitalmodell': 'atom', 'd-und-f-Orbitale': 'atom', 'Kupfer-Raffination': 'redox', 'Trinkwasser-Detektiv': 'wasser', 'Wasserhaerte-Titration': 'wasser', 'Farbe-und-Konstitution': 'farbe', 'Blue-Bottle-Farbwechsel': 'farbe', 'Wasser-erforschen': 'wasser', 'Kunststoffklassen': 'kunststoff'
   };
 
@@ -166,7 +167,7 @@
 
   // Standard für Anwendungen mit Rückmeldefeldern (.fb, .feedback, *-fb, *feedback*): themenbezogene Tipps. Für gezielte Tipps pro Aufgabe oben in CHECKS eintragen.
   var AUTO_SEL = '.fb, .res, .feedback, [id$="-fb"], [id^="fb-"], [id$="fb"], [id*="feedback"], [id$="Fb"]';
-  var AUTO = ['Trinkwasser-Detektiv', 'Wasser-erforschen', 'Farbe-und-Konstitution', 'Blue-Bottle-Farbwechsel', 'Phenolphthalein-Farbumschlag', 'Elektronenkonfiguration', 'Zusammenhang-von-Licht-und-Farbe', 'Molekuelbau-und-Dipol', 'Ueberblick-Alkene-Alkine-Cycloalkane', 'Ueberblick-Alkohole', 'Ueberblick-Alkanale-Alkanone-Alkansaeuren', 'Ueberblick-Ester', 'Brandbekämpfung', 'Laborgeräte', 'simulation-pse', '4-Hochofen-Eisen-und-Stahl', 'Eigenschaften-des-Wassers', 'Loeslichkeit', 'Aminosaeuren', 'Peptidbindung-EPA', 'Proteinstrukturen', 'Systeme-und-1-Hauptsatz', 'Gleichgewicht', 'Saeure-Basen-Konstanten', 'Chromatografie-Rf-Werte', 'Disproportionierung', 'Redoxreihe-Metallgewinnung', 'Doppelspaltexperiment', 'Orbitalmodell', 'd-und-f-Orbitale', 'Kupfer-Raffination'];
+  var AUTO = ['Trinkwasser-Detektiv', 'Wasser-erforschen', 'Farbe-und-Konstitution', 'Blue-Bottle-Farbwechsel', 'Phenolphthalein-Farbumschlag', 'Aldehyd-Nachweis-Fehling-Tollens', 'Elektronenkonfiguration', 'Zusammenhang-von-Licht-und-Farbe', 'Molekuelbau-und-Dipol', 'Ueberblick-Alkene-Alkine-Cycloalkane', 'Ueberblick-Alkohole', 'Ueberblick-Alkanale-Alkanone-Alkansaeuren', 'Ueberblick-Ester', 'Brandbekämpfung', 'Laborgeräte', 'simulation-pse', '4-Hochofen-Eisen-und-Stahl', 'Eigenschaften-des-Wassers', 'Loeslichkeit', 'Aminosaeuren', 'Peptidbindung-EPA', 'Proteinstrukturen', 'Systeme-und-1-Hauptsatz', 'Gleichgewicht', 'Saeure-Basen-Konstanten', 'Chromatografie-Rf-Werte', 'Disproportionierung', 'Redoxreihe-Metallgewinnung', 'Doppelspaltexperiment', 'Orbitalmodell', 'd-und-f-Orbitale', 'Kupfer-Raffination'];
   var TIPS = {
     sicher: ['Lies die Aufgabe noch einmal in Ruhe und denk an die Grundregeln im Labor: erst überlegen, dann handeln.', 'Gehe die Antwortmöglichkeiten der Reihe nach durch und streiche gedanklich aus, was sicher nicht passt.'],
     saeure: ['Lies die Aufgabe noch einmal genau und achte auf Einheiten, Vorzeichen und Größenordnungen.', 'Überlege dir zuerst, wer das Proton abgibt und wer es aufnimmt. Danach setzt du die Werte ein.', 'Schreibe die Reaktionsgleichung auf, bevor du rechnest. Sie zeigt dir die Stoffmengenverhältnisse.'],
@@ -297,7 +298,7 @@
     var cm = (G[MAP[key]] || []).slice();
     var who = isHugo && window.KolbiSkins && window.KolbiSkins.hugo ? { skin: window.KolbiSkins.hugo, color: '#e0334f' } : { color: '#38bdf8' };
     Kolbi.init({
-      id: 'app-' + key, skin: who.skin, color: who.color, offsetBottom: big ? 130 : 64, tapHelp: function () { return help; },
+      id: 'app-' + key, intro: false, skin: who.skin, color: who.color, offsetBottom: big ? 130 : 64, tapHelp: function () { return help; },
       idleHelp: function () { return { text: ASKS[Math.floor(Math.random() * ASKS.length)], tip: help.tip }; },
       comments: cm,
       noFacts: EXPERT_APPS[key] ? expertMode : null
